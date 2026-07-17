@@ -20,4 +20,6 @@ export const env = {
   jwtTtlSeconds: Number(process.env.JWT_TTL_SECONDS ?? 1800),
   /** T-017: 0 отключает авто-деактивацию. */
   inactivityDeactivationDays: Number(process.env.INACTIVITY_DEACTIVATION_DAYS ?? 90),
+  /** База ссылок в письмах (веб-приложение). */
+  appUrl: process.env.APP_URL ?? 'http://localhost:3000',
 };

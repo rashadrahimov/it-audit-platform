@@ -8,6 +8,7 @@ import { InfraHealthController } from './infra-health.controller';
 import { InfraHealthService } from './infra-health.service';
 import { EmailModule } from './email/email.module';
 import { FilesModule } from './files/files.module';
+import { InvitesModule } from './invites/invites.module';
 import { JobsModule } from './jobs/jobs.module';
 import { LicenseModule } from './license/license.module';
 import { RbacModule } from './rbac/rbac.module';
@@ -21,6 +22,7 @@ import { UsersModule } from './users/users.module';
     DbModule,
     EmailModule,
     FilesModule,
+    InvitesModule,
     JobsModule,
     LicenseModule,
     RbacModule,
