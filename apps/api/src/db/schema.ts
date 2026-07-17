@@ -59,6 +59,8 @@ export const user = pgTable('user', {
   certifications: jsonb('certifications').notNull().default([]),
   mfaTotpSecret: text('mfa_totp_secret'),
   mfaEnabled: boolean('mfa_enabled').notNull().default(false),
+  /** sha256-хеши одноразовых recovery-кодов (T-014); использованный удаляется. */
+  mfaRecoveryCodes: jsonb('mfa_recovery_codes').$type<string[]>(),
   status: text('status').notNull().default('active'),
   failedLoginCount: integer('failed_login_count').notNull().default(0),
   lockedUntil: timestamp('locked_until', { withTimezone: true }),

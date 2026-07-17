@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "mfa_recovery_codes" jsonb;

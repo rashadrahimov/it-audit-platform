@@ -57,6 +57,13 @@
       "when": 1784327607944,
       "tag": "0007_comment",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1784327958296,
+      "tag": "0008_mfa-recovery",
+      "breakpoints": true
     }
   ]
 }

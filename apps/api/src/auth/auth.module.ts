@@ -4,6 +4,7 @@ import { env } from '../env';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { MfaService } from './mfa.service';
 import { PasswordService } from './password.service';
 
 @Module({
@@ -14,7 +15,7 @@ import { PasswordService } from './password.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PasswordService, JwtAuthGuard],
+  providers: [AuthService, MfaService, PasswordService, JwtAuthGuard],
   exports: [JwtAuthGuard, JwtModule, PasswordService],
 })
 export class AuthModule {}

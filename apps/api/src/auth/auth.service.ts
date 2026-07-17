@@ -10,6 +10,7 @@ import type {
   AuthTokenResponse,
   ChangePasswordRequest,
   LoginRequest,
+  LoginResponse,
   MeResponse,
   RegisterRequest,
 } from '@it-audit/shared';
@@ -69,7 +70,7 @@ export class AuthService {
     }
   }
 
-  async login(request: LoginRequest, meta: RequestMeta = {}): Promise<AuthTokenResponse> {
+  async login(request: LoginRequest, meta: RequestMeta = {}): Promise<LoginResponse> {
     const [found] = await this.dbService.db
       .select()
       .from(user)
@@ -91,13 +92,36 @@ export class AuthService {
       throw new UnauthorizedException('Неверный email или пароль');
     }
 
+    // Пароль верен; при включённой MFA — второй шаг (T-014)
+    if (found.mfaEnabled) {
+      const mfaToken = await this.jwtService.signAsync(
+        { sub: found.id, purpose: 'mfa' },
+        { expiresIn: 300 },
+      );
+      return { mfaRequired: true, mfaToken };
+    }
+    return this.completeLogin(found.id, found.email, meta);
+  }
+
+  /** Выдать токен пользователю после полной аутентификации (пароль или пароль+MFA). */
+  async issueTokenForUser(userId: string, meta: RequestMeta = {}): Promise<AuthTokenResponse> {
+    const [found] = await this.dbService.db.select().from(user).where(eq(user.id, userId));
+    if (!found || found.status === 'deactivated') throw new UnauthorizedException();
+    return this.completeLogin(found.id, found.email, meta);
+  }
+
+  private async completeLogin(
+    userId: string,
+    email: string,
+    meta: RequestMeta,
+  ): Promise<AuthTokenResponse> {
     await this.dbService.db
       .update(user)
       .set({ failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date() })
-      .where(eq(user.id, found.id));
-    await this.auditLogService.recordAuthEvent({ userId: found.id, event: 'login', ...meta });
+      .where(eq(user.id, userId));
+    await this.auditLogService.recordAuthEvent({ userId, event: 'login', ...meta });
 
-    const payload: JwtPayload = { sub: found.id, email: found.email };
+    const payload: JwtPayload = { sub: userId, email };
     return {
       accessToken: await this.jwtService.signAsync(payload),
       tokenType: 'Bearer',

@@ -19,12 +19,18 @@ import type { z } from 'zod';
 import {
   changePasswordRequestSchema,
   loginRequestSchema,
+  mfaEnableRequestSchema,
+  mfaVerifyRequestSchema,
   registerRequestSchema,
   type AuthTokenResponse,
+  type LoginResponse,
   type MeResponse,
+  type MfaEnableResponse,
+  type MfaSetupResponse,
 } from '@it-audit/shared';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard, type AuthenticatedRequest } from './jwt-auth.guard';
+import { MfaService } from './mfa.service';
 
 function parse<T extends z.ZodType>(schema: T, body: unknown): z.infer<T> {
   const result = schema.safeParse(body ?? {});
@@ -34,7 +40,10 @@ function parse<T extends z.ZodType>(schema: T, body: unknown): z.infer<T> {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly mfaService: MfaService,
+  ) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Регистрация локального аккаунта (полный invite-flow — T-015)' })
@@ -48,11 +57,50 @@ export class AuthController {
   @ApiOperation({ summary: 'Логин по email+паролю → JWT; вход журналируется с IP (LOG-04)' })
   @ApiOkResponse({ description: 'Bearer-токен' })
   @ApiUnauthorizedResponse({ description: 'Неверные креды или аккаунт заблокирован' })
-  login(@Body() body: unknown, @Req() req: AuthenticatedRequest): Promise<AuthTokenResponse> {
+  login(@Body() body: unknown, @Req() req: AuthenticatedRequest): Promise<LoginResponse> {
     return this.authService.login(parse(loginRequestSchema, body), {
       ip: req.ip,
       userAgent: req.headers['user-agent'],
     });
+  }
+
+  @Post('mfa/setup')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'MFA: сгенерировать секрет и QR (T-014)' })
+  mfaSetup(@Req() req: AuthenticatedRequest): Promise<MfaSetupResponse> {
+    return this.mfaService.setup(req.user.sub);
+  }
+
+  @Post('mfa/enable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'MFA: включить по TOTP-коду; вернёт recovery-коды (один раз)' })
+  mfaEnable(@Req() req: AuthenticatedRequest, @Body() body: unknown): Promise<MfaEnableResponse> {
+    const { code } = parse(mfaEnableRequestSchema, body);
+    return this.mfaService.enable(req.user.sub, code);
+  }
+
+  @Post('mfa/verify')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Второй шаг логина: mfaToken + TOTP/recovery-код → JWT' })
+  @ApiOkResponse({ description: 'Bearer-токен' })
+  mfaVerify(@Body() body: unknown, @Req() req: AuthenticatedRequest): Promise<AuthTokenResponse> {
+    const { mfaToken, code } = parse(mfaVerifyRequestSchema, body);
+    return this.mfaService.verify(mfaToken, code, {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+  }
+
+  @Post('mfa/disable')
+  @HttpCode(204)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'MFA: выключить по TOTP-коду' })
+  async mfaDisable(@Req() req: AuthenticatedRequest, @Body() body: unknown): Promise<void> {
+    const { code } = parse(mfaEnableRequestSchema, body);
+    await this.mfaService.disable(req.user.sub, code);
   }
 
   @Post('change-password')

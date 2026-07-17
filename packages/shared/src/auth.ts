@@ -40,6 +40,32 @@ export const authTokenResponseSchema = z.object({
   expiresInSeconds: z.number().int().positive(),
 });
 
+/** Логин при включённой MFA: сначала челлендж, потом /auth/mfa/verify (T-014). */
+export const mfaChallengeResponseSchema = z.object({
+  mfaRequired: z.literal(true),
+  mfaToken: z.string(),
+});
+
+export const loginResponseSchema = z.union([authTokenResponseSchema, mfaChallengeResponseSchema]);
+
+export const mfaSetupResponseSchema = z.object({
+  secret: z.string(),
+  otpauthUrl: z.string(),
+  qrDataUrl: z.string(),
+});
+
+export const mfaEnableRequestSchema = z.object({ code: z.string().min(6) });
+
+export const mfaEnableResponseSchema = z.object({
+  recoveryCodes: z.array(z.string()).length(10),
+});
+
+export const mfaVerifyRequestSchema = z.object({
+  mfaToken: z.string().min(1),
+  /** TOTP-код или одноразовый recovery-код. */
+  code: z.string().min(6),
+});
+
 export const meResponseSchema = z.object({
   id: z.string(),
   email: z.email(),
@@ -52,4 +78,10 @@ export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
 export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>;
 export type AuthTokenResponse = z.infer<typeof authTokenResponseSchema>;
+export type MfaChallengeResponse = z.infer<typeof mfaChallengeResponseSchema>;
+export type LoginResponse = z.infer<typeof loginResponseSchema>;
+export type MfaSetupResponse = z.infer<typeof mfaSetupResponseSchema>;
+export type MfaEnableRequest = z.infer<typeof mfaEnableRequestSchema>;
+export type MfaEnableResponse = z.infer<typeof mfaEnableResponseSchema>;
+export type MfaVerifyRequest = z.infer<typeof mfaVerifyRequestSchema>;
 export type MeResponse = z.infer<typeof meResponseSchema>;

@@ -47,7 +47,7 @@ afterAll(async () => {
 describe('деактивация аккаунтов (T-017)', () => {
   it('до деактивации логин проходит', async () => {
     const token = await authService.login({ email: emails[0] as string, password: PASSWORD });
-    expect(token.accessToken).toBeTruthy();
+    expect('accessToken' in token && token.accessToken).toBeTruthy();
   });
 
   it('offboarding: после deactivate() логин отбивается', async () => {
