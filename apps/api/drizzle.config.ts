@@ -5,7 +5,7 @@ export default defineConfig({
   schema: './src/db/schema.ts',
   out: './drizzle',
   dbCredentials: {
-    // Дефолт совпадает с docker-compose (хост-порт 5433) и src/env.ts
-    url: process.env.DATABASE_URL ?? 'postgres://audit:audit@localhost:5433/audit',
+    // Миграции — под владельцем схемы; рантайм app ходит под ролью app (см. src/env.ts)
+    url: process.env.DATABASE_URL_OWNER ?? 'postgres://audit:audit@localhost:5433/audit',
   },
 });

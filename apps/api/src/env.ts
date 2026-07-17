@@ -3,7 +3,10 @@
  * локальная разработка работает без .env.
  */
 export const env = {
-  databaseUrl: process.env.DATABASE_URL ?? 'postgres://audit:audit@localhost:5433/audit',
+  /** Рантайм приложения: непривилегированная роль app — иначе RLS не действует (T-011). */
+  databaseUrl: process.env.DATABASE_URL ?? 'postgres://app:app@localhost:5433/audit',
+  /** Миграции/DDL: владелец схемы. */
+  databaseUrlOwner: process.env.DATABASE_URL_OWNER ?? 'postgres://audit:audit@localhost:5433/audit',
   redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6380',
   s3Endpoint: process.env.S3_ENDPOINT ?? 'http://localhost:9000',
   s3AccessKey: process.env.S3_ACCESS_KEY ?? 'minioadmin',

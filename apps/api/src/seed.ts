@@ -14,7 +14,7 @@ import {
 import { Client } from 'pg';
 import { Redis } from 'ioredis';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { env } from './env';
 import { subsidiary, tenant } from './db/schema';
 
@@ -35,19 +35,23 @@ async function seedPostgres(): Promise<void> {
     if (!demoTenant) throw new Error(`Tenant «${DEMO_TENANT_SLUG}» не найден после вставки`);
     console.log(`✓ Tenant «${demoTenant.name}» (${demoTenant.id})`);
 
-    const existing = await db
-      .select()
-      .from(subsidiary)
-      .where(and(eq(subsidiary.tenantId, demoTenant.id), eq(subsidiary.code, 'demo-bank')));
-    if (existing.length === 0) {
-      await db.insert(subsidiary).values({
-        tenantId: demoTenant.id,
-        code: 'demo-bank',
-        nameI18n: { en: 'Demo Bank', az: 'Demo Bank', ru: 'Демо-банк' },
-        country: 'AZ',
-        businessProfile: { segment: 'banking' },
-      });
-    }
+    // subsidiary под RLS (T-011): любые чтения/записи — только с контекстом тенанта
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT set_config('app.tenant_id', ${demoTenant.id}, true)`);
+      const existing = await tx
+        .select()
+        .from(subsidiary)
+        .where(and(eq(subsidiary.tenantId, demoTenant.id), eq(subsidiary.code, 'demo-bank')));
+      if (existing.length === 0) {
+        await tx.insert(subsidiary).values({
+          tenantId: demoTenant.id,
+          code: 'demo-bank',
+          nameI18n: { en: 'Demo Bank', az: 'Demo Bank', ru: 'Демо-банк' },
+          country: 'AZ',
+          businessProfile: { segment: 'banking' },
+        });
+      }
+    });
     console.log('✓ Subsidiary «Demo Bank» (code: demo-bank)');
   } finally {
     await client.end().catch(() => {});

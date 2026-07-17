@@ -21,7 +21,7 @@ async function main(): Promise<void> {
     entries: JournalEntry[];
   };
 
-  const client = new Client({ connectionString: env.databaseUrl });
+  const client = new Client({ connectionString: env.databaseUrlOwner });
   await client.connect();
   try {
     const { rows } = await client.query<{ id: number }>(
