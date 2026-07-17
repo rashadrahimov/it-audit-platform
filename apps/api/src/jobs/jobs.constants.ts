@@ -3,6 +3,10 @@ export const SYSTEM_QUEUE = 'system';
 
 export const JOB_DEMO_DELAYED = 'demo-delayed';
 export const JOB_HEARTBEAT = 'heartbeat';
+export const JOB_DEACTIVATE_INACTIVE = 'deactivate-inactive-users';
+
+/** Авто-деактивация (T-017): раз в сутки. */
+export const DEACTIVATE_INACTIVE_EVERY_MS = 24 * 60 * 60 * 1000;
 
 /** Redis-ключ с временем последнего heartbeat-прогона планировщика. */
 export const HEARTBEAT_KEY = 'jobs:heartbeat:last-run';

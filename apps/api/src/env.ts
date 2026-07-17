@@ -18,4 +18,6 @@ export const env = {
   /** Дев-дефолт. В любом развёртывании обязателен свой JWT_SECRET. */
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-jwt-secret-change-me',
   jwtTtlSeconds: Number(process.env.JWT_TTL_SECONDS ?? 1800),
+  /** T-017: 0 отключает авто-деактивацию. */
+  inactivityDeactivationDays: Number(process.env.INACTIVITY_DEACTIVATION_DAYS ?? 90),
 };

@@ -5,8 +5,10 @@ import { Redis } from 'ioredis';
 import type { DemoJobEnqueued, DemoJobStatus, HeartbeatStatus } from '@it-audit/shared';
 import { env } from '../env';
 import {
+  DEACTIVATE_INACTIVE_EVERY_MS,
   HEARTBEAT_EVERY_MS,
   HEARTBEAT_KEY,
+  JOB_DEACTIVATE_INACTIVE,
   JOB_DEMO_DELAYED,
   JOB_HEARTBEAT,
   SYSTEM_QUEUE,
@@ -18,12 +20,17 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
 
   constructor(@InjectQueue(SYSTEM_QUEUE) private readonly queue: Queue) {}
 
-  /** Планировщик: repeatable heartbeat. upsert — идемпотентно при каждом старте. */
+  /** Планировщик: repeatable-джобы. upsert — идемпотентно при каждом старте. */
   async onModuleInit(): Promise<void> {
     await this.queue.upsertJobScheduler(
       'heartbeat-scheduler',
       { every: HEARTBEAT_EVERY_MS },
       { name: JOB_HEARTBEAT },
+    );
+    await this.queue.upsertJobScheduler(
+      'deactivate-inactive-scheduler',
+      { every: DEACTIVATE_INACTIVE_EVERY_MS },
+      { name: JOB_DEACTIVATE_INACTIVE },
     );
   }
 

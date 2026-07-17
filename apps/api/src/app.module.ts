@@ -8,9 +8,10 @@ import { EmailModule } from './email/email.module';
 import { FilesModule } from './files/files.module';
 import { JobsModule } from './jobs/jobs.module';
 import { RbacModule } from './rbac/rbac.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [AuthModule, DbModule, EmailModule, FilesModule, JobsModule, RbacModule],
+  imports: [AuthModule, DbModule, EmailModule, FilesModule, JobsModule, RbacModule, UsersModule],
   controllers: [HealthController, InfraHealthController],
   providers: [InfraHealthService],
 })
