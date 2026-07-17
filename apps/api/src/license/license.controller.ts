@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
+import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { subsidiary } from '../db/schema';
 import { LicenseService } from './license.service';
@@ -32,6 +33,7 @@ export class LicenseController {
   constructor(
     private readonly licenseService: LicenseService,
     private readonly dbService: DbService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   @Get('license/usage')
@@ -57,6 +59,15 @@ export class LicenseController {
         .values({ tenantId: req.tenantId, ...parsed.data })
         .returning();
       return row;
+    });
+    await this.auditLogService.record({
+      tenantId: req.tenantId,
+      actorUserId: req.user.sub,
+      actorIp: req.ip,
+      action: 'subsidiary.created',
+      entityType: 'subsidiary',
+      entityId: created?.id,
+      after: created,
     });
     return { subsidiary: created, warnings: await this.licenseService.quotaWarnings(req.tenantId) };
   }

@@ -45,11 +45,14 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Логин по email+паролю → JWT' })
+  @ApiOperation({ summary: 'Логин по email+паролю → JWT; вход журналируется с IP (LOG-04)' })
   @ApiOkResponse({ description: 'Bearer-токен' })
   @ApiUnauthorizedResponse({ description: 'Неверные креды или аккаунт заблокирован' })
-  login(@Body() body: unknown): Promise<AuthTokenResponse> {
-    return this.authService.login(parse(loginRequestSchema, body));
+  login(@Body() body: unknown, @Req() req: AuthenticatedRequest): Promise<AuthTokenResponse> {
+    return this.authService.login(parse(loginRequestSchema, body), {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
   }
 
   @Post('change-password')

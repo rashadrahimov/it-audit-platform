@@ -1,20 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, eq, isNull, lt, or, sql } from 'drizzle-orm';
+import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { user } from '../db/schema';
 
+/** Кто выполняет операцию — для audit trail (null = система). */
+export interface Actor {
+  userId?: string | null;
+  ip?: string | null;
+}
+
 @Injectable()
 export class UsersService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly auditLogService: AuditLogService,
+  ) {}
 
   /** Offboarding (T-017): деактивированный не пройдёт логин (проверка в AuthService.login). */
-  async deactivate(userId: string): Promise<void> {
+  async deactivate(userId: string, actor: Actor = {}): Promise<void> {
     const [updated] = await this.dbService.db
       .update(user)
       .set({ status: 'deactivated' })
       .where(eq(user.id, userId))
       .returning({ id: user.id });
     if (!updated) throw new NotFoundException(`Пользователь ${userId} не найден`);
+    await this.auditLogService.record({
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'user.deactivated',
+      entityType: 'user',
+      entityId: userId,
+    });
   }
 
   /**

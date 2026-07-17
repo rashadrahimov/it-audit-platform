@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { JwtService } from '@nestjs/jwt';
 import { inArray } from 'drizzle-orm';
 import { DbService } from '../src/db/db.service';
+import { AuditLogService } from '../src/audit/audit-log.service';
 import { AuthService } from '../src/auth/auth.service';
 import { PasswordService } from '../src/auth/password.service';
 import { UsersService } from '../src/users/users.service';
@@ -14,8 +15,14 @@ const emails = [`deact-manual-${run}@t.io`, `deact-idle-${run}@t.io`];
 
 const dbService = new DbService();
 const passwordService = new PasswordService();
-const usersService = new UsersService(dbService);
-const authService = new AuthService(dbService, passwordService, new JwtService({ secret: 't' }));
+const auditLogService = new AuditLogService(dbService);
+const usersService = new UsersService(dbService, auditLogService);
+const authService = new AuthService(
+  dbService,
+  passwordService,
+  new JwtService({ secret: 't' }),
+  auditLogService,
+);
 let manualId: string;
 
 beforeAll(async () => {

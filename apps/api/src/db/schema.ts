@@ -153,6 +153,46 @@ export const license = pgTable(
   (table) => [uniqueIndex('license_tenant_idx').on(table.tenantId)],
 );
 
+/**
+ * Audit trail (T-021, LOG-01/02): append-only — UPDATE/DELETE отозваны у app в миграции.
+ * prev_hash/hash заложены под tamper-protection (hash chain, EP-HARDEN).
+ */
+export const auditLog = pgTable(
+  'audit_log',
+  {
+    id: id(),
+    /** NULL = системное событие вне тенанта. */
+    tenantId: uuid('tenant_id'),
+    /** NULL = система (джобы, авто-процессы). */
+    actorUserId: uuid('actor_user_id'),
+    actorIp: text('actor_ip'),
+    action: text('action').notNull(),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id'),
+    before: jsonb('before'),
+    after: jsonb('after'),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+    prevHash: text('prev_hash'),
+    hash: text('hash'),
+  },
+  (table) => [index('audit_log_tenant_at_idx').on(table.tenantId, table.at)],
+);
+
+/** Журнал входов (LOG-04): login/logout/failed/locked с IP и user-agent. Append-only. */
+export const authEvent = pgTable(
+  'auth_event',
+  {
+    id: id(),
+    /** NULL = попытка с несуществующим email. */
+    userId: uuid('user_id'),
+    event: text('event').notNull(),
+    ip: text('ip'),
+    userAgent: text('user_agent'),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('auth_event_user_at_idx').on(table.userId, table.at)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

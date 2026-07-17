@@ -1,6 +1,6 @@
-import { Controller, HttpCode, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Controller, HttpCode, Param, ParseUUIDPipe, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOperation } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard, type AuthenticatedRequest } from '../auth/jwt-auth.guard';
 import { PermissionGuard } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { UsersService } from './users.service';
@@ -17,8 +17,11 @@ export class UsersController {
   @HttpCode(204)
   @RequirePermission('settings', 'edit', 'edit')
   @ApiOperation({ summary: 'Offboarding: деактивировать аккаунт (T-017)' })
-  async deactivate(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    await this.usersService.deactivate(id);
+  async deactivate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    await this.usersService.deactivate(id, { userId: req.user.sub, ip: req.ip });
   }
 
   @Post(':id/reactivate')

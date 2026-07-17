@@ -15,6 +15,7 @@ import type {
 } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
 import { tenant, user } from '../db/schema';
+import { AuditLogService } from '../audit/audit-log.service';
 import { PasswordService } from './password.service';
 import { resolvePolicy, validatePassword, DEFAULT_PASSWORD_POLICY } from './password-policy';
 import { env } from '../env';
@@ -24,12 +25,19 @@ export interface JwtPayload {
   email: string;
 }
 
+/** IP и user-agent запроса — для журнала входов (LOG-04). */
+export interface RequestMeta {
+  ip?: string | null;
+  userAgent?: string | null;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
     private readonly dbService: DbService,
     private readonly passwordService: PasswordService,
     private readonly jwtService: JwtService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   async register(request: RegisterRequest): Promise<MeResponse> {
@@ -61,22 +69,25 @@ export class AuthService {
     }
   }
 
-  async login(request: LoginRequest): Promise<AuthTokenResponse> {
+  async login(request: LoginRequest, meta: RequestMeta = {}): Promise<AuthTokenResponse> {
     const [found] = await this.dbService.db
       .select()
       .from(user)
       .where(eq(user.email, request.email.toLowerCase()));
     // Единый ответ для «нет такого» и «пароль неверен» — не раскрываем существование аккаунта
     if (!found || !found.passwordHash || found.status === 'deactivated') {
+      await this.auditLogService.recordAuthEvent({ userId: found?.id, event: 'failed', ...meta });
       throw new UnauthorizedException('Неверный email или пароль');
     }
     if (found.lockedUntil && found.lockedUntil > new Date()) {
+      await this.auditLogService.recordAuthEvent({ userId: found.id, event: 'locked', ...meta });
       throw new UnauthorizedException('Аккаунт временно заблокирован — попробуйте позже');
     }
 
     const ok = await this.passwordService.verify(request.password, found.passwordHash);
     if (!ok) {
       await this.registerFailedAttempt(found.id, found.failedLoginCount);
+      await this.auditLogService.recordAuthEvent({ userId: found.id, event: 'failed', ...meta });
       throw new UnauthorizedException('Неверный email или пароль');
     }
 
@@ -84,6 +95,7 @@ export class AuthService {
       .update(user)
       .set({ failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date() })
       .where(eq(user.id, found.id));
+    await this.auditLogService.recordAuthEvent({ userId: found.id, event: 'login', ...meta });
 
     const payload: JwtPayload = { sub: found.id, email: found.email };
     return {
