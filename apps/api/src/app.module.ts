@@ -7,11 +7,21 @@ import { InfraHealthService } from './infra-health.service';
 import { EmailModule } from './email/email.module';
 import { FilesModule } from './files/files.module';
 import { JobsModule } from './jobs/jobs.module';
+import { LicenseModule } from './license/license.module';
 import { RbacModule } from './rbac/rbac.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [AuthModule, DbModule, EmailModule, FilesModule, JobsModule, RbacModule, UsersModule],
+  imports: [
+    AuthModule,
+    DbModule,
+    EmailModule,
+    FilesModule,
+    JobsModule,
+    LicenseModule,
+    RbacModule,
+    UsersModule,
+  ],
   controllers: [HealthController, InfraHealthController],
   providers: [InfraHealthService],
 })

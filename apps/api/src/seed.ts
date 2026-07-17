@@ -17,6 +17,7 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { and, eq, sql } from 'drizzle-orm';
 import { env } from './env';
 import {
+  license,
   membership,
   permission,
   role,
@@ -62,6 +63,16 @@ async function seedPostgres(): Promise<void> {
       }
     });
     console.log('✓ Subsidiary «Demo Bank» (code: demo-bank)');
+
+    // Лицензия demo-тенанта (T-026): маленькие лимиты, чтобы видеть мягкие предупреждения
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT set_config('app.tenant_id', ${demoTenant.id}, true)`);
+      await tx
+        .insert(license)
+        .values({ tenantId: demoTenant.id, plan: 'demo', maxSubsidiaries: 2, maxAuditSeats: 5 })
+        .onConflictDoNothing({ target: license.tenantId });
+    });
+    console.log('✓ Лицензия demo: план demo, 2 дочки, 5 audit-seats');
 
     // RBAC (T-018): глобальный каталог прав (без RLS) + демо-роль тенанта с матрицей
     const RESOURCES = ['engagement', 'finding', 'control', 'report', 'settings'];

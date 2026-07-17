@@ -134,6 +134,25 @@ export const membership = pgTable(
   (table) => [uniqueIndex('membership_user_tenant_idx').on(table.userId, table.tenantId)],
 );
 
+/** Лицензия тенанта (ADR-0014): лимиты по дочкам и audit-seats. Потребление считается запросом. */
+export const license = pgTable(
+  'license',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    plan: text('plan').notNull().default('standard'),
+    maxSubsidiaries: integer('max_subsidiaries').notNull(),
+    maxAuditSeats: integer('max_audit_seats').notNull(),
+    validUntil: timestamp('valid_until', { withTimezone: true }),
+    /** perpetual/subscription — модель контракта пока открыта у клиента (T-001). */
+    terms: text('terms').notNull().default('subscription'),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('license_tenant_idx').on(table.tenantId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
