@@ -107,6 +107,33 @@ export const rolePermission = pgTable(
   ],
 );
 
+/**
+ * Membership — User↔Tenant↔Role (ADR-0015). Единственная над-тенантная связь
+ * модели (MTE-04); без RLS — читается при логине до установления контекста.
+ * department/unit/scope-поля придут со своими задачами (T-012, оргструктура).
+ */
+export const membership = pgTable(
+  'membership',
+  {
+    id: id(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    roleId: uuid('role_id')
+      .notNull()
+      .references(() => role.id),
+    category: text('category').notNull().default('auditor'),
+    isAuditSeat: boolean('is_audit_seat').notNull().default(false),
+    invitedBy: uuid('invited_by'),
+    status: text('status').notNull().default('active'),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('membership_user_tenant_idx').on(table.userId, table.tenantId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

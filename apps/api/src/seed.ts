@@ -13,10 +13,19 @@ import {
 } from '@aws-sdk/client-s3';
 import { Client } from 'pg';
 import { Redis } from 'ioredis';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { and, eq, sql } from 'drizzle-orm';
 import { env } from './env';
-import { permission, role, rolePermission, subsidiary, tenant } from './db/schema';
+import {
+  membership,
+  permission,
+  role,
+  rolePermission,
+  subsidiary,
+  tenant,
+  user,
+} from './db/schema';
+import { PasswordService } from './auth/password.service';
 
 const DEMO_OBJECT_KEY = 'demo/welcome.txt';
 const DEMO_TENANT_SLUG = 'demo';
@@ -87,6 +96,7 @@ async function seedPostgres(): Promise<void> {
     });
     console.log('✓ Роль «Демо-аудиторы» с матрицей (edit: engagement/finding, view: остальное)');
     await seedPresetRoles(catalog);
+    await seedDemoUsers(db, demoTenant.id);
   } finally {
     await client.end().catch(() => {});
   }
@@ -163,6 +173,47 @@ async function seedPresetRoles(catalog: (typeof permission.$inferSelect)[]): Pro
   } finally {
     await owner.end().catch(() => {});
   }
+}
+
+/** Демо-логины (T-020): admin@demo.io / Demo-Admin-2026 и collaborator@demo.io / Demo-Collab-2026. */
+async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void> {
+  const passwordService = new PasswordService();
+  const demoUsers = [
+    {
+      email: 'admin@demo.io',
+      fullName: 'Demo Admin',
+      password: 'Demo-Admin-2026',
+      roleEn: 'Admin',
+    },
+    {
+      email: 'collaborator@demo.io',
+      fullName: 'Demo Collaborator',
+      password: 'Demo-Collab-2026',
+      roleEn: 'Collaborator',
+    },
+  ];
+  const systemRoles = await db.select().from(role).where(eq(role.isSystem, true));
+  for (const demo of demoUsers) {
+    const presetRole = systemRoles.find((r) => r.nameI18n.en === demo.roleEn);
+    if (!presetRole)
+      throw new Error(`Пресет-роль «${demo.roleEn}» не найдена — сид ролей не прошёл?`);
+    await db
+      .insert(user)
+      .values({
+        email: demo.email,
+        fullName: demo.fullName,
+        passwordHash: await passwordService.hash(demo.password),
+        passwordChangedAt: new Date(),
+      })
+      .onConflictDoNothing({ target: user.email });
+    const [seededUser] = await db.select().from(user).where(eq(user.email, demo.email));
+    if (!seededUser) throw new Error(`Демо-юзер ${demo.email} не найден после вставки`);
+    await db
+      .insert(membership)
+      .values({ userId: seededUser.id, tenantId, roleId: presetRole.id, isAuditSeat: true })
+      .onConflictDoNothing();
+  }
+  console.log('✓ Демо-юзеры: admin@demo.io (Admin), collaborator@demo.io (Collaborator)');
 }
 
 async function seedRedis(): Promise<void> {

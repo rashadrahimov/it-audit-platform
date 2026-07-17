@@ -1,12 +1,67 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
-import type { PermissionDto, RoleWithMatrix } from '@it-audit/shared';
+import { and, eq } from 'drizzle-orm';
+import type { PermissionDto, PermissionLevel, RoleWithMatrix } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { permission, role, rolePermission, tenant } from '../db/schema';
+import { membership, permission, role, rolePermission, tenant } from '../db/schema';
+import type { RequiredPermission } from './require-permission.decorator';
+
+export interface AccessResolution {
+  allowed: boolean;
+  level: PermissionLevel;
+  tenantId: string;
+}
 
 @Injectable()
 export class RbacService {
   constructor(private readonly dbService: DbService) {}
+
+  /**
+   * Уровень доступа пользователя к (resource, action) в тенанте.
+   * Membership читается без RLS-контекста (над-тенантная связка), матрица —
+   * внутри withTenant: иначе RLS скроет ячейки тенантских ролей.
+   */
+  async resolveAccess(
+    userId: string,
+    tenantSlug: string,
+    required: RequiredPermission,
+  ): Promise<AccessResolution> {
+    const [foundTenant] = await this.dbService.db
+      .select()
+      .from(tenant)
+      .where(eq(tenant.slug, tenantSlug));
+    if (!foundTenant) throw new BadRequestException(`Тенант «${tenantSlug}» не найден`);
+
+    const [member] = await this.dbService.db
+      .select()
+      .from(membership)
+      .where(
+        and(
+          eq(membership.userId, userId),
+          eq(membership.tenantId, foundTenant.id),
+          eq(membership.status, 'active'),
+        ),
+      );
+    if (!member) return { allowed: false, level: 'none', tenantId: foundTenant.id };
+
+    const level = await this.dbService.withTenant(foundTenant.id, async (tx) => {
+      const [cell] = await tx
+        .select({ level: rolePermission.level })
+        .from(rolePermission)
+        .innerJoin(permission, eq(rolePermission.permissionId, permission.id))
+        .where(
+          and(
+            eq(rolePermission.roleId, member.roleId),
+            eq(permission.resource, required.resource),
+            eq(permission.action, required.action),
+          ),
+        );
+      return (cell?.level ?? 'none') as PermissionLevel;
+    });
+
+    const allowed =
+      required.level === 'view' ? level === 'view' || level === 'edit' : level === 'edit';
+    return { allowed, level, tenantId: foundTenant.id };
+  }
 
   async permissions(): Promise<PermissionDto[]> {
     const rows = await this.dbService.db.select().from(permission);
