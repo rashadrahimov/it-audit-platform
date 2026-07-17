@@ -18,8 +18,10 @@ pnpm infra:up         # docker compose up -d + scripts/wait-infra.mjs (не comp
                       # Postgres :5433, Redis :6380, MinIO :9000 (консоль :9001), Mailpit :1025 (UI :8025)
 pnpm install          # если менялись зависимости
 pnpm build            # shared → api (nest build) → web (next build); порядок топологический
-pnpm seed             # идемпотентный (apps/api/src/seed.ts): гарантирует бакет audit-files, кладёт demo/welcome.txt;
-                      # доменные сид-данные появятся вместе со схемой (T-010+)
+pnpm db:migrate       # drizzle-kit: применяет миграции из apps/api/drizzle (схема — src/db/schema.ts)
+pnpm db:migrate:down  # откат последней миграции (парные drizzle/down/<tag>.down.sql + раннер dist/db/migrate-down.js)
+pnpm seed             # идемпотентный (apps/api/src/seed.ts): бакет audit-files + demo/welcome.txt;
+                      # доменные данные: tenant «demo» (Demo Group) с дочкой demo-bank
 
 # Продакшн-запуск собранных артефактов:
 # API (из apps/api): node dist/main.js — порт из API_PORT, дефолт 3001
@@ -42,6 +44,7 @@ pnpm seed             # идемпотентный (apps/api/src/seed.ts): га�
 - Порты 3000/3001 заняты? Тестовые процессы прошлого прогона: `ss -tlnp | grep ':300'` и убить.
 
 - Seed сработал? В MinIO-консоли (или через S3 API) в бакете `audit-files` лежит `demo/welcome.txt` со свежим timestamp.
+- БД (T-010): `docker exec it-audit-platform-postgres-1 psql -U audit -d audit -c '\dt public.*'` — таблицы `tenant`, `subsidiary`; после seed в них demo-строки. Откат: `pnpm db:migrate:down` убирает таблицы и запись журнала; `pnpm db:migrate` возвращает. Новая миграция = `pnpm db:generate` + обязательный парный `apps/api/drizzle/down/<tag>.down.sql`.
 - Фоновые задачи (T-040): `curl -X POST 'http://localhost:3001/jobs/demo?delayMs=2000'` → `{id}`; сразу `GET /jobs/demo/<id>` — `state:"delayed"`, через ~3с — `completed` с `returnValue`. `GET /jobs/heartbeat` — свежий `lastRunAt` (repeatable-джоба: первый прогон при старте api, дальше раз в минуту).
 - Email (T-041): `curl -X POST http://localhost:3001/email/demo -H 'Content-Type: application/json' -d '{"locale":"ru"}'` → `{messageId}`; письмо видно в Mailpit UI :8025 или `curl http://localhost:8025/api/v1/messages`. Локали en/az/ru; невалидная локаль → 400.
 - Файлы (T-042): `curl -X POST http://localhost:3001/files -F file=@<путь>` → `{key}`; скачать `curl 'http://localhost:3001/files/content?key=<key URL-энкоженный>'` и сравнить байты (`cmp`). Отсутствующий ключ → 404. Ключи с кириллицей в query энкодить, иначе 400 от самого запроса.

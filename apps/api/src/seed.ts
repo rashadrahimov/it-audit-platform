@@ -1,10 +1,9 @@
 /**
  * Идемпотентный seed демо-данных (T-007). Запуск: `pnpm seed` из корня
- * (после `pnpm build`) — или `node dist/seed.js` из apps/api.
+ * (после `pnpm build` и `pnpm db:migrate`) — или `node dist/seed.js` из apps/api.
  *
- * Доменной схемы ещё нет (появится в T-010, миграции по data-model.md) —
- * пока seed гарантирует S3-бакет, кладёт демо-файл и проверяет Postgres/Redis.
- * По мере роста схемы сюда добавляются доменные сид-данные.
+ * Гарантирует S3-бакет с демо-файлом и сидит доменные данные (T-010+):
+ * демо-tenant «demo» с одной дочкой. Растёт вместе со схемой.
  */
 import {
   CreateBucketCommand,
@@ -14,16 +13,42 @@ import {
 } from '@aws-sdk/client-s3';
 import { Client } from 'pg';
 import { Redis } from 'ioredis';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { and, eq } from 'drizzle-orm';
 import { env } from './env';
+import { subsidiary, tenant } from './db/schema';
 
 const DEMO_OBJECT_KEY = 'demo/welcome.txt';
+const DEMO_TENANT_SLUG = 'demo';
 
 async function seedPostgres(): Promise<void> {
   const client = new Client({ connectionString: env.databaseUrl, connectionTimeoutMillis: 5000 });
   try {
     await client.connect();
-    await client.query('SELECT 1');
-    console.log('✓ Postgres доступен; доменных таблиц ещё нет (T-010) — сидить нечего');
+    const db = drizzle(client);
+
+    await db
+      .insert(tenant)
+      .values({ slug: DEMO_TENANT_SLUG, name: 'Demo Group', languageDefault: 'en' })
+      .onConflictDoNothing({ target: tenant.slug });
+    const [demoTenant] = await db.select().from(tenant).where(eq(tenant.slug, DEMO_TENANT_SLUG));
+    if (!demoTenant) throw new Error(`Tenant «${DEMO_TENANT_SLUG}» не найден после вставки`);
+    console.log(`✓ Tenant «${demoTenant.name}» (${demoTenant.id})`);
+
+    const existing = await db
+      .select()
+      .from(subsidiary)
+      .where(and(eq(subsidiary.tenantId, demoTenant.id), eq(subsidiary.code, 'demo-bank')));
+    if (existing.length === 0) {
+      await db.insert(subsidiary).values({
+        tenantId: demoTenant.id,
+        code: 'demo-bank',
+        nameI18n: { en: 'Demo Bank', az: 'Demo Bank', ru: 'Демо-банк' },
+        country: 'AZ',
+        businessProfile: { segment: 'banking' },
+      });
+    }
+    console.log('✓ Subsidiary «Demo Bank» (code: demo-bank)');
   } finally {
     await client.end().catch(() => {});
   }

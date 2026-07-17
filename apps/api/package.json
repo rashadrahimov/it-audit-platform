@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "build": "nest build",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:migrate:down": "node dist/db/migrate-down.js",
     "dev": "nest start --watch",
     "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -18,11 +21,13 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.0.0",
     "bullmq": "^5.80.5",
+    "drizzle-orm": "^0.45.2",
     "ioredis": "^5.11.1",
     "nodemailer": "^9.0.3",
     "pg": "^8.22.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
@@ -33,6 +38,7 @@
     "@types/node": "catalog:",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.31.10",
     "typescript": "catalog:",
     "unplugin-swc": "^1.5.0",
     "vitest": "catalog:"
