@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** T-006 (docker-compose: Postgres/Redis/MinIO/Mailpit) — **начинать в НОВОЙ сессии** (промт B).
-- **Следующий шаг:** T-006 → T-007 (verify-харнесс+seed) → M0 (T-010 миграции по data-model.md).
-- **Последнее готово:** **T-005 закрыта** (git init + монорепо pnpm: api NestJS+Swagger `/docs`, web Next.js+Tailwind v4, shared zod-контракты; ESLint/Prettier, CI-workflow, .env.example; verify пройден end-to-end, появился проектный скилл `.claude/skills/verify`). GitHub-remote ещё не заведён — CI прогонится при первом push. Открыто у заказчика: позиционирование vs Vanta, оплата, Kerberos, perpetual/subscription.
+- **Текущая задача:** T-007 (verify-харнесс + seed демо-данных) — **начинать в НОВОЙ сессии** (промт B).
+- **Следующий шаг:** T-007 → ревью T-003 (ERD-черновик) → M0 (T-010 миграции по data-model.md).
+- **Последнее готово:** **T-006 закрыта** (docker-compose: Postgres/Redis/MinIO/Mailpit, healthchecks, бакет auto-create; хост-порты 5433/6380 — стандартные заняты соседним проектом; api `GET /health/infra` реально коннектится ко всем четырём, 503/degraded при отказе; скилл verify дополнен; /verify пройден). GitHub-remote ещё не заведён — CI прогонится при первом push. Открыто у заказчика: Excel-шаблоны чеклистов, местный регулятор, модель оплаты.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -98,7 +98,7 @@ _Правило промта: не пересказывать контекст �
 - [ ] **T-003** — Спроектировать модель данных (ERD) целиком до кода: Tenant, Subsidiary, Department/Unit, User+Membership (ADR-0015), Role, Permission, Framework, Control (global+tenant, ADR-0016), Test, Document/Evidence, Engagement, Response (+Compliance Status из чеклиста клиента), Finding, Risk, Asset, Vendor, Policy, Notification, AuditLog, License/Quota (ADR-0014). **+ RFP-сущности (ADR-0017): Audit Type, Audit Universe (дерево), Working Paper, Audit Program, Time Entry, крючки под custom fields (GEN-07) и конфигурируемую терминологию (GEN-06).** Enum'ы из checklist-analysis.md. С мультиязычными полями (ADR-0009) и tenant_id везде; **схема обязана не закрывать опцию schema-per-tenant изоляции для строгих клиентов (MTE-04 RFP)**. _Deps: T-002._ DoD: ERD-документ `docs/data-model.md` + схема (текст/диаграмма), отревьюен. **ERD пишется так, чтобы стать основой документа DAT-02 RFP (документированная модель данных).** _Статус: черновик готов 18.07.2026, ждёт ревью._
 - [x] **T-004** — Финализировать стек-детали поверх ADR-0008. _Deps: —._ DoD: **ADR-0018**: монорепо pnpm (apps/api NestJS + apps/web Next.js + packages/shared), Drizzle, Tailwind+shadcn/ui+TanStack Table+Recharts, Zod, Vitest+Playwright, Tiptap, next-intl.
 - [x] **T-005** — Инициализировать репозиторий: git, структура папок, TypeScript, линт/форматтер, CI (build+lint+test), `.env.example`. _Deps: T-004._ DoD: `git init`, пустое приложение собирается в CI. **Готово: монорепо pnpm (catalog версий), api NestJS 11 + OpenAPI, web Next.js 15 + Tailwind 4, shared со сквозным zod-контрактом `/health`, ESLint 9 flat + Prettier, GitHub Actions (install→build→lint→typecheck→format→test — прогнано локально; Actions запустится при первом push, remote пока нет).**
-- [ ] **T-006** — Поднять локальную инфраструктуру: Postgres, Redis, S3-совместимое (MinIO), SMTP-заглушка (Mailpit) через docker-compose. _Deps: T-005._ DoD: `docker compose up` поднимает всё; app коннектится.
+- [x] **T-006** — Поднять локальную инфраструктуру: Postgres, Redis, S3-совместимое (MinIO), SMTP-заглушка (Mailpit) через docker-compose. _Deps: T-005._ DoD: `docker compose up` поднимает всё; app коннектится. **Готово: docker-compose.yml (Postgres 17, Redis 7, MinIO + one-shot mc-контейнер создаёт бакет audit-files, Mailpit; healthchecks, volumes, пиненые образы). Хост-порты 5433/6380 — стандартные заняты соседним проектом. «App коннектится» доказано кодом: `GET /health/infra` в api реально подключается ко всем четырём (pg SELECT 1, ioredis PING, S3 HeadBucket, SMTP-приветствие), при недоступности — 503/degraded с ошибкой по сервису; zod-контракт в shared; маршрут виден в OpenAPI.**
 - [ ] **T-007** — Настроить проектный `/verify`-харнесс и seed-скрипт демо-данных. _Deps: T-006._ DoD: одна команда запускает app с сид-данными; verify описан.
 
 ---

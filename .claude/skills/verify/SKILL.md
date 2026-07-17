@@ -10,6 +10,8 @@ description: Как собрать, запустить и руками пров�
 ## Сборка и запуск
 
 ```bash
+docker compose up -d  # инфраструктура: Postgres :5433, Redis :6380, MinIO :9000 (консоль :9001), Mailpit :1025 (UI :8025)
+                      # one-shot minio-init сам создаёт бакет audit-files; ждать healthy: docker compose ps
 pnpm install          # если менялись зависимости
 pnpm build            # shared → api (nest build) → web (next build); порядок топологический
 
@@ -24,6 +26,7 @@ npx next start        # порт 3000; ждать "Ready in ..."
 ## Что дёргать
 
 - `curl http://localhost:3001/health` — JSON `{status:"ok",service:"api",...}` по схеме из `packages/shared`.
+- `curl http://localhost:3001/health/infra` — все четыре сервиса `ok:true`; если что-то лежит — HTTP 503, `status:"degraded"` и `error` у виновника. Письма смотреть в Mailpit UI `http://localhost:8025`, файлы — в MinIO-консоли `http://localhost:9001` (minioadmin/minioadmin).
 - `http://localhost:3001/docs` — Swagger UI; `/docs-json` — OpenAPI-спека (должна содержать новые маршруты).
 - `curl http://localhost:3000/` — главная; в HTML есть `data-testid="api-status"`: зелёный «api v0.0.1 — ok» при живом API, красный «API недоступен» при погашенном (страница не 500-ит).
 
@@ -31,7 +34,8 @@ npx next start        # порт 3000; ждать "Ready in ..."
 
 - Веб фетчит API **server-side** (адрес из `API_URL`), CORS не нужен; проверять именно HTML веба, а не только API.
 - После правок кода перед `next start` / `node dist/main.js` нужен свежий `pnpm build` — серверы отдают собранное.
-- `.env` не требуется для скелета: дефолты 3001/`http://localhost:3001` зашиты.
-- Порты заняты? Тестовые процессы прошлого прогона: `ss -tlnp | grep ':300'` и убить.
+- `.env` не требуется: дефолты (3001, `http://localhost:3001`, `postgres://…:5433`, `redis://…:6380`, MinIO/SMTP) зашиты в код и совпадают с docker-compose.
+- Postgres/Redis на **нестандартных хост-портах 5433/6380** — 5432/6379 заняты соседним проектом (leaddrive-uxtest). Внутри контейнеров порты стандартные.
+- Порты 3000/3001 заняты? Тестовые процессы прошлого прогона: `ss -tlnp | grep ':300'` и убить.
 
-(T-007 добавит docker-compose инфраструктуру и seed — дополнить этот файл после него.)
+(T-007 добавит seed демо-данных — дополнить этот файл после него.)
