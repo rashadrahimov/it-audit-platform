@@ -5,3 +5,4 @@ export * from './health';
 export * from './i18n';
 export * from './infra-health';
 export * from './jobs';
+export * from './rbac';

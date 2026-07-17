@@ -16,7 +16,7 @@ import { Redis } from 'ioredis';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { and, eq, sql } from 'drizzle-orm';
 import { env } from './env';
-import { subsidiary, tenant } from './db/schema';
+import { permission, role, rolePermission, subsidiary, tenant } from './db/schema';
 
 const DEMO_OBJECT_KEY = 'demo/welcome.txt';
 const DEMO_TENANT_SLUG = 'demo';
@@ -53,6 +53,39 @@ async function seedPostgres(): Promise<void> {
       }
     });
     console.log('✓ Subsidiary «Demo Bank» (code: demo-bank)');
+
+    // RBAC (T-018): глобальный каталог прав (без RLS) + демо-роль тенанта с матрицей
+    const RESOURCES = ['engagement', 'finding', 'control', 'report', 'settings'];
+    const ACTIONS = ['view', 'create', 'edit', 'delete', 'approve', 'export'];
+    await db
+      .insert(permission)
+      .values(RESOURCES.flatMap((resource) => ACTIONS.map((action) => ({ resource, action }))))
+      .onConflictDoNothing();
+    const catalog = await db.select().from(permission);
+    console.log(`✓ Каталог прав: ${catalog.length} permission'ов`);
+
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT set_config('app.tenant_id', ${demoTenant.id}, true)`);
+      const roles = await tx.select().from(role).where(eq(role.tenantId, demoTenant.id));
+      if (roles.length === 0) {
+        const [demoRole] = await tx
+          .insert(role)
+          .values({
+            tenantId: demoTenant.id,
+            nameI18n: { en: 'Demo Auditors', az: 'Demo Auditorlar', ru: 'Демо-аудиторы' },
+          })
+          .returning();
+        if (!demoRole) throw new Error('Демо-роль не создалась');
+        await tx.insert(rolePermission).values(
+          catalog.map((p) => ({
+            roleId: demoRole.id,
+            permissionId: p.id,
+            level: ['engagement', 'finding'].includes(p.resource) ? 'edit' : 'view',
+          })),
+        );
+      }
+    });
+    console.log('✓ Роль «Демо-аудиторы» с матрицей (edit: engagement/finding, view: остальное)');
   } finally {
     await client.end().catch(() => {});
   }

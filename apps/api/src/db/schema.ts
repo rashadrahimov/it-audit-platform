@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { v7 as uuidv7 } from 'uuid';
@@ -65,6 +66,46 @@ export const user = pgTable('user', {
   lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
   ...timestamps,
 });
+
+/** Глобальный каталог прав (ADR-0013): resource × action. Без tenant_id и RLS. */
+export const permission = pgTable(
+  'permission',
+  {
+    id: id(),
+    resource: text('resource').notNull(),
+    action: text('action').notNull(),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('permission_resource_action_idx').on(table.resource, table.action)],
+);
+
+/** Роль: tenant_id NULL = системный пресет (ADR-0016-паттерн); RLS без FORCE — сид пресетов идёт под owner. */
+export const role = pgTable('role', {
+  id: id(),
+  tenantId: uuid('tenant_id').references(() => tenant.id),
+  nameI18n: jsonb('name_i18n').$type<I18nText>().notNull(),
+  isSystem: boolean('is_system').notNull().default(false),
+  ...timestamps,
+});
+
+/** Матрица роль×право (ADR-0013): уровень none/view/edit. */
+export const rolePermission = pgTable(
+  'role_permission',
+  {
+    id: id(),
+    roleId: uuid('role_id')
+      .notNull()
+      .references(() => role.id, { onDelete: 'cascade' }),
+    permissionId: uuid('permission_id')
+      .notNull()
+      .references(() => permission.id, { onDelete: 'cascade' }),
+    level: text('level').notNull().default('none'),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('role_permission_role_permission_idx').on(table.roleId, table.permissionId),
+  ],
+);
 
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
