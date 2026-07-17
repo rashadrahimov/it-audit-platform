@@ -1,0 +1,25 @@
+# deps
+node_modules/
+
+# builds
+dist/
+.next/
+out/
+*.tsbuildinfo
+
+# env — коммитим только .env.example
+.env
+.env.*
+!.env.example
+
+# tooling
+.claude/settings.local.json
+coverage/
+.turbo/
+
+# python (скрипты скиллов)
+__pycache__/
+*.pyc
+
+# OS/editor
+.DS_Store

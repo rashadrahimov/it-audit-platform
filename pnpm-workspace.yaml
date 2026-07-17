@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  '@scarf/scarf': false
+  '@swc/core': true
+  esbuild: true
+  sharp: true
+
+catalog:
+  typescript: ^5.9.0
+  vitest: ^3.2.0
+  zod: ^4.0.0
+  '@types/node': ^24.0.0
