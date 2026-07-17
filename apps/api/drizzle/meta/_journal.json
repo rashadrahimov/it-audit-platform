@@ -15,6 +15,13 @@
       "when": 1784325324094,
       "tag": "0001_enable-rls-subsidiary",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784325740541,
+      "tag": "0002_user",
+      "breakpoints": true
     }
   ]
 }

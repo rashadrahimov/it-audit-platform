@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
 import { DbModule } from './db/db.module';
 import { HealthController } from './health.controller';
 import { InfraHealthController } from './infra-health.controller';
@@ -8,7 +9,7 @@ import { FilesModule } from './files/files.module';
 import { JobsModule } from './jobs/jobs.module';
 
 @Module({
-  imports: [DbModule, EmailModule, FilesModule, JobsModule],
+  imports: [AuthModule, DbModule, EmailModule, FilesModule, JobsModule],
   controllers: [HealthController, InfraHealthController],
   providers: [InfraHealthService],
 })

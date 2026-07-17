@@ -1,4 +1,13 @@
-import { index, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { v7 as uuidv7 } from 'uuid';
 
 /**
@@ -31,6 +40,29 @@ export const tenant = pgTable('tenant', {
   slug: text('slug').notNull().unique(),
   settings: jsonb('settings').notNull().default({}),
   languageDefault: text('language_default').notNull().default('en'),
+  ...timestamps,
+});
+
+/**
+ * Пользователь — над-тенантный (ADR-0015), без RLS; тенант-связь появится в membership.
+ * password_hash NULL = чистый SSO-аккаунт. Поля lockout — парольная политика SEC-01.
+ */
+export const user = pgTable('user', {
+  id: id(),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash'),
+  fullName: text('full_name').notNull(),
+  phone: text('phone'),
+  locale: text('locale').notNull().default('en'),
+  position: text('position'),
+  certifications: jsonb('certifications').notNull().default([]),
+  mfaTotpSecret: text('mfa_totp_secret'),
+  mfaEnabled: boolean('mfa_enabled').notNull().default(false),
+  status: text('status').notNull().default('active'),
+  failedLoginCount: integer('failed_login_count').notNull().default(0),
+  lockedUntil: timestamp('locked_until', { withTimezone: true }),
+  passwordChangedAt: timestamp('password_changed_at', { withTimezone: true }),
+  lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
   ...timestamps,
 });
 

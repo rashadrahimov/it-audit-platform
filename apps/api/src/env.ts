@@ -15,4 +15,7 @@ export const env = {
   smtpHost: process.env.SMTP_HOST ?? 'localhost',
   smtpPort: Number(process.env.SMTP_PORT ?? 1025),
   smtpFrom: process.env.SMTP_FROM ?? 'IT Audit Platform <no-reply@it-audit.localhost>',
+  /** Дев-дефолт. В любом развёртывании обязателен свой JWT_SECRET. */
+  jwtSecret: process.env.JWT_SECRET ?? 'dev-only-jwt-secret-change-me',
+  jwtTtlSeconds: Number(process.env.JWT_TTL_SECONDS ?? 1800),
 };

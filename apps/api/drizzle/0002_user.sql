@@ -1,0 +1,20 @@
+CREATE TABLE "user" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"email" text NOT NULL,
+	"password_hash" text,
+	"full_name" text NOT NULL,
+	"phone" text,
+	"locale" text DEFAULT 'en' NOT NULL,
+	"position" text,
+	"certifications" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"mfa_totp_secret" text,
+	"mfa_enabled" boolean DEFAULT false NOT NULL,
+	"status" text DEFAULT 'active' NOT NULL,
+	"failed_login_count" integer DEFAULT 0 NOT NULL,
+	"locked_until" timestamp with time zone,
+	"password_changed_at" timestamp with time zone,
+	"last_login_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "user_email_unique" UNIQUE("email")
+);
