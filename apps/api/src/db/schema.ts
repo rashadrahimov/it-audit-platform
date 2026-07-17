@@ -193,6 +193,26 @@ export const authEvent = pgTable(
   (table) => [index('auth_event_user_at_idx').on(table.userId, table.at)],
 );
 
+/** Полиморфные комментарии (T-023): entity_type+entity_id, soft-delete. */
+export const comment = pgTable(
+  'comment',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    authorUserId: uuid('author_user_id')
+      .notNull()
+      .references(() => user.id),
+    body: text('body').notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('comment_entity_idx').on(table.tenantId, table.entityType, table.entityId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

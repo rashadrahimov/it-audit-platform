@@ -1,4 +1,18 @@
-import { BadRequestException, Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { and, eq, isNull, isNotNull, sql } from 'drizzle-orm';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -70,5 +84,59 @@ export class LicenseController {
       after: created,
     });
     return { subsidiary: created, warnings: await this.licenseService.quotaWarnings(req.tenantId) };
+  }
+
+  @Delete('subsidiaries/:id')
+  @HttpCode(204)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Soft-delete дочки (T-023): обратимо, restore возвращает' })
+  async softDeleteSubsidiary(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    const before = await this.dbService.withTenant(req.tenantId, async (tx) => {
+      const [row] = await tx
+        .update(subsidiary)
+        .set({ deletedAt: sql`now()` })
+        .where(and(eq(subsidiary.id, id), isNull(subsidiary.deletedAt)))
+        .returning();
+      return row;
+    });
+    if (!before) throw new NotFoundException(`Дочка ${id} не найдена или уже удалена`);
+    await this.auditLogService.record({
+      tenantId: req.tenantId,
+      actorUserId: req.user.sub,
+      actorIp: req.ip,
+      action: 'subsidiary.soft_deleted',
+      entityType: 'subsidiary',
+      entityId: id,
+    });
+  }
+
+  @Post('subsidiaries/:id/restore')
+  @HttpCode(204)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Восстановить soft-deleted дочку' })
+  async restoreSubsidiary(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    const restored = await this.dbService.withTenant(req.tenantId, async (tx) => {
+      const [row] = await tx
+        .update(subsidiary)
+        .set({ deletedAt: null })
+        .where(and(eq(subsidiary.id, id), isNotNull(subsidiary.deletedAt)))
+        .returning();
+      return row;
+    });
+    if (!restored) throw new NotFoundException(`Дочка ${id} не найдена среди удалённых`);
+    await this.auditLogService.record({
+      tenantId: req.tenantId,
+      actorUserId: req.user.sub,
+      actorIp: req.ip,
+      action: 'subsidiary.restored',
+      entityType: 'subsidiary',
+      entityId: id,
+    });
   }
 }

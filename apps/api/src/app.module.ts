@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
+import { CommentsModule } from './comments/comments.module';
 import { DbModule } from './db/db.module';
 import { HealthController } from './health.controller';
 import { InfraHealthController } from './infra-health.controller';
@@ -16,6 +17,7 @@ import { UsersModule } from './users/users.module';
   imports: [
     AuditModule,
     AuthModule,
+    CommentsModule,
     DbModule,
     EmailModule,
     FilesModule,

@@ -50,6 +50,13 @@
       "when": 1784327359500,
       "tag": "0006_audit-log",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784327607944,
+      "tag": "0007_comment",
+      "breakpoints": true
     }
   ]
 }
