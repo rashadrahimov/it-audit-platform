@@ -44,5 +44,6 @@ pnpm seed             # идемпотентный (apps/api/src/seed.ts): га�
 - Seed сработал? В MinIO-консоли (или через S3 API) в бакете `audit-files` лежит `demo/welcome.txt` со свежим timestamp.
 - Фоновые задачи (T-040): `curl -X POST 'http://localhost:3001/jobs/demo?delayMs=2000'` → `{id}`; сразу `GET /jobs/demo/<id>` — `state:"delayed"`, через ~3с — `completed` с `returnValue`. `GET /jobs/heartbeat` — свежий `lastRunAt` (repeatable-джоба: первый прогон при старте api, дальше раз в минуту).
 - Email (T-041): `curl -X POST http://localhost:3001/email/demo -H 'Content-Type: application/json' -d '{"locale":"ru"}'` → `{messageId}`; письмо видно в Mailpit UI :8025 или `curl http://localhost:8025/api/v1/messages`. Локали en/az/ru; невалидная локаль → 400.
+- Файлы (T-042): `curl -X POST http://localhost:3001/files -F file=@<путь>` → `{key}`; скачать `curl 'http://localhost:3001/files/content?key=<key URL-энкоженный>'` и сравнить байты (`cmp`). Отсутствующий ключ → 404. Ключи с кириллицей в query энкодить, иначе 400 от самого запроса.
 
 (Доменный seed пока пуст — расти будет вместе со схемой, дополнять этот файл начиная с T-010.)
