@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  app.enableShutdownHooks(); // корректно гасит BullMQ-worker при перезапуске
 
   // OpenAPI — Mandatory-требование RFP (INT-01, API-first): спека растёт вместе с API
   const config = new DocumentBuilder()
