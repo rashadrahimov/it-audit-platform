@@ -11,4 +11,5 @@ export const env = {
   s3Bucket: process.env.S3_BUCKET ?? 'audit-files',
   smtpHost: process.env.SMTP_HOST ?? 'localhost',
   smtpPort: Number(process.env.SMTP_PORT ?? 1025),
+  smtpFrom: process.env.SMTP_FROM ?? 'IT Audit Platform <no-reply@it-audit.localhost>',
 };
