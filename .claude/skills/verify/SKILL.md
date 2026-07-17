@@ -9,19 +9,22 @@ description: Как собрать, запустить и руками пров�
 
 ## Сборка и запуск
 
+**Одна команда (дев): `pnpm dev:up`** — инфраструктура (compose + ожидание healthy) → build → seed → оба dev-сервера (api :3001, web :3000).
+
+По шагам / для проверки собранных артефактов:
+
 ```bash
-docker compose up -d  # инфраструктура: Postgres :5433, Redis :6380, MinIO :9000 (консоль :9001), Mailpit :1025 (UI :8025)
-                      # one-shot minio-init сам создаёт бакет audit-files; ждать healthy: docker compose ps
+pnpm infra:up         # docker compose up -d + scripts/wait-infra.mjs (не compose --wait: он спотыкается об one-shot minio-init)
+                      # Postgres :5433, Redis :6380, MinIO :9000 (консоль :9001), Mailpit :1025 (UI :8025)
 pnpm install          # если менялись зависимости
 pnpm build            # shared → api (nest build) → web (next build); порядок топологический
+pnpm seed             # идемпотентный (apps/api/src/seed.ts): гарантирует бакет audit-files, кладёт demo/welcome.txt;
+                      # доменные сид-данные появятся вместе со схемой (T-010+)
 
-# API (из apps/api): собранный артефакт
-node dist/main.js     # порт из API_PORT, дефолт 3001; лог старта Nest в stdout
-# Веб (из apps/web): продакшн-сервер поверх .next
-npx next start        # порт 3000; ждать "Ready in ..."
+# Продакшн-запуск собранных артефактов:
+# API (из apps/api): node dist/main.js — порт из API_PORT, дефолт 3001
+# Веб (из apps/web): npx next start — порт 3000; ждать "Ready in ..."
 ```
-
-Для дева: `pnpm --filter @it-audit/api dev` и `pnpm --filter @it-audit/web dev`.
 
 ## Что дёргать
 
@@ -38,4 +41,6 @@ npx next start        # порт 3000; ждать "Ready in ..."
 - Postgres/Redis на **нестандартных хост-портах 5433/6380** — 5432/6379 заняты соседним проектом (leaddrive-uxtest). Внутри контейнеров порты стандартные.
 - Порты 3000/3001 заняты? Тестовые процессы прошлого прогона: `ss -tlnp | grep ':300'` и убить.
 
-(T-007 добавит seed демо-данных — дополнить этот файл после него.)
+- Seed сработал? В MinIO-консоли (или через S3 API) в бакете `audit-files` лежит `demo/welcome.txt` со свежим timestamp.
+
+(Доменный seed пока пуст — расти будет вместе со схемой, дополнять этот файл начиная с T-010.)

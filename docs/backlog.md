@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** T-007 (verify-харнесс + seed демо-данных) — **начинать в НОВОЙ сессии** (промт B).
-- **Следующий шаг:** T-007 → ревью T-003 (ERD-черновик) → M0 (T-010 миграции по data-model.md).
-- **Последнее готово:** **T-006 закрыта** (docker-compose: Postgres/Redis/MinIO/Mailpit, healthchecks, бакет auto-create; хост-порты 5433/6380 — стандартные заняты соседним проектом; api `GET /health/infra` реально коннектится ко всем четырём, 503/degraded при отказе; скилл verify дополнен; /verify пройден). GitHub-remote ещё не заведён — CI прогонится при первом push. Открыто у заказчика: Excel-шаблоны чеклистов, местный регулятор, модель оплаты.
+- **Текущая задача:** автономная сессия 17.07.2026 — T-040 (BullMQ + планировщик) в работе.
+- **Следующий шаг:** T-041 (email) → T-042 (файлы) → ревью T-003 (нужен Рашад) → T-010.
+- **Последнее готово:** **T-007 закрыта** (`pnpm dev:up` — одна команда: инфраструктура+build+seed+оба dev-сервера; seed идемпотентен, бакет+демо-файл; скилл verify переписан). GitHub-remote ещё не заведён — CI прогонится при первом push. Открыто у заказчика: Excel-шаблоны чеклистов, местный регулятор, модель оплаты.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -99,7 +99,7 @@ _Правило промта: не пересказывать контекст �
 - [x] **T-004** — Финализировать стек-детали поверх ADR-0008. _Deps: —._ DoD: **ADR-0018**: монорепо pnpm (apps/api NestJS + apps/web Next.js + packages/shared), Drizzle, Tailwind+shadcn/ui+TanStack Table+Recharts, Zod, Vitest+Playwright, Tiptap, next-intl.
 - [x] **T-005** — Инициализировать репозиторий: git, структура папок, TypeScript, линт/форматтер, CI (build+lint+test), `.env.example`. _Deps: T-004._ DoD: `git init`, пустое приложение собирается в CI. **Готово: монорепо pnpm (catalog версий), api NestJS 11 + OpenAPI, web Next.js 15 + Tailwind 4, shared со сквозным zod-контрактом `/health`, ESLint 9 flat + Prettier, GitHub Actions (install→build→lint→typecheck→format→test — прогнано локально; Actions запустится при первом push, remote пока нет).**
 - [x] **T-006** — Поднять локальную инфраструктуру: Postgres, Redis, S3-совместимое (MinIO), SMTP-заглушка (Mailpit) через docker-compose. _Deps: T-005._ DoD: `docker compose up` поднимает всё; app коннектится. **Готово: docker-compose.yml (Postgres 17, Redis 7, MinIO + one-shot mc-контейнер создаёт бакет audit-files, Mailpit; healthchecks, volumes, пиненые образы). Хост-порты 5433/6380 — стандартные заняты соседним проектом. «App коннектится» доказано кодом: `GET /health/infra` в api реально подключается ко всем четырём (pg SELECT 1, ioredis PING, S3 HeadBucket, SMTP-приветствие), при недоступности — 503/degraded с ошибкой по сервису; zod-контракт в shared; маршрут виден в OpenAPI.**
-- [ ] **T-007** — Настроить проектный `/verify`-харнесс и seed-скрипт демо-данных. _Deps: T-006._ DoD: одна команда запускает app с сид-данными; verify описан.
+- [x] **T-007** — Настроить проектный `/verify`-харнесс и seed-скрипт демо-данных. _Deps: T-006._ DoD: одна команда запускает app с сид-данными; verify описан. **Готово: `pnpm dev:up` = `infra:up` (compose + `scripts/wait-infra.mjs`, т.к. `--wait` спотыкается об one-shot minio-init) → build → seed → оба dev-сервера. Seed (`pnpm seed`, apps/api/src/seed.ts) идемпотентен: гарантирует бакет audit-files, кладёт demo/welcome.txt, проверяет Postgres/Redis; доменные сид-данные добавятся со схемой (T-010+). Скилл verify переписан под dev:up; env-дефолты вынесены в apps/api/src/env.ts.**
 
 ---
 

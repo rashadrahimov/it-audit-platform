@@ -7,6 +7,11 @@
     "node": ">=24"
   },
   "scripts": {
+    "infra:up": "docker compose up -d && node scripts/wait-infra.mjs",
+    "infra:down": "docker compose down",
+    "seed": "node apps/api/dist/seed.js",
+    "dev": "pnpm --parallel --filter @it-audit/api --filter @it-audit/web dev",
+    "dev:up": "pnpm infra:up && pnpm build && pnpm seed && pnpm dev",
     "build": "pnpm -r build",
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
