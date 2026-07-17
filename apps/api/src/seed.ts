@@ -86,8 +86,82 @@ async function seedPostgres(): Promise<void> {
       }
     });
     console.log('✓ Роль «Демо-аудиторы» с матрицей (edit: engagement/finding, view: остальное)');
+    await seedPresetRoles(catalog);
   } finally {
     await client.end().catch(() => {});
+  }
+}
+
+/**
+ * Системные пресет-роли (T-019): tenant_id NULL — вставка обходит RLS-политику
+ * записи, поэтому идёт под владельцем схемы (DATABASE_URL_OWNER), как миграции.
+ * Категории membership (auditor/end user/MSP) появятся вместе с таблицей membership.
+ */
+const PRESET_ROLES: Array<{
+  name: { en: string; az: string; ru: string };
+  level: (resource: string, action: string) => 'none' | 'view' | 'edit';
+}> = [
+  { name: { en: 'Admin', az: 'Admin', ru: 'Администратор' }, level: () => 'edit' },
+  {
+    name: { en: 'View-only Admin', az: 'Baxış Admini', ru: 'Админ (только чтение)' },
+    level: () => 'view',
+  },
+  {
+    name: { en: 'Editor', az: 'Redaktor', ru: 'Редактор' },
+    level: (resource) => (resource === 'settings' ? 'view' : 'edit'),
+  },
+  {
+    name: { en: 'Collaborator', az: 'Əməkdaş', ru: 'Участник' },
+    level: (resource) =>
+      resource === 'finding' ? 'edit' : resource === 'settings' ? 'none' : 'view',
+  },
+  {
+    name: { en: 'Assessor', az: 'Qiymətləndirici', ru: 'Ассессор' },
+    level: (resource) =>
+      ['engagement', 'finding'].includes(resource)
+        ? 'edit'
+        : resource === 'settings'
+          ? 'none'
+          : 'view',
+  },
+  {
+    name: { en: 'Manager', az: 'Menecer', ru: 'Менеджер' },
+    level: (resource) => (['engagement', 'finding', 'report'].includes(resource) ? 'edit' : 'view'),
+  },
+  {
+    name: { en: 'Approver', az: 'Təsdiqləyici', ru: 'Утверждающий' },
+    level: (resource, action) => (action === 'approve' ? 'edit' : 'view'),
+  },
+];
+
+async function seedPresetRoles(catalog: (typeof permission.$inferSelect)[]): Promise<void> {
+  const owner = new Client({
+    connectionString: env.databaseUrlOwner,
+    connectionTimeoutMillis: 5000,
+  });
+  try {
+    await owner.connect();
+    const db = drizzle(owner);
+    const existing = await db.select().from(role).where(eq(role.isSystem, true));
+    const existingNames = new Set(existing.map((r) => r.nameI18n.en));
+    for (const preset of PRESET_ROLES) {
+      if (existingNames.has(preset.name.en)) continue;
+      const [created] = await db
+        .insert(role)
+        .values({ tenantId: null, nameI18n: preset.name, isSystem: true })
+        .returning();
+      if (!created) throw new Error(`Пресет «${preset.name.en}» не создался`);
+      await db.insert(rolePermission).values(
+        catalog.map((p) => ({
+          roleId: created.id,
+          permissionId: p.id,
+          level: preset.level(p.resource, p.action),
+        })),
+      );
+    }
+    console.log(`✓ Системные пресет-роли: ${PRESET_ROLES.length} (idempotent)`);
+  } finally {
+    await owner.end().catch(() => {});
   }
 }
 
