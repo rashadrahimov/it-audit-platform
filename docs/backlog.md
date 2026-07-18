@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** Трек I (деплой-заготовка). **T-I01:** прод-Dockerfile API (`apps/api/Dockerfile`, multi-stage pnpm-монорепо, только api+shared) + `.dockerignore`. Проверено сквозно: `docker build` → образ 814MB; `docker run` → `/health` 200, `/health/infra` 200 (все 4 сервиса), `/auth/login` 200. Закрывает «single artifact» из EP-ONPREM. До этого: Трек C (CBAR T-C01/C02), allocations (T-A23…A25).
-- **Следующий шаг:** Buildable по всем трём направлениям /goal исчерпан. Остаток EP-ONPREM ([!]): web-Dockerfile (аналогично), pgBackRest/WAL-PITR, hardened-образы, backup-интеграция — инфра/решения клиента. Остаток T-001 ([!]): оплата/лицензия/Kerberos. Далее — по желанию Рашада.
+- **Текущая задача:** Трек I (деплой-заготовка). **T-I01** прод-Dockerfile API (814MB) + **T-I02** прод-Dockerfile web (`apps/web/Dockerfile`, Next.js next start, 1.12GB) + `.dockerignore`. Оба проверены сквозно в контейнере: API `/health`+`/health/infra`+`/auth/login` 200; web `/login` 200, `/account` без сессии 307, с сессией 200 + «Demo Admin» (web→API fetch работает). «Single artifact» EP-ONPREM закрыт для обоих приложений.
+- **Следующий шаг:** Buildable по всем трём направлениям /goal исчерпан (allocations T-A23…A25, CBAR T-C01/C02, контейнеры T-I01/I02). Остаток [!]: EP-ONPREM инфра (pgBackRest/WAL-PITR, hardened-образы, backup-интеграция), T-001 бизнес (оплата/лицензия/Kerberos). Далее — по желанию Рашада.
 - **Последнее готово:** **Марафон-5 (Трек A UI-глубина) 18.07.2026 — T-A01…A22 (22 задачи): 15 экранов интерактива (risks/privacy/iam/code-changes/config/reports/api-keys/notifications/time/kpi/audit-programs/kb/questionnaires/satisfaction/plans/trends) + навигационный хаб (7 категорий) + i18n-гвард (610 ключей ×3) + 5 вынесенных unit-модулей (api 20→51 тест).** Все 17 экранов 200, verify зелёный, GitHub каждый коммит запушен.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
