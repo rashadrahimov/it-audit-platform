@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-REPWIZ — T-098 (tenant-wide CSV/XML выгрузки) закрыта. Следующая — T-099 (сравнение по периодам REP-03), закроет EP-REPWIZ.
-- **Следующий шаг:** T-099 (сравнение двух снапшотов T-073 → дельта метрик) закроет EP-REPWIZ. Дальше — EP-SCHED / фаза-3.
+- **Текущая задача:** EP-REPWIZ закрыт (T-098/099). Следующая — декомпозиция EP-PLAN (risk-based планирование с capacity, наша добавка).
+- **Следующий шаг:** Распишу EP-PLAN на атомы T-100+ (annual_plan + plan_item с priority-скорингом + capacity человеко-часов) и сделаю. Дальше — EP-SCHED / EP-GROUP.
 - **Последнее готово:** **Марафон-4 18.07.2026: M2 (T-060…073) + M3 (T-074…083) + RFP EP-AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP (T-084…095) — 36 задач, миграции до 0057.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -357,9 +357,9 @@ WP как контейнер fieldwork + audit programs с roll-forward + sign-o
 Per-engagement экспорт (PDF/Word/Excel/CSV/XML) уже в T-045. Остаток: tenant-wide стандартные отчёты-выгрузки (REP-02/05) + сравнение по периодам (REP-03).
 
 - [x] **T-098** — Tenant-wide стандартные выгрузки (REP-02/05): `GET /reports/export?entity=findings|risks|controls&format=csv|xml` — выгрузка ВСЕХ сущностей тенанта (не per-engagement) с экранированием; неизвестный entity/format→400. _Deps: T-038, T-057, T-031._ DoD: findings/risks/controls тенанта выгружаются в CSV (заголовки+строки) и XML, мусорный entity/format→400. **Готово: ReportsExportService — 3 сущности (findings id/title/severity/status, risks id/title/riskClass/treatment/status, controls id/ref/objective) в CSV (экранирование кавычек/запятых/переносов) и XML (экранирование &<>"). `GET /reports/export?entity=&format=` (report.export=edit) — Content-Disposition attachment. Миграции нет. E2e: controls CSV заголовки+32 строки, risks XML валиден (корень <risks>), Content-Disposition findings.csv, мусорный entity→400, мусорный format→400, Collaborator→403.**
-- [ ] **T-099** — Сравнение по периодам (REP-03): `GET /reports/compare?a=<snapshotA>&b=<snapshotB>` — дельта метрик двух снапшотов (T-073) по каждому breakdown-ключу. _Deps: T-073._ DoD: сравнение двух снапшотов даёт дельту по метрикам (added/removed/changed значения), несуществующий снапшот→404. **EP-REPWIZ (ядро) закрыт этими двумя.**
+- [x] **T-099** — Сравнение по периодам (REP-03): `GET /reports/compare?a=<snapshotA>&b=<snapshotB>` — дельта метрик двух снапшотов (T-073) по каждому breakdown-ключу. _Deps: T-073._ DoD: сравнение двух снапшотов даёт дельту по метрикам (added/removed/changed значения), несуществующий снапшот→404. **Готово: ReportsExportService.compare — читает два report_snapshot, объединяет метрики+breakdown-ключи, по каждому {a, b, delta=b−a}. `GET /reports/compare?a=&b=` (report.export=view; несуществующий→404, без параметров→400). Миграции нет. E2e: снапшот A→мутация (добавил non-compliant устройство)→снапшот B→compare devices_compliance non_compliant delta=1, controls_total стабилен (delta=0), несуществующий→404, без параметров→400. **EP-REPWIZ (ядро) закрыт целиком** (T-098 выгрузки + T-099 сравнение периодов).**
 
-- [ ] **EP-REPWIZ** — report wizard + стандартные отчёты + сравнение по периодам + XML/CSV экспорт (REP-01/02/03/05/07). **Расписан на T-098–T-099 (tenant-wide выгрузки + сравнение периодов); per-engagement экспорт — T-045; визуальный wizard — UI-атомом.**
+- [x] **EP-REPWIZ** — report wizard + стандартные отчёты + сравнение по периодам + XML/CSV экспорт (REP-01/02/03/05/07). **Расписан на T-098–T-099. Ядро закрыто: tenant-wide CSV/XML выгрузки + сравнение снапшотов по периодам. Per-engagement экспорт — T-045; визуальный wizard — UI-атомом.**
 ### Эпик: Сообщения и опросы (EP-MSG, RFP GEN-04/ISS-06) — расписан на атомы 18.07.2026 (марафон-4)
 
 In-app notification-центр (сообщения из системы) + satisfaction surveys. Опросники из audit file (ENG-07) — переиспользуют questionnaire (T-083).

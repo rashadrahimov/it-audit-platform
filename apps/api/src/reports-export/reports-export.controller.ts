@@ -30,4 +30,14 @@ export class ReportsExportController {
     res.setHeader('Content-Disposition', `attachment; filename="${out.filename}"`);
     res.send(out.body);
   }
+
+  @Get('compare')
+  @RequirePermission('report', 'export', 'view')
+  @ApiOperation({ summary: 'Сравнение двух снапшотов по периодам (T-099, REP-03)' })
+  @ApiQuery({ name: 'a', required: true })
+  @ApiQuery({ name: 'b', required: true })
+  compare(@Req() req: TenantRequest, @Query('a') a?: string, @Query('b') b?: string) {
+    if (!a || !b) throw new BadRequestException('Нужны параметры a и b (id снапшотов)');
+    return this.service.compare(req.tenantId, a, b);
+  }
 }

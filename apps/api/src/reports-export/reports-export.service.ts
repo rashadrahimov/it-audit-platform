@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { isNull } from 'drizzle-orm';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { and, eq, isNull } from 'drizzle-orm';
 import { resolveLocalized } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { control, finding, risk } from '../db/schema';
+import { control, finding, reportSnapshot, risk } from '../db/schema';
 
 export const EXPORT_ENTITIES = ['findings', 'risks', 'controls'] as const;
 export type ExportEntity = (typeof EXPORT_ENTITIES)[number];
@@ -36,6 +36,33 @@ export class ReportsExportService {
     const body = format === 'csv' ? this.toCsv(rows) : this.toXml(entity, rows);
     const contentType = format === 'csv' ? 'text/csv; charset=utf-8' : 'application/xml';
     return { body, contentType, filename: `${entity}.${format}` };
+  }
+
+  /** Сравнение двух снапшотов (T-099, REP-03): дельта по каждой метрике и breakdown-ключу. */
+  async compare(tenantId: string, aId: string, bId: string) {
+    const [a, b] = await this.dbService.withTenant(tenantId, async (tx) => {
+      const [ra] = await tx.select().from(reportSnapshot).where(and(eq(reportSnapshot.id, aId)));
+      const [rb] = await tx.select().from(reportSnapshot).where(and(eq(reportSnapshot.id, bId)));
+      return [ra, rb];
+    });
+    if (!a) throw new NotFoundException(`Снапшот ${aId} не найден`);
+    if (!b) throw new NotFoundException(`Снапшот ${bId} не найден`);
+    const ma = a.metrics as Record<string, Record<string, number>>;
+    const mb = b.metrics as Record<string, Record<string, number>>;
+    const metricNames = new Set([...Object.keys(ma), ...Object.keys(mb)]);
+    const diff: Record<string, Record<string, { a: number; b: number; delta: number }>> = {};
+    for (const m of metricNames) {
+      const ka = ma[m] ?? {};
+      const kb = mb[m] ?? {};
+      const keys = new Set([...Object.keys(ka), ...Object.keys(kb)]);
+      diff[m] = {};
+      for (const k of keys) {
+        const va = ka[k] ?? 0;
+        const vb = kb[k] ?? 0;
+        diff[m][k] = { a: va, b: vb, delta: vb - va };
+      }
+    }
+    return { a: { id: a.id, label: a.label }, b: { id: b.id, label: b.label }, diff };
   }
 
   private async rows(tenantId: string, entity: ExportEntity): Promise<Record<string, string>[]> {
