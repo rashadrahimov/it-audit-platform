@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-FWK — T-078 (расширение библиотеки: 7 фреймворков + требования) закрыта. Следующая — T-079 (framework coverage).
-- **Следующий шаг:** T-079 (GET /frameworks/:id/coverage — покрытие требований замапленными контролями) закроет EP-FWK. Дальше — EP-TRUST / EP-QA.
+- **Текущая задача:** EP-FWK закрыт целиком (T-078/079). Следующая — декомпозиция EP-TRUST (Trust Center, B7).
+- **Следующий шаг:** Распишу EP-TRUST на атомы T-080+ (публичный trust-portal + access requests + published-контроли) и сделаю. Дальше — EP-QA / RFP-эпики.
 - **Последнее готово:** **Марафон-4 18.07.2026: весь M2 (T-060…073, 14 задач) + M3 EP-PRIV (T-074/075) + EP-MISC Tags/Commitments (T-076/077).** До того марафон-3 (12), M1 (7), марафон-1 (12). GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -276,9 +276,9 @@ GDPR-приватность: ROPA (Records of Processing Activities, Art. 30 —
 Расширение глобальной библиотеки стандартов (ADR-0016) до Vanta-паритета + framework coverage (сколько требований покрыто замапленными контролями — ключевая Vanta-метрика). Поверх T-030/031 (framework/framework_requirement/control_mapping уже есть).
 
 - [x] **T-078** — Расширение библиотеки стандартов: сид доп. приоритетных фреймворков (SOC 2, PCI DSS, GDPR-as-framework, HIPAA) + требования (idempotent, под owner); `GET /frameworks/:id/requirements` — дерево требований фреймворка. _Deps: T-030._ DoD: новые фреймворки с требованиями в библиотеке, дерево требований отдаётся, несуществующий фреймворк→404. **Готово: GLOBAL_FRAMEWORKS расширен на SOC 2 (CC1.1/CC6.1/CC7.2/A1.2), PCI DSS 4.0 (Req.1/3/8), GDPR (Art.30/32/35), HIPAA (164.308/312) — сид idempotent под owner, библиотека 7 фреймворков. `GET /frameworks/:id/requirements` (JwtAuth, ?locale) — дерево {id, name, version, requirements:[{id,ref,title,parentId}]} через plain db (RLS отдаёт глобальные без контекста). E2e: библиотека 7 (ISO/COBIT/NIST/SOC2/PCI/GDPR/HIPAA), SOC 2→4 требования, PCI→3, GDPR требования локализуются в ru, несуществующий→404.**
-- [ ] **T-079** — Framework coverage: `GET /frameworks/:id/coverage` — покрытие требований фреймворка замапленными контролями (covered/total/percent + список непокрытых requirement-ref). _Deps: T-078, T-031._ DoD: coverage считается (covered/total/%), непокрытые требования видны; демо-маппинги дают частичное покрытие ISO.
+- [x] **T-079** — Framework coverage: `GET /frameworks/:id/coverage` — покрытие требований фреймворка замапленными контролями (covered/total/percent + список непокрытых requirement-ref). _Deps: T-078, T-031._ DoD: coverage считается (covered/total/%), непокрытые требования видны; демо-маппинги дают частичное покрытие ISO. **Готово: `FrameworksService.coverage` — LEFT JOIN framework_requirement↔control_mapping, covered = требования с ≥1 маппингом, {frameworkId, total, covered, percent, uncovered[]} через plain db (глобальные контроли/маппинги читаемы). `GET /frameworks/:id/coverage` (JwtAuth). E2e: ISO 3/3=100%, COBIT 1/2=50% (непокрыт APO01), NIST 2/2=100%, SOC 2 0/4=0% (все непокрыты), несуществующий→404. **EP-FWK закрыт целиком** (T-078 библиотека + T-079 coverage).**
 
-- [ ] **EP-FWK** — Широкая библиотека фреймворков до паритета с Vanta. **Расписан на T-078–T-079.**
+- [x] **EP-FWK** — Широкая библиотека фреймворков до паритета с Vanta. **Расписан на T-078–T-079. Закрыт: 7 фреймворков (ISO/COBIT/NIST/SOC2/PCI/GDPR/HIPAA) с требованиями + framework coverage (Vanta-метрика %).**
 ### Эпик: Tags + Commitments (EP-MISC, Vanta-паритет) — расписан на атомы 18.07.2026 (марафон-4)
 
 Кросс-срезовые фичи Vanta: полиморфные теги (навесить на любую сущность) + реестр контрактных обязательств (commitments). Developer console/API → EP-API. AI Memory → отдельным AI-эпиком при надобности.

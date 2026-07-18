@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { resolveLocalized, type Locale } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { framework, frameworkRequirement, tenant } from '../db/schema';
+import { controlMapping, framework, frameworkRequirement, tenant } from '../db/schema';
 
 export interface FrameworkListItem {
   id: string;
@@ -76,6 +76,40 @@ export class FrameworksService {
         title: resolveLocalized(r.titleI18n, locale),
         parentId: r.parentId,
       })),
+    };
+  }
+
+  /** Покрытие требований фреймворка замапленными контролями (T-079). Vanta-метрика framework coverage. */
+  async coverage(frameworkId: string) {
+    const [fw] = await this.dbService.db
+      .select({ id: framework.id, nameI18n: framework.nameI18n })
+      .from(framework)
+      .where(and(eq(framework.id, frameworkId), isNull(framework.deletedAt)));
+    if (!fw) throw new NotFoundException(`Фреймворк ${frameworkId} не найден`);
+    // requirement + признак наличия хотя бы одного маппинга контроля
+    const reqs = await this.dbService.db
+      .select({
+        ref: frameworkRequirement.ref,
+        mappingId: controlMapping.id,
+      })
+      .from(frameworkRequirement)
+      .leftJoin(controlMapping, eq(controlMapping.requirementId, frameworkRequirement.id))
+      .where(eq(frameworkRequirement.frameworkId, frameworkId));
+    const covered = new Set<string>();
+    const all = new Set<string>();
+    for (const r of reqs) {
+      all.add(r.ref);
+      if (r.mappingId) covered.add(r.ref);
+    }
+    const total = all.size;
+    const coveredCount = covered.size;
+    const uncovered = [...all].filter((ref) => !covered.has(ref)).sort();
+    return {
+      frameworkId: fw.id,
+      total,
+      covered: coveredCount,
+      percent: total === 0 ? 0 : Math.round((coveredCount / total) * 100),
+      uncovered,
     };
   }
 }

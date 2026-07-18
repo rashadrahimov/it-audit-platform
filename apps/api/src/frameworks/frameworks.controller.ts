@@ -46,4 +46,11 @@ export class FrameworksController {
   requirements(@Param('id', ParseUUIDPipe) id: string, @Query('locale') localeQuery?: string) {
     return this.frameworksService.requirements(id, parseLocale(localeQuery));
   }
+
+  @Get(':id/coverage')
+  @ApiOperation({ summary: 'Покрытие требований замапленными контролями (T-079, EP-FWK)' })
+  @ApiOkResponse({ description: '{frameworkId, total, covered, percent, uncovered:[ref]}' })
+  coverage(@Param('id', ParseUUIDPipe) id: string) {
+    return this.frameworksService.coverage(id);
+  }
 }
