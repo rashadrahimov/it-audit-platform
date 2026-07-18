@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** Марафон Трека A. A1+хвост ЗАВЕРШЕНЫ. **A2:** T-A16 хаб, T-A17 i18n-гвард. **A3:** T-A18…A21 unit-тесты (api 51), T-A22 `/trends` (RSK-08 subset: SVG-тренд метрик по снапшотам).
-- **Следующий шаг:** Трек A практически исчерпан (остаток — [!] инфра/форки: EP-HARDEN SEC-07/ENG-08, allocations без memberships-API). Итоговый прогон verify → ритуал завершения.
-- **Последнее готово:** **Марафон-4 18.07.2026 — 43 задачи (T-060…103): весь M2 + весь M3 + RFP-эпики (AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP/MSG/REPWIZ/SCHED) + Добавки (PLAN/GROUP), EP-I18N backend-ядро. Миграции до 0061. Стоп-условие достигнуто.** GitHub+CI зелёный.
+- **Текущая задача:** Трек A ИСЧЕРПАН (buildable-объём). Остаток — честные [!]: EP-HARDEN SEC-07 (concurrent-session)/ENG-08 (archive-retention) — инфра/крупные атомы; allocations — нет list-эндпоинта memberships для селектора участника.
+- **Следующий шаг:** По желанию Рашада — либо расчистить [!] через новые API (memberships-list → разблокирует allocations-UI), либо Трек B/C (client-answers T-001), либо деплой-пайплайн (Track I / EP-ONPREM). Buildable UI-глубины по существующим API больше нет.
+- **Последнее готово:** **Марафон-5 (Трек A UI-глубина) 18.07.2026 — T-A01…A22 (22 задачи): 15 экранов интерактива (risks/privacy/iam/code-changes/config/reports/api-keys/notifications/time/kpi/audit-programs/kb/questionnaires/satisfaction/plans/trends) + навигационный хаб (7 категорий) + i18n-гвард (610 ключей ×3) + 5 вынесенных unit-модулей (api 20→51 тест).** Все 17 экранов 200, verify зелёный, GitHub каждый коммит запушен.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
