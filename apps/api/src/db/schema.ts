@@ -1196,6 +1196,27 @@ export const privacyAssessment = pgTable(
   (table) => [index('privacy_assessment_tenant_idx').on(table.tenantId)],
 );
 
+/** API-ключ (T-090, EP-API, INT-01): программный bearer-доступ. В БД — только SHA-256 хэш. */
+export const apiKey = pgTable(
+  'api_key',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    name: text('name').notNull(),
+    keyHash: text('key_hash').notNull(),
+    prefix: text('prefix').notNull(),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('api_key_hash_idx').on(table.keyHash),
+    index('api_key_tenant_idx').on(table.tenantId),
+  ],
+);
+
 /** Тайм-запись (T-088, EP-TIME, TIME-01): часы по аудиту/фазе/категории. */
 export const timeEntry = pgTable(
   'time_entry',

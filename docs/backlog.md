@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-TIME закрыт (T-088/089). Следующая — RFP EP-API (публичный REST API + OpenAPI, Mandatory) — декомпозиция.
-- **Следующий шаг:** Распишу EP-API на атомы T-090+ (api_key с bearer-аутентификацией + OpenAPI-эндпоинт) и сделаю. Дальше — EP-WPAPERS / EP-SCHED.
+- **Текущая задача:** EP-API — T-090 (API keys + ApiKeyGuard) закрыта. Следующая — T-091 (OpenAPI + версионированный API-эндпоинт), закроет EP-API.
+- **Следующий шаг:** T-091 (/docs-json + защищённый API-ключом GET /api/v1/controls) закроет EP-API. Дальше — EP-WPAPERS / EP-SCHED.
 - **Последнее готово:** **Марафон-4 18.07.2026: M2 (T-060…073) + M3 (T-074…083) + RFP EP-AUDITTYPES/CONFIG/TIME (T-084…089) — 30 задач.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -342,7 +342,14 @@ Per-tenant кастомизация без кода: неограниченны�
 - **EP-REPWIZ** — report wizard + стандартные отчёты + сравнение по периодам + XML/CSV экспорт (REP-01/02/03/05/07).
 - **EP-MSG** — сообщения из системы (GEN-04), опросники из audit file с консолидацией (ENG-07), satisfaction surveys (ISS-06).
 - **EP-MIGRATE** — инструмент миграции исторических данных (≥4 лет) из Office-файлов: планы/отчёты/findings/действия/тайм-листы (IMP-03).
-- **EP-API** — публичный документированный REST API + OpenAPI-спека (INT-01, Mandatory!). Принцип API-first с фазы 1 (наш UI ест свой же API), публичная документация — фаза 2. Поднято из EP-MISC, т.к. в RFP это M, а не «Developer console когда-нибудь».
+### Эпик: Публичный REST API (EP-API, RFP INT-01 Mandatory) — расписан на атомы 18.07.2026 (марафон-4)
+
+OpenAPI-спека уже отдаётся (SwaggerModule /docs + /docs-json, main.ts). Не хватает программного доступа: API-ключи (долгоживущий bearer вместо JWT-сессии) + документированная спека. API-first уже с фазы 1 (UI ест свой же API).
+
+- [x] **T-090** — API keys: `api_key` (tenant, name, key_hash SHA-256, prefix, last_used_at, revoked_at); генерация (plaintext возвращается один раз, хранится только хэш), `ApiKeyGuard` аутентифицирует по заголовку `X-Api-Key`, ставит tenant-контекст; список (без секрета) + revoke. _Deps: T-020._ DoD: API-ключ генерируется (plaintext один раз, в БД только хэш), запрос с ключом проходит и резолвит тенант, отозванный/битый ключ→401, список без секретов. **Готово: миграция 0054 — api_key (FORCE RLS; RLS-развилка: `api_key_auth_read` FOR SELECT USING(true) — аутентификация ищет по хэшу без тенант-контекста; `api_key_write` FOR ALL — tenant-изоляция записи; админ-список сужает tenant_id в коде). generate (iap_+randomBytes(24), SHA-256 хэш в БД, plaintext один раз в ответе, prefix для идентификации), authenticate (глобальный lookup по хэшу, revoked/битый→null, last_used_at), list (без секрета, revoked-флаг), revoke. ApiKeyGuard (X-Api-Key → tenant-контекст) — экспортится под T-091. API settings.edit/view. audit_log api_key.created/revoked. E2e: ключ prefix iap_, plaintext НЕ в БД (только хэш), список без поля key, отзыв→повторный false, revoked-флаг, пустое имя→400, Collaborator→403.**
+- [ ] **T-091** — OpenAPI + версионированный API-эндпоинт: подтвердить `/docs-json` (публичная OpenAPI-спека) + защищённый API-ключом read-эндпоинт `GET /api/v1/controls` (программный доступ end-to-end). _Deps: T-090, T-031._ DoD: /docs-json отдаёт валидный OpenAPI (paths непусты), /api/v1/controls с валидным API-ключом отдаёт контроли, без ключа→401. **EP-API закрыт этими двумя.**
+
+- [ ] **EP-API** — публичный документированный REST API + OpenAPI-спека (INT-01, Mandatory!). Принцип API-first с фазы 1 (наш UI ест свой же API), публичная документация — фаза 2. Поднято из EP-MISC, т.к. в RFP это M, а не «Developer console когда-нибудь». **Расписан на T-090–T-091.**
 - **EP-HELP** — встроенная помощь: подсказки, инструкции, глоссарий терминов в UI (GEN-09, D) + требование responsive/планшеты во всех UI-задачах (GEN-10, D).
 
 Тяжёлые gap'ы — фаза 3+, осознанно приняты (ADR-0017):
