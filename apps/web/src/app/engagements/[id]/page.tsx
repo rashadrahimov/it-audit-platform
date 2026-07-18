@@ -3,7 +3,8 @@ import { notFound, redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
-import { addChecklistItemsAction, transitionAction } from './actions';
+import { complianceStatusSchema } from '@it-audit/shared';
+import { addChecklistItemsAction, saveResponseAction, transitionAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,12 @@ interface EngagementDetail {
     question: string;
     status: string;
     controlId: string | null;
+    response: {
+      text: string;
+      complianceStatus: string;
+      submittedAt: string;
+      respondent: string;
+    } | null;
   }>;
 }
 
@@ -153,16 +160,82 @@ export default async function EngagementDetailPage({
                   <td className="py-2 pr-4 font-medium whitespace-nowrap text-foreground">
                     {item.ref}
                   </td>
-                  <td className="py-2 pr-4 text-foreground">{item.question}</td>
+                  <td className="py-2 pr-4 text-foreground">
+                    {item.question}
+                    {item.response && (
+                      <p
+                        data-testid={`response-${item.ref}`}
+                        className="mt-1.5 rounded-md bg-muted/60 px-2.5 py-1.5 text-xs text-secondary"
+                      >
+                        <span className="font-medium text-foreground">
+                          {item.response.respondent}:
+                        </span>{' '}
+                        {item.response.text}
+                      </p>
+                    )}
+                  </td>
                   <td className="py-2">
                     <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-secondary">
-                      {item.status}
+                      {item.response
+                        ? t(`compliance.${item.response.complianceStatus}`)
+                        : item.status}
                     </span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        )}
+        {eng.checklist.length > 0 && (
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm font-medium text-accent">
+              {t('respond')}
+            </summary>
+            <form
+              action={saveResponseAction.bind(null, eng.id)}
+              className="mt-3 flex flex-col gap-3"
+            >
+              <select
+                name="itemId"
+                required
+                data-testid="respond-item"
+                className="rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {eng.checklist.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.ref} — {item.question.slice(0, 80)}
+                  </option>
+                ))}
+              </select>
+              <textarea
+                name="text"
+                required
+                rows={3}
+                data-testid="respond-text"
+                placeholder={t('respondPlaceholder')}
+                className="rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <select
+                name="complianceStatus"
+                required
+                data-testid="respond-status"
+                className="rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {complianceStatusSchema.options.map((s) => (
+                  <option key={s} value={s}>
+                    {t(`compliance.${s}`)}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="submit"
+                data-testid="respond-submit"
+                className="cursor-pointer self-start rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {t('respondSubmit')}
+              </button>
+            </form>
+          </details>
         )}
         {addable.length > 0 && (
           <details className="mt-4">

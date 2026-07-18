@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -19,7 +20,13 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { z } from 'zod';
-import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, type Locale } from '@it-audit/shared';
+import {
+  complianceStatusSchema,
+  DEFAULT_LOCALE,
+  i18nTextSchema,
+  localeSchema,
+  type Locale,
+} from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
@@ -40,6 +47,11 @@ const createEngagementSchema = z.object({
 const transitionSchema = z.object({ to: z.string().min(1) });
 
 const addChecklistSchema = z.object({ controlIds: z.array(z.uuid()).min(1) });
+
+const saveResponseSchema = z.object({
+  text: z.string().min(1),
+  complianceStatus: complianceStatusSchema,
+});
 
 function parseLocale(localeQuery?: string): Locale {
   if (localeQuery === undefined) return DEFAULT_LOCALE;
@@ -104,6 +116,29 @@ export class EngagementsController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data.controlIds,
+    );
+  }
+
+  @Put(':id/checklist-items/:itemId/response')
+  @HttpCode(200)
+  // под view-правом: респонденты — Collaborator'ы (engagement=view); ужесточение до
+  // назначенного respondent'а придёт вместе с назначением респондентов на пункты
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({ summary: 'Ответ респондента (T-037): upsert текста и compliance-статуса' })
+  @ApiOkResponse({ description: 'Сохранённый ответ; пункт получает status=answered' })
+  saveResponse(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('itemId', ParseUUIDPipe) itemId: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = saveResponseSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.engagementsService.saveResponse(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      itemId,
+      parsed.data,
     );
   }
 

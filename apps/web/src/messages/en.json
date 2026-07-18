@@ -63,7 +63,16 @@
     "checklistQuestion": "Audit question",
     "checklistStatus": "Status",
     "checklistAdd": "Add controls from the library",
-    "checklistSubmit": "Add selected"
+    "checklistSubmit": "Add selected",
+    "respond": "Answer a checklist item",
+    "respondPlaceholder": "Auditee response…",
+    "respondSubmit": "Save answer",
+    "compliance": {
+      "compliant": "Compliant",
+      "partially_compliant": "Partially compliant",
+      "non_compliant": "Non-compliant",
+      "not_applicable": "Not applicable"
+    }
   },
   "engagementStates": {
     "draft": "Draft",

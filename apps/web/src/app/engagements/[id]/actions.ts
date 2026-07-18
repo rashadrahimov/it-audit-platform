@@ -19,6 +19,21 @@ export async function addChecklistItemsAction(
   revalidatePath(`/engagements/${engagementId}`);
 }
 
+/** Ответ респондента (T-037): upsert текста и compliance-статуса пункта. */
+export async function saveResponseAction(engagementId: string, formData: FormData): Promise<void> {
+  const itemId = String(formData.get('itemId') ?? '');
+  const text = String(formData.get('text') ?? '').trim();
+  const complianceStatus = String(formData.get('complianceStatus') ?? '');
+  const tenantSlug = await getActiveTenantSlug();
+  if (!itemId || !text || !complianceStatus || !tenantSlug) return;
+  await apiFetch(`/engagements/${engagementId}/checklist-items/${itemId}/response`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
+    body: JSON.stringify({ text, complianceStatus }),
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}
+
 /** Переход state machine из UI (T-035); ошибки перехода видны при обновлении страницы. */
 export async function transitionAction(engagementId: string, to: string): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();

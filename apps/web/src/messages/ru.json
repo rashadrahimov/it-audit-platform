@@ -63,7 +63,16 @@
     "checklistQuestion": "Аудит-вопрос",
     "checklistStatus": "Статус",
     "checklistAdd": "Добавить контроли из библиотеки",
-    "checklistSubmit": "Добавить выбранные"
+    "checklistSubmit": "Добавить выбранные",
+    "respond": "Ответить на пункт чеклиста",
+    "respondPlaceholder": "Ответ аудируемого…",
+    "respondSubmit": "Сохранить ответ",
+    "compliance": {
+      "compliant": "Соответствует",
+      "partially_compliant": "Частично соответствует",
+      "non_compliant": "Не соответствует",
+      "not_applicable": "Неприменимо"
+    }
   },
   "engagementStates": {
     "draft": "Черновик",

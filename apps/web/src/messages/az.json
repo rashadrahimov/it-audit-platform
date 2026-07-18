@@ -63,7 +63,16 @@
     "checklistQuestion": "Audit sualı",
     "checklistStatus": "Status",
     "checklistAdd": "Kitabxanadan nəzarətlər əlavə et",
-    "checklistSubmit": "Seçilənləri əlavə et"
+    "checklistSubmit": "Seçilənləri əlavə et",
+    "respond": "Çeklist bəndinə cavab ver",
+    "respondPlaceholder": "Audit olunanın cavabı…",
+    "respondSubmit": "Cavabı saxla",
+    "compliance": {
+      "compliant": "Uyğundur",
+      "partially_compliant": "Qismən uyğundur",
+      "non_compliant": "Uyğun deyil",
+      "not_applicable": "Tətbiq olunmur"
+    }
   },
   "engagementStates": {
     "draft": "Qaralama",

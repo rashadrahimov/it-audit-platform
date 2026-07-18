@@ -1,4 +1,5 @@
 export * from './auth';
+export * from './compliance';
 export * from './email';
 export * from './files';
 export * from './health';

@@ -10,8 +10,12 @@ import {
   controlDomain,
   engagement,
   engagementMilestone,
+  membership,
+  response,
   subsidiary,
+  user,
 } from '../db/schema';
+import type { ComplianceStatus } from '@it-audit/shared';
 import {
   allowedTransitions,
   canTransition,
@@ -213,6 +217,66 @@ export class EngagementsService {
     return { added: added.length };
   }
 
+  /**
+   * Ответ респондента (T-037): upsert — один ответ на пункт, повторный PUT
+   * перезаписывает. Пункт получает status=answered. Ограничение «только
+   * назначенный respondent» придёт вместе с назначением респондентов.
+   */
+  async saveResponse(
+    actor: Actor,
+    engagementId: string,
+    itemId: string,
+    input: { text: string; complianceStatus: ComplianceStatus },
+  ) {
+    const [respondent] = await this.dbService.db
+      .select()
+      .from(membership)
+      .where(and(eq(membership.userId, actor.userId), eq(membership.tenantId, actor.tenantId)));
+    if (!respondent) throw new BadRequestException('У юзера нет membership в тенанте');
+
+    const saved = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [item] = await tx
+        .select()
+        .from(checklistItem)
+        .where(and(eq(checklistItem.id, itemId), eq(checklistItem.engagementId, engagementId)));
+      if (!item) throw new NotFoundException(`Пункт ${itemId} не найден в engagement`);
+      const [row] = await tx
+        .insert(response)
+        .values({
+          checklistItemId: itemId,
+          respondentMembershipId: respondent.id,
+          text: input.text,
+          complianceStatus: input.complianceStatus,
+        })
+        .onConflictDoUpdate({
+          target: response.checklistItemId,
+          set: {
+            text: input.text,
+            complianceStatus: input.complianceStatus,
+            respondentMembershipId: respondent.id,
+            submittedAt: sql`now()`,
+          },
+        })
+        .returning();
+      if (!row) throw new Error('Ответ не сохранился');
+      await tx
+        .update(checklistItem)
+        .set({ status: 'answered' })
+        .where(eq(checklistItem.id, itemId));
+      return { row, ref: item.ref };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'response.submitted',
+      entityType: 'response',
+      entityId: saved.row.id,
+      after: { ref: saved.ref, complianceStatus: input.complianceStatus },
+    });
+    return saved.row;
+  }
+
   async list(tenantId: string, locale: Locale) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
@@ -261,7 +325,26 @@ export class EngagementsService {
         .from(checklistItem)
         .where(eq(checklistItem.engagementId, id))
         .orderBy(asc(checklistItem.order));
-      return { row, sub, type, milestones, checklist };
+      const responses = checklist.length
+        ? await tx
+            .select({
+              checklistItemId: response.checklistItemId,
+              text: response.text,
+              complianceStatus: response.complianceStatus,
+              submittedAt: response.submittedAt,
+              respondent: user.fullName,
+            })
+            .from(response)
+            .innerJoin(membership, eq(response.respondentMembershipId, membership.id))
+            .innerJoin(user, eq(membership.userId, user.id))
+            .where(
+              inArray(
+                response.checklistItemId,
+                checklist.map((i) => i.id),
+              ),
+            )
+        : [];
+      return { row, sub, type, milestones, checklist, responses };
     });
 
     const stageOrder = (s: string): number => {
@@ -291,15 +374,26 @@ export class EngagementsService {
           plannedDate: m.plannedDate?.toISOString() ?? null,
           actualDate: m.actualDate?.toISOString() ?? null,
         })),
-      checklist: data.checklist.map((item) => ({
-        id: item.id,
-        ref: item.ref,
-        domainCode: item.domainCode,
-        objective: resolveLocalized(item.objectiveI18n, locale),
-        question: resolveLocalized(item.questionI18n, locale),
-        status: item.status,
-        controlId: item.controlId,
-      })),
+      checklist: data.checklist.map((item) => {
+        const answer = data.responses.find((r) => r.checklistItemId === item.id);
+        return {
+          id: item.id,
+          ref: item.ref,
+          domainCode: item.domainCode,
+          objective: resolveLocalized(item.objectiveI18n, locale),
+          question: resolveLocalized(item.questionI18n, locale),
+          status: item.status,
+          controlId: item.controlId,
+          response: answer
+            ? {
+                text: answer.text,
+                complianceStatus: answer.complianceStatus,
+                submittedAt: answer.submittedAt.toISOString(),
+                respondent: answer.respondent,
+              }
+            : null,
+        };
+      }),
     };
   }
 }

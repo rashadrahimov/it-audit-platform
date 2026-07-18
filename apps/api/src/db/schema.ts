@@ -402,6 +402,29 @@ export const checklistItem = pgTable(
   (table) => [index('checklist_item_engagement_idx').on(table.engagementId, table.order)],
 );
 
+/**
+ * Ответ респондента (T-037, «вторая колонка» чеклиста клиента): один на пункт,
+ * compliance_status — enum чеклиста (конфигурируемые lookup'ы — EP-CONFIG).
+ * Evidence придёт связкой document_link (T-034).
+ */
+export const response = pgTable(
+  'response',
+  {
+    id: id(),
+    checklistItemId: uuid('checklist_item_id')
+      .notNull()
+      .references(() => checklistItem.id, { onDelete: 'cascade' }),
+    respondentMembershipId: uuid('respondent_membership_id')
+      .notNull()
+      .references(() => membership.id),
+    text: text('text').notNull(),
+    complianceStatus: text('compliance_status').notNull(),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('response_checklist_item_idx').on(table.checklistItemId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
