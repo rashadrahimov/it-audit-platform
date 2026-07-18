@@ -36,6 +36,21 @@
     "standards": "Стандарты",
     "empty": "Контролей пока нет"
   },
+  "controlDetail": {
+    "back": "Все контроли",
+    "global": "Глобальная библиотека",
+    "adapted": "Адаптация тенанта",
+    "domain": "Домен",
+    "objective": "Цель контроля",
+    "question": "Аудит-вопрос",
+    "guidance": "Руководство",
+    "owner": "Владелец",
+    "standards": "Стандарты",
+    "history": "История",
+    "historyEmpty": "Изменений не было",
+    "comments": "Комментарии",
+    "commentsEmpty": "Комментариев пока нет"
+  },
   "frameworks": {
     "title": "Стандарты",
     "toAccount": "Аккаунт",

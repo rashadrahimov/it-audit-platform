@@ -79,6 +79,15 @@ export const meResponseSchema = z.object({
   locale: localeSchema,
 });
 
+/** Тенанты юзера (T-032): контекст для UI до полноценного переключателя. */
+export const meTenantsResponseSchema = z.array(
+  z.object({
+    slug: z.string(),
+    name: z.string(),
+    role: z.string(),
+  }),
+);
+
 export type PasswordPolicy = z.infer<typeof passwordPolicySchema>;
 export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
@@ -92,3 +101,4 @@ export type MfaEnableRequest = z.infer<typeof mfaEnableRequestSchema>;
 export type MfaEnableResponse = z.infer<typeof mfaEnableResponseSchema>;
 export type MfaVerifyRequest = z.infer<typeof mfaVerifyRequestSchema>;
 export type MeResponse = z.infer<typeof meResponseSchema>;
+export type MeTenantsResponse = z.infer<typeof meTenantsResponseSchema>;

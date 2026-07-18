@@ -1,8 +1,23 @@
-import { BadRequestException, Controller, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { DEFAULT_LOCALE, localeSchema } from '@it-audit/shared';
+import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ControlsService, type ControlListItem } from './controls.service';
+import { ControlsService, type ControlDetail, type ControlListItem } from './controls.service';
+
+function parseLocale(localeQuery?: string): Locale {
+  if (localeQuery === undefined) return DEFAULT_LOCALE;
+  const parsed = localeSchema.safeParse(localeQuery);
+  if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+  return parsed.data;
+}
 
 @Controller('controls')
 @UseGuards(JwtAuthGuard)
@@ -21,12 +36,24 @@ export class ControlsController {
     @Query('tenantSlug') tenantSlug?: string,
     @Query('locale') localeQuery?: string,
   ): Promise<ControlListItem[]> {
-    let locale = DEFAULT_LOCALE;
-    if (localeQuery !== undefined) {
-      const parsed = localeSchema.safeParse(localeQuery);
-      if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
-      locale = parsed.data;
-    }
-    return this.controlsService.list(tenantSlug, locale);
+    return this.controlsService.list(tenantSlug, parseLocale(localeQuery));
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Карточка контроля (T-032): поля, owner, стандарты, history, comments',
+  })
+  @ApiQuery({ name: 'tenantSlug', required: false })
+  @ApiQuery({ name: 'locale', required: false })
+  @ApiOkResponse({
+    description:
+      '{ref, domain, objective, question, guidance, owner, standards[], history[], comments[]}',
+  })
+  detail(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('tenantSlug') tenantSlug?: string,
+    @Query('locale') localeQuery?: string,
+  ): Promise<ControlDetail> {
+    return this.controlsService.detail(id, tenantSlug, parseLocale(localeQuery));
   }
 }

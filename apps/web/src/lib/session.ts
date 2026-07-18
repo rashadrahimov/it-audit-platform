@@ -1,6 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { meResponseSchema, type MeResponse } from '@it-audit/shared';
+import { meResponseSchema, meTenantsResponseSchema, type MeResponse } from '@it-audit/shared';
 
 const API_URL = process.env.API_URL ?? 'http://localhost:3001';
 export const SESSION_COOKIE = 'session';
@@ -17,6 +17,18 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
+}
+
+/** Активный тенант юзера (T-032): первый membership; полноценный переключатель — позже. */
+export async function getActiveTenantSlug(): Promise<string | null> {
+  try {
+    const res = await apiFetch('/auth/me/tenants');
+    if (!res.ok) return null;
+    const parsed = meTenantsResponseSchema.safeParse(await res.json());
+    return parsed.success ? (parsed.data[0]?.slug ?? null) : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Текущий юзер по cookie; null — не залогинен/токен истёк. */

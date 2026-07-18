@@ -25,6 +25,7 @@ import {
   type AuthTokenResponse,
   type LoginResponse,
   type MeResponse,
+  type MeTenantsResponse,
   type MfaEnableResponse,
   type MfaSetupResponse,
 } from '@it-audit/shared';
@@ -118,5 +119,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Текущий пользователь по токену' })
   me(@Req() req: AuthenticatedRequest): Promise<MeResponse> {
     return this.authService.me(req.user.sub);
+  }
+
+  @Get('me/tenants')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Тенанты юзера (T-032): контекст для UI до переключателя' })
+  meTenants(@Req() req: AuthenticatedRequest): Promise<MeTenantsResponse> {
+    return this.authService.meTenants(req.user.sub);
   }
 }

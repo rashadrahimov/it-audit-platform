@@ -36,6 +36,21 @@
     "standards": "Standards",
     "empty": "No controls yet"
   },
+  "controlDetail": {
+    "back": "All controls",
+    "global": "Global library",
+    "adapted": "Tenant adaptation",
+    "domain": "Domain",
+    "objective": "Control objective",
+    "question": "Audit question",
+    "guidance": "Guidance",
+    "owner": "Owner",
+    "standards": "Mapped standards",
+    "history": "History",
+    "historyEmpty": "No changes recorded",
+    "comments": "Comments",
+    "commentsEmpty": "No comments yet"
+  },
   "frameworks": {
     "title": "Frameworks",
     "toAccount": "Account",

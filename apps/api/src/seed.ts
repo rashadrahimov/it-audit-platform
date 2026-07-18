@@ -17,6 +17,8 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { env } from './env';
 import {
+  auditLog,
+  comment,
   control,
   controlDomain,
   controlMapping,
@@ -116,6 +118,7 @@ async function seedPostgres(): Promise<void> {
     await seedGlobalFrameworks();
     await seedGlobalControls();
     await seedDemoUsers(db, demoTenant.id);
+    await seedDemoControlAdaptation(db, demoTenant.id);
   } finally {
     await client.end().catch(() => {});
   }
@@ -443,6 +446,68 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       .onConflictDoNothing();
   }
   console.log('✓ Демо-юзеры: admin@demo.io (Admin), collaborator@demo.io (Collaborator)');
+}
+
+/**
+ * Демо-адаптация контроля (T-032, ADR-0016 override): тенантская копия GOV-01
+ * с owner'ом-админом, записью history и комментом — живой экран контроля.
+ */
+async function seedDemoControlAdaptation(db: NodePgDatabase, tenantId: string): Promise<void> {
+  const [admin] = await db.select().from(user).where(eq(user.email, 'admin@demo.io'));
+  if (!admin) throw new Error('admin@demo.io не найден — сид юзеров не прошёл?');
+  const [adminMembership] = await db
+    .select()
+    .from(membership)
+    .where(and(eq(membership.userId, admin.id), eq(membership.tenantId, tenantId)));
+  if (!adminMembership) throw new Error('membership админа не найден');
+  // глобальный оригинал читается без контекста (RLS: tenant_id NULL видen всем)
+  const [origin] = await db
+    .select()
+    .from(control)
+    .where(and(isNull(control.tenantId), eq(control.ref, 'GOV-01')));
+  if (!origin) throw new Error('Глобальный GOV-01 не найден — сид контролей не прошёл?');
+
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.tenant_id', ${tenantId}, true)`);
+    const existing = await tx
+      .select()
+      .from(control)
+      .where(and(eq(control.tenantId, tenantId), eq(control.ref, 'GOV-01')));
+    if (existing.length > 0) return;
+    const [adapted] = await tx
+      .insert(control)
+      .values({
+        tenantId,
+        originControlId: origin.id,
+        ref: origin.ref,
+        domainId: origin.domainId,
+        objectiveI18n: origin.objectiveI18n,
+        questionI18n: origin.questionI18n,
+        guidanceI18n: {
+          en: 'Group adaptation: review the policy pack against CBAR requirements as well.',
+          ru: 'Адаптация группы: сверять пакет политик также с требованиями CBAR.',
+        },
+        ownerMembershipId: adminMembership.id,
+      })
+      .returning();
+    if (!adapted) throw new Error('Адаптация GOV-01 не создалась');
+    await tx.insert(auditLog).values({
+      tenantId,
+      actorUserId: admin.id,
+      action: 'control.adapted',
+      entityType: 'control',
+      entityId: adapted.id,
+      after: { ref: adapted.ref, originControlId: origin.id },
+    });
+    await tx.insert(comment).values({
+      tenantId,
+      entityType: 'control',
+      entityId: adapted.id,
+      authorUserId: admin.id,
+      body: 'Adapted for the group: policy review must include CBAR checklist.',
+    });
+  });
+  console.log('✓ Демо-адаптация GOV-01 (owner: admin, history+comment) (idempotent)');
 }
 
 async function seedRedis(): Promise<void> {

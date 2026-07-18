@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { apiFetch, getSessionUser } from '@/lib/session';
+import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
@@ -18,9 +18,15 @@ interface ControlRow {
 export default async function ControlsPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, locale] = await Promise.all([getTranslations('controls'), getCurrentLocale()]);
+  const [t, locale, tenantSlug] = await Promise.all([
+    getTranslations('controls'),
+    getCurrentLocale(),
+    getActiveTenantSlug(),
+  ]);
 
-  const res = await apiFetch(`/controls?locale=${locale}`);
+  const query = new URLSearchParams({ locale });
+  if (tenantSlug) query.set('tenantSlug', tenantSlug);
+  const res = await apiFetch(`/controls?${query}`);
   const controls: ControlRow[] = res.ok ? await res.json() : [];
 
   return (
@@ -47,7 +53,14 @@ export default async function ControlsPage() {
           <tbody>
             {controls.map((c) => (
               <tr key={c.id} className="border-b border-border align-top last:border-0">
-                <td className="px-4 py-3 font-medium whitespace-nowrap text-foreground">{c.ref}</td>
+                <td className="px-4 py-3 font-medium whitespace-nowrap">
+                  <Link
+                    href={`/controls/${c.id}`}
+                    className="text-accent underline-offset-2 transition-colors duration-150 hover:underline"
+                  >
+                    {c.ref}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-secondary">{c.domain?.name ?? '—'}</td>
                 <td className="px-4 py-3 text-foreground">{c.objective}</td>
                 <td className="px-4 py-3">

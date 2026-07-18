@@ -1,0 +1,145 @@
+import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { getCurrentLocale } from '@/lib/locale';
+
+export const dynamic = 'force-dynamic';
+
+interface ControlDetail {
+  id: string;
+  ref: string;
+  domain: { code: string; name: string } | null;
+  objective: string;
+  question: string;
+  guidance: string | null;
+  status: string;
+  isGlobal: boolean;
+  originControlId: string | null;
+  owner: { fullName: string; email: string } | null;
+  standards: Array<{ framework: string; version: string; requirement: string }>;
+  history: Array<{ action: string; actor: string | null; at: string }>;
+  comments: Array<{ author: string; body: string; at: string }>;
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <dt className="text-xs font-medium tracking-wide text-secondary uppercase">{label}</dt>
+      <dd className="text-sm text-foreground">{children}</dd>
+    </div>
+  );
+}
+
+/** Карточка контроля (T-032, drawer-паттерн Vanta): все поля + history + comments. */
+export default async function ControlDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const user = await getSessionUser();
+  if (!user) redirect('/login');
+  const { id } = await params;
+  const [t, locale, tenantSlug] = await Promise.all([
+    getTranslations('controlDetail'),
+    getCurrentLocale(),
+    getActiveTenantSlug(),
+  ]);
+
+  const query = new URLSearchParams({ locale });
+  if (tenantSlug) query.set('tenantSlug', tenantSlug);
+  const res = await apiFetch(`/controls/${id}?${query}`);
+  if (res.status === 404 || res.status === 400) notFound();
+  if (!res.ok) throw new Error(`API /controls/${id}: ${res.status}`);
+  const control: ControlDetail = await res.json();
+
+  const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
+
+  return (
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 p-6 pt-12">
+      <div className="flex items-baseline justify-between gap-4">
+        <h1 className="text-2xl font-bold text-primary">
+          {control.ref}
+          <span className="ml-3 rounded-full bg-muted px-2.5 py-0.5 align-middle text-xs font-medium text-secondary">
+            {control.isGlobal ? t('global') : t('adapted')}
+          </span>
+        </h1>
+        <Link
+          href="/controls"
+          className="text-sm text-accent underline-offset-2 transition-colors duration-150 hover:underline"
+        >
+          {t('back')}
+        </Link>
+      </div>
+
+      <section
+        className="rounded-xl border border-border bg-white p-6 shadow-sm"
+        data-testid="control-detail"
+      >
+        <dl className="flex flex-col gap-4">
+          <Field label={t('domain')}>{control.domain?.name ?? '—'}</Field>
+          <Field label={t('objective')}>{control.objective}</Field>
+          <Field label={t('question')}>{control.question}</Field>
+          <Field label={t('guidance')}>{control.guidance ?? '—'}</Field>
+          <Field label={t('owner')}>
+            {control.owner ? `${control.owner.fullName} (${control.owner.email})` : '—'}
+          </Field>
+          <Field label={t('standards')}>
+            {control.standards.length === 0 ? (
+              '—'
+            ) : (
+              <span className="flex flex-wrap gap-1.5">
+                {control.standards.map((s) => (
+                  <span
+                    key={`${s.framework}-${s.requirement}`}
+                    className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-secondary"
+                  >
+                    {s.framework} {s.requirement}
+                  </span>
+                ))}
+              </span>
+            )}
+          </Field>
+        </dl>
+      </section>
+
+      <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-primary">{t('history')}</h2>
+        {control.history.length === 0 ? (
+          <p className="text-sm text-secondary">{t('historyEmpty')}</p>
+        ) : (
+          <ul className="flex flex-col gap-2" data-testid="control-history">
+            {control.history.map((h, i) => (
+              <li key={i} className="flex justify-between gap-4 text-sm">
+                <span className="text-foreground">
+                  {h.action}
+                  {h.actor ? ` — ${h.actor}` : ''}
+                </span>
+                <time className="whitespace-nowrap text-secondary">
+                  {dateFmt.format(new Date(h.at))}
+                </time>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-primary">{t('comments')}</h2>
+        {control.comments.length === 0 ? (
+          <p className="text-sm text-secondary">{t('commentsEmpty')}</p>
+        ) : (
+          <ul className="flex flex-col gap-3" data-testid="control-comments">
+            {control.comments.map((c, i) => (
+              <li key={i} className="flex flex-col gap-1 text-sm">
+                <div className="flex justify-between gap-4">
+                  <span className="font-medium text-foreground">{c.author}</span>
+                  <time className="whitespace-nowrap text-secondary">
+                    {dateFmt.format(new Date(c.at))}
+                  </time>
+                </div>
+                <p className="text-foreground">{c.body}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </main>
+  );
+}

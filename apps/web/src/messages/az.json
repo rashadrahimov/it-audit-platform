@@ -36,6 +36,21 @@
     "standards": "Standartlar",
     "empty": "Hələ nəzarət yoxdur"
   },
+  "controlDetail": {
+    "back": "Bütün nəzarətlər",
+    "global": "Qlobal kitabxana",
+    "adapted": "Tenant adaptasiyası",
+    "domain": "Domen",
+    "objective": "Nəzarət məqsədi",
+    "question": "Audit sualı",
+    "guidance": "Təlimat",
+    "owner": "Sahib",
+    "standards": "Standartlar",
+    "history": "Tarixçə",
+    "historyEmpty": "Dəyişiklik olmayıb",
+    "comments": "Şərhlər",
+    "commentsEmpty": "Hələ şərh yoxdur"
+  },
   "frameworks": {
     "title": "Standartlar",
     "toAccount": "Hesab",

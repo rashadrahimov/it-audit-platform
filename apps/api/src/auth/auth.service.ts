@@ -5,17 +5,18 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type {
   AuthTokenResponse,
   ChangePasswordRequest,
   LoginRequest,
   LoginResponse,
   MeResponse,
+  MeTenantsResponse,
   RegisterRequest,
 } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { tenant, user } from '../db/schema';
+import { membership, role, tenant, user } from '../db/schema';
 import { AuditLogService } from '../audit/audit-log.service';
 import { PasswordService } from './password.service';
 import { resolvePolicy, validatePassword, DEFAULT_PASSWORD_POLICY } from './password-policy';
@@ -151,6 +152,17 @@ export class AuthService {
     const [found] = await this.dbService.db.select().from(user).where(eq(user.id, userId));
     if (!found) throw new UnauthorizedException();
     return this.toMe(found);
+  }
+
+  /** Membership'ы над-тенантные (ADR-0015) — читаются без RLS-контекста. */
+  async meTenants(userId: string): Promise<MeTenantsResponse> {
+    const rows = await this.dbService.db
+      .select({ slug: tenant.slug, name: tenant.name, roleName: role.nameI18n })
+      .from(membership)
+      .innerJoin(tenant, eq(membership.tenantId, tenant.id))
+      .innerJoin(role, eq(membership.roleId, role.id))
+      .where(and(eq(membership.userId, userId), eq(membership.status, 'active')));
+    return rows.map((row) => ({ slug: row.slug, name: row.name, role: row.roleName.en }));
   }
 
   private async registerFailedAttempt(userId: string, currentCount: number): Promise<void> {
