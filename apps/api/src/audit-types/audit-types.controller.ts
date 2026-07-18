@@ -3,6 +3,9 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
   Post,
   Query,
   Req,
@@ -19,6 +22,13 @@ import { AuditTypesService } from './audit-types.service';
 const createSchema = z.object({
   code: z.string().min(1).regex(/^[a-z0-9_]+$/, 'code: только a-z0-9_'),
   nameI18n: i18nTextSchema,
+});
+
+const templateItemSchema = z.object({
+  ref: z.string().min(1),
+  objectiveI18n: i18nTextSchema,
+  questionI18n: i18nTextSchema,
+  order: z.number().int().optional(),
 });
 
 function parseLocale(localeQuery?: string): Locale {
@@ -53,6 +63,37 @@ export class AuditTypesController {
     return this.service.create(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       parsed.data,
+    );
+  }
+
+  @Post(':id/template-items')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Добавить пункт в типо-специфичный шаблон чеклиста (T-085, UNI-06)' })
+  addTemplateItem(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = templateItemSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.addTemplateItem(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Get(':id/template-items')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({ summary: 'Шаблон чеклиста типа аудита' })
+  listTemplateItems(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.listTemplateItems(req.tenantId, id);
+  }
+
+  @Post('seed-checklist/:engagementId')
+  @HttpCode(200)
+  @RequirePermission('engagement', 'edit', 'edit')
+  @ApiOperation({ summary: 'Засеять checklist engagement из шаблона его типа (UNI-06)' })
+  seedChecklist(@Req() req: TenantRequest, @Param('engagementId', ParseUUIDPipe) engagementId: string) {
+    return this.service.seedChecklist(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      engagementId,
     );
   }
 }

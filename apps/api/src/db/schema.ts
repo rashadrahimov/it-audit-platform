@@ -1193,6 +1193,26 @@ export const privacyAssessment = pgTable(
   (table) => [index('privacy_assessment_tenant_idx').on(table.tenantId)],
 );
 
+/** Типо-специфичный шаблон пункта чеклиста (T-085, UNI-06): заготовка per audit_type. */
+export const auditTypeTemplateItem = pgTable(
+  'audit_type_template_item',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    auditTypeId: uuid('audit_type_id')
+      .notNull()
+      .references(() => auditType.id),
+    ref: text('ref').notNull(),
+    objectiveI18n: jsonb('objective_i18n').$type<I18nText>().notNull(),
+    questionI18n: jsonb('question_i18n').$type<I18nText>().notNull(),
+    order: integer('order').notNull().default(0),
+    ...timestamps,
+  },
+  (table) => [index('audit_type_template_item_tenant_idx').on(table.tenantId, table.auditTypeId)],
+);
+
 /** Настраиваемый чарт-дашборд (T-072, B9): widgets jsonb — список {metric, chartType, title}. */
 export const dashboard = pgTable(
   'dashboard',
