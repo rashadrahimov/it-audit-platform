@@ -3,6 +3,26 @@
     "title": "IT Audit Platform",
     "skeleton": "Monorepo skeleton (T-005). Features arrive in M0/M1.",
     "apiOk": "{service} v{version} — {status}",
-    "apiDown": "API unavailable"
+    "apiDown": "API unavailable",
+    "signIn": "Sign in"
+  },
+  "auth": {
+    "subtitle": "Sign in to your workspace",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "badCredentials": "Wrong email or password, or the account is locked",
+    "apiUnreachable": "Server unavailable — try again later",
+    "mfaHint": "Enter the 6-digit code from your authenticator app or a recovery code",
+    "mfaCode": "One-time code",
+    "verify": "Verify",
+    "verifying": "Verifying…",
+    "badCode": "Invalid or expired code"
+  },
+  "account": {
+    "title": "Account",
+    "name": "Name",
+    "signOut": "Sign out"
   }
 }

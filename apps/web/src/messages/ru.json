@@ -3,6 +3,26 @@
     "title": "IT Audit Platform",
     "skeleton": "Скелет монорепо (T-005). Функционал появится в M0/M1.",
     "apiOk": "{service} v{version} — {status}",
-    "apiDown": "API недоступен"
+    "apiDown": "API недоступен",
+    "signIn": "Войти"
+  },
+  "auth": {
+    "subtitle": "Вход в рабочее пространство",
+    "email": "Email",
+    "password": "Пароль",
+    "signIn": "Войти",
+    "signingIn": "Входим…",
+    "badCredentials": "Неверный email или пароль, либо аккаунт заблокирован",
+    "apiUnreachable": "Сервер недоступен — попробуйте позже",
+    "mfaHint": "Введите 6-значный код из приложения-аутентификатора или recovery-код",
+    "mfaCode": "Одноразовый код",
+    "verify": "Подтвердить",
+    "verifying": "Проверяем…",
+    "badCode": "Код неверен или истёк"
+  },
+  "account": {
+    "title": "Аккаунт",
+    "name": "Имя",
+    "signOut": "Выйти"
   }
 }

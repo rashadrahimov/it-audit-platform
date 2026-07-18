@@ -3,6 +3,26 @@
     "title": "IT Audit Platform",
     "skeleton": "Monorepo skeleti (T-005). Funksionallıq M0/M1-də gələcək.",
     "apiOk": "{service} v{version} — {status}",
-    "apiDown": "API əlçatan deyil"
+    "apiDown": "API əlçatan deyil",
+    "signIn": "Daxil ol"
+  },
+  "auth": {
+    "subtitle": "İş sahənizə daxil olun",
+    "email": "Email",
+    "password": "Şifrə",
+    "signIn": "Daxil ol",
+    "signingIn": "Daxil oluruq…",
+    "badCredentials": "Email və ya şifrə yanlışdır, yaxud hesab kilidlənib",
+    "apiUnreachable": "Server əlçatan deyil — bir azdan yenidən cəhd edin",
+    "mfaHint": "Autentifikator tətbiqindən 6 rəqəmli kodu və ya recovery-kodu daxil edin",
+    "mfaCode": "Birdəfəlik kod",
+    "verify": "Təsdiqlə",
+    "verifying": "Yoxlanılır…",
+    "badCode": "Kod yanlışdır və ya vaxtı keçib"
+  },
+  "account": {
+    "title": "Hesab",
+    "name": "Ad",
+    "signOut": "Çıxış"
   }
 }

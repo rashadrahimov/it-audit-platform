@@ -1,1 +1,28 @@
 @import 'tailwindcss';
+
+/*
+ * Дизайн-токены (design-system/it-audit-platform/MASTER.md, T-047):
+ * стиль Trust & Authority — навигационный navy + синий CTA, WCAG AAA.
+ * Tailwind 4: @theme делает из токенов утилиты (bg-primary, text-accent…).
+ */
+@theme {
+  --color-primary: #0f172a;
+  --color-on-primary: #ffffff;
+  --color-secondary: #334155;
+  --color-accent: #0369a1;
+  --color-background: #f8fafc;
+  --color-foreground: #020617;
+  --color-muted: #e8ecf1;
+  --color-border: #e2e8f0;
+  --color-destructive: #dc2626;
+  --color-ring: #0f172a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,97 @@
+'use server';
+
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import {
+  authTokenResponseSchema,
+  loginResponseSchema,
+  mfaChallengeResponseSchema,
+} from '@it-audit/shared';
+import { SESSION_COOKIE } from '@/lib/session';
+
+const API_URL = process.env.API_URL ?? 'http://localhost:3001';
+
+/** Состояние формы логина: ошибка и/или активный MFA-челлендж (T-047). */
+export interface LoginFormState {
+  error?: string;
+  mfaToken?: string;
+}
+
+async function setSessionCookie(token: string, maxAgeSeconds: number): Promise<void> {
+  const store = await cookies();
+  store.set(SESSION_COOKIE, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: maxAgeSeconds,
+  });
+}
+
+export async function loginAction(
+  _prev: LoginFormState,
+  formData: FormData,
+): Promise<LoginFormState> {
+  const t = await getTranslations('auth');
+  const email = String(formData.get('email') ?? '');
+  const password = String(formData.get('password') ?? '');
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      cache: 'no-store',
+    });
+  } catch {
+    return { error: t('apiUnreachable') };
+  }
+  if (!response.ok) return { error: t('badCredentials') };
+
+  const parsed = loginResponseSchema.safeParse(await response.json());
+  if (!parsed.success) return { error: t('apiUnreachable') };
+
+  const mfa = mfaChallengeResponseSchema.safeParse(parsed.data);
+  if (mfa.success) return { mfaToken: mfa.data.mfaToken };
+
+  const token = authTokenResponseSchema.parse(parsed.data);
+  await setSessionCookie(token.accessToken, token.expiresInSeconds);
+  redirect('/account');
+}
+
+export async function mfaVerifyAction(
+  prev: LoginFormState,
+  formData: FormData,
+): Promise<LoginFormState> {
+  const t = await getTranslations('auth');
+  const mfaToken = String(formData.get('mfaToken') ?? '');
+  const code = String(formData.get('code') ?? '');
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}/auth/mfa/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mfaToken, code }),
+      cache: 'no-store',
+    });
+  } catch {
+    return { error: t('apiUnreachable'), mfaToken };
+  }
+  // истёкший челлендж (5 мин) — назад на первый шаг
+  if (response.status === 401 && !code) return { error: t('badCode'), mfaToken };
+  if (!response.ok) return { error: t('badCode'), mfaToken };
+
+  const parsed = authTokenResponseSchema.safeParse(await response.json());
+  if (!parsed.success) return { error: t('apiUnreachable'), mfaToken };
+  await setSessionCookie(parsed.data.accessToken, parsed.data.expiresInSeconds);
+  redirect('/account');
+}
+
+export async function logoutAction(): Promise<void> {
+  const store = await cookies();
+  store.delete(SESSION_COOKIE);
+  redirect('/login');
+}
