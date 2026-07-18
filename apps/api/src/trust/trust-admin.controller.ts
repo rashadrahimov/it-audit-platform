@@ -3,6 +3,9 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
   Post,
   Req,
   UseGuards,
@@ -63,5 +66,26 @@ export class TrustAdminController {
   @ApiOperation({ summary: 'Админ-вид Trust Center (все items)' })
   adminGet(@Req() req: TenantRequest) {
     return this.service.adminGet(req.tenantId);
+  }
+
+  @Get('access-requests')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'Запросы доступа к Trust Center (T-081)' })
+  accessRequests(@Req() req: TenantRequest) {
+    return this.service.listAccessRequests(req.tenantId);
+  }
+
+  @Post('access-requests/:id/decision')
+  @HttpCode(200)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Одобрить/отклонить запрос доступа (T-081)' })
+  decide(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = z.object({ to: z.enum(['approved', 'denied']) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.decideAccessRequest(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.to,
+    );
   }
 }

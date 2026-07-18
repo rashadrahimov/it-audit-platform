@@ -1021,6 +1021,23 @@ export const trustCenterItem = pgTable(
   (table) => [index('trust_center_item_tc_idx').on(table.trustCenterId)],
 );
 
+/** Публичный запрос доступа к деталям Trust Center (T-081). */
+export const trustAccessRequest = pgTable(
+  'trust_access_request',
+  {
+    id: id(),
+    trustCenterId: uuid('trust_center_id')
+      .notNull()
+      .references(() => trustCenter.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    company: text('company'),
+    message: text('message'),
+    status: text('status').notNull().default('pending'),
+    ...timestamps,
+  },
+  (table) => [index('trust_access_request_tc_idx').on(table.trustCenterId)],
+);
+
 /** Контрактное обязательство (T-077, EP-MISC): реестр commitments + SLA на due_date. */
 export const commitment = pgTable(
   'commitment',
