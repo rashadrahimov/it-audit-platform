@@ -384,7 +384,8 @@
       "ok": "OK",
       "due_soon": "Скоро срок",
       "overdue": "Просрочено"
-    }
+    },
+    "action": "Действие"
   },
   "securityAlerts": {
     "title": "Оповещения ИБ",
@@ -402,7 +403,8 @@
       "new": "Новое",
       "triaged": "Триаж",
       "closed": "Закрыто"
-    }
+    },
+    "triage": "Триаж"
   },
   "commitments": {
     "title": "Обязательства",

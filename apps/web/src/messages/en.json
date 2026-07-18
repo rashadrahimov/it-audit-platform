@@ -384,7 +384,8 @@
       "ok": "OK",
       "due_soon": "Due soon",
       "overdue": "Overdue"
-    }
+    },
+    "action": "Action"
   },
   "securityAlerts": {
     "title": "Security Alerts",
@@ -402,7 +403,8 @@
       "new": "New",
       "triaged": "Triaged",
       "closed": "Closed"
-    }
+    },
+    "triage": "Triage"
   },
   "commitments": {
     "title": "Commitments",

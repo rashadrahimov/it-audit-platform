@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** UI-трек: 15 read-only экранов (T-U01…U15) + начата **интерактивность** (T-U16): `/commitments` — форма создания + смена статуса через server actions (эталон-паттерн). Backend готов (~63 модуля, миграции 0062).
-- **Следующий шаг:** Размножить интерактивность на экраны (security-alerts triage, vulnerabilities transition, vendors/devices create) по эталону commitments (server action + apiFetch POST + revalidatePath). Затем drill-down карточки + i18n-полнота. «все сделай» — Рашад.
+- **Текущая задача:** UI-трек: 15 read-only экранов + **интерактивность**: T-U16 commitments (create+status), T-U17 security-alerts (triage new→triaged→closed) + vulnerabilities (transition open→remediating→resolved) через server actions. Backend готов (~63 модуля, миграции 0062).
+- **Следующий шаг:** Продолжить интерактивность (vendors lifecycle, devices create/checks, working-papers transition) + drill-down карточки + i18n-полнота. «все сделай» — Рашад.
 - **Последнее готово:** **Марафон-4 18.07.2026 — 43 задачи (T-060…103): весь M2 + весь M3 + RFP-эпики (AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP/MSG/REPWIZ/SCHED) + Добавки (PLAN/GROUP), EP-I18N backend-ядро. Миграции до 0061. Стоп-условие достигнуто.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._

@@ -384,7 +384,8 @@
       "ok": "OK",
       "due_soon": "Vaxtı yaxınlaşır",
       "overdue": "Gecikib"
-    }
+    },
+    "action": "Əməliyyat"
   },
   "securityAlerts": {
     "title": "Təhlükəsizlik Bildirişləri",
@@ -402,7 +403,8 @@
       "new": "Yeni",
       "triaged": "Təsnif",
       "closed": "Bağlı"
-    }
+    },
+    "triage": "Təsnif"
   },
   "commitments": {
     "title": "Öhdəliklər",

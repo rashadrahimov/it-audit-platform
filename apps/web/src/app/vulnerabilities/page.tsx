@@ -2,12 +2,18 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { transitionVulnAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
 type Severity = 'low' | 'medium' | 'high' | 'critical';
 type Status = 'open' | 'remediating' | 'resolved';
 type Sla = 'ok' | 'due_soon' | 'overdue';
+const NEXT: Record<Status, Status[]> = {
+  open: ['remediating', 'resolved'],
+  remediating: ['resolved'],
+  resolved: [],
+};
 interface Vulnerability {
   id: string;
   title: string;
@@ -69,6 +75,7 @@ export default async function VulnerabilitiesPage() {
                 <th className="px-4 py-3 font-medium">{t('severity')}</th>
                 <th className="px-4 py-3 font-medium">—</th>
                 <th className="px-4 py-3 font-medium">{t('sla')}</th>
+                <th className="px-4 py-3 font-medium">{t('action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -92,6 +99,24 @@ export default async function VulnerabilitiesPage() {
                   <td className="px-4 py-3 text-secondary">{t(`st.${v.status}`)}</td>
                   <td className={`px-4 py-3 text-xs ${SLA_TONE[v.slaStatus]}`}>
                     {t(`sla_s.${v.slaStatus}`)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {NEXT[v.status].length > 0 && (
+                      <form action={transitionVulnAction} className="flex gap-1">
+                        <input type="hidden" name="id" value={v.id} />
+                        {NEXT[v.status].map((to) => (
+                          <button
+                            key={to}
+                            type="submit"
+                            name="to"
+                            value={to}
+                            className="rounded-md border border-border px-2 py-1 text-xs text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                          >
+                            {t(`st.${to}`)}
+                          </button>
+                        ))}
+                      </form>
+                    )}
                   </td>
                 </tr>
               ))}
