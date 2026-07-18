@@ -39,7 +39,8 @@
     "dashboard": "İdarə panelləri",
     "connectors": "Konnektorlar",
     "policies": "Siyasətlər",
-    "universe": "Audit Kainatı"
+    "universe": "Audit Kainatı",
+    "riskHeatmap": "Risk İstilik Xəritəsi"
   },
   "engagements": {
     "title": "Auditlər",
@@ -224,6 +225,20 @@
       "location": "Məkan",
       "activity": "Fəaliyyət",
       "function": "Funksiya"
+    }
+  },
+  "riskHeatmap": {
+    "title": "Risk İstilik Xəritəsi",
+    "toAccount": "Hesab",
+    "inherent": "Xas",
+    "residual": "Qalıq",
+    "total": "ümumi risk",
+    "empty": "Hələ risk yoxdur",
+    "cls": {
+      "low": "Aşağı",
+      "medium": "Orta",
+      "high": "Yüksək",
+      "critical": "Kritik"
     }
   }
 }

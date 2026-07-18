@@ -39,7 +39,8 @@
     "dashboard": "Dashboards",
     "connectors": "Connectors",
     "policies": "Policies",
-    "universe": "Audit Universe"
+    "universe": "Audit Universe",
+    "riskHeatmap": "Risk Heat Map"
   },
   "engagements": {
     "title": "Engagements",
@@ -224,6 +225,20 @@
       "location": "Location",
       "activity": "Activity",
       "function": "Function"
+    }
+  },
+  "riskHeatmap": {
+    "title": "Risk Heat Map",
+    "toAccount": "Account",
+    "inherent": "Inherent",
+    "residual": "Residual",
+    "total": "total risks",
+    "empty": "No risks yet",
+    "cls": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
     }
   }
 }
