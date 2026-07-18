@@ -24,7 +24,17 @@
     "title": "Аккаунт",
     "name": "Имя",
     "signOut": "Выйти",
-    "frameworks": "Библиотека стандартов"
+    "frameworks": "Библиотека стандартов",
+    "controls": "Библиотека контролей"
+  },
+  "controls": {
+    "title": "Контроли",
+    "toAccount": "Аккаунт",
+    "ref": "Ссылка",
+    "domain": "Домен",
+    "objective": "Цель",
+    "standards": "Стандарты",
+    "empty": "Контролей пока нет"
   },
   "frameworks": {
     "title": "Стандарты",

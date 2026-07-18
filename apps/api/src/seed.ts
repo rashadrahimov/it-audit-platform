@@ -17,6 +17,9 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { env } from './env';
 import {
+  control,
+  controlDomain,
+  controlMapping,
   framework,
   frameworkRequirement,
   license,
@@ -29,6 +32,7 @@ import {
   user,
 } from './db/schema';
 import { PasswordService } from './auth/password.service';
+import { CONTROL_DOMAINS, GLOBAL_CONTROLS } from './seed-data/global-controls';
 
 const DEMO_OBJECT_KEY = 'demo/welcome.txt';
 const DEMO_TENANT_SLUG = 'demo';
@@ -110,6 +114,7 @@ async function seedPostgres(): Promise<void> {
     console.log('✓ Роль «Демо-аудиторы» с матрицей (edit: engagement/finding, view: остальное)');
     await seedPresetRoles(catalog);
     await seedGlobalFrameworks();
+    await seedGlobalControls();
     await seedDemoUsers(db, demoTenant.id);
   } finally {
     await client.end().catch(() => {});
@@ -303,6 +308,98 @@ async function seedGlobalFrameworks(): Promise<void> {
       );
     }
     console.log(`✓ Глобальная библиотека фреймворков: ${GLOBAL_FRAMEWORKS.length} (idempotent)`);
+  } finally {
+    await owner.end().catch(() => {});
+  }
+}
+
+/** Демонстрационные маппинги Control↔Requirement (полный мультифреймворк-маппинг — EP-FWK). */
+const DEMO_CONTROL_MAPPINGS: Array<{ control: string; framework: string; requirement: string }> = [
+  { control: 'GOV-01', framework: 'ISO/IEC 27001', requirement: 'A.5.1' },
+  { control: 'GOV-01', framework: 'COBIT', requirement: 'EDM01' },
+  { control: 'GOV-02', framework: 'ISO/IEC 27001', requirement: 'A.5.2' },
+  { control: 'GOV-02', framework: 'NIST CSF', requirement: 'GV.OC' },
+  { control: 'EP-01', framework: 'ISO/IEC 27001', requirement: 'A.8.1' },
+  { control: 'AM-01', framework: 'NIST CSF', requirement: 'ID.AM' },
+];
+
+/** Библиотека контролей из шаблона клиента (T-031) — под owner, как и фреймворки. */
+async function seedGlobalControls(): Promise<void> {
+  const owner = new Client({
+    connectionString: env.databaseUrlOwner,
+    connectionTimeoutMillis: 5000,
+  });
+  try {
+    await owner.connect();
+    const db = drizzle(owner);
+
+    const domainIds = new Map<string, string>();
+    for (const d of CONTROL_DOMAINS) {
+      const [existing] = await db
+        .select()
+        .from(controlDomain)
+        .where(and(isNull(controlDomain.tenantId), eq(controlDomain.code, d.code)));
+      if (existing) {
+        domainIds.set(d.code, existing.id);
+        continue;
+      }
+      const [created] = await db
+        .insert(controlDomain)
+        .values({ tenantId: null, code: d.code, nameI18n: d.name })
+        .returning();
+      if (!created) throw new Error(`Домен «${d.code}» не создался`);
+      domainIds.set(d.code, created.id);
+    }
+
+    const controlIds = new Map<string, string>();
+    for (const c of GLOBAL_CONTROLS) {
+      const [existing] = await db
+        .select()
+        .from(control)
+        .where(and(isNull(control.tenantId), eq(control.ref, c.ref)));
+      if (existing) {
+        controlIds.set(c.ref, existing.id);
+        continue;
+      }
+      const domainId = domainIds.get(c.domain);
+      if (!domainId) throw new Error(`Домен «${c.domain}» для контроля ${c.ref} не найден`);
+      const [created] = await db
+        .insert(control)
+        .values({
+          tenantId: null,
+          ref: c.ref,
+          domainId,
+          objectiveI18n: c.objective,
+          questionI18n: c.question,
+        })
+        .returning();
+      if (!created) throw new Error(`Контроль «${c.ref}» не создался`);
+      controlIds.set(c.ref, created.id);
+    }
+
+    for (const m of DEMO_CONTROL_MAPPINGS) {
+      const controlId = controlIds.get(m.control);
+      if (!controlId) continue;
+      const [req] = await db
+        .select({ id: frameworkRequirement.id })
+        .from(frameworkRequirement)
+        .innerJoin(framework, eq(frameworkRequirement.frameworkId, framework.id))
+        .where(
+          and(
+            isNull(framework.tenantId),
+            sql`${framework.nameI18n}->>'en' = ${m.framework}`,
+            eq(frameworkRequirement.ref, m.requirement),
+          ),
+        );
+      if (!req) continue;
+      await db
+        .insert(controlMapping)
+        .values({ controlId, requirementId: req.id })
+        .onConflictDoNothing();
+    }
+    console.log(
+      `✓ Библиотека контролей: ${CONTROL_DOMAINS.length} доменов, ${GLOBAL_CONTROLS.length} контролей, маппинги (idempotent)`,
+    );
   } finally {
     await owner.end().catch(() => {});
   }

@@ -258,6 +258,65 @@ export const frameworkRequirement = pgTable(
   (table) => [uniqueIndex('framework_requirement_fw_ref_idx').on(table.frameworkId, table.ref)],
 );
 
+/** Таксономия контролей (16 доменов чеклиста клиента: GOV/AC/CM/…). tenant_id NULL = глобальная. */
+export const controlDomain = pgTable(
+  'control_domain',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id').references(() => tenant.id),
+    code: text('code').notNull(),
+    nameI18n: jsonb('name_i18n').$type<I18nText>().notNull(),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('control_domain_tenant_code_idx').on(table.tenantId, table.code)],
+);
+
+/**
+ * Control (T-031, ADR-0016 global+override): 4 поля чеклиста клиента
+ * (ref/domain/objective/question), guidance и custom — задел GEN-07.
+ * owner подключится к membership в T-032.
+ */
+export const control = pgTable(
+  'control',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id').references(() => tenant.id),
+    originControlId: uuid('origin_control_id').references((): AnyPgColumn => control.id),
+    ref: text('ref').notNull(),
+    domainId: uuid('domain_id')
+      .notNull()
+      .references(() => controlDomain.id),
+    objectiveI18n: jsonb('objective_i18n').$type<I18nText>().notNull(),
+    questionI18n: jsonb('question_i18n').$type<I18nText>().notNull(),
+    guidanceI18n: jsonb('guidance_i18n').$type<I18nText>(),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    status: text('status').notNull().default('active'),
+    custom: jsonb('custom').notNull().default({}),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('control_tenant_ref_idx').on(table.tenantId, table.ref),
+    index('control_domain_idx').on(table.domainId),
+  ],
+);
+
+/** Control↔Requirement M:N — мультифреймворк-маппинг (Vanta-паттерн, ADR-0004). */
+export const controlMapping = pgTable(
+  'control_mapping',
+  {
+    id: id(),
+    controlId: uuid('control_id')
+      .notNull()
+      .references(() => control.id, { onDelete: 'cascade' }),
+    requirementId: uuid('requirement_id')
+      .notNull()
+      .references(() => frameworkRequirement.id, { onDelete: 'cascade' }),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('control_mapping_pair_idx').on(table.controlId, table.requirementId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

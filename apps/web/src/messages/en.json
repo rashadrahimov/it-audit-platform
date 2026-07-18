@@ -24,7 +24,17 @@
     "title": "Account",
     "name": "Name",
     "signOut": "Sign out",
-    "frameworks": "Frameworks library"
+    "frameworks": "Frameworks library",
+    "controls": "Controls library"
+  },
+  "controls": {
+    "title": "Controls",
+    "toAccount": "Account",
+    "ref": "Ref",
+    "domain": "Domain",
+    "objective": "Objective",
+    "standards": "Standards",
+    "empty": "No controls yet"
   },
   "frameworks": {
     "title": "Frameworks",

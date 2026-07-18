@@ -24,7 +24,17 @@
     "title": "Hesab",
     "name": "Ad",
     "signOut": "Çıxış",
-    "frameworks": "Standartlar kitabxanası"
+    "frameworks": "Standartlar kitabxanası",
+    "controls": "Nəzarətlər kitabxanası"
+  },
+  "controls": {
+    "title": "Nəzarətlər",
+    "toAccount": "Hesab",
+    "ref": "İstinad",
+    "domain": "Domen",
+    "objective": "Məqsəd",
+    "standards": "Standartlar",
+    "empty": "Hələ nəzarət yoxdur"
   },
   "frameworks": {
     "title": "Standartlar",
