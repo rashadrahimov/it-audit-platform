@@ -65,7 +65,8 @@
     "time": "Учёт времени",
     "kpi": "KPI контролей",
     "auditPrograms": "Программы аудита",
-    "knowledgeBase": "База знаний"
+    "knowledgeBase": "База знаний",
+    "questionnaires": "Опросники"
   },
   "engagements": {
     "title": "Аудиты",
@@ -713,5 +714,27 @@
     "answerPh": "Ответ",
     "add": "Добавить",
     "empty": "Записей не найдено"
+  },
+  "questionnaires": {
+    "title": "Опросники",
+    "toAccount": "В аккаунт",
+    "toList": "К списку",
+    "titlePh": "Название опросника",
+    "source": "Источник",
+    "add": "Создать",
+    "empty": "Опросников пока нет",
+    "st": {
+      "draft": "Черновик",
+      "submitted": "Отправлен"
+    },
+    "fromKb": "из базы знаний",
+    "answerPh": "Ваш ответ",
+    "reply": "Ответить",
+    "noAnswer": "Нет ответа",
+    "noQuestions": "Вопросов пока нет",
+    "questionPh": "Новый вопрос",
+    "addQuestion": "Добавить вопрос",
+    "submit": "Отправить",
+    "submitHint": "Сначала ответьте на все вопросы"
   }
 }

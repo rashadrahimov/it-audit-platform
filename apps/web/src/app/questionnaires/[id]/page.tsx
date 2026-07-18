@@ -1,0 +1,135 @@
+import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { addQuestionAction, answerAction, submitQuestionnaireAction } from './actions';
+
+export const dynamic = 'force-dynamic';
+
+interface Answer {
+  id: string;
+  question: string;
+  answer: string | null;
+  status: string;
+  reusedFromKb: boolean;
+}
+interface QuestionnaireDetail {
+  id: string;
+  title: string;
+  source: string | null;
+  status: 'draft' | 'submitted';
+  answers: Answer[];
+}
+
+const inputCls =
+  'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
+
+/** Опросник — детальная (T-083): ответы, добавить вопрос, submit. */
+export default async function QuestionnaireDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const user = await getSessionUser();
+  if (!user) redirect('/login');
+  const [t, tenantSlug, { id }] = await Promise.all([
+    getTranslations('questionnaires'),
+    getActiveTenantSlug(),
+    params,
+  ]);
+  const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
+
+  const res = await apiFetch(`/questionnaires/${id}`, { headers });
+  if (!res.ok) notFound();
+  const q: QuestionnaireDetail = await res.json();
+  const allAnswered = q.answers.length > 0 && q.answers.every((a) => a.answer);
+  const isDraft = q.status === 'draft';
+
+  return (
+    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
+      <div className="flex items-baseline justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold text-primary">{q.title}</h1>
+          {q.source && <span className="text-sm text-secondary">{q.source}</span>}
+        </div>
+        <Link
+          href="/questionnaires"
+          className="text-sm text-accent underline-offset-2 transition-colors duration-150 hover:underline"
+        >
+          {t('toList')}
+        </Link>
+      </div>
+
+      <span
+        className={`self-start rounded-full px-2.5 py-0.5 text-xs font-medium ${
+          isDraft ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+        }`}
+      >
+        {t(`st.${q.status}`)}
+      </span>
+
+      {/* Ответы */}
+      <ul className="flex flex-col gap-3" data-testid="answers-list">
+        {q.answers.map((a) => (
+          <li key={a.id} className="flex flex-col gap-2 rounded-xl border border-border bg-white p-4 shadow-sm">
+            <span className="flex items-center gap-2">
+              <span className="font-medium text-foreground">{a.question}</span>
+              {a.reusedFromKb && (
+                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">{t('fromKb')}</span>
+              )}
+            </span>
+            {a.answer ? (
+              <p className="text-sm text-secondary">{a.answer}</p>
+            ) : isDraft ? (
+              <form action={answerAction} className="flex flex-wrap items-end gap-2">
+                <input type="hidden" name="id" value={q.id} />
+                <input type="hidden" name="answerId" value={a.id} />
+                <input name="answer" required placeholder={t('answerPh')} className={`flex-1 ${inputCls}`} />
+                <button
+                  type="submit"
+                  className="rounded-md border border-border px-3 py-2 text-sm text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  {t('reply')}
+                </button>
+              </form>
+            ) : (
+              <p className="text-sm text-secondary italic">{t('noAnswer')}</p>
+            )}
+          </li>
+        ))}
+        {q.answers.length === 0 && (
+          <li className="rounded-xl border border-border bg-white p-6 text-center text-secondary shadow-sm">{t('noQuestions')}</li>
+        )}
+      </ul>
+
+      {isDraft && (
+        <div className="flex flex-col gap-4">
+          {/* Добавить вопрос */}
+          <form action={addQuestionAction} data-testid="question-add" className="flex flex-wrap items-end gap-2">
+            <input type="hidden" name="id" value={q.id} />
+            <input name="question" required placeholder={t('questionPh')} className={`flex-1 ${inputCls}`} />
+            <button
+              type="submit"
+              className="rounded-md border border-border px-3 py-2 text-sm text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t('addQuestion')}
+            </button>
+          </form>
+
+          {/* Submit */}
+          <form action={submitQuestionnaireAction} data-testid="questionnaire-submit">
+            <input type="hidden" name="id" value={q.id} />
+            <button
+              type="submit"
+              disabled={!allAnswered}
+              className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {t('submit')}
+            </button>
+            {!allAnswered && <span className="ml-2 text-xs text-secondary">{t('submitHint')}</span>}
+          </form>
+        </div>
+      )}
+    </main>
+  );
+}

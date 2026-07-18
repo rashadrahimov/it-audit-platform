@@ -65,7 +65,8 @@
     "time": "Time tracking",
     "kpi": "Control KPIs",
     "auditPrograms": "Audit programs",
-    "knowledgeBase": "Knowledge base"
+    "knowledgeBase": "Knowledge base",
+    "questionnaires": "Questionnaires"
   },
   "engagements": {
     "title": "Engagements",
@@ -713,5 +714,27 @@
     "answerPh": "Answer",
     "add": "Add",
     "empty": "No entries found"
+  },
+  "questionnaires": {
+    "title": "Questionnaires",
+    "toAccount": "To account",
+    "toList": "To list",
+    "titlePh": "Questionnaire title",
+    "source": "Source",
+    "add": "Create",
+    "empty": "No questionnaires yet",
+    "st": {
+      "draft": "Draft",
+      "submitted": "Submitted"
+    },
+    "fromKb": "from KB",
+    "answerPh": "Your answer",
+    "reply": "Answer",
+    "noAnswer": "Not answered",
+    "noQuestions": "No questions yet",
+    "questionPh": "New question",
+    "addQuestion": "Add question",
+    "submit": "Submit",
+    "submitHint": "Answer all questions first"
   }
 }

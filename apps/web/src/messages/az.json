@@ -65,7 +65,8 @@
     "time": "Vaxt uçotu",
     "kpi": "Kontrol KPI-ları",
     "auditPrograms": "Audit proqramları",
-    "knowledgeBase": "Bilik bazası"
+    "knowledgeBase": "Bilik bazası",
+    "questionnaires": "Sorğular"
   },
   "engagements": {
     "title": "Auditlər",
@@ -713,5 +714,27 @@
     "answerPh": "Cavab",
     "add": "Əlavə et",
     "empty": "Qeyd tapılmadı"
+  },
+  "questionnaires": {
+    "title": "Sorğular",
+    "toAccount": "Hesaba",
+    "toList": "Siyahıya",
+    "titlePh": "Sorğu adı",
+    "source": "Mənbə",
+    "add": "Yarat",
+    "empty": "Hələ sorğu yoxdur",
+    "st": {
+      "draft": "Qaralama",
+      "submitted": "Göndərilib"
+    },
+    "fromKb": "bilik bazasından",
+    "answerPh": "Cavabınız",
+    "reply": "Cavabla",
+    "noAnswer": "Cavab yoxdur",
+    "noQuestions": "Hələ sual yoxdur",
+    "questionPh": "Yeni sual",
+    "addQuestion": "Sual əlavə et",
+    "submit": "Göndər",
+    "submitHint": "Əvvəlcə bütün suallara cavab verin"
   }
 }
