@@ -35,7 +35,8 @@
       "create_engagement": "Create the first engagement",
       "build_checklist": "Build the checklist",
       "collect_responses": "Collect the first responses"
-    }
+    },
+    "dashboard": "Dashboards"
   },
   "engagements": {
     "title": "Engagements",
@@ -160,5 +161,22 @@
       "draft": "Draft",
       "deprecated": "Deprecated"
     }
+  },
+  "dashboard": {
+    "title": "Dashboards",
+    "toAccount": "Account",
+    "noAccess": "No group data available",
+    "openFindings": "Open findings",
+    "totalFindings": "Total findings",
+    "engagements": "Engagements",
+    "subsidiaries": "Subsidiaries",
+    "bySubsidiary": "By subsidiary",
+    "byDepartment": "By department",
+    "noDepartments": "No departments yet",
+    "name": "Name",
+    "level": "Level",
+    "levelGroup": "Group",
+    "levelSubsidiary": "Subsidiary",
+    "open": "Open"
   }
 }

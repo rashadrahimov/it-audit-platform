@@ -35,7 +35,8 @@
       "create_engagement": "Создайте первый аудит",
       "build_checklist": "Соберите чеклист",
       "collect_responses": "Соберите первые ответы"
-    }
+    },
+    "dashboard": "Дашборды"
   },
   "engagements": {
     "title": "Аудиты",
@@ -160,5 +161,22 @@
       "draft": "Черновик",
       "deprecated": "Устарел"
     }
+  },
+  "dashboard": {
+    "title": "Дашборды",
+    "toAccount": "Аккаунт",
+    "noAccess": "Нет данных по группе",
+    "openFindings": "Открытые findings",
+    "totalFindings": "Всего findings",
+    "engagements": "Аудиты",
+    "subsidiaries": "Дочки",
+    "bySubsidiary": "По дочкам",
+    "byDepartment": "По департаментам",
+    "noDepartments": "Департаментов пока нет",
+    "name": "Название",
+    "level": "Уровень",
+    "levelGroup": "Группа",
+    "levelSubsidiary": "Дочка",
+    "open": "Открыто"
   }
 }

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { and, eq, isNull } from 'drizzle-orm';
 import { resolveLocalized, type Locale } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { engagement, finding, membership, subsidiary } from '../db/schema';
+import { department, engagement, finding, membership, subsidiary } from '../db/schema';
 
 interface Counts {
   engagementsByState: Record<string, number>;
@@ -52,17 +52,33 @@ export class GroupService {
       const findings = await tx
         .select({
           engagementId: finding.engagementId,
+          ownerMembershipId: finding.ownerMembershipId,
           riskRating: finding.riskRating,
           status: finding.status,
         })
         .from(finding)
         .where(isNull(finding.deletedAt));
-      return { subsidiaries, engagements, findings };
+      const departments = await tx.select().from(department);
+      return { subsidiaries, engagements, findings, departments };
     });
+    // membership над-тенантная — резолв департаментов владельцев вне RLS
+    const memberships = await this.dbService.db
+      .select({ id: membership.id, departmentId: membership.departmentId })
+      .from(membership)
+      .where(eq(membership.tenantId, tenantId));
+    const departmentByMembership = new Map(memberships.map((m) => [m.id, m.departmentId]));
 
     const visible = data.subsidiaries.filter((s) => scope === null || scope.includes(s.id));
     const visibleIds = new Set(visible.map((s) => s.id));
     const subsidiaryByEngagement = new Map(data.engagements.map((e) => [e.id, e.subsidiaryId]));
+
+    // департамент виден: группа-уровень (subsidiaryId NULL) — при полном скоупе; иначе — если его дочка в скоупе
+    const visibleDepartments = data.departments.filter((d) =>
+      d.subsidiaryId === null ? scope === null : visibleIds.has(d.subsidiaryId),
+    );
+    const byDepartment = new Map<string, Counts>(
+      visibleDepartments.map((d) => [d.id, emptyCounts()]),
+    );
 
     const bySubsidiary = new Map<string, Counts>(visible.map((s) => [s.id, emptyCounts()]));
     const group = emptyCounts();
@@ -88,6 +104,18 @@ export class GroupService {
         bump(counts.findingsByStatus, f.status);
         if (f.status !== 'closed') counts.openFindings += 1;
       }
+      // третий уровень: департамент владельца finding'а
+      const deptId = f.ownerMembershipId
+        ? (departmentByMembership.get(f.ownerMembershipId) ?? null)
+        : null;
+      if (deptId !== null) {
+        const counts = byDepartment.get(deptId);
+        if (counts) {
+          bump(counts.findingsByRating, f.riskRating);
+          bump(counts.findingsByStatus, f.status);
+          if (f.status !== 'closed') counts.openFindings += 1;
+        }
+      }
     }
 
     return {
@@ -97,6 +125,12 @@ export class GroupService {
         id: s.id,
         name: resolveLocalized(s.nameI18n, locale),
         ...bySubsidiary.get(s.id)!,
+      })),
+      departments: visibleDepartments.map((d) => ({
+        id: d.id,
+        name: resolveLocalized(d.nameI18n, locale),
+        subsidiaryId: d.subsidiaryId,
+        ...byDepartment.get(d.id)!,
       })),
     };
   }

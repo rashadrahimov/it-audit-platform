@@ -35,7 +35,8 @@
       "create_engagement": "İlk auditi yaradın",
       "build_checklist": "Çeklisti qurun",
       "collect_responses": "İlk cavabları toplayın"
-    }
+    },
+    "dashboard": "İdarə panelləri"
   },
   "engagements": {
     "title": "Auditlər",
@@ -160,5 +161,22 @@
       "draft": "Qaralama",
       "deprecated": "Köhnəlib"
     }
+  },
+  "dashboard": {
+    "title": "İdarə panelləri",
+    "toAccount": "Hesab",
+    "noAccess": "Qrup üzrə məlumat yoxdur",
+    "openFindings": "Açıq findings",
+    "totalFindings": "Ümumi findings",
+    "engagements": "Auditlər",
+    "subsidiaries": "Törəmə şirkətlər",
+    "bySubsidiary": "Törəmə şirkət üzrə",
+    "byDepartment": "Şöbə üzrə",
+    "noDepartments": "Hələ şöbə yoxdur",
+    "name": "Ad",
+    "level": "Səviyyə",
+    "levelGroup": "Qrup",
+    "levelSubsidiary": "Törəmə şirkət",
+    "open": "Açıq"
   }
 }

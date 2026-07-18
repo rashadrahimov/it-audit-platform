@@ -23,6 +23,7 @@ import {
   control,
   controlDomain,
   controlMapping,
+  department,
   framework,
   frameworkRequirement,
   license,
@@ -120,6 +121,7 @@ async function seedPostgres(): Promise<void> {
     await seedGlobalControls();
     await seedAuditTypes();
     await seedDemoUsers(db, demoTenant.id);
+    await seedDemoDepartments(db, demoTenant.id);
     await seedDemoControlAdaptation(db, demoTenant.id);
   } finally {
     await client.end().catch(() => {});
@@ -480,6 +482,50 @@ async function seedAuditTypes(): Promise<void> {
   } finally {
     await owner.end().catch(() => {});
   }
+}
+
+/** Демо-оргструктура (T-044): Internal Audit — уровень группы, IT Department — при демо-банке. */
+async function seedDemoDepartments(db: NodePgDatabase, tenantId: string): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.tenant_id', ${tenantId}, true)`);
+    const existing = await tx.select().from(department).where(eq(department.tenantId, tenantId));
+    if (existing.length > 0) return;
+    const [bank] = await tx
+      .select()
+      .from(subsidiary)
+      .where(and(eq(subsidiary.tenantId, tenantId), eq(subsidiary.code, 'demo-bank')));
+    const [audit] = await tx
+      .insert(department)
+      .values({
+        tenantId,
+        subsidiaryId: null,
+        nameI18n: { en: 'Internal Audit', az: 'Daxili audit', ru: 'Внутренний аудит' },
+      })
+      .returning();
+    const [it] = await tx
+      .insert(department)
+      .values({
+        tenantId,
+        subsidiaryId: bank?.id ?? null,
+        nameI18n: { en: 'IT Department', az: 'İT şöbəsi', ru: 'ИТ-департамент' },
+      })
+      .returning();
+    // демо-юзеры по департаментам: admin — аудит-функция, collaborator — ИТ дочки
+    const assign = async (email: string, departmentId: string | undefined) => {
+      if (!departmentId) return;
+      const [u] = await db.select().from(user).where(eq(user.email, email));
+      if (!u) return;
+      await db
+        .update(membership)
+        .set({ departmentId })
+        .where(and(eq(membership.userId, u.id), eq(membership.tenantId, tenantId)));
+    };
+    await assign('admin@demo.io', audit?.id);
+    await assign('collaborator@demo.io', it?.id);
+  });
+  console.log(
+    '✓ Демо-департаменты: Internal Audit (группа), IT Department (демо-банк) (idempotent)',
+  );
 }
 
 /**

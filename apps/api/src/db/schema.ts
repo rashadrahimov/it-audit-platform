@@ -135,9 +135,26 @@ export const membership = pgTable(
     status: text('status').notNull().default('active'),
     /** T-012: NULL = вся группа; массив subsidiary_id = member видит только эти дочки. */
     subsidiaryScope: jsonb('subsidiary_scope').$type<string[] | null>(),
+    /** T-044: департамент member'а (unit придёт с CRUD оргструктуры). */
+    departmentId: uuid('department_id'),
     ...timestamps,
   },
   (table) => [uniqueIndex('membership_user_tenant_idx').on(table.userId, table.tenantId)],
+);
+
+/** Оргструктура (T-044, data-model §2): subsidiary_id NULL = департамент уровня группы. */
+export const department = pgTable(
+  'department',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    subsidiaryId: uuid('subsidiary_id'),
+    nameI18n: jsonb('name_i18n').$type<I18nText>().notNull(),
+    ...timestamps,
+  },
+  (table) => [index('department_tenant_idx').on(table.tenantId)],
 );
 
 /** Лицензия тенанта (ADR-0014): лимиты по дочкам и audit-seats. Потребление считается запросом. */
