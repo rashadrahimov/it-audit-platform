@@ -64,7 +64,8 @@
     "notifications": "Bildirişlər",
     "time": "Vaxt uçotu",
     "kpi": "Kontrol KPI-ları",
-    "auditPrograms": "Audit proqramları"
+    "auditPrograms": "Audit proqramları",
+    "knowledgeBase": "Bilik bazası"
   },
   "engagements": {
     "title": "Auditlər",
@@ -700,5 +701,17 @@
     "rolled": "köçürülüb",
     "rollTarget": "Hədəf layihə",
     "rollForward": "Köçür"
+  },
+  "knowledgeBase": {
+    "title": "Bilik bazası",
+    "toAccount": "Hesaba",
+    "searchPh": "Sual və cavablar üzrə axtarış",
+    "search": "Axtar",
+    "reset": "Sıfırla",
+    "questionPh": "Sual",
+    "category": "Kateqoriya",
+    "answerPh": "Cavab",
+    "add": "Əlavə et",
+    "empty": "Qeyd tapılmadı"
   }
 }

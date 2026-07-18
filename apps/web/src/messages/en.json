@@ -64,7 +64,8 @@
     "notifications": "Notifications",
     "time": "Time tracking",
     "kpi": "Control KPIs",
-    "auditPrograms": "Audit programs"
+    "auditPrograms": "Audit programs",
+    "knowledgeBase": "Knowledge base"
   },
   "engagements": {
     "title": "Engagements",
@@ -700,5 +701,17 @@
     "rolled": "rolled-forward",
     "rollTarget": "Target engagement",
     "rollForward": "Roll forward"
+  },
+  "knowledgeBase": {
+    "title": "Knowledge base",
+    "toAccount": "To account",
+    "searchPh": "Search questions & answers",
+    "search": "Search",
+    "reset": "Reset",
+    "questionPh": "Question",
+    "category": "Category",
+    "answerPh": "Answer",
+    "add": "Add",
+    "empty": "No entries found"
   }
 }

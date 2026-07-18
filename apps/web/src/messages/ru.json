@@ -64,7 +64,8 @@
     "notifications": "Уведомления",
     "time": "Учёт времени",
     "kpi": "KPI контролей",
-    "auditPrograms": "Программы аудита"
+    "auditPrograms": "Программы аудита",
+    "knowledgeBase": "База знаний"
   },
   "engagements": {
     "title": "Аудиты",
@@ -700,5 +701,17 @@
     "rolled": "перенесена",
     "rollTarget": "Целевой проект",
     "rollForward": "Перенести"
+  },
+  "knowledgeBase": {
+    "title": "База знаний",
+    "toAccount": "В аккаунт",
+    "searchPh": "Поиск по вопросам и ответам",
+    "search": "Найти",
+    "reset": "Сбросить",
+    "questionPh": "Вопрос",
+    "category": "Категория",
+    "answerPh": "Ответ",
+    "add": "Добавить",
+    "empty": "Записей не найдено"
   }
 }
