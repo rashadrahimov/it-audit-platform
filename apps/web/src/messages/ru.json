@@ -95,7 +95,8 @@
       "medium": "Средний",
       "low": "Низкий",
       "not_applicable": "Н/п"
-    }
+    },
+    "export": "Экспорт"
   },
   "engagementStates": {
     "draft": "Черновик",

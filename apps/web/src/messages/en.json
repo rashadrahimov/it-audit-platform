@@ -95,7 +95,8 @@
       "medium": "Medium",
       "low": "Low",
       "not_applicable": "N/A"
-    }
+    },
+    "export": "Export"
   },
   "engagementStates": {
     "draft": "Draft",

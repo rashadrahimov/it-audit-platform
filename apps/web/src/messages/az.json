@@ -95,7 +95,8 @@
       "medium": "Orta",
       "low": "Aşağı",
       "not_applicable": "T/e"
-    }
+    },
+    "export": "İxrac"
   },
   "engagementStates": {
     "draft": "Qaralama",

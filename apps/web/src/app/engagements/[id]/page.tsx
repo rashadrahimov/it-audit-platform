@@ -103,6 +103,25 @@ export default async function EngagementDetailPage({
       </div>
 
       <section
+        className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-white p-4 shadow-sm"
+        data-testid="engagement-export"
+      >
+        <span className="mr-1 text-xs font-medium tracking-wide text-secondary uppercase">
+          {t('export')}
+        </span>
+        {(['pdf', 'docx', 'xlsx', 'csv', 'xml'] as const).map((fmt) => (
+          <a
+            key={fmt}
+            href={`/engagements/${eng.id}/report?format=${fmt}&locale=${locale}`}
+            data-testid={`export-${fmt}`}
+            className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {fmt.toUpperCase()}
+          </a>
+        ))}
+      </section>
+
+      <section
         className="rounded-xl border border-border bg-white p-6 shadow-sm"
         data-testid="engagement-detail"
       >
