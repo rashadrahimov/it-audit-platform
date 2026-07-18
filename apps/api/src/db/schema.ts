@@ -377,6 +377,31 @@ export const engagementMilestone = pgTable(
   (table) => [uniqueIndex('engagement_milestone_stage_idx').on(table.engagementId, table.stage)],
 );
 
+/**
+ * Пункт чеклиста engagement'а (T-036) — СНАПШОТ контроля на момент включения
+ * (data-model §10.1): текст копируется, правка библиотеки не меняет выпущенные
+ * отчёты. control_id — только origin-ссылка.
+ */
+export const checklistItem = pgTable(
+  'checklist_item',
+  {
+    id: id(),
+    engagementId: uuid('engagement_id')
+      .notNull()
+      .references(() => engagement.id, { onDelete: 'cascade' }),
+    controlId: uuid('control_id').references(() => control.id),
+    ref: text('ref').notNull(),
+    domainCode: text('domain_code'),
+    objectiveI18n: jsonb('objective_i18n').$type<I18nText>().notNull(),
+    questionI18n: jsonb('question_i18n').$type<I18nText>().notNull(),
+    order: integer('order').notNull(),
+    assignedRespondentId: uuid('assigned_respondent_id').references(() => membership.id),
+    status: text('status').notNull().default('pending'),
+    ...timestamps,
+  },
+  (table) => [index('checklist_item_engagement_idx').on(table.engagementId, table.order)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

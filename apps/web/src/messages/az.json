@@ -37,7 +37,10 @@
     "mode": "Rejim",
     "state": "Vəziyyət",
     "empty": "Hələ audit yoxdur",
-    "modes": { "formal": "Formal", "light": "Yüngül" }
+    "modes": {
+      "formal": "Formal",
+      "light": "Yüngül"
+    }
   },
   "engagementDetail": {
     "back": "Bütün auditlər",
@@ -50,7 +53,17 @@
     "stage": "Mərhələ",
     "planned": "Plan",
     "actual": "Fakt",
-    "modes": { "formal": "Formal", "light": "Yüngül" }
+    "modes": {
+      "formal": "Formal",
+      "light": "Yüngül"
+    },
+    "checklist": "Çeklist",
+    "checklistEmpty": "Hələ çeklist bəndi yoxdur",
+    "checklistRef": "İstinad",
+    "checklistQuestion": "Audit sualı",
+    "checklistStatus": "Status",
+    "checklistAdd": "Kitabxanadan nəzarətlər əlavə et",
+    "checklistSubmit": "Seçilənləri əlavə et"
   },
   "engagementStates": {
     "draft": "Qaralama",

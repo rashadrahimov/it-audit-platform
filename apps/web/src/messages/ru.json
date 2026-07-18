@@ -37,7 +37,10 @@
     "mode": "Режим",
     "state": "Состояние",
     "empty": "Аудитов пока нет",
-    "modes": { "formal": "Формальный", "light": "Облегчённый" }
+    "modes": {
+      "formal": "Формальный",
+      "light": "Облегчённый"
+    }
   },
   "engagementDetail": {
     "back": "Все аудиты",
@@ -50,7 +53,17 @@
     "stage": "Стадия",
     "planned": "План",
     "actual": "Факт",
-    "modes": { "formal": "Формальный", "light": "Облегчённый" }
+    "modes": {
+      "formal": "Формальный",
+      "light": "Облегчённый"
+    },
+    "checklist": "Чеклист",
+    "checklistEmpty": "Пунктов чеклиста пока нет",
+    "checklistRef": "Ссылка",
+    "checklistQuestion": "Аудит-вопрос",
+    "checklistStatus": "Статус",
+    "checklistAdd": "Добавить контроли из библиотеки",
+    "checklistSubmit": "Добавить выбранные"
   },
   "engagementStates": {
     "draft": "Черновик",

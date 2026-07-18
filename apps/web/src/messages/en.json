@@ -37,7 +37,10 @@
     "mode": "Mode",
     "state": "State",
     "empty": "No engagements yet",
-    "modes": { "formal": "Formal", "light": "Light" }
+    "modes": {
+      "formal": "Formal",
+      "light": "Light"
+    }
   },
   "engagementDetail": {
     "back": "All engagements",
@@ -50,7 +53,17 @@
     "stage": "Stage",
     "planned": "Planned",
     "actual": "Actual",
-    "modes": { "formal": "Formal", "light": "Light" }
+    "modes": {
+      "formal": "Formal",
+      "light": "Light"
+    },
+    "checklist": "Checklist",
+    "checklistEmpty": "No checklist items yet",
+    "checklistRef": "Ref",
+    "checklistQuestion": "Audit question",
+    "checklistStatus": "Status",
+    "checklistAdd": "Add controls from the library",
+    "checklistSubmit": "Add selected"
   },
   "engagementStates": {
     "draft": "Draft",

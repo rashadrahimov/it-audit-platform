@@ -39,6 +39,8 @@ const createEngagementSchema = z.object({
 
 const transitionSchema = z.object({ to: z.string().min(1) });
 
+const addChecklistSchema = z.object({ controlIds: z.array(z.uuid()).min(1) });
+
 function parseLocale(localeQuery?: string): Locale {
   if (localeQuery === undefined) return DEFAULT_LOCALE;
   const parsed = localeSchema.safeParse(localeQuery);
@@ -82,6 +84,26 @@ export class EngagementsController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data.to,
+    );
+  }
+
+  @Post(':id/checklist-items')
+  @RequirePermission('engagement', 'edit', 'edit')
+  @ApiOperation({
+    summary: 'Чеклист (T-036): добавить контроли из библиотеки снапшотами (data-model §10.1)',
+  })
+  @ApiCreatedResponse({ description: '{added: n}; уже добавленные пропускаются' })
+  addChecklistItems(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = addChecklistSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.engagementsService.addChecklistItems(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.controlIds,
     );
   }
 

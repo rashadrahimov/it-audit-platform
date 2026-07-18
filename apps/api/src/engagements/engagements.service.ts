@@ -1,9 +1,17 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { auditType, engagement, engagementMilestone, subsidiary } from '../db/schema';
+import {
+  auditType,
+  checklistItem,
+  control,
+  controlDomain,
+  engagement,
+  engagementMilestone,
+  subsidiary,
+} from '../db/schema';
 import {
   allowedTransitions,
   canTransition,
@@ -148,6 +156,63 @@ export class EngagementsService {
     return result.row;
   }
 
+  /**
+   * Чеклист (T-036): добавить контроли из библиотеки как СНАПШОТЫ (data-model §10.1) —
+   * текст копируется, правка библиотеки не трогает engagement. Уже добавленные пропускаются.
+   */
+  async addChecklistItems(actor: Actor, engagementId: string, controlIds: string[]) {
+    const added = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [eng] = await tx
+        .select()
+        .from(engagement)
+        .where(and(eq(engagement.id, engagementId), isNull(engagement.deletedAt)));
+      if (!eng) throw new NotFoundException(`Engagement ${engagementId} не найден`);
+
+      const existing = await tx
+        .select({ controlId: checklistItem.controlId, order: checklistItem.order })
+        .from(checklistItem)
+        .where(eq(checklistItem.engagementId, engagementId));
+      const alreadyIn = new Set(existing.map((i) => i.controlId).filter(Boolean));
+      let nextOrder = existing.reduce((max, i) => Math.max(max, i.order), 0);
+
+      const candidates = controlIds.filter((id) => !alreadyIn.has(id));
+      if (candidates.length === 0) return [];
+      const controls = await tx
+        .select()
+        .from(control)
+        .where(and(inArray(control.id, candidates), isNull(control.deletedAt)));
+      if (controls.length !== candidates.length) {
+        throw new BadRequestException('Часть контролей не найдена в библиотеке');
+      }
+      const domains = await tx.select().from(controlDomain);
+      const domainCode = new Map(domains.map((d) => [d.id, d.code]));
+
+      const rows = controls.map((c) => ({
+        engagementId,
+        controlId: c.id,
+        ref: c.ref,
+        domainCode: domainCode.get(c.domainId) ?? null,
+        objectiveI18n: c.objectiveI18n,
+        questionI18n: c.questionI18n,
+        order: ++nextOrder,
+      }));
+      await tx.insert(checklistItem).values(rows);
+      return rows.map((r) => r.ref);
+    });
+    if (added.length > 0) {
+      await this.auditLogService.record({
+        tenantId: actor.tenantId,
+        actorUserId: actor.userId,
+        actorIp: actor.ip,
+        action: 'engagement.checklist_updated',
+        entityType: 'engagement',
+        entityId: engagementId,
+        after: { addedRefs: added },
+      });
+    }
+    return { added: added.length };
+  }
+
   async list(tenantId: string, locale: Locale) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
@@ -191,7 +256,12 @@ export class EngagementsService {
         .select()
         .from(engagementMilestone)
         .where(eq(engagementMilestone.engagementId, id));
-      return { row, sub, type, milestones };
+      const checklist = await tx
+        .select()
+        .from(checklistItem)
+        .where(eq(checklistItem.engagementId, id))
+        .orderBy(asc(checklistItem.order));
+      return { row, sub, type, milestones, checklist };
     });
 
     const stageOrder = (s: string): number => {
@@ -221,6 +291,15 @@ export class EngagementsService {
           plannedDate: m.plannedDate?.toISOString() ?? null,
           actualDate: m.actualDate?.toISOString() ?? null,
         })),
+      checklist: data.checklist.map((item) => ({
+        id: item.id,
+        ref: item.ref,
+        domainCode: item.domainCode,
+        objective: resolveLocalized(item.objectiveI18n, locale),
+        question: resolveLocalized(item.questionI18n, locale),
+        status: item.status,
+        controlId: item.controlId,
+      })),
     };
   }
 }
