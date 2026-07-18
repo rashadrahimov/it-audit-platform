@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** Трек I (деплой-заготовка). **T-I01** Dockerfile API + **T-I02** Dockerfile web + **T-I03** миграции в API-образе (drizzle/ + config → `drizzle-kit migrate` в контейнере: «migrations applied successfully»). Образ теперь деплоим сам по себе (миграции + приложение). Всё проверено сквозно в контейнере (health/infra/login/web→API).
-- **Следующий шаг:** Buildable по всем трём направлениям /goal исчерпан (allocations T-A23…A25, CBAR T-C01/C02, контейнеры+миграции T-I01…I03). Остаток [!]: EP-ONPREM инфра (prod-compose оркестрация, pgBackRest/WAL-PITR, hardened-образы, backup-интеграция), T-001 бизнес (оплата/лицензия/Kerberos). Далее — по желанию Рашада.
+- **Текущая задача:** Трек I деплой ЗАВЕРШЁН: **T-I01** Dockerfile API + **T-I02** Dockerfile web + **T-I03** миграции в образе + **T-I04** `docker-compose.prod.yml` (single-command deploy: postgres+redis+minio+migrate+api+web). Проверено сквозно из чистого состояния на изолированном проекте (alt-порты): migrate exit 0 «migrations applied» → api /health 200 → web /login 200, /account 307; затем `down -v` начисто, dev-стек цел.
+- **Следующий шаг:** Buildable по всем трём направлениям /goal ИСЧЕРПАН: allocations (T-A23…A25), CBAR (T-C01/C02), деплой (T-I01…I04). Остаток строго [!]: EP-ONPREM инфра (pgBackRest/WAL-PITR, hardened-образы, backup-интеграция, реальный target), T-001 бизнес (оплата/лицензия/Kerberos/позиционирование). Далее — по желанию Рашада.
 - **Последнее готово:** **Марафон-5 (Трек A UI-глубина) 18.07.2026 — T-A01…A22 (22 задачи): 15 экранов интерактива (risks/privacy/iam/code-changes/config/reports/api-keys/notifications/time/kpi/audit-programs/kb/questionnaires/satisfaction/plans/trends) + навигационный хаб (7 категорий) + i18n-гвард (610 ключей ×3) + 5 вынесенных unit-модулей (api 20→51 тест).** Все 17 экранов 200, verify зелёный, GitHub каждый коммит запушен.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
