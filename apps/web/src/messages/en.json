@@ -26,7 +26,16 @@
     "signOut": "Sign out",
     "frameworks": "Frameworks library",
     "controls": "Controls library",
-    "engagements": "Engagements"
+    "engagements": "Engagements",
+    "onboardingTitle": "Getting started",
+    "onboarding": {
+      "invite_team": "Invite your team",
+      "create_subsidiary": "Add a subsidiary",
+      "adapt_control": "Adapt a control for your group",
+      "create_engagement": "Create the first engagement",
+      "build_checklist": "Build the checklist",
+      "collect_responses": "Collect the first responses"
+    }
   },
   "engagements": {
     "title": "Engagements",

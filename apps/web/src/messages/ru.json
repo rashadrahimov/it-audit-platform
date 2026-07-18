@@ -26,7 +26,16 @@
     "signOut": "Выйти",
     "frameworks": "Библиотека стандартов",
     "controls": "Библиотека контролей",
-    "engagements": "Аудиты (engagements)"
+    "engagements": "Аудиты (engagements)",
+    "onboardingTitle": "Шаги внедрения",
+    "onboarding": {
+      "invite_team": "Пригласите команду",
+      "create_subsidiary": "Добавьте дочку",
+      "adapt_control": "Адаптируйте контроль под группу",
+      "create_engagement": "Создайте первый аудит",
+      "build_checklist": "Соберите чеклист",
+      "collect_responses": "Соберите первые ответы"
+    }
   },
   "engagements": {
     "title": "Аудиты",

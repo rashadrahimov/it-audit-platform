@@ -26,7 +26,16 @@
     "signOut": "Çıxış",
     "frameworks": "Standartlar kitabxanası",
     "controls": "Nəzarətlər kitabxanası",
-    "engagements": "Auditlər (engagements)"
+    "engagements": "Auditlər (engagements)",
+    "onboardingTitle": "Başlanğıc addımları",
+    "onboarding": {
+      "invite_team": "Komandanı dəvət edin",
+      "create_subsidiary": "Törəmə şirkət əlavə edin",
+      "adapt_control": "Nəzarəti qrupa uyğunlaşdırın",
+      "create_engagement": "İlk auditi yaradın",
+      "build_checklist": "Çeklisti qurun",
+      "collect_responses": "İlk cavabları toplayın"
+    }
   },
   "engagements": {
     "title": "Auditlər",

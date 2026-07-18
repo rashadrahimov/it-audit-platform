@@ -1,8 +1,14 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { getSessionUser } from '@/lib/session';
+import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { logoutAction } from '../login/actions';
+
+interface Onboarding {
+  steps: Array<{ key: string; done: boolean }>;
+  done: number;
+  total: number;
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +16,14 @@ export const dynamic = 'force-dynamic';
 export default async function AccountPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const t = await getTranslations('account');
+  const [t, tenantSlug] = await Promise.all([getTranslations('account'), getActiveTenantSlug()]);
+
+  // onboarding-прогресс (T-046); 403 у не-админов — секция просто не показывается
+  let onboarding: Onboarding | null = null;
+  if (tenantSlug) {
+    const res = await apiFetch('/onboarding', { headers: { 'X-Tenant-Slug': tenantSlug } });
+    if (res.ok) onboarding = await res.json();
+  }
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-6 p-6">
@@ -37,6 +50,44 @@ export default async function AccountPage() {
         >
           {t('frameworks')}
         </Link>
+        {onboarding && (
+          <div
+            className="mb-6 rounded-lg border border-border bg-background p-4"
+            data-testid="onboarding"
+          >
+            <div className="mb-2 flex items-baseline justify-between gap-3">
+              <h2 className="text-sm font-semibold text-primary">{t('onboardingTitle')}</h2>
+              <span className="text-xs font-medium text-secondary">
+                {onboarding.done}/{onboarding.total}
+              </span>
+            </div>
+            <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-accent transition-all duration-300"
+                style={{ width: `${(onboarding.done / onboarding.total) * 100}%` }}
+              />
+            </div>
+            <ul className="flex flex-col gap-1.5 text-sm">
+              {onboarding.steps.map((s) => (
+                <li key={s.key} className="flex items-center gap-2">
+                  <span
+                    aria-hidden
+                    className={
+                      s.done
+                        ? 'flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-on-primary'
+                        : 'h-4 w-4 rounded-full border border-border'
+                    }
+                  >
+                    {s.done ? '✓' : ''}
+                  </span>
+                  <span className={s.done ? 'text-secondary line-through' : 'text-foreground'}>
+                    {t(`onboarding.${s.key}`)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <Link
           href="/engagements"
           data-testid="go-engagements"

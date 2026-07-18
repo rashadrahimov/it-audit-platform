@@ -14,6 +14,7 @@ import { FrameworksModule } from './frameworks/frameworks.module';
 import { InvitesModule } from './invites/invites.module';
 import { JobsModule } from './jobs/jobs.module';
 import { LicenseModule } from './license/license.module';
+import { OnboardingModule } from './onboarding/onboarding.module';
 import { RbacModule } from './rbac/rbac.module';
 import { UsersModule } from './users/users.module';
 
@@ -31,6 +32,7 @@ import { UsersModule } from './users/users.module';
     InvitesModule,
     JobsModule,
     LicenseModule,
+    OnboardingModule,
     RbacModule,
     UsersModule,
   ],
