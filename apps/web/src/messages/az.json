@@ -46,7 +46,8 @@
     "trustCenter": "Etibar Mərkəzi",
     "glossary": "Lüğət",
     "snapshots": "Anlıq görüntülər",
-    "devices": "Cihaz Uyğunluğu"
+    "devices": "Cihaz Uyğunluğu",
+    "personnel": "Personal"
   },
   "engagements": {
     "title": "Auditlər",
@@ -309,6 +310,18 @@
       "screenLock": "Ekran kilidi",
       "antivirus": "Antivirus",
       "passwordPolicy": "Parol siyasəti"
+    }
+  },
+  "personnel": {
+    "title": "Personal",
+    "toAccount": "Hesab",
+    "empty": "Hələ profil yoxdur",
+    "fromConnector": "Konnektordan",
+    "manual": "Əl ilə",
+    "status": {
+      "active": "Aktiv",
+      "onboarding": "İşə qəbul",
+      "offboarded": "İşdən çıxıb"
     }
   }
 }

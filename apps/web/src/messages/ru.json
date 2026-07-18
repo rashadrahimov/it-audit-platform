@@ -46,7 +46,8 @@
     "trustCenter": "Центр доверия",
     "glossary": "Глоссарий",
     "snapshots": "Снапшоты",
-    "devices": "Соответствие устройств"
+    "devices": "Соответствие устройств",
+    "personnel": "Персонал"
   },
   "engagements": {
     "title": "Аудиты",
@@ -309,6 +310,18 @@
       "screenLock": "Блокировка экрана",
       "antivirus": "Антивирус",
       "passwordPolicy": "Парольная политика"
+    }
+  },
+  "personnel": {
+    "title": "Персонал",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет профилей",
+    "fromConnector": "Из коннектора",
+    "manual": "Вручную",
+    "status": {
+      "active": "Активен",
+      "onboarding": "Онбординг",
+      "offboarded": "Уволен"
     }
   }
 }

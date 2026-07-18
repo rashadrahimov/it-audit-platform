@@ -46,7 +46,8 @@
     "trustCenter": "Trust Center",
     "glossary": "Glossary",
     "snapshots": "Snapshots",
-    "devices": "Endpoint Compliance"
+    "devices": "Endpoint Compliance",
+    "personnel": "Personnel"
   },
   "engagements": {
     "title": "Engagements",
@@ -309,6 +310,18 @@
       "screenLock": "Screen lock",
       "antivirus": "Antivirus",
       "passwordPolicy": "Password policy"
+    }
+  },
+  "personnel": {
+    "title": "Personnel",
+    "toAccount": "Account",
+    "empty": "No personnel yet",
+    "fromConnector": "From connector",
+    "manual": "Manual",
+    "status": {
+      "active": "Active",
+      "onboarding": "Onboarding",
+      "offboarded": "Offboarded"
     }
   }
 }
