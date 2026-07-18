@@ -14,6 +14,7 @@ import { ChangesModule } from './changes/changes.module';
 import { CommentsModule } from './comments/comments.module';
 import { CommitmentsModule } from './commitments/commitments.module';
 import { ConfigListsModule } from './config-lists/config-lists.module';
+import { ConfigTransferModule } from './config-transfer/config-transfer.module';
 import { ConnectorsModule } from './connectors/connectors.module';
 import { ControlsModule } from './controls/controls.module';
 import { CustomFieldsModule } from './custom-fields/custom-fields.module';
@@ -77,6 +78,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     CommentsModule,
     CommitmentsModule,
     ConfigListsModule,
+    ConfigTransferModule,
     ConnectorsModule,
     ControlsModule,
     CustomFieldsModule,
