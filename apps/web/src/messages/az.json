@@ -52,7 +52,8 @@
     "workingPapers": "İş Sənədləri",
     "vulnerabilities": "Zəifliklər",
     "securityAlerts": "Təhlükəsizlik Bildirişləri",
-    "commitments": "Öhdəliklər"
+    "commitments": "Öhdəliklər",
+    "accessReviews": "Giriş Baxışları"
   },
   "engagements": {
     "title": "Auditlər",
@@ -417,6 +418,16 @@
       "ok": "OK",
       "due_soon": "Vaxtı yaxınlaşır",
       "overdue": "Gecikib"
+    }
+  },
+  "accessReviews": {
+    "title": "Giriş Baxışları",
+    "toAccount": "Hesab",
+    "empty": "Hələ baxış kampaniyası yoxdur",
+    "st": {
+      "draft": "Qaralama",
+      "in_progress": "Davam edir",
+      "completed": "Tamamlanıb"
     }
   }
 }

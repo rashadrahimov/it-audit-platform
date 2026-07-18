@@ -52,7 +52,8 @@
     "workingPapers": "Рабочие документы",
     "vulnerabilities": "Уязвимости",
     "securityAlerts": "Оповещения ИБ",
-    "commitments": "Обязательства"
+    "commitments": "Обязательства",
+    "accessReviews": "Ревью доступа"
   },
   "engagements": {
     "title": "Аудиты",
@@ -417,6 +418,16 @@
       "ok": "OK",
       "due_soon": "Скоро срок",
       "overdue": "Просрочено"
+    }
+  },
+  "accessReviews": {
+    "title": "Ревью доступа",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет кампаний ревью",
+    "st": {
+      "draft": "Черновик",
+      "in_progress": "В процессе",
+      "completed": "Завершено"
     }
   }
 }

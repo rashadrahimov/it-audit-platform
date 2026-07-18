@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** **UI-трек** идёт, **14 экранов** готовы и проверены (en/ru/az, guard, ссылки из /account): universe, risk-heatmap, plans, dashboards, trust-center, glossary, snapshots, devices, personnel, vendors, working-papers, vulnerabilities, security-alerts, commitments (T-U01…U14). Backend готов (~63 модуля, миграции 0062).
-- **Следующий шаг:** Следующие UI-экраны (ui-ux-pro-max перед каждым): access reviews, code-changes, processing-activities (ROPA), drill-down карточки. Снятие `[!]` — по ответам клиента/инфре.
+- **Текущая задача:** **UI-трек** — **15 экранов** готовы, проверены и запушены (en/ru/az, guard, ссылки из /account): universe, risk-heatmap, plans, dashboards, trust-center, glossary, snapshots, devices, personnel, vendors, working-papers, vulnerabilities, security-alerts, commitments, access-reviews (T-U01…U15). Плюс прежние (account/controls/frameworks/engagements/policies/connectors/dashboard). Backend готов (~63 модуля, миграции 0062). Всё в origin/main, CI зелёный.
+- **Следующий шаг:** Дальше — drill-down карточки (engagement/vendor/risk-детали), формы создания/действий (не только read-only списки), полнота i18n-строк оставшихся экранов, либо снятие `[!]` по ответам клиента/инфре.
 - **Последнее готово:** **Марафон-4 18.07.2026 — 43 задачи (T-060…103): весь M2 + весь M3 + RFP-эпики (AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP/MSG/REPWIZ/SCHED) + Добавки (PLAN/GROUP), EP-I18N backend-ядро. Миграции до 0061. Стоп-условие достигнуто.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._

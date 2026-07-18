@@ -52,7 +52,8 @@
     "workingPapers": "Working Papers",
     "vulnerabilities": "Vulnerabilities",
     "securityAlerts": "Security Alerts",
-    "commitments": "Commitments"
+    "commitments": "Commitments",
+    "accessReviews": "Access Reviews"
   },
   "engagements": {
     "title": "Engagements",
@@ -417,6 +418,16 @@
       "ok": "OK",
       "due_soon": "Due soon",
       "overdue": "Overdue"
+    }
+  },
+  "accessReviews": {
+    "title": "Access Reviews",
+    "toAccount": "Account",
+    "empty": "No access reviews yet",
+    "st": {
+      "draft": "Draft",
+      "in_progress": "In progress",
+      "completed": "Completed"
     }
   }
 }
