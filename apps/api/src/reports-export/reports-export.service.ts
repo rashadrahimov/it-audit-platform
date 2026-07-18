@@ -3,6 +3,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { resolveLocalized } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
 import { control, finding, reportSnapshot, risk } from '../db/schema';
+import { diffMetrics, type MetricGroups } from './diff-metrics';
 
 export const EXPORT_ENTITIES = ['findings', 'risks', 'controls'] as const;
 export type ExportEntity = (typeof EXPORT_ENTITIES)[number];
@@ -47,21 +48,7 @@ export class ReportsExportService {
     });
     if (!a) throw new NotFoundException(`Снапшот ${aId} не найден`);
     if (!b) throw new NotFoundException(`Снапшот ${bId} не найден`);
-    const ma = a.metrics as Record<string, Record<string, number>>;
-    const mb = b.metrics as Record<string, Record<string, number>>;
-    const metricNames = new Set([...Object.keys(ma), ...Object.keys(mb)]);
-    const diff: Record<string, Record<string, { a: number; b: number; delta: number }>> = {};
-    for (const m of metricNames) {
-      const ka = ma[m] ?? {};
-      const kb = mb[m] ?? {};
-      const keys = new Set([...Object.keys(ka), ...Object.keys(kb)]);
-      diff[m] = {};
-      for (const k of keys) {
-        const va = ka[k] ?? 0;
-        const vb = kb[k] ?? 0;
-        diff[m][k] = { a: va, b: vb, delta: vb - va };
-      }
-    }
+    const diff = diffMetrics(a.metrics as MetricGroups, b.metrics as MetricGroups);
     return { a: { id: a.id, label: a.label }, b: { id: b.id, label: b.label }, diff };
   }
 
