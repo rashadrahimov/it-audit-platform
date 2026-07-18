@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** Трек A ИСЧЕРПАН (buildable-объём). Остаток — честные [!]: EP-HARDEN SEC-07 (concurrent-session)/ENG-08 (archive-retention) — инфра/крупные атомы; allocations — нет list-эндпоинта memberships для селектора участника.
-- **Следующий шаг:** По желанию Рашада — либо расчистить [!] через новые API (memberships-list → разблокирует allocations-UI), либо Трек B/C (client-answers T-001), либо деплой-пайплайн (Track I / EP-ONPREM). Buildable UI-глубины по существующим API больше нет.
+- **Текущая задача:** Разблокировка allocations. **T-A23 сделан:** backend `GET /memberships` (модуль memberships, RBAC settings/view, join membership×user×role, роль через resolveLocalized). Снимает блокер allocations-UI.
+- **Следующий шаг:** T-A24 — UI `/allocations` (аллокация ресурса: engagement+member+hours через `POST /allocations`; утилизация vs capacity через `GET /allocations/utilization`). Селектор участника — из нового `/memberships`.
 - **Последнее готово:** **Марафон-5 (Трек A UI-глубина) 18.07.2026 — T-A01…A22 (22 задачи): 15 экранов интерактива (risks/privacy/iam/code-changes/config/reports/api-keys/notifications/time/kpi/audit-programs/kb/questionnaires/satisfaction/plans/trends) + навигационный хаб (7 категорий) + i18n-гвард (610 ключей ×3) + 5 вынесенных unit-модулей (api 20→51 тест).** Все 17 экранов 200, verify зелёный, GitHub каждый коммит запушен.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
