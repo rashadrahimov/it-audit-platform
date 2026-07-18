@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-TIME — T-088 (time entries) закрыта. Следующая — T-089 (budget vs actual, UNI-07), закроет EP-TIME.
-- **Следующий шаг:** T-089 (engagement.budgeted_hours + time-summary агрегат факт/бюджет) закроет EP-TIME. Дальше — EP-WPAPERS / EP-SCHED.
-- **Последнее готово:** **Марафон-4 18.07.2026: весь M2 (T-060…073) + весь M3 (EP-PRIV/MISC/FWK/TRUST/QA, T-074…083) + RFP EP-AUDITTYPES (T-084/085) + EP-CONFIG (T-086/087) — 28 задач.** GitHub+CI зелёный.
+- **Текущая задача:** EP-TIME закрыт (T-088/089). Следующая — RFP EP-API (публичный REST API + OpenAPI, Mandatory) — декомпозиция.
+- **Следующий шаг:** Распишу EP-API на атомы T-090+ (api_key с bearer-аутентификацией + OpenAPI-эндпоинт) и сделаю. Дальше — EP-WPAPERS / EP-SCHED.
+- **Последнее готово:** **Марафон-4 18.07.2026: M2 (T-060…073) + M3 (T-074…083) + RFP EP-AUDITTYPES/CONFIG/TIME (T-084…089) — 30 задач.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -332,9 +332,9 @@ Per-tenant кастомизация без кода: неограниченны�
 Учёт времени по аудиту/фазе/категории + бюджет vs факт. Модель — data-model §7 (time_entry). Непродуктивное время — через category (training/leave/admin).
 
 - [x] **T-088** — Time entries: `time_entry` (membership_id, date, hours numeric, engagement_id NULL, phase planning/fieldwork/reporting, category audit/training/leave/admin, billable_rate NULL, note); CRUD + список (по engagement/member). _Deps: T-020._ DoD: тайм-запись создаётся (по аудиту/фазе/категории), список отдаётся, невалидная фаза/категория/часы→400. **Готово: миграция 0052 — time_entry (FORCE RLS; membership/engagement-линки, date, hours numeric(6,2), phase, category, billable_rate numeric(10,2), note). create (membership из actor, hours/rate → numeric-строки), list (?engagementId фильтр, hours→Number). API engagement.view (аудиторы логируют своё время). audit_log time_entry.created. E2e: fieldwork 6.5ч, 3 записи всего / 2 по engagement, невалидная фаза→400, невалидная категория→400, часы>24→400, часы 0→400.**
-- [ ] **T-089** — Budget vs actual (UNI-07): `engagement.budgeted_hours`; `GET /engagements/:id/time-summary` — агрегат факт-часов по фазе и категории + сравнение с бюджетом (budgeted/actual/variance). _Deps: T-088._ DoD: агрегат факт-часов по фазе/категории считается, variance = budgeted−actual, engagement без записей→actual 0. **EP-TIME закрыт этими двумя.**
+- [x] **T-089** — Budget vs actual (UNI-07): `engagement.budgeted_hours`; `GET /engagements/:id/time-summary` — агрегат факт-часов по фазе и категории + сравнение с бюджетом (budgeted/actual/variance). _Deps: T-088._ DoD: агрегат факт-часов по фазе/категории считается, variance = budgeted−actual, engagement без записей→actual 0. **Готово: миграция 0053 — engagement.budgeted_hours numeric(8,2). `PUT /time-entries/budget/:engagementId {budgetedHours}` (engagement.edit), `GET /time-entries/summary/:engagementId` (engagement.view) — SQL sum(hours) group by phase/category, {budgeted, actual, variance=budgeted−actual, byPhase, byCategory}. audit_log engagement.budget_set. E2e: бюджет 20 + 4 записи → actual=13 variance=7, byPhase {fieldwork:8, planning:2, reporting:3}, byCategory {audit:11.5, training:1.5}, пустой engagement→actual=0/budgeted=null/variance=null, несуществующий→404, Collaborator set→403. **EP-TIME закрыт целиком** (T-088 time entries + T-089 budget vs actual).**
 
-- [ ] **EP-TIME** — тайм-трекинг: Time Entry по аудиту/фазе/программе + непродуктивное время, бюджет vs факт, ставки/расходы (TIME-01/03, UNI-07, SCH-07). **Расписан на T-088–T-089.**
+- [x] **EP-TIME** — тайм-трекинг: Time Entry по аудиту/фазе/программе + непродуктивное время, бюджет vs факт, ставки/расходы (TIME-01/03, UNI-07, SCH-07). **Расписан на T-088–T-089. Закрыт: time_entry по аудиту/фазе/категории (непродуктивное — training/leave/admin, ставки billable_rate) + budget vs actual агрегат (UNI-07). Тайм-трекинг по программе/шагу (program_step_id) — задел при появлении audit programs (EP-WPAPERS).**
 
 Отделяемые модули — фаза 2/3:
 - **EP-SCHED** — scheduling: Gantt с drag-drop (SCH-01), аллокация ресурсов и утилизация (SCH-02/03), конфликты (SCH-04), пауза аудита (SCH-06).

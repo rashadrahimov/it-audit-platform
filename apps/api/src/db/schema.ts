@@ -371,6 +371,8 @@ export const engagement = pgTable(
     periodEnd: timestamp('period_end', { withTimezone: true }),
     mode: text('mode').notNull().default('formal'),
     state: text('state').notNull().default('draft'),
+    /** Бюджет часов на аудит (T-089, UNI-07): сравнение план vs факт. */
+    budgetedHours: numeric('budgeted_hours', { precision: 8, scale: 2 }),
     /** Откуда ушли в paused — resume возвращает ровно туда (SCH-06). */
     pausedFromState: text('paused_from_state'),
     custom: jsonb('custom').notNull().default({}),

@@ -3,7 +3,10 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseUUIDPipe,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -51,5 +54,29 @@ export class TimeEntriesController {
   @ApiQuery({ name: 'engagementId', required: false })
   list(@Req() req: TenantRequest, @Query('engagementId') engagementId?: string) {
     return this.service.list(req.tenantId, engagementId);
+  }
+
+  @Put('budget/:engagementId')
+  @RequirePermission('engagement', 'edit', 'edit')
+  @ApiOperation({ summary: 'Задать бюджет часов engagement (T-089, UNI-07)' })
+  setBudget(
+    @Req() req: TenantRequest,
+    @Param('engagementId', ParseUUIDPipe) engagementId: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ budgetedHours: z.number().nonnegative() }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.setBudget(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      engagementId,
+      parsed.data.budgetedHours,
+    );
+  }
+
+  @Get('summary/:engagementId')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({ summary: 'Бюджет vs факт по фазе/категории (T-089, UNI-07)' })
+  summary(@Req() req: TenantRequest, @Param('engagementId', ParseUUIDPipe) engagementId: string) {
+    return this.service.summary(req.tenantId, engagementId);
   }
 }

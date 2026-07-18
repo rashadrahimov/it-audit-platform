@@ -1,0 +1,1 @@
+ALTER TABLE "engagement" ADD COLUMN "budgeted_hours" numeric(8, 2);
