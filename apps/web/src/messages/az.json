@@ -37,7 +37,8 @@
       "collect_responses": "İlk cavabları toplayın"
     },
     "dashboard": "İdarə panelləri",
-    "connectors": "Konnektorlar"
+    "connectors": "Konnektorlar",
+    "policies": "Siyasətlər"
   },
   "engagements": {
     "title": "Auditlər",
@@ -192,6 +193,21 @@
       "active": "Aktiv",
       "error": "Xəta",
       "disabled": "Deaktiv"
+    }
+  },
+  "policies": {
+    "title": "Siyasətlər",
+    "toAccount": "Hesab",
+    "name": "Ad",
+    "owner": "Sahib",
+    "renewBy": "Yeniləmə tarixi",
+    "status": "Status",
+    "empty": "Hələ siyasət yoxdur",
+    "statuses": {
+      "draft": "Qaralama",
+      "in_review": "Baxışda",
+      "approved": "Təsdiqlənib",
+      "archived": "Arxiv"
     }
   }
 }

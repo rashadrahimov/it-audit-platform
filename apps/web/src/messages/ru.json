@@ -37,7 +37,8 @@
       "collect_responses": "Соберите первые ответы"
     },
     "dashboard": "Дашборды",
-    "connectors": "Коннекторы"
+    "connectors": "Коннекторы",
+    "policies": "Политики"
   },
   "engagements": {
     "title": "Аудиты",
@@ -192,6 +193,21 @@
       "active": "Активен",
       "error": "Ошибка",
       "disabled": "Отключён"
+    }
+  },
+  "policies": {
+    "title": "Политики",
+    "toAccount": "Аккаунт",
+    "name": "Название",
+    "owner": "Владелец",
+    "renewBy": "Обновить до",
+    "status": "Статус",
+    "empty": "Политик пока нет",
+    "statuses": {
+      "draft": "Черновик",
+      "in_review": "На ревью",
+      "approved": "Утверждена",
+      "archived": "Архив"
     }
   }
 }

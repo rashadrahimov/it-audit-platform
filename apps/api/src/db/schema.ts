@@ -674,6 +674,24 @@ export const policyVersion = pgTable(
   (table) => [uniqueIndex('policy_version_idx').on(table.policyId, table.version)],
 );
 
+/** Attestation (T-053, B4): сотрудник подтверждает ознакомление с approved-версией политики. */
+export const policyAttestation = pgTable(
+  'policy_attestation',
+  {
+    id: id(),
+    policyVersionId: uuid('policy_version_id')
+      .notNull()
+      .references(() => policyVersion.id, { onDelete: 'cascade' }),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id),
+    attestedAt: timestamp('attested_at', { withTimezone: true }),
+    status: text('status').notNull().default('pending'),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('policy_attestation_idx').on(table.policyVersionId, table.membershipId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

@@ -37,7 +37,8 @@
       "collect_responses": "Collect the first responses"
     },
     "dashboard": "Dashboards",
-    "connectors": "Connectors"
+    "connectors": "Connectors",
+    "policies": "Policies"
   },
   "engagements": {
     "title": "Engagements",
@@ -192,6 +193,21 @@
       "active": "Active",
       "error": "Error",
       "disabled": "Disabled"
+    }
+  },
+  "policies": {
+    "title": "Policies",
+    "toAccount": "Account",
+    "name": "Title",
+    "owner": "Owner",
+    "renewBy": "Renew by",
+    "status": "Status",
+    "empty": "No policies yet",
+    "statuses": {
+      "draft": "Draft",
+      "in_review": "In review",
+      "approved": "Approved",
+      "archived": "Archived"
     }
   }
 }

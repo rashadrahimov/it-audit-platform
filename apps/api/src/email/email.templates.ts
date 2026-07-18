@@ -83,6 +83,27 @@ export const emailTemplates = {
       text: `Приближается дедлайн по finding ${findingTitle}: ${dueDate}.`,
     }),
   },
+  'policy-attestation': {
+    en: ({ policyTitle }) => ({
+      subject: `Please attest: ${policyTitle}`,
+      html: wrap(
+        `<p>Please review and attest that you have read the policy <b>${policyTitle}</b>.</p>`,
+      ),
+      text: `Please review and attest the policy: ${policyTitle}.`,
+    }),
+    az: ({ policyTitle }) => ({
+      subject: `Təsdiq tələb olunur: ${policyTitle}`,
+      html: wrap(`<p>Zəhmət olmasa <b>${policyTitle}</b> siyasətini oxuyub təsdiq edin.</p>`),
+      text: `Zəhmət olmasa siyasəti təsdiq edin: ${policyTitle}.`,
+    }),
+    ru: ({ policyTitle }) => ({
+      subject: `Требуется подтверждение: ${policyTitle}`,
+      html: wrap(
+        `<p>Пожалуйста, ознакомьтесь и подтвердите прочтение политики <b>${policyTitle}</b>.</p>`,
+      ),
+      text: `Пожалуйста, подтвердите ознакомление с политикой: ${policyTitle}.`,
+    }),
+  },
   'test-email': {
     en: ({ sentAt }) => ({
       subject: 'Test email — IT Audit Platform',

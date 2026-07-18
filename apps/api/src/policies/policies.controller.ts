@@ -24,6 +24,7 @@ import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, type Locale } from '@it-a
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
+import { AttestationsService } from './attestations.service';
 import { PoliciesService } from './policies.service';
 
 const createPolicySchema = z.object({
@@ -53,7 +54,54 @@ function parseLocale(localeQuery?: string): Locale {
 @ApiBearerAuth()
 @ApiHeader({ name: 'X-Tenant-Slug', required: true })
 export class PoliciesController {
-  constructor(private readonly policiesService: PoliciesService) {}
+  constructor(
+    private readonly policiesService: PoliciesService,
+    private readonly attestationsService: AttestationsService,
+  ) {}
+
+  @Post(':id/attestations')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Attestation-кампания (T-053): разослать approved-версию членам' })
+  @ApiCreatedResponse({ description: '{versionId, sent}' })
+  campaign(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ membershipIds: z.array(z.uuid()).min(1) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.attestationsService.campaign(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.membershipIds,
+    );
+  }
+
+  @Post(':id/attest')
+  @HttpCode(200)
+  // attest — self-action любого сотрудника-адресата (не админ-действие); control.view
+  // есть у всех аудит-ролей. Отдельный «любой член тенанта» — при появлении end-user роли.
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Подтвердить ознакомление с политикой (T-053); только адресованную' })
+  @ApiOkResponse({ description: '{status, attestedAt}' })
+  attest(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.attestationsService.attest(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
+  }
+
+  @Get(':id/attestations')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'Трекинг attestation: кто подтвердил / кто нет' })
+  @ApiOkResponse({ description: '{version, total, attested, rows[]}' })
+  attestationStatus(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    return this.attestationsService.status(req.tenantId, id, parseLocale(localeQuery));
+  }
 
   @Post()
   @RequirePermission('settings', 'edit', 'edit')
