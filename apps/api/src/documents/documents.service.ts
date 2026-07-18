@@ -16,6 +16,7 @@ const LINKABLE_ENTITY_TYPES = new Set([
   'subsidiary',
   'risk_assessment',
   'policy',
+  'vendor_assessment',
 ]);
 const RELATIONS = new Set(['evidence', 'permanent_file', 'attachment', 'report']);
 

@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-VEND — T-060 (Vendor register: lifecycle, риск-класс) закрыта. Следующая — T-061 (vendor assessment: оценка вендора с evidence), закроет EP-VEND.
-- **Следующий шаг:** T-061 закроет EP-VEND. Дальше — EP-ASSET / EP-PERS / EP-VULN или M3. Остаток T-001 гейтит часть фич.
+- **Текущая задача:** **EP-VEND закрыт целиком** (T-060/061). За марафон-3 закрыто 5 эпиков M2: EP-INT, EP-POL, EP-IAM, EP-RISK, EP-VEND. Следующий эпик не выбран — при следующем прогоне выбрать (EP-ASSET / EP-PERS / EP-VULN) и расписать на атомы.
+- **Следующий шаг:** декомпозировать следующий эпик M2. Кандидаты: EP-VULN (vulnerabilities — самодостаточен) или EP-ASSET (universe + активы через коннекторы). Остаток T-001 гейтит часть фич.
 - **Последнее готово:** **Марафон-3 18.07.2026: EP-INT, EP-POL, EP-IAM, EP-RISK — четыре эпика M2 целиком (T-048…T-059, 12 задач).** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -222,9 +222,9 @@ IAM встроен в Control→Test→Finding (ADR-0012): аккаунты — 
 Реестр вендоров с риск-классом и жизненным циклом (procurement→active→archived), assessment-кампании. Модель — data-model §6 (vendor/vendor_assessment).
 
 - [x] **T-060** — Vendor register: `vendor` (name, category, url, inherent/residual_risk класс, security_owner, status procurement/active/archived, intake jsonb); CRUD, lifecycle-переходы; RLS. _Deps: T-020._ DoD: вендор создаётся, проходит статусы, риск-класс хранится. **Готово: миграция 0030 (vendor + vendor_assessment — вторая для T-061); vendor FORCE RLS; lifecycle procurement→active→archived (недопустимый→400); риск-класс low/medium/high/critical, intake jsonb (настраиваемая форма). API control.edit/view: POST /vendors, POST /:id/transition, GET список/карточка. audit_log vendor.created/status_changed. E2e: создание procurement, →active, риск high, недопустимый переход 400, мусорный risk 400, RBAC 403.**
-- [ ] **T-061** — Vendor assessment: `vendor_assessment` (type, state, due_date, owner, recommendation, evidence_status); assessment-workflow, документы через document_link, due на SLA-джобе. _Deps: T-060, T-034._ DoD: assessment вендора создаётся, проходит состояния, evidence прикладывается.
+- [x] **T-061** — Vendor assessment: `vendor_assessment` (type, state, due_date, owner, recommendation, evidence_status); assessment-workflow, документы через document_link, due на SLA-джобе. _Deps: T-060, T-034._ DoD: assessment вендора создаётся, проходит состояния, evidence прикладывается. **Готово: таблица vendor_assessment (миграция 0030). Workflow requested→in_progress→completed (скип→400); evidence_status авто-переходит в `provided` при наличии прикреплённого документа (document_link, entityType=vendor_assessment добавлен в whitelist T-034); recommendation при завершении. API control.edit/view: POST /vendors/:id/assessments, POST /vendors/assessments/:id/transition, GET /vendors/:id/assessments (с документами). audit_log vendor_assessment.created/state_changed. E2e: создание requested, evidence приложен→provided, workflow→completed с рекомендацией, docs=1, скип 400. **EP-VEND закрыт целиком** (T-060 register + T-061 assessment).**
 
-- [x] **EP-VEND** — Vendor Risk Management (B5). **Расписан на T-060–T-061.**
+- [x] **EP-VEND** — Vendor Risk Management (B5). **Закрыт: T-060 (register+lifecycle+риск-класс) + T-061 (assessment-workflow с evidence). Настраиваемая intake-форма (jsonb) и SLA на due_date assessment — задел готов, подключается атомами при надобности.**
 - **EP-REP** — Reports как настраиваемые чарт-дашборды (B9) + snapshots (B10).
 
 ## M3. Полный паритет (эпики)
