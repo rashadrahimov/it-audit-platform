@@ -28,8 +28,8 @@ export default tseslint.config(
     },
   },
   {
-    // node-скрипты вне tsconfig — глобалы Node объявляем сами
-    files: ['scripts/**/*.mjs'],
+    // node-скрипты вне tsconfig (в т.ч. apps/*/scripts) — глобалы Node объявляем сами
+    files: ['**/scripts/**/*.mjs'],
     languageOptions: {
       globals: {
         console: 'readonly',
