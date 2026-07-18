@@ -49,6 +49,14 @@ export class ConfigListsController {
     );
   }
 
+  @Get(':listKey/history')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'История версий списка (TEC-03): снимки прошлых items' })
+  @ApiOkResponse({ description: '{listKey, versions:[{items, at, by}]}' })
+  history(@Req() req: TenantRequest, @Param('listKey') listKey: string) {
+    return this.service.getHistory(req.tenantId, listKey);
+  }
+
   @Get(':listKey/validate')
   @RequirePermission('settings', 'view')
   @ApiOperation({ summary: 'Проверить значение по списку (?code)' })

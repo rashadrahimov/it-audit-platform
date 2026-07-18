@@ -442,6 +442,13 @@
       "when": 1784402890900,
       "tag": "0062_control-kpi",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1784416885213,
+      "tag": "0063_config-list-history",
+      "breakpoints": true
     }
   ]
 }

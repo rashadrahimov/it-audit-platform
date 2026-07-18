@@ -1,0 +1,1 @@
+ALTER TABLE "config_list" ADD COLUMN "history" jsonb DEFAULT '[]'::jsonb NOT NULL;

@@ -57,12 +57,20 @@ export class ConfigListsService {
     if (new Set(codes).size !== codes.length) {
       throw new BadRequestException('Коды элементов списка должны быть уникальны');
     }
-    await this.dbService.withTenant(actor.tenantId, (tx) =>
-      tx
-        .insert(configList)
-        .values({ tenantId: actor.tenantId, listKey, items })
-        .onConflictDoUpdate({ target: [configList.tenantId, configList.listKey], set: { items } }),
-    );
+    await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [current] = await tx
+        .select()
+        .from(configList)
+        .where(and(eq(configList.tenantId, actor.tenantId), eq(configList.listKey, listKey)));
+      if (current) {
+        // TEC-03 (T-H02): снимок прошлой версии в history (максимум 20 последних)
+        const snapshot = { items: current.items, at: new Date().toISOString(), by: actor.userId };
+        const history = [snapshot, ...(current.history ?? [])].slice(0, 20);
+        await tx.update(configList).set({ items, history }).where(eq(configList.id, current.id));
+      } else {
+        await tx.insert(configList).values({ tenantId: actor.tenantId, listKey, items });
+      }
+    });
     await this.auditLogService.record({
       tenantId: actor.tenantId,
       actorUserId: actor.userId,
@@ -73,6 +81,17 @@ export class ConfigListsService {
       after: { count: items.length },
     });
     return { listKey, count: items.length };
+  }
+
+  /** История версий списка (TEC-03, T-H02): снимки прошлых items, свежие сверху. */
+  async getHistory(tenantId: string, listKey: string) {
+    const [row] = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ history: configList.history })
+        .from(configList)
+        .where(and(eq(configList.tenantId, tenantId), eq(configList.listKey, listKey))),
+    );
+    return { listKey, versions: row?.history ?? [] };
   }
 
   /** Проверить, что code входит в эффективный список (иначе 400). */

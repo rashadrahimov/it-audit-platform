@@ -1466,6 +1466,11 @@ export const configList = pgTable(
       .references(() => tenant.id),
     listKey: text('list_key').notNull(),
     items: jsonb('items').notNull().default([]),
+    /** TEC-03 (T-H02): история версий — снимки прошлых items при каждом set. */
+    history: jsonb('history')
+      .$type<Array<{ items: unknown; at: string; by: string }>>()
+      .notNull()
+      .default([]),
     ...timestamps,
   },
   (table) => [uniqueIndex('config_list_key_idx').on(table.tenantId, table.listKey)],
