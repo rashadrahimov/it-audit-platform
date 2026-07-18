@@ -77,7 +77,8 @@
       "thirdParty": "Third parties & trust",
       "org": "Organization & settings"
     },
-    "trends": "Trends"
+    "trends": "Trends",
+    "allocations": "Resource allocations"
   },
   "engagements": {
     "title": "Engagements",
@@ -780,5 +781,22 @@
       "findings_by_status": "Findings by status",
       "findings_by_severity": "Findings by severity"
     }
+  },
+  "allocations": {
+    "title": "Resource allocations",
+    "toAccount": "To account",
+    "member": "Team member",
+    "pickMember": "Pick member",
+    "engagement": "Engagement",
+    "pickEngagement": "Pick engagement",
+    "hours": "Hours",
+    "period": "Period (opt.)",
+    "allocate": "Allocate",
+    "utilization": "Team utilization",
+    "capacity": "Capacity (h)",
+    "apply": "Apply",
+    "empty": "No team members yet",
+    "h": "h",
+    "overallocated": "overallocated"
   }
 }

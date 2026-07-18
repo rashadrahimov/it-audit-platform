@@ -77,7 +77,8 @@
       "thirdParty": "Üçüncü tərəflər və etibar",
       "org": "Təşkilat və tənzimləmələr"
     },
-    "trends": "Trendlər"
+    "trends": "Trendlər",
+    "allocations": "Resurs bölgüsü"
   },
   "engagements": {
     "title": "Auditlər",
@@ -780,5 +781,22 @@
       "findings_by_status": "Tapıntılar (status üzrə)",
       "findings_by_severity": "Tapıntılar (kritiklik üzrə)"
     }
+  },
+  "allocations": {
+    "title": "Resurs bölgüsü",
+    "toAccount": "Hesaba",
+    "member": "Komanda üzvü",
+    "pickMember": "Üzv seçin",
+    "engagement": "Layihə",
+    "pickEngagement": "Layihə seçin",
+    "hours": "Saatlar",
+    "period": "Dövr (istəyə görə)",
+    "allocate": "Təyin et",
+    "utilization": "Komanda yükü",
+    "capacity": "Tutum (saat)",
+    "apply": "Tətbiq et",
+    "empty": "Hələ komanda üzvü yoxdur",
+    "h": "saat",
+    "overallocated": "həddindən artıq yük"
   }
 }

@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** Разблокировка allocations. **T-A23 сделан:** backend `GET /memberships` (модуль memberships, RBAC settings/view, join membership×user×role, роль через resolveLocalized). Снимает блокер allocations-UI.
-- **Следующий шаг:** T-A24 — UI `/allocations` (аллокация ресурса: engagement+member+hours через `POST /allocations`; утилизация vs capacity через `GET /allocations/utilization`). Селектор участника — из нового `/memberships`.
+- **Текущая задача:** ✅ allocations разблокирован. T-A23 backend `GET /memberships` + T-A24 UI `/allocations` (аллокация engagement+member+hours + утилизация команды vs capacity, progressbar). E2E проверен: POST 40ч → utilization 40 (25%). Единственный buildable-блокер Трека A снят.
+- **Следующий шаг:** Трек A полностью исчерпан (все buildable — [x], остаток [!] инфра/форки). По желанию Рашада: Трек C (client-answers T-001), деплой-пайплайн (EP-ONPREM), либо новый эпик.
 - **Последнее готово:** **Марафон-5 (Трек A UI-глубина) 18.07.2026 — T-A01…A22 (22 задачи): 15 экранов интерактива (risks/privacy/iam/code-changes/config/reports/api-keys/notifications/time/kpi/audit-programs/kb/questionnaires/satisfaction/plans/trends) + навигационный хаб (7 категорий) + i18n-гвард (610 ключей ×3) + 5 вынесенных unit-модулей (api 20→51 тест).** Все 17 экранов 200, verify зелёный, GitHub каждый коммит запушен.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._

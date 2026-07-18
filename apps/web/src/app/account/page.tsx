@@ -42,6 +42,7 @@ const NAV_GROUPS: Array<{ group: string; items: Array<{ href: string; testid: st
       { href: '/audit-programs', testid: 'go-audit-programs', label: 'auditPrograms' },
       { href: '/working-papers', testid: 'go-working-papers', label: 'workingPapers' },
       { href: '/plans', testid: 'go-plans', label: 'plans' },
+      { href: '/allocations', testid: 'go-allocations', label: 'allocations' },
       { href: '/time', testid: 'go-time', label: 'time' },
       { href: '/satisfaction', testid: 'go-satisfaction', label: 'satisfaction' },
     ],

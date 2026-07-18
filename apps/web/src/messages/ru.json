@@ -77,7 +77,8 @@
       "thirdParty": "Третьи стороны и доверие",
       "org": "Организация и настройки"
     },
-    "trends": "Тренды"
+    "trends": "Тренды",
+    "allocations": "Аллокации ресурсов"
   },
   "engagements": {
     "title": "Аудиты",
@@ -780,5 +781,22 @@
       "findings_by_status": "Находки по статусу",
       "findings_by_severity": "Находки по критичности"
     }
+  },
+  "allocations": {
+    "title": "Аллокации ресурсов",
+    "toAccount": "В аккаунт",
+    "member": "Участник",
+    "pickMember": "Выберите участника",
+    "engagement": "Проект",
+    "pickEngagement": "Выберите проект",
+    "hours": "Часы",
+    "period": "Период (необяз.)",
+    "allocate": "Назначить",
+    "utilization": "Утилизация команды",
+    "capacity": "Ёмкость (ч)",
+    "apply": "Применить",
+    "empty": "Участников пока нет",
+    "h": "ч",
+    "overallocated": "перегрузка"
   }
 }
