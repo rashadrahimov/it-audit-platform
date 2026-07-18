@@ -29,6 +29,7 @@ import { RisksModule } from './risks/risks.module';
 import { TestsModule } from './tests/tests.module';
 import { UsersModule } from './users/users.module';
 import { VendorsModule } from './vendors/vendors.module';
+import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { VendorsModule } from './vendors/vendors.module';
     TestsModule,
     UsersModule,
     VendorsModule,
+    VulnerabilitiesModule,
   ],
   controllers: [HealthController, InfraHealthController],
   providers: [InfraHealthService],

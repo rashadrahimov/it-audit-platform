@@ -8,6 +8,7 @@ export interface SlaRecalcResult {
   findings: number;
   tests: number;
   deprovisioning: number;
+  vulnerabilities: number;
 }
 
 /**
@@ -21,7 +22,12 @@ export class SlaService {
 
   async recalc(): Promise<SlaRecalcResult> {
     const tenants = await this.dbService.db.select({ id: tenant.id }).from(tenant);
-    const totals: SlaRecalcResult = { findings: 0, tests: 0, deprovisioning: 0 };
+    const totals: SlaRecalcResult = {
+      findings: 0,
+      tests: 0,
+      deprovisioning: 0,
+      vulnerabilities: 0,
+    };
     const dueSoon = env.slaDueSoonDays;
     for (const t of tenants) {
       await this.dbService.withTenant(t.id, async (tx) => {
@@ -46,9 +52,17 @@ export class SlaService {
             ELSE 'ok' END
           WHERE "completed_at" IS NULL AND "due_date" IS NOT NULL AND "status" = 'open'
         `);
+        const vulns = await tx.execute(sql`
+          UPDATE "vulnerability" SET "sla_status" = CASE
+            WHEN "due_date" < now() THEN 'overdue'
+            WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
+            ELSE 'ok' END
+          WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'resolved'
+        `);
         totals.findings += findings.rowCount ?? 0;
         totals.tests += tests.rowCount ?? 0;
         totals.deprovisioning += deprov.rowCount ?? 0;
+        totals.vulnerabilities += vulns.rowCount ?? 0;
       });
     }
     return totals;

@@ -938,6 +938,30 @@ export const vendorAssessment = pgTable(
   (table) => [index('vendor_assessment_vendor_idx').on(table.vendorId)],
 );
 
+/** Vulnerability (T-062, B13): уязвимость; импорт коннектором или вручную; SLA на due_date. */
+export const vulnerability = pgTable(
+  'vulnerability',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    accountId: uuid('account_id'),
+    connectorId: uuid('connector_id'),
+    cve: text('cve'),
+    title: text('title').notNull(),
+    description: text('description'),
+    severity: text('severity').notNull().default('medium'),
+    status: text('status').notNull().default('open'),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    slaStatus: text('sla_status').notNull().default('ok'),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('vulnerability_tenant_idx').on(table.tenantId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
