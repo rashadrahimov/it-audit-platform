@@ -57,7 +57,8 @@
     "risks": "Risk Register",
     "privacy": "Privacy (ROPA/DPIA)",
     "iam": "IAM — Accounts",
-    "codeChanges": "Change Management"
+    "codeChanges": "Change Management",
+    "config": "Settings"
   },
   "engagements": {
     "title": "Engagements",
@@ -568,5 +569,19 @@
       "rejected": "Rejected",
       "deployed": "Deployed"
     }
+  },
+  "config": {
+    "title": "Settings",
+    "toAccount": "To account",
+    "auditTypes": "Audit types",
+    "tags": "Tags",
+    "codePh": "code (a-z0-9_)",
+    "namePh": "Name",
+    "tagPh": "Tag name",
+    "color": "Color",
+    "add": "Add",
+    "global": "Global",
+    "custom": "Custom",
+    "empty": "Nothing yet"
   }
 }

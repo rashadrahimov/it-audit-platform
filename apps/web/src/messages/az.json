@@ -57,7 +57,8 @@
     "risks": "Risk Reyestri",
     "privacy": "Məxfilik (ROPA/DPIA)",
     "iam": "IAM — Hesablar",
-    "codeChanges": "Dəyişiklik İdarəetməsi"
+    "codeChanges": "Dəyişiklik İdarəetməsi",
+    "config": "Tənzimləmələr"
   },
   "engagements": {
     "title": "Auditlər",
@@ -568,5 +569,19 @@
       "rejected": "Rədd edilib",
       "deployed": "Yerləşdirilib"
     }
+  },
+  "config": {
+    "title": "Tənzimləmələr",
+    "toAccount": "Hesaba",
+    "auditTypes": "Audit növləri",
+    "tags": "Teqlər",
+    "codePh": "kod (a-z0-9_)",
+    "namePh": "Ad",
+    "tagPh": "Teq adı",
+    "color": "Rəng",
+    "add": "Əlavə et",
+    "global": "Qlobal",
+    "custom": "Fərdi",
+    "empty": "Hələ boşdur"
   }
 }
