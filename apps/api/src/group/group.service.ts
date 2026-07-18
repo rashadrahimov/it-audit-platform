@@ -2,13 +2,15 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { and, eq, isNull } from 'drizzle-orm';
 import { resolveLocalized, type Locale } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { department, engagement, finding, membership, subsidiary } from '../db/schema';
+import { department, engagement, finding, membership, risk, subsidiary } from '../db/schema';
 
 interface Counts {
   engagementsByState: Record<string, number>;
   findingsByRating: Record<string, number>;
   findingsByStatus: Record<string, number>;
   openFindings: number;
+  /** Групповая risk-карта (EP-GROUP): распределение рисков по классам. */
+  risksByClass: Record<string, number>;
 }
 
 const emptyCounts = (): Counts => ({
@@ -16,6 +18,7 @@ const emptyCounts = (): Counts => ({
   findingsByRating: {},
   findingsByStatus: {},
   openFindings: 0,
+  risksByClass: {},
 });
 
 const bump = (rec: Record<string, number>, key: string): void => {
@@ -59,7 +62,11 @@ export class GroupService {
         .from(finding)
         .where(isNull(finding.deletedAt));
       const departments = await tx.select().from(department);
-      return { subsidiaries, engagements, findings, departments };
+      const risks = await tx
+        .select({ subsidiaryId: risk.subsidiaryId, riskClass: risk.riskClass })
+        .from(risk)
+        .where(isNull(risk.deletedAt));
+      return { subsidiaries, engagements, findings, departments, risks };
     });
     // membership над-тенантная — резолв департаментов владельцев вне RLS
     const memberships = await this.dbService.db
@@ -116,6 +123,16 @@ export class GroupService {
           if (f.status !== 'closed') counts.openFindings += 1;
         }
       }
+    }
+
+    // консолидированная групповая risk-карта (EP-GROUP): по классам, с учётом scope
+    for (const r of data.risks) {
+      const subsidiaryId = r.subsidiaryId ?? null;
+      if (subsidiaryId !== null && !visibleIds.has(subsidiaryId)) continue;
+      if (subsidiaryId === null && scope !== null) continue;
+      const cls = r.riskClass ?? 'unset';
+      bump(group.risksByClass, cls);
+      if (subsidiaryId !== null) bump(bySubsidiary.get(subsidiaryId)!.risksByClass, cls);
     }
 
     return {

@@ -403,7 +403,9 @@ OpenAPI-спека уже отдаётся (SwaggerModule /docs + /docs-json, ma
 ## Добавки поверх паритета (наши, строим параллельно — эпики)
 
 - **EP-AI** — AI-генерация checklists и findings из бизнес-профиля + документов (ADR-0004).
-- **EP-GROUP** — Групповая консолидация и кросс-дочерние роли (заложено в M0, углубляем).
+- [x] **T-103** — Консолидированная групповая risk-карта (EP-GROUP): расширить `GET /group/summary` — распределение рисков по классам (risksByClass) на уровне группы и каждой дочки, с учётом subsidiary_scope (standalone-риски — только при полном скоупе). _Deps: T-012, T-057._ DoD: групповой summary включает risksByClass по группе и дочкам, scope режет видимость. **Готово: GroupService.summary расширен — Counts +risksByClass, риски (risk.subsidiary_id→risk_class) агрегируются в group + bySubsidiary с учётом scope (standalone risk subsidiary_id NULL → только полный скоуп). Без миграции (читает risk). E2e: групповая risk-карта {critical:5, high:2, medium:1, low:1}, дочки с risksByClass-полем, findings-консолидация (T-012) цела, scope=group для admin, Collaborator report.view→200. Existing engagements/findings/departments-консолидация не тронута.**
+
+- [x] **EP-GROUP** — Групповая консолидация и кросс-дочерние роли (заложено в M0, углубляем). **Закрыто: T-012 (кросс-дочерние роли + консолидация engagements/findings по группе/дочкам/департаментам с subsidiary_scope) + T-103 (консолидированная групповая risk-карта). Кросс-дочерние роли — membership.subsidiary_scope (ADR-0003).**
 ### Эпик: Risk-based планирование (EP-PLAN, наша добавка + UNI-03/04/08) — расписан на атомы 18.07.2026 (марафон-4)
 
 Годовой план аудитов с приоритизацией по риску (risk-based) + capacity (человеко-часы). Модель — data-model §4 (plan/plan_item). Замыкает EP-UNIVERSE (связь узел↔план).
