@@ -63,7 +63,8 @@
     "apiKeys": "API keys",
     "notifications": "Notifications",
     "time": "Time tracking",
-    "kpi": "Control KPIs"
+    "kpi": "Control KPIs",
+    "auditPrograms": "Audit programs"
   },
   "engagements": {
     "title": "Engagements",
@@ -686,5 +687,18 @@
       "higher_better": "Higher is better",
       "lower_better": "Lower is better"
     }
+  },
+  "auditPrograms": {
+    "title": "Audit programs",
+    "toAccount": "To account",
+    "namePh": "Program title",
+    "subjectArea": "Subject area",
+    "noEngagement": "— no engagement —",
+    "step": "Step",
+    "add": "Create",
+    "empty": "No audit programs yet",
+    "rolled": "rolled-forward",
+    "rollTarget": "Target engagement",
+    "rollForward": "Roll forward"
   }
 }

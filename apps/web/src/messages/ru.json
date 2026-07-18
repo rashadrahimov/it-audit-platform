@@ -63,7 +63,8 @@
     "apiKeys": "API-ключи",
     "notifications": "Уведомления",
     "time": "Учёт времени",
-    "kpi": "KPI контролей"
+    "kpi": "KPI контролей",
+    "auditPrograms": "Программы аудита"
   },
   "engagements": {
     "title": "Аудиты",
@@ -686,5 +687,18 @@
       "higher_better": "Больше — лучше",
       "lower_better": "Меньше — лучше"
     }
+  },
+  "auditPrograms": {
+    "title": "Программы аудита",
+    "toAccount": "В аккаунт",
+    "namePh": "Название программы",
+    "subjectArea": "Область",
+    "noEngagement": "— без проекта —",
+    "step": "Шаг",
+    "add": "Создать",
+    "empty": "Программ аудита пока нет",
+    "rolled": "перенесена",
+    "rollTarget": "Целевой проект",
+    "rollForward": "Перенести"
   }
 }

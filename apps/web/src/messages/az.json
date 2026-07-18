@@ -63,7 +63,8 @@
     "apiKeys": "API açarları",
     "notifications": "Bildirişlər",
     "time": "Vaxt uçotu",
-    "kpi": "Kontrol KPI-ları"
+    "kpi": "Kontrol KPI-ları",
+    "auditPrograms": "Audit proqramları"
   },
   "engagements": {
     "title": "Auditlər",
@@ -686,5 +687,18 @@
       "higher_better": "Çox — yaxşı",
       "lower_better": "Az — yaxşı"
     }
+  },
+  "auditPrograms": {
+    "title": "Audit proqramları",
+    "toAccount": "Hesaba",
+    "namePh": "Proqram adı",
+    "subjectArea": "Sahə",
+    "noEngagement": "— layihəsiz —",
+    "step": "Addım",
+    "add": "Yarat",
+    "empty": "Hələ audit proqramı yoxdur",
+    "rolled": "köçürülüb",
+    "rollTarget": "Hədəf layihə",
+    "rollForward": "Köçür"
   }
 }
