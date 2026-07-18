@@ -47,7 +47,8 @@
     "glossary": "Lüğət",
     "snapshots": "Anlıq görüntülər",
     "devices": "Cihaz Uyğunluğu",
-    "personnel": "Personal"
+    "personnel": "Personal",
+    "vendors": "Təchizatçı Riski"
   },
   "engagements": {
     "title": "Auditlər",
@@ -322,6 +323,23 @@
       "active": "Aktiv",
       "onboarding": "İşə qəbul",
       "offboarded": "İşdən çıxıb"
+    }
+  },
+  "vendors": {
+    "title": "Təchizatçı Riski",
+    "toAccount": "Hesab",
+    "empty": "Hələ təchizatçı yoxdur",
+    "risk": "Xas risk",
+    "cls": {
+      "low": "Aşağı",
+      "medium": "Orta",
+      "high": "Yüksək",
+      "critical": "Kritik"
+    },
+    "status": {
+      "procurement": "Satınalma",
+      "active": "Aktiv",
+      "archived": "Arxiv"
     }
   }
 }

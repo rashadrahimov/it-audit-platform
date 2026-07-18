@@ -47,7 +47,8 @@
     "glossary": "Глоссарий",
     "snapshots": "Снапшоты",
     "devices": "Соответствие устройств",
-    "personnel": "Персонал"
+    "personnel": "Персонал",
+    "vendors": "Риск вендоров"
   },
   "engagements": {
     "title": "Аудиты",
@@ -322,6 +323,23 @@
       "active": "Активен",
       "onboarding": "Онбординг",
       "offboarded": "Уволен"
+    }
+  },
+  "vendors": {
+    "title": "Риск вендоров",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет вендоров",
+    "risk": "Присущий риск",
+    "cls": {
+      "low": "Низкий",
+      "medium": "Средний",
+      "high": "Высокий",
+      "critical": "Критический"
+    },
+    "status": {
+      "procurement": "Закупка",
+      "active": "Активный",
+      "archived": "Архив"
     }
   }
 }

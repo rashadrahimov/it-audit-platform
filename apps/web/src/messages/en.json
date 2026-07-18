@@ -47,7 +47,8 @@
     "glossary": "Glossary",
     "snapshots": "Snapshots",
     "devices": "Endpoint Compliance",
-    "personnel": "Personnel"
+    "personnel": "Personnel",
+    "vendors": "Vendor Risk"
   },
   "engagements": {
     "title": "Engagements",
@@ -322,6 +323,23 @@
       "active": "Active",
       "onboarding": "Onboarding",
       "offboarded": "Offboarded"
+    }
+  },
+  "vendors": {
+    "title": "Vendor Risk",
+    "toAccount": "Account",
+    "empty": "No vendors yet",
+    "risk": "Inherent risk",
+    "cls": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "status": {
+      "procurement": "Procurement",
+      "active": "Active",
+      "archived": "Archived"
     }
   }
 }
