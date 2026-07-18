@@ -53,7 +53,8 @@
     "vulnerabilities": "Vulnerabilities",
     "securityAlerts": "Security Alerts",
     "commitments": "Commitments",
-    "accessReviews": "Access Reviews"
+    "accessReviews": "Access Reviews",
+    "risks": "Risk Register"
   },
   "engagements": {
     "title": "Engagements",
@@ -446,6 +447,32 @@
       "draft": "Draft",
       "in_progress": "In progress",
       "completed": "Completed"
+    }
+  },
+  "risks": {
+    "title": "Risk Register",
+    "toAccount": "Account",
+    "empty": "No risks yet",
+    "inherent": "Inherent",
+    "residual": "Residual",
+    "treatment": "Treatment",
+    "status": "Status",
+    "create": "New risk",
+    "titlePh": "Risk title",
+    "impact": "Impact",
+    "likelihood": "Likelihood",
+    "add": "Add",
+    "cls": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "tr": {
+      "mitigate": "Mitigate",
+      "transfer": "Transfer",
+      "accept": "Accept",
+      "avoid": "Avoid"
     }
   }
 }

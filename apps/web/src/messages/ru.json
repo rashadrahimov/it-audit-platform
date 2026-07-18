@@ -53,7 +53,8 @@
     "vulnerabilities": "Уязвимости",
     "securityAlerts": "Оповещения ИБ",
     "commitments": "Обязательства",
-    "accessReviews": "Ревью доступа"
+    "accessReviews": "Ревью доступа",
+    "risks": "Реестр рисков"
   },
   "engagements": {
     "title": "Аудиты",
@@ -446,6 +447,32 @@
       "draft": "Черновик",
       "in_progress": "В процессе",
       "completed": "Завершено"
+    }
+  },
+  "risks": {
+    "title": "Реестр рисков",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет рисков",
+    "inherent": "Присущий",
+    "residual": "Остаточный",
+    "treatment": "Обработка",
+    "status": "Статус",
+    "create": "Новый риск",
+    "titlePh": "Название риска",
+    "impact": "Влияние",
+    "likelihood": "Вероятность",
+    "add": "Добавить",
+    "cls": {
+      "low": "Низкий",
+      "medium": "Средний",
+      "high": "Высокий",
+      "critical": "Критический"
+    },
+    "tr": {
+      "mitigate": "Снижать",
+      "transfer": "Передать",
+      "accept": "Принять",
+      "avoid": "Избегать"
     }
   }
 }

@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** UI-трек — все 3 части «все сделай» покрыты: 15 read-only экранов + интерактивность (T-U16 commitments, T-U17 alerts/vulns, T-U18 vendors) + **drill-down** (T-U19 `/vendors/[id]` — карточка + assessments, notFound→404, кликабельные имена). Backend готов (~63 модуля, миграции 0062).
-- **Следующий шаг:** Размножить паттерны на остальные экраны (drill-down для risk/engagement/finding, интерактивность devices/working-papers) + i18n-полнота прежних экранов. «все сделай» — Рашад.
+- **Текущая задача:** Марафон Трека A (roadmap-to-release, UI-глубина). Начато: T-A01 `/risks` — реестр рисков + форма создания (impact×likelihood → risk_class + treatment). До того: 15 экранов + интерактивность (T-U16…U18) + drill-down (T-U19).
+- **Следующий шаг:** По приоритету A1: ROPA/DPIA (privacy) → IAM (accounts/access-requests) → audit programs/code-changes → config → reports → api-keys/notifications/KPI/time. Каждый — server actions по эталону, зелёный чекпоинт.
 - **Последнее готово:** **Марафон-4 18.07.2026 — 43 задачи (T-060…103): весь M2 + весь M3 + RFP-эпики (AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP/MSG/REPWIZ/SCHED) + Добавки (PLAN/GROUP), EP-I18N backend-ядро. Миграции до 0061. Стоп-условие достигнуто.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._

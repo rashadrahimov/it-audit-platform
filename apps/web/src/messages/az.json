@@ -53,7 +53,8 @@
     "vulnerabilities": "Zəifliklər",
     "securityAlerts": "Təhlükəsizlik Bildirişləri",
     "commitments": "Öhdəliklər",
-    "accessReviews": "Giriş Baxışları"
+    "accessReviews": "Giriş Baxışları",
+    "risks": "Risk Reyestri"
   },
   "engagements": {
     "title": "Auditlər",
@@ -446,6 +447,32 @@
       "draft": "Qaralama",
       "in_progress": "Davam edir",
       "completed": "Tamamlanıb"
+    }
+  },
+  "risks": {
+    "title": "Risk Reyestri",
+    "toAccount": "Hesab",
+    "empty": "Hələ risk yoxdur",
+    "inherent": "Xas",
+    "residual": "Qalıq",
+    "treatment": "Emal",
+    "status": "Status",
+    "create": "Yeni risk",
+    "titlePh": "Risk adı",
+    "impact": "Təsir",
+    "likelihood": "Ehtimal",
+    "add": "Əlavə et",
+    "cls": {
+      "low": "Aşağı",
+      "medium": "Orta",
+      "high": "Yüksək",
+      "critical": "Kritik"
+    },
+    "tr": {
+      "mitigate": "Azaltmaq",
+      "transfer": "Ötürmək",
+      "accept": "Qəbul",
+      "avoid": "Qaçınmaq"
     }
   }
 }
