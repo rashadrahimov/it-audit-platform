@@ -66,7 +66,8 @@
     "kpi": "Kontrol KPI-ları",
     "auditPrograms": "Audit proqramları",
     "knowledgeBase": "Bilik bazası",
-    "questionnaires": "Sorğular"
+    "questionnaires": "Sorğular",
+    "satisfaction": "Audit məmnunluğu"
   },
   "engagements": {
     "title": "Auditlər",
@@ -736,5 +737,16 @@
     "addQuestion": "Sual əlavə et",
     "submit": "Göndər",
     "submitHint": "Əvvəlcə bütün suallara cavab verin"
+  },
+  "satisfaction": {
+    "title": "Audit məmnunluğu",
+    "toAccount": "Hesaba",
+    "engagement": "Layihə",
+    "show": "Göstər",
+    "avgRating": "Orta reytinq",
+    "responses": "Cavablar",
+    "rate": "Bu auditi qiymətləndirin (1–5)",
+    "commentPh": "Şərh (istəyə görə)",
+    "submit": "Qiyməti göndər"
   }
 }

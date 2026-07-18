@@ -66,7 +66,8 @@
     "kpi": "Control KPIs",
     "auditPrograms": "Audit programs",
     "knowledgeBase": "Knowledge base",
-    "questionnaires": "Questionnaires"
+    "questionnaires": "Questionnaires",
+    "satisfaction": "Audit satisfaction"
   },
   "engagements": {
     "title": "Engagements",
@@ -736,5 +737,16 @@
     "addQuestion": "Add question",
     "submit": "Submit",
     "submitHint": "Answer all questions first"
+  },
+  "satisfaction": {
+    "title": "Audit satisfaction",
+    "toAccount": "To account",
+    "engagement": "Engagement",
+    "show": "Show",
+    "avgRating": "Average rating",
+    "responses": "Responses",
+    "rate": "Rate this audit (1–5)",
+    "commentPh": "Comment (optional)",
+    "submit": "Submit rating"
   }
 }

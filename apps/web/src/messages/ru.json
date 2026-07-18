@@ -66,7 +66,8 @@
     "kpi": "KPI контролей",
     "auditPrograms": "Программы аудита",
     "knowledgeBase": "База знаний",
-    "questionnaires": "Опросники"
+    "questionnaires": "Опросники",
+    "satisfaction": "Удовлетворённость аудитом"
   },
   "engagements": {
     "title": "Аудиты",
@@ -736,5 +737,16 @@
     "addQuestion": "Добавить вопрос",
     "submit": "Отправить",
     "submitHint": "Сначала ответьте на все вопросы"
+  },
+  "satisfaction": {
+    "title": "Удовлетворённость аудитом",
+    "toAccount": "В аккаунт",
+    "engagement": "Проект",
+    "show": "Показать",
+    "avgRating": "Средний рейтинг",
+    "responses": "Ответов",
+    "rate": "Оцените аудит (1–5)",
+    "commentPh": "Комментарий (необязательно)",
+    "submit": "Отправить оценку"
   }
 }
