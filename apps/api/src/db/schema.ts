@@ -1196,6 +1196,41 @@ export const privacyAssessment = pgTable(
   (table) => [index('privacy_assessment_tenant_idx').on(table.tenantId)],
 );
 
+/** Audit program (T-093, ENG-04/05): шаблон (engagement_id NULL) или инстанс + roll-forward. */
+export const auditProgram = pgTable(
+  'audit_program',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    engagementId: uuid('engagement_id').references(() => engagement.id),
+    originProgramId: uuid('origin_program_id'),
+    subjectArea: text('subject_area'),
+    titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('audit_program_tenant_idx').on(table.tenantId)],
+);
+
+/** Шаг audit program (T-093): процедура fieldwork. */
+export const programStep = pgTable(
+  'program_step',
+  {
+    id: id(),
+    programId: uuid('program_id')
+      .notNull()
+      .references(() => auditProgram.id, { onDelete: 'cascade' }),
+    order: integer('order').notNull().default(0),
+    titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
+    instructionsI18n: jsonb('instructions_i18n').$type<I18nText>(),
+    status: text('status').notNull().default('pending'),
+    ...timestamps,
+  },
+  (table) => [index('program_step_program_idx').on(table.programId)],
+);
+
 /** Working paper (T-092, EP-WPAPERS, WP-02): контейнер fieldwork с sign-off preparer≠reviewer. */
 export const workingPaper = pgTable(
   'working_paper',

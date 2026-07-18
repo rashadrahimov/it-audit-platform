@@ -6,6 +6,7 @@ import { ApiKeysModule } from './api-keys/api-keys.module';
 import { ApiV1Module } from './api-v1/api-v1.module';
 import { AssetsModule } from './assets/assets.module';
 import { AuditModule } from './audit/audit.module';
+import { AuditProgramsModule } from './audit-programs/audit-programs.module';
 import { AuditTypesModule } from './audit-types/audit-types.module';
 import { AuthModule } from './auth/auth.module';
 import { ChangesModule } from './changes/changes.module';
@@ -61,6 +62,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     ApiV1Module,
     AssetsModule,
     AuditModule,
+    AuditProgramsModule,
     AuditTypesModule,
     AuthModule,
     ChangesModule,
