@@ -1021,6 +1021,26 @@ export const questionnaireAnswer = pgTable(
   (table) => [index('questionnaire_answer_q_idx').on(table.questionnaireId)],
 );
 
+/** In-app уведомление (T-096, GEN-04): сообщение из системы адресату. */
+export const notification = pgTable(
+  'notification',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    recipientMembershipId: uuid('recipient_membership_id')
+      .notNull()
+      .references(() => membership.id),
+    type: text('type').notNull().default('info'),
+    title: text('title').notNull(),
+    body: text('body'),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('notification_recipient_idx').on(table.recipientMembershipId)],
+);
+
 /** Термин глоссария (T-095, GEN-09): global-сид (tenant_id NULL) + кастом тенанта. */
 export const glossaryTerm = pgTable(
   'glossary_term',

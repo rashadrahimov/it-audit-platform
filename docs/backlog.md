@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-HELP (ядро GEN-09) закрыт (T-095). Следующая — декомпозиция EP-MSG (сообщения из системы, satisfaction surveys, GEN-04/ISS-06).
-- **Следующий шаг:** Распишу EP-MSG на атомы T-096+ (notification/message-центр + satisfaction survey) и сделаю. Дальше — EP-REPWIZ / EP-SCHED.
+- **Текущая задача:** EP-MSG — T-096 (notification-центр GEN-04) закрыта. Следующая — T-097 (satisfaction survey, ISS-06), закроет EP-MSG.
+- **Следующий шаг:** T-097 (satisfaction_survey рейтинг 1-5 + средний по engagement) закроет EP-MSG. Дальше — EP-REPWIZ / EP-SCHED.
 - **Последнее готово:** **Марафон-4 18.07.2026: M2 (T-060…073) + M3 (T-074…083) + RFP EP-AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP (T-084…095) — 36 задач, миграции до 0057.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -353,7 +353,14 @@ WP как контейнер fieldwork + audit programs с roll-forward + sign-o
 
 - [x] **EP-SEARCH** — глобальный поиск best-match по findings/WP/чеклистам/шаблонам (GEN-05) + полнотекстовый поиск внутри Office/PDF (DAT-04). **Расписан на T-094. Ядро GEN-05 закрыто: кросс-сущностный ILIKE-поиск с лимитом на тип. Полнотекст в документах (DAT-04) — фаза 2 (нужен pipeline извлечения текста).**
 - **EP-REPWIZ** — report wizard + стандартные отчёты + сравнение по периодам + XML/CSV экспорт (REP-01/02/03/05/07).
-- **EP-MSG** — сообщения из системы (GEN-04), опросники из audit file с консолидацией (ENG-07), satisfaction surveys (ISS-06).
+### Эпик: Сообщения и опросы (EP-MSG, RFP GEN-04/ISS-06) — расписан на атомы 18.07.2026 (марафон-4)
+
+In-app notification-центр (сообщения из системы) + satisfaction surveys. Опросники из audit file (ENG-07) — переиспользуют questionnaire (T-083).
+
+- [x] **T-096** — Notification-центр (GEN-04): `notification` (tenant, recipient_membership_id, type, title, body, read_at); create (система/пользователь), список СВОИХ (member видит только адресованные ему), mark-read, счётчик непрочитанных. _Deps: T-020._ DoD: уведомление создаётся адресату, member видит только свои, отмечает прочитанным, счётчик непрочитанных корректен, чужое не видно. **Готово: миграция 0058 — notification (FORCE RLS; recipient_membership_id, type info/warning/action, title/body, read_at). create (settings.edit — система/админ рассылает), listMine (только адресованные текущему member, unread-счётчик), markRead (только своё — recipient-фильтр, чужое = no-op не раскрывая). API create=settings.edit, list/read=engagement.view. E2e: admin шлёт 2 себе+1 коллеге→admin видит 2 (чужое не видно) unread=2, read→unread=1, collaborator видит только своё (1), collaborator читает admin-уведомление→no-op (admin unread=1 неизменен, изоляция), Collaborator create→403.**
+- [ ] **T-097** — Satisfaction survey (ISS-06): `satisfaction_survey` (engagement_id, respondent, rating 1-5, comment, submitted_at); отправка оценки удовлетворённости по engagement + агрегат среднего рейтинга. _Deps: T-096, T-035._ DoD: оценка 1-5 сохраняется, средний рейтинг по engagement считается, рейтинг вне 1-5→400. **EP-MSG (ядро) закрыт этими двумя.**
+
+- [ ] **EP-MSG** — сообщения из системы (GEN-04), опросники из audit file с консолидацией (ENG-07), satisfaction surveys (ISS-06). **Расписан на T-096–T-097 (notification + satisfaction); опросники audit file (ENG-07) — через questionnaire T-083.**
 - **EP-MIGRATE** — инструмент миграции исторических данных (≥4 лет) из Office-файлов: планы/отчёты/findings/действия/тайм-листы (IMP-03).
 ### Эпик: Публичный REST API (EP-API, RFP INT-01 Mandatory) — расписан на атомы 18.07.2026 (марафон-4)
 

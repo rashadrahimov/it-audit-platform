@@ -34,6 +34,7 @@ import { InvitesModule } from './invites/invites.module';
 import { JobsModule } from './jobs/jobs.module';
 import { KnowledgeBaseModule } from './knowledge-base/knowledge-base.module';
 import { LicenseModule } from './license/license.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { PersonnelModule } from './personnel/personnel.module';
 import { PoliciesModule } from './policies/policies.module';
@@ -89,6 +90,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     JobsModule,
     KnowledgeBaseModule,
     LicenseModule,
+    NotificationsModule,
     OnboardingModule,
     PersonnelModule,
     PoliciesModule,
