@@ -44,7 +44,8 @@
     "plans": "Audit Planları",
     "chartDashboards": "Qrafik Panelləri",
     "trustCenter": "Etibar Mərkəzi",
-    "glossary": "Lüğət"
+    "glossary": "Lüğət",
+    "snapshots": "Anlıq görüntülər"
   },
   "engagements": {
     "title": "Auditlər",
@@ -286,5 +287,14 @@
     "search": "Termin axtar",
     "global": "Standart",
     "custom": "Fərdi"
+  },
+  "snapshots": {
+    "title": "Anlıq görüntülər",
+    "toAccount": "Hesab",
+    "empty": "Hələ anlıq görüntü yoxdur",
+    "capturedAt": "qeyd edilib",
+    "controls": "Kontrollar",
+    "risks": "Risklər",
+    "findings": "Tapıntılar"
   }
 }

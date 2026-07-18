@@ -44,7 +44,8 @@
     "plans": "Планы аудита",
     "chartDashboards": "Чарт-дашборды",
     "trustCenter": "Центр доверия",
-    "glossary": "Глоссарий"
+    "glossary": "Глоссарий",
+    "snapshots": "Снапшоты"
   },
   "engagements": {
     "title": "Аудиты",
@@ -286,5 +287,14 @@
     "search": "Поиск терминов",
     "global": "Стандартный",
     "custom": "Кастомный"
+  },
+  "snapshots": {
+    "title": "Снапшоты",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет снапшотов",
+    "capturedAt": "зафиксирован",
+    "controls": "Контроли",
+    "risks": "Риски",
+    "findings": "Находки"
   }
 }

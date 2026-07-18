@@ -44,7 +44,8 @@
     "plans": "Audit Plans",
     "chartDashboards": "Chart Dashboards",
     "trustCenter": "Trust Center",
-    "glossary": "Glossary"
+    "glossary": "Glossary",
+    "snapshots": "Snapshots"
   },
   "engagements": {
     "title": "Engagements",
@@ -286,5 +287,14 @@
     "search": "Search terms",
     "global": "Standard",
     "custom": "Custom"
+  },
+  "snapshots": {
+    "title": "Snapshots",
+    "toAccount": "Account",
+    "empty": "No snapshots yet",
+    "capturedAt": "captured",
+    "controls": "Controls",
+    "risks": "Risks",
+    "findings": "Findings"
   }
 }
