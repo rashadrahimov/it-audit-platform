@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** **UI-трек** идёт, **11 экранов** готовы и проверены (en/ru/az, guard, ссылки из /account): universe, risk-heatmap, plans, dashboards, trust-center, glossary, snapshots, devices, personnel, vendors, working-papers (T-U01…U11; WP — с селектором engagement + флаг edited-since-review). Backend готов (~63 модуля, миграции 0062).
-- **Следующий шаг:** Следующие UI-экраны (ui-ux-pro-max перед каждым): access reviews, security alerts/vulnerabilities, KPI-виджеты, drill-down карточки. Снятие `[!]` — по ответам клиента/инфре.
+- **Текущая задача:** **UI-трек** идёт, **12 экранов** готовы и проверены (en/ru/az, guard, ссылки из /account): universe, risk-heatmap, plans, dashboards, trust-center, glossary, snapshots, devices, personnel, vendors, working-papers, vulnerabilities (T-U01…U12). Backend готов (~63 модуля, миграции 0062).
+- **Следующий шаг:** Следующие UI-экраны (ui-ux-pro-max перед каждым): security alerts, access reviews, KPI-виджеты, drill-down карточки. Снятие `[!]` — по ответам клиента/инфре.
 - **Последнее готово:** **Марафон-4 18.07.2026 — 43 задачи (T-060…103): весь M2 + весь M3 + RFP-эпики (AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP/MSG/REPWIZ/SCHED) + Добавки (PLAN/GROUP), EP-I18N backend-ядро. Миграции до 0061. Стоп-условие достигнуто.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._

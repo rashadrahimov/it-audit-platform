@@ -49,7 +49,8 @@
     "devices": "Соответствие устройств",
     "personnel": "Персонал",
     "vendors": "Риск вендоров",
-    "workingPapers": "Рабочие документы"
+    "workingPapers": "Рабочие документы",
+    "vulnerabilities": "Уязвимости"
   },
   "engagements": {
     "title": "Аудиты",
@@ -356,6 +357,30 @@
       "in_review": "На ревью",
       "reviewed": "Отревьюен",
       "signed_off": "Подписан"
+    }
+  },
+  "vulnerabilities": {
+    "title": "Уязвимости",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет уязвимостей",
+    "cve": "CVE",
+    "severity": "Критичность",
+    "sla": "SLA",
+    "sev": {
+      "low": "Низкая",
+      "medium": "Средняя",
+      "high": "Высокая",
+      "critical": "Критическая"
+    },
+    "st": {
+      "open": "Открыта",
+      "remediating": "Устраняется",
+      "resolved": "Устранена"
+    },
+    "sla_s": {
+      "ok": "OK",
+      "due_soon": "Скоро срок",
+      "overdue": "Просрочено"
     }
   }
 }

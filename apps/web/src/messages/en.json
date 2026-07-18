@@ -49,7 +49,8 @@
     "devices": "Endpoint Compliance",
     "personnel": "Personnel",
     "vendors": "Vendor Risk",
-    "workingPapers": "Working Papers"
+    "workingPapers": "Working Papers",
+    "vulnerabilities": "Vulnerabilities"
   },
   "engagements": {
     "title": "Engagements",
@@ -356,6 +357,30 @@
       "in_review": "In review",
       "reviewed": "Reviewed",
       "signed_off": "Signed off"
+    }
+  },
+  "vulnerabilities": {
+    "title": "Vulnerabilities",
+    "toAccount": "Account",
+    "empty": "No vulnerabilities yet",
+    "cve": "CVE",
+    "severity": "Severity",
+    "sla": "SLA",
+    "sev": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "st": {
+      "open": "Open",
+      "remediating": "Remediating",
+      "resolved": "Resolved"
+    },
+    "sla_s": {
+      "ok": "OK",
+      "due_soon": "Due soon",
+      "overdue": "Overdue"
     }
   }
 }
