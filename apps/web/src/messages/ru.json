@@ -61,7 +61,8 @@
     "config": "Настройки",
     "reports": "Отчёты",
     "apiKeys": "API-ключи",
-    "notifications": "Уведомления"
+    "notifications": "Уведомления",
+    "time": "Учёт времени"
   },
   "engagements": {
     "title": "Аудиты",
@@ -636,6 +637,30 @@
       "info": "Инфо",
       "warning": "Внимание",
       "action": "Действие"
+    }
+  },
+  "time": {
+    "title": "Учёт времени",
+    "toAccount": "В аккаунт",
+    "date": "Дата",
+    "hours": "Часы",
+    "phase": "Фаза",
+    "category": "Категория",
+    "engagement": "Проект",
+    "noEngagement": "— нет —",
+    "add": "Записать",
+    "empty": "Записей времени пока нет",
+    "total": "Итого",
+    "phases": {
+      "planning": "Планирование",
+      "fieldwork": "Полевые работы",
+      "reporting": "Отчётность"
+    },
+    "categories": {
+      "audit": "Аудит",
+      "training": "Обучение",
+      "leave": "Отпуск",
+      "admin": "Админ"
     }
   }
 }

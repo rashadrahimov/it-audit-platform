@@ -61,7 +61,8 @@
     "config": "Settings",
     "reports": "Reports",
     "apiKeys": "API keys",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "time": "Time tracking"
   },
   "engagements": {
     "title": "Engagements",
@@ -636,6 +637,30 @@
       "info": "Info",
       "warning": "Warning",
       "action": "Action"
+    }
+  },
+  "time": {
+    "title": "Time tracking",
+    "toAccount": "To account",
+    "date": "Date",
+    "hours": "Hours",
+    "phase": "Phase",
+    "category": "Category",
+    "engagement": "Engagement",
+    "noEngagement": "— none —",
+    "add": "Log",
+    "empty": "No time entries yet",
+    "total": "Total",
+    "phases": {
+      "planning": "Planning",
+      "fieldwork": "Fieldwork",
+      "reporting": "Reporting"
+    },
+    "categories": {
+      "audit": "Audit",
+      "training": "Training",
+      "leave": "Leave",
+      "admin": "Admin"
     }
   }
 }

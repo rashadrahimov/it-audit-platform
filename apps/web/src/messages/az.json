@@ -61,7 +61,8 @@
     "config": "Tənzimləmələr",
     "reports": "Hesabatlar",
     "apiKeys": "API açarları",
-    "notifications": "Bildirişlər"
+    "notifications": "Bildirişlər",
+    "time": "Vaxt uçotu"
   },
   "engagements": {
     "title": "Auditlər",
@@ -636,6 +637,30 @@
       "info": "Məlumat",
       "warning": "Xəbərdarlıq",
       "action": "Fəaliyyət"
+    }
+  },
+  "time": {
+    "title": "Vaxt uçotu",
+    "toAccount": "Hesaba",
+    "date": "Tarix",
+    "hours": "Saatlar",
+    "phase": "Faza",
+    "category": "Kateqoriya",
+    "engagement": "Layihə",
+    "noEngagement": "— yoxdur —",
+    "add": "Qeyd et",
+    "empty": "Hələ vaxt qeydi yoxdur",
+    "total": "Cəmi",
+    "phases": {
+      "planning": "Planlaşdırma",
+      "fieldwork": "Sahə işi",
+      "reporting": "Hesabat"
+    },
+    "categories": {
+      "audit": "Audit",
+      "training": "Təlim",
+      "leave": "Məzuniyyət",
+      "admin": "Admin"
     }
   }
 }
