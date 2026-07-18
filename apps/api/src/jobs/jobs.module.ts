@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
+import { AuthModule } from '../auth/auth.module';
 import { env } from '../env';
 import { UsersModule } from '../users/users.module';
 import { SYSTEM_QUEUE } from './jobs.constants';
 import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
+import { SlaService } from './sla.service';
 import { SystemProcessor } from './system.processor';
 
 const redisUrl = new URL(env.redisUrl);
@@ -15,9 +17,10 @@ const redisUrl = new URL(env.redisUrl);
       connection: { host: redisUrl.hostname, port: Number(redisUrl.port || '6379') },
     }),
     BullModule.registerQueue({ name: SYSTEM_QUEUE }),
+    AuthModule,
     UsersModule,
   ],
   controllers: [JobsController],
-  providers: [JobsService, SystemProcessor],
+  providers: [JobsService, SlaService, SystemProcessor],
 })
 export class JobsModule {}

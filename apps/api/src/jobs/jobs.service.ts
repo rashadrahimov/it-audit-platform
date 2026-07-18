@@ -11,6 +11,8 @@ import {
   JOB_DEACTIVATE_INACTIVE,
   JOB_DEMO_DELAYED,
   JOB_HEARTBEAT,
+  JOB_SLA_RECALC,
+  SLA_RECALC_EVERY_MS,
   SYSTEM_QUEUE,
 } from './jobs.constants';
 
@@ -31,6 +33,11 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       'deactivate-inactive-scheduler',
       { every: DEACTIVATE_INACTIVE_EVERY_MS },
       { name: JOB_DEACTIVATE_INACTIVE },
+    );
+    await this.queue.upsertJobScheduler(
+      'sla-recalc-scheduler',
+      { every: SLA_RECALC_EVERY_MS },
+      { name: JOB_SLA_RECALC },
     );
   }
 

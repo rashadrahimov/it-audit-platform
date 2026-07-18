@@ -3,10 +3,12 @@ import { Job } from 'bullmq';
 import { env } from '../env';
 import { UsersService } from '../users/users.service';
 import { JobsService } from './jobs.service';
+import { SlaService } from './sla.service';
 import {
   JOB_DEACTIVATE_INACTIVE,
   JOB_DEMO_DELAYED,
   JOB_HEARTBEAT,
+  JOB_SLA_RECALC,
   SYSTEM_QUEUE,
 } from './jobs.constants';
 
@@ -16,6 +18,7 @@ export class SystemProcessor extends WorkerHost {
   constructor(
     private readonly jobsService: JobsService,
     private readonly usersService: UsersService,
+    private readonly slaService: SlaService,
   ) {
     super();
   }
@@ -30,6 +33,10 @@ export class SystemProcessor extends WorkerHost {
       case JOB_DEACTIVATE_INACTIVE: {
         const count = await this.usersService.deactivateInactive(env.inactivityDeactivationDays);
         return `деактивировано: ${count}`;
+      }
+      case JOB_SLA_RECALC: {
+        const result = await this.slaService.recalc();
+        return `SLA пересчитан: findings=${result.findings}, tests=${result.tests}`;
       }
       default:
         throw new Error(`Неизвестная джоба «${job.name}» в очереди ${SYSTEM_QUEUE}`);

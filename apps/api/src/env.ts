@@ -47,4 +47,6 @@ export const env = {
   ldapBindPassword: process.env.LDAP_BIND_PASSWORD ?? 'admin',
   ldapSearchBase: process.env.LDAP_SEARCH_BASE ?? 'ou=people,dc=demo,dc=io',
   ldapSearchFilter: process.env.LDAP_SEARCH_FILTER ?? '(|(uid={{username}})(mail={{username}}))',
+  /** T-043: за сколько дней до due_date статус становится due_soon. */
+  slaDueSoonDays: Number(process.env.SLA_DUE_SOON_DAYS ?? 7),
 };

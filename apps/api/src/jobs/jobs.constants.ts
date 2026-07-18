@@ -13,3 +13,8 @@ export const HEARTBEAT_KEY = 'jobs:heartbeat:last-run';
 
 /** Интервал heartbeat: первый прогон сразу, дальше раз в минуту. */
 export const HEARTBEAT_EVERY_MS = 60_000;
+
+export const JOB_SLA_RECALC = 'sla-recalc';
+
+/** SLA-пересчёт (T-043): первый прогон при старте, дальше раз в час. */
+export const SLA_RECALC_EVERY_MS = 60 * 60 * 1000;

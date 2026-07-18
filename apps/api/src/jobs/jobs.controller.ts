@@ -7,8 +7,10 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -16,11 +18,25 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import type { DemoJobEnqueued, DemoJobStatus, HeartbeatStatus } from '@it-audit/shared';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JobsService } from './jobs.service';
+import { SlaService, type SlaRecalcResult } from './sla.service';
 
 @Controller('jobs')
 export class JobsController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(
+    private readonly jobsService: JobsService,
+    private readonly slaService: SlaService,
+  ) {}
+
+  @Post('sla-recalc')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'SLA-пересчёт вручную (T-043); планово — раз в час' })
+  @ApiCreatedResponse({ description: '{findings, tests} — сколько строк пересчитано' })
+  slaRecalc(): Promise<SlaRecalcResult> {
+    return this.slaService.recalc();
+  }
 
   @Post('demo')
   @ApiOperation({ summary: 'Поставить тестовую отложенную задачу (DoD T-040)' })
