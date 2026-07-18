@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** **EP-IAM закрыт целиком** (T-054/055/056). За марафон-3 закрыто 3 эпика M2: EP-INT, EP-POL, EP-IAM. Следующий эпик M2 не выбран — при следующем прогоне выбрать по deps (EP-RISK / EP-ASSET / EP-PERS / EP-VEND) и расписать на атомы.
-- **Следующий шаг:** декомпозировать следующий эпик M2. Кандидаты: EP-RISK (risk register — самодостаточен) или EP-ASSET (авто-обнаружение через коннекторы — на EP-INT). Остаток T-001 (Excel-шаблоны, регулятор, оплата) гейтит часть фич. UI для IAM (accounts/UAR/deprovisioning) — отдельная UI-задача при надобности.
-- **Последнее готово:** **Марафон-3 18.07.2026: EP-INT, EP-POL, EP-IAM — три эпика M2 целиком (T-048…T-056, 9 задач).** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
+- **Текущая задача:** EP-RISK расписан (T-057–T-059), T-057 (Risk register core: скоринг по матрице) закрыта. Следующая — T-058 (RCM: risk↔control, остаточный риск, heat-map-агрегат).
+- **Следующий шаг:** T-058 → T-059 (risk assessment sessions). Остаток T-001 гейтит часть фич.
+- **Последнее готово:** **Марафон-3 18.07.2026: EP-INT, EP-POL, EP-IAM целиком (9 задач) + EP-RISK начат (T-057).** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -206,7 +206,15 @@ IAM встроен в Control→Test→Finding (ADR-0012): аккаунты — 
 - [x] **T-053** — Attestation: `policy_attestation` — сотрудники подтверждают ознакомление с approved-версией; кампания (кому разослать), трекинг подтверждённых/нет, письмо-напоминание. _Deps: T-052, T-041._ DoD: attestation создаётся для членов, member подтверждает, видно кто не подтвердил. **Готово: миграция 0023 — `policy_attestation` (policy_version_id, membership_id UNIQUE, status pending/attested, attested_at; FORCE RLS через version→policy). `AttestationsService`: кампания (только approved-политика → 400 иначе; записи для набора членов + письма `policy-attestation` en/az/ru), attest (self-action под control.view — как approve, workflow-роль ортогональна RBAC; только адресованную запись, не адресат → 404), status-трекинг (attested/total + пофамильно). `POST /:id/attestations`, `POST /:id/attest`, `GET /:id/attestations`. audit_log campaign/attested. UI `/policies` — таблица политик со статусами workflow. E2e: кампания→3 письма в Mailpit, collaborator attest→1/3, не-адресат 404, non-approved 400. **EP-POL закрыт целиком.****
 
 - [x] **EP-POL** — Policies (B4): версии, approver-workflow, attestation. **Закрыт: T-051 (core) + T-052 (workflow) + T-053 (attestation). policy → версии-документы → approver-утверждение → attestation сотрудников с трекингом.**
-- **EP-RISK** — Risk register + library + heat map + action tracker + risk-based planning с capacity (наша добавка). **+ risk-assessment события (сессии оценки) с документами (RSK-01), конфигурируемая методология/критерии/веса (RSK-02), risk-опросники с review/approval workflow (RSK-04).**
+### Эпик: Risk register (EP-RISK, B6, RSK) — расписан на атомы 18.07.2026 (марафон-3)
+
+Реестр рисков со скорингом по конфигурируемой матрице (RSK-02), связь с контролями (RCM, CTL-02), сессии оценки (RSK-01). Модель — data-model §4. risk↔auditable_entity (universe) — отложено до EP-ASSET; risk.subsidiary_id даёт привязку к дочке сразу.
+
+- [x] **T-057** — Risk register core: `risk` (domain, title/description i18n, inherent/residual impact+likelihood, risk_class computed, treatment mitigate/transfer/accept/avoid, owner/approver, status) + `risk_matrix_config` (шкалы, пороги классов, веса; дефолт 5×5); risk_class вычисляется по матрице тенанта; CRUD; RLS. _Deps: T-020._ DoD: риск создаётся, risk_class вычисляется по impact×likelihood, конфиг матрицы применяется. **Готово: миграция 0027 — `risk_matrix_config` (impact/likelihood-шкалы, thresholds {medium,high,critical}, weights; FORCE RLS, UNIQUE на тенант) + `risk` (FORCE RLS; inherent/residual impact+likelihood, risk_class+residual_class computed, treatment, owner/approver, source_risk_id-задел под глобальную library). `classify(impact×likelihood)` по порогам матрицы тенанта (дефолт medium≥6/high≥12/critical≥20). API: POST /risks (класс вычисляется), POST /:id/rescore (пересчёт), PUT /risks/matrix (настройка порогов RSK-02), GET список/карточка. Право control.edit/view (риски соседствуют с RCM). audit_log risk.created/rescored. E2e: 25→critical/4→low, скоринги 1/6/12/20→low/medium/high/critical, настройка матрицы (critical≥15) меняет класс при rescore, 400 на impact>10, RBAC 403. UI/heat-map — с T-058.**
+- [ ] **T-058** — RCM + остаточный риск: `risk_control` (M:N risk↔control, CTL-02) — связь риска с митигирующими контролями; residual-скоринг + данные heat map (распределение по классам). _Deps: T-057, T-031._ DoD: риск связывается с контролями, остаточный класс и heat-map-агрегат считаются.
+- [ ] **T-059** — Risk assessment sessions: `risk_assessment` (сессия оценки RSK-01: period, methodology_note, status, охват M:N, документы через document_link); workflow сессии. _Deps: T-057, T-034._ DoD: сессия оценки создаётся с охватом и статусом, документы прикладываются.
+
+- [x] **EP-RISK** — Risk register + library + heat map + action tracker + risk-based planning с capacity (наша добавка). **+ risk-assessment события (сессии оценки) с документами (RSK-01), конфигурируемая методология/критерии/веса (RSK-02), risk-опросники с review/approval workflow (RSK-04).** _Расписан на T-057–T-059 (ядро: register+матрица, RCM, сессии оценки). Heat map UI / action tracker / risk-based planning с capacity / risk-опросники — новыми атомами при надобности._
 - **EP-PERS** — Профили персонала, endpoint compliance (B12), employee-портал.
 - **EP-VULN** — Vulnerability + Change management + Security alerts (B13).
 - **EP-VEND** — Vendor Risk Management (B5).

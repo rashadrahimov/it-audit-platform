@@ -1,0 +1,226 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { and, desc, eq, isNull } from 'drizzle-orm';
+import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
+import { AuditLogService } from '../audit/audit-log.service';
+import { DbService } from '../db/db.service';
+import { risk, riskMatrixConfig } from '../db/schema';
+
+interface Actor {
+  tenantId: string;
+  userId: string;
+  ip?: string;
+}
+
+/** Дефолтные пороги классов по impact×likelihood (5×5 → max 25). */
+const DEFAULT_THRESHOLDS = { medium: 6, high: 12, critical: 20 };
+
+export interface CreateRiskInput {
+  titleI18n: I18nText;
+  descriptionI18n?: I18nText;
+  domain?: string;
+  category?: string;
+  inherentImpact?: number;
+  inherentLikelihood?: number;
+  residualImpact?: number;
+  residualLikelihood?: number;
+  treatment?: string;
+  ownerMembershipId?: string;
+  subsidiaryId?: string;
+}
+
+/** Risk register (T-057, B6): скоринг по матрице тенанта, risk_class computed. */
+@Injectable()
+export class RisksService {
+  constructor(
+    private readonly dbService: DbService,
+    private readonly auditLogService: AuditLogService,
+  ) {}
+
+  /** Класс риска по произведению impact×likelihood и порогам матрицы. */
+  private classify(
+    impact: number | null | undefined,
+    likelihood: number | null | undefined,
+    thresholds: { medium: number; high: number; critical: number },
+  ): string | null {
+    if (!impact || !likelihood) return null;
+    const score = impact * likelihood;
+    if (score >= thresholds.critical) return 'critical';
+    if (score >= thresholds.high) return 'high';
+    if (score >= thresholds.medium) return 'medium';
+    return 'low';
+  }
+
+  private async thresholds(
+    tx: Parameters<Parameters<DbService['withTenant']>[1]>[0],
+    tenantId: string,
+  ) {
+    const [cfg] = await tx
+      .select()
+      .from(riskMatrixConfig)
+      .where(eq(riskMatrixConfig.tenantId, tenantId));
+    return cfg?.thresholds ?? DEFAULT_THRESHOLDS;
+  }
+
+  async setMatrix(
+    actor: Actor,
+    input: {
+      impactScale?: number;
+      likelihoodScale?: number;
+      thresholds: typeof DEFAULT_THRESHOLDS;
+    },
+  ) {
+    return this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [existing] = await tx
+        .select()
+        .from(riskMatrixConfig)
+        .where(eq(riskMatrixConfig.tenantId, actor.tenantId));
+      if (existing) {
+        const [row] = await tx
+          .update(riskMatrixConfig)
+          .set({
+            impactScale: input.impactScale ?? existing.impactScale,
+            likelihoodScale: input.likelihoodScale ?? existing.likelihoodScale,
+            thresholds: input.thresholds,
+          })
+          .where(eq(riskMatrixConfig.id, existing.id))
+          .returning();
+        return row;
+      }
+      const [row] = await tx
+        .insert(riskMatrixConfig)
+        .values({
+          tenantId: actor.tenantId,
+          impactScale: input.impactScale ?? 5,
+          likelihoodScale: input.likelihoodScale ?? 5,
+          thresholds: input.thresholds,
+        })
+        .returning();
+      return row;
+    });
+  }
+
+  async create(actor: Actor, input: CreateRiskInput) {
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const thresholds = await this.thresholds(tx, actor.tenantId);
+      const [row] = await tx
+        .insert(risk)
+        .values({
+          tenantId: actor.tenantId,
+          subsidiaryId: input.subsidiaryId ?? null,
+          domain: input.domain ?? null,
+          titleI18n: input.titleI18n,
+          descriptionI18n: input.descriptionI18n ?? null,
+          category: input.category ?? null,
+          inherentImpact: input.inherentImpact ?? null,
+          inherentLikelihood: input.inherentLikelihood ?? null,
+          residualImpact: input.residualImpact ?? null,
+          residualLikelihood: input.residualLikelihood ?? null,
+          riskClass: this.classify(input.inherentImpact, input.inherentLikelihood, thresholds),
+          residualClass: this.classify(input.residualImpact, input.residualLikelihood, thresholds),
+          treatment: input.treatment ?? null,
+          ownerMembershipId: input.ownerMembershipId ?? null,
+        })
+        .returning();
+      if (!row) throw new Error('Риск не создался');
+      return row;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'risk.created',
+      entityType: 'risk',
+      entityId: created.id,
+      after: { title: created.titleI18n.en, riskClass: created.riskClass },
+    });
+    return created;
+  }
+
+  /** Пересчёт скоринга при изменении impact/likelihood. */
+  async rescore(
+    actor: Actor,
+    id: string,
+    input: {
+      inherentImpact?: number;
+      inherentLikelihood?: number;
+      residualImpact?: number;
+      residualLikelihood?: number;
+    },
+  ) {
+    const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(risk)
+        .where(and(eq(risk.id, id), isNull(risk.deletedAt)));
+      if (!row) throw new NotFoundException(`Риск ${id} не найден`);
+      const thresholds = await this.thresholds(tx, actor.tenantId);
+      const inherentImpact = input.inherentImpact ?? row.inherentImpact;
+      const inherentLikelihood = input.inherentLikelihood ?? row.inherentLikelihood;
+      const residualImpact = input.residualImpact ?? row.residualImpact;
+      const residualLikelihood = input.residualLikelihood ?? row.residualLikelihood;
+      const [res] = await tx
+        .update(risk)
+        .set({
+          inherentImpact,
+          inherentLikelihood,
+          residualImpact,
+          residualLikelihood,
+          riskClass: this.classify(inherentImpact, inherentLikelihood, thresholds),
+          residualClass: this.classify(residualImpact, residualLikelihood, thresholds),
+        })
+        .where(eq(risk.id, id))
+        .returning();
+      return res!;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'risk.rescored',
+      entityType: 'risk',
+      entityId: id,
+      after: { riskClass: updated.riskClass, residualClass: updated.residualClass },
+    });
+    return { riskClass: updated.riskClass, residualClass: updated.residualClass };
+  }
+
+  async list(tenantId: string, locale: Locale) {
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx.select().from(risk).where(isNull(risk.deletedAt)).orderBy(desc(risk.createdAt)),
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      title: resolveLocalized(r.titleI18n, locale),
+      domain: r.domain,
+      riskClass: r.riskClass,
+      residualClass: r.residualClass,
+      treatment: r.treatment,
+      status: r.status,
+    }));
+  }
+
+  async detail(tenantId: string, id: string, locale: Locale) {
+    const [r] = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select()
+        .from(risk)
+        .where(and(eq(risk.id, id), isNull(risk.deletedAt))),
+    );
+    if (!r) throw new NotFoundException(`Риск ${id} не найден`);
+    return {
+      id: r.id,
+      title: resolveLocalized(r.titleI18n, locale),
+      description: r.descriptionI18n ? resolveLocalized(r.descriptionI18n, locale) : null,
+      domain: r.domain,
+      category: r.category,
+      inherentImpact: r.inherentImpact,
+      inherentLikelihood: r.inherentLikelihood,
+      residualImpact: r.residualImpact,
+      residualLikelihood: r.residualLikelihood,
+      riskClass: r.riskClass,
+      residualClass: r.residualClass,
+      treatment: r.treatment,
+      status: r.status,
+    };
+  }
+}

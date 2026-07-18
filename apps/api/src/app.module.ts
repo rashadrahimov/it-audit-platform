@@ -25,6 +25,7 @@ import { OnboardingModule } from './onboarding/onboarding.module';
 import { PoliciesModule } from './policies/policies.module';
 import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
+import { RisksModule } from './risks/risks.module';
 import { TestsModule } from './tests/tests.module';
 import { UsersModule } from './users/users.module';
 
@@ -53,6 +54,7 @@ import { UsersModule } from './users/users.module';
     PoliciesModule,
     RbacModule,
     ReportsModule,
+    RisksModule,
     TestsModule,
     UsersModule,
   ],

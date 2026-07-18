@@ -804,6 +804,59 @@ export const deprovisioningTask = pgTable(
   (table) => [index('deprovisioning_task_tenant_idx').on(table.tenantId)],
 );
 
+/** Конфиг матрицы рисков (T-057, RSK-02): шкалы и пороги классов на тенант; дефолт 5×5. */
+export const riskMatrixConfig = pgTable(
+  'risk_matrix_config',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    impactScale: integer('impact_scale').notNull().default(5),
+    likelihoodScale: integer('likelihood_scale').notNull().default(5),
+    /** Пороги классов по произведению impact×likelihood: {medium, high, critical}. */
+    thresholds: jsonb('thresholds')
+      .$type<{ medium: number; high: number; critical: number }>()
+      .notNull(),
+    weights: jsonb('weights').notNull().default({}),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('risk_matrix_config_tenant_idx').on(table.tenantId)],
+);
+
+/**
+ * Risk — реестр рисков (T-057, B6): скоринг по матрице (risk_class computed),
+ * treatment, owner/approver. Связь с контролями — risk_control (T-058, RCM).
+ */
+export const risk = pgTable(
+  'risk',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    subsidiaryId: uuid('subsidiary_id').references(() => subsidiary.id),
+    domain: text('domain'),
+    titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
+    descriptionI18n: jsonb('description_i18n').$type<I18nText>(),
+    category: text('category'),
+    inherentImpact: integer('inherent_impact'),
+    inherentLikelihood: integer('inherent_likelihood'),
+    residualImpact: integer('residual_impact'),
+    residualLikelihood: integer('residual_likelihood'),
+    riskClass: text('risk_class'),
+    residualClass: text('residual_class'),
+    treatment: text('treatment'),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
+    status: text('status').notNull().default('open'),
+    sourceRiskId: uuid('source_risk_id').references((): AnyPgColumn => risk.id),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('risk_tenant_idx').on(table.tenantId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
