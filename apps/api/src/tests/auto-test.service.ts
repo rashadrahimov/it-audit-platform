@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, eq, isNull, isNotNull } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { ConnectorSyncService } from '../connectors/connector-sync.service';
 import { DbService } from '../db/db.service';
-import { tenant, test } from '../db/schema';
+import { device, tenant, test } from '../db/schema';
 import { TestsService } from './tests.service';
 
 interface Actor {
@@ -12,13 +12,18 @@ interface Actor {
 }
 
 /**
- * Правило автопроверки (T-050) в test.check_config. Пока один тип: field_present —
- * запись «провалила», если у неё нет непустого поля. Расширяется под новые capability.
+ * Правило автопроверки в test.check_config. Типы:
+ * - field_present (T-050): запись коннектора «провалила», если нет непустого поля.
+ * - device_compliant (T-071): endpoint «провалил», если compliance_status = non_compliant.
  */
 interface FieldPresentRule {
   type: 'field_present';
   field: string;
 }
+interface DeviceCompliantRule {
+  type: 'device_compliant';
+}
+type Rule = FieldPresentRule | DeviceCompliantRule;
 
 /**
  * Автотесты через коннектор (T-050, замыкает continuous-loop ADR-0010/0011):
@@ -42,11 +47,14 @@ export class AutoTestService {
         .where(and(eq(test.id, testId), isNull(test.deletedAt))),
     );
     if (!row) throw new NotFoundException(`Тест ${testId} не найден`);
-    if (!row.connectorId)
-      throw new BadRequestException('У теста нет коннектора (не автоматический)');
     const rule = this.parseRule(row.checkConfig);
 
     try {
+      if (rule.type === 'device_compliant') {
+        return await this.runDeviceCompliant(actor, testId, rule);
+      }
+      if (!row.connectorId)
+        throw new BadRequestException('У теста нет коннектора (не автоматический)');
       const { records } = await this.connectorSyncService.collectRecords(
         actor.tenantId,
         row.connectorId,
@@ -69,15 +77,33 @@ export class AutoTestService {
     }
   }
 
+  /** device_compliant (T-071): non_compliant устройства → failing_entities. */
+  private async runDeviceCompliant(actor: Actor, testId: string, rule: DeviceCompliantRule) {
+    const devices = await this.dbService.withTenant(actor.tenantId, (tx) =>
+      tx
+        .select({
+          id: device.id,
+          name: device.name,
+          complianceStatus: device.complianceStatus,
+        })
+        .from(device)
+        .where(isNull(device.deletedAt)),
+    );
+    const failing = devices.filter((d) => d.complianceStatus === 'non_compliant');
+    return this.testsService.recordResult(actor, testId, {
+      outcome: failing.length === 0 ? 'pass' : 'fail',
+      failingEntities: failing,
+      details: { checked: devices.length, failed: failing.length, rule },
+    });
+  }
+
   /** Прогнать все автотесты тенанта (для repeatable-джобы). */
   async runAllForTenant(tenantId: string): Promise<{ ran: number }> {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({ id: test.id })
         .from(test)
-        .where(
-          and(isNull(test.deletedAt), isNotNull(test.connectorId), eq(test.kind, 'automated')),
-        ),
+        .where(and(isNull(test.deletedAt), eq(test.kind, 'automated'))),
     );
     for (const row of rows) {
       await this.run({ tenantId, userId: null }, row.id).catch(() => undefined);
@@ -96,15 +122,18 @@ export class AutoTestService {
     return { ran };
   }
 
-  private parseRule(checkConfig: unknown): FieldPresentRule {
-    if (
-      checkConfig &&
-      typeof checkConfig === 'object' &&
-      (checkConfig as FieldPresentRule).type === 'field_present' &&
-      typeof (checkConfig as FieldPresentRule).field === 'string'
-    ) {
-      return checkConfig as FieldPresentRule;
+  private parseRule(checkConfig: unknown): Rule {
+    if (checkConfig && typeof checkConfig === 'object') {
+      const cfg = checkConfig as Record<string, unknown>;
+      if (cfg.type === 'field_present' && typeof cfg.field === 'string') {
+        return cfg as unknown as FieldPresentRule;
+      }
+      if (cfg.type === 'device_compliant') {
+        return { type: 'device_compliant' };
+      }
     }
-    throw new BadRequestException('check_config: ожидается {type:"field_present", field:"…"}');
+    throw new BadRequestException(
+      'check_config: ожидается {type:"field_present", field:"…"} или {type:"device_compliant"}',
+    );
   }
 }

@@ -36,6 +36,8 @@ const checksSchema = z
   .object(checksShape)
   .refine((v) => Object.keys(v).length > 0, 'Нужна хотя бы одна проверка');
 
+const importSchema = z.object({ connectorId: z.uuid() });
+
 @Controller('devices')
 @UseGuards(JwtAuthGuard, PermissionGuard)
 @ApiBearerAuth()
@@ -67,6 +69,19 @@ export class DevicesController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data,
+    );
+  }
+
+  @Post('import')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Авто-обнаружение устройств из MDM-коннектора (T-071, B12)' })
+  @ApiCreatedResponse({ description: '{imported, updated}' })
+  import(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = importSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.importFromConnector(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.connectorId,
     );
   }
 
