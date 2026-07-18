@@ -12,6 +12,8 @@
       "Bash(git branch*)",
       "Bash(git add *)",
       "Bash(git commit *)",
+      "Bash(git push)",
+      "Bash(git push *)",
       "Bash(git stash*)",
       "Bash(docker compose *)",
       "Bash(docker ps*)",
@@ -26,7 +28,6 @@
       "Bash(rg *)"
     ],
     "ask": [
-      "Bash(git push *)",
       "Bash(git reset *)",
       "Bash(git checkout *)",
       "Bash(git clean *)",
