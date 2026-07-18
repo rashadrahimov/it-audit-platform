@@ -418,7 +418,12 @@
       "ok": "OK",
       "due_soon": "Due soon",
       "overdue": "Overdue"
-    }
+    },
+    "create": "New commitment",
+    "titlePh": "Title",
+    "sourcePh": "Source (optional)",
+    "add": "Add",
+    "change": "Change status"
   },
   "accessReviews": {
     "title": "Access Reviews",

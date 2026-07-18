@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { createCommitmentAction, setCommitmentStatusAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
 type Status = 'met' | 'at_risk' | 'breached';
+const STATUSES: Status[] = ['met', 'at_risk', 'breached'];
 type Sla = 'ok' | 'due_soon' | 'overdue';
 interface Commitment {
   id: string;
@@ -49,6 +51,33 @@ export default async function CommitmentsPage() {
         </Link>
       </div>
 
+      <form
+        action={createCommitmentAction}
+        data-testid="commitment-create"
+        className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+      >
+        <label className="flex flex-1 flex-col gap-1 text-sm">
+          <span className="font-medium text-secondary">{t('create')}</span>
+          <input
+            name="title"
+            required
+            placeholder={t('titlePh')}
+            className="rounded-md border border-border px-3 py-2 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          />
+        </label>
+        <input
+          name="source"
+          placeholder={t('sourcePh')}
+          className="rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        />
+        <button
+          type="submit"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          {t('add')}
+        </button>
+      </form>
+
       {commitments.length === 0 ? (
         <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
           {t('empty')}
@@ -62,6 +91,7 @@ export default async function CommitmentsPage() {
                 <th className="px-4 py-3 font-medium">{t('source')}</th>
                 <th className="px-4 py-3 font-medium">—</th>
                 <th className="px-4 py-3 font-medium">{t('sla')}</th>
+                <th className="px-4 py-3 font-medium">{t('change')}</th>
               </tr>
             </thead>
             <tbody>
@@ -76,6 +106,22 @@ export default async function CommitmentsPage() {
                   </td>
                   <td className={`px-4 py-3 text-xs ${SLA_TONE[c.slaStatus]}`}>
                     {t(`sla.${c.slaStatus}`)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <form action={setCommitmentStatusAction} className="flex gap-1">
+                      <input type="hidden" name="id" value={c.id} />
+                      {STATUSES.filter((s) => s !== c.status).map((s) => (
+                        <button
+                          key={s}
+                          type="submit"
+                          name="status"
+                          value={s}
+                          className="rounded-md border border-border px-2 py-1 text-xs text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          {t(`st.${s}`)}
+                        </button>
+                      ))}
+                    </form>
                   </td>
                 </tr>
               ))}

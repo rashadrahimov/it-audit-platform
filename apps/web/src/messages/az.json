@@ -418,7 +418,12 @@
       "ok": "OK",
       "due_soon": "Vaxtı yaxınlaşır",
       "overdue": "Gecikib"
-    }
+    },
+    "create": "Yeni öhdəlik",
+    "titlePh": "Ad",
+    "sourcePh": "Mənbə (istəyə görə)",
+    "add": "Əlavə et",
+    "change": "Statusu dəyiş"
   },
   "accessReviews": {
     "title": "Giriş Baxışları",
