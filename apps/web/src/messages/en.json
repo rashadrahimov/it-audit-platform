@@ -48,7 +48,8 @@
     "snapshots": "Snapshots",
     "devices": "Endpoint Compliance",
     "personnel": "Personnel",
-    "vendors": "Vendor Risk"
+    "vendors": "Vendor Risk",
+    "workingPapers": "Working Papers"
   },
   "engagements": {
     "title": "Engagements",
@@ -340,6 +341,21 @@
       "procurement": "Procurement",
       "active": "Active",
       "archived": "Archived"
+    }
+  },
+  "workingPapers": {
+    "title": "Working Papers",
+    "toAccount": "Account",
+    "selectEngagement": "Engagement",
+    "empty": "No working papers for this engagement",
+    "noEngagements": "No engagements yet",
+    "editedSinceReview": "Edited since review",
+    "status": {
+      "draft": "Draft",
+      "prepared": "Prepared",
+      "in_review": "In review",
+      "reviewed": "Reviewed",
+      "signed_off": "Signed off"
     }
   }
 }

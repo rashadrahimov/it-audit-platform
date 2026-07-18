@@ -48,7 +48,8 @@
     "snapshots": "Anlıq görüntülər",
     "devices": "Cihaz Uyğunluğu",
     "personnel": "Personal",
-    "vendors": "Təchizatçı Riski"
+    "vendors": "Təchizatçı Riski",
+    "workingPapers": "İş Sənədləri"
   },
   "engagements": {
     "title": "Auditlər",
@@ -340,6 +341,21 @@
       "procurement": "Satınalma",
       "active": "Aktiv",
       "archived": "Arxiv"
+    }
+  },
+  "workingPapers": {
+    "title": "İş Sənədləri",
+    "toAccount": "Hesab",
+    "selectEngagement": "Audit",
+    "empty": "Bu audit üçün iş sənədi yoxdur",
+    "noEngagements": "Hələ audit yoxdur",
+    "editedSinceReview": "Baxışdan sonra dəyişdirilib",
+    "status": {
+      "draft": "Qaralama",
+      "prepared": "Hazırlanıb",
+      "in_review": "Baxışda",
+      "reviewed": "Baxılıb",
+      "signed_off": "İmzalanıb"
     }
   }
 }

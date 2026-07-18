@@ -48,7 +48,8 @@
     "snapshots": "Снапшоты",
     "devices": "Соответствие устройств",
     "personnel": "Персонал",
-    "vendors": "Риск вендоров"
+    "vendors": "Риск вендоров",
+    "workingPapers": "Рабочие документы"
   },
   "engagements": {
     "title": "Аудиты",
@@ -340,6 +341,21 @@
       "procurement": "Закупка",
       "active": "Активный",
       "archived": "Архив"
+    }
+  },
+  "workingPapers": {
+    "title": "Рабочие документы",
+    "toAccount": "Аккаунт",
+    "selectEngagement": "Аудит",
+    "empty": "Нет рабочих документов для этого аудита",
+    "noEngagements": "Пока нет аудитов",
+    "editedSinceReview": "Правлено после ревью",
+    "status": {
+      "draft": "Черновик",
+      "prepared": "Подготовлен",
+      "in_review": "На ревью",
+      "reviewed": "Отревьюен",
+      "signed_off": "Подписан"
     }
   }
 }
