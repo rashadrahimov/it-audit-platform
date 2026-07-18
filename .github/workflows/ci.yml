@@ -8,8 +8,42 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+
+    # Инфраструктура интеграционных тестов (rls/rbac/deactivation + seed).
+    # Порты как в docker-compose: 5433/6380 — дефолты кода без .env.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: audit
+          POSTGRES_PASSWORD: audit
+          POSTGRES_DB: audit
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U audit -d audit"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+
     steps:
       - uses: actions/checkout@v4
+
+      # MinIO не запускается как service (нужна команда `server /data`) — руками.
+      # Бакет создаёт сам seed, mc-init не нужен.
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+            minio/minio:RELEASE.2025-04-22T22-12-26Z server /data
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && break; sleep 1;
+          done
 
       - uses: pnpm/action-setup@v4
 
@@ -24,6 +58,12 @@ jobs:
       # build первым: shared собирается в dist, его типы нужны typecheck/test остальных
       - name: Build
         run: pnpm build
+
+      - name: Migrate
+        run: pnpm db:migrate
+
+      - name: Seed
+        run: pnpm seed
 
       - name: Lint
         run: pnpm lint
