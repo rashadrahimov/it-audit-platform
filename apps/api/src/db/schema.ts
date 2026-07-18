@@ -1021,6 +1021,21 @@ export const questionnaireAnswer = pgTable(
   (table) => [index('questionnaire_answer_q_idx').on(table.questionnaireId)],
 );
 
+/** Термин глоссария (T-095, GEN-09): global-сид (tenant_id NULL) + кастом тенанта. */
+export const glossaryTerm = pgTable(
+  'glossary_term',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id').references(() => tenant.id),
+    term: text('term').notNull(),
+    definitionI18n: jsonb('definition_i18n').$type<I18nText>().notNull(),
+    category: text('category'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('glossary_term_tenant_term_idx').on(table.tenantId, table.term)],
+);
+
 /** Knowledge base (T-082, EP-QA): библиотека переиспользуемых Q&A для опросников. */
 export const kbEntry = pgTable(
   'kb_entry',

@@ -19,6 +19,7 @@ import { env } from './env';
 import {
   auditLog,
   auditType,
+  glossaryTerm,
   comment,
   connector,
   control,
@@ -123,6 +124,7 @@ async function seedPostgres(): Promise<void> {
     await seedGlobalFrameworks();
     await seedGlobalControls();
     await seedAuditTypes();
+    await seedGlossary();
     await seedDemoUsers(db, demoTenant.id);
     await seedDemoDepartments(db, demoTenant.id);
     await seedDemoControlAdaptation(db, demoTenant.id);
@@ -531,6 +533,37 @@ async function seedAuditTypes(): Promise<void> {
       await db.insert(auditType).values({ tenantId: null, code: t.code, nameI18n: t.name });
     }
     console.log(`✓ Типы аудита: ${AUDIT_TYPES.length} (idempotent)`);
+  } finally {
+    await owner.end().catch(() => {});
+  }
+}
+
+/** Базовые GRC-термины глоссария (T-095, GEN-09) — глобальные (tenant_id NULL). */
+const GLOSSARY_TERMS = [
+  { term: 'Control', category: 'core', definition: { en: 'A safeguard that mitigates risk.', ru: 'Мера, снижающая риск.' } },
+  { term: 'Finding', category: 'core', definition: { en: 'An identified deficiency or exception.', ru: 'Выявленное несоответствие или отклонение.' } },
+  { term: 'RCM', category: 'risk', definition: { en: 'Risk-Control Matrix: mapping of risks to mitigating controls.', ru: 'Матрица «риск-контроль»: связь рисков с митигирующими контролями.' } },
+  { term: 'DPIA', category: 'privacy', definition: { en: 'Data Protection Impact Assessment.', ru: 'Оценка влияния на защиту данных.' } },
+  { term: 'ROPA', category: 'privacy', definition: { en: 'Records of Processing Activities (GDPR Art. 30).', ru: 'Реестр операций обработки ПДн (GDPR ст. 30).' } },
+  { term: 'ITGC', category: 'it', definition: { en: 'IT General Controls.', ru: 'Общие ИТ-контроли.' } },
+];
+
+async function seedGlossary(): Promise<void> {
+  const owner = new Client({ connectionString: env.databaseUrlOwner, connectionTimeoutMillis: 5000 });
+  try {
+    await owner.connect();
+    const db = drizzle(owner);
+    for (const t of GLOSSARY_TERMS) {
+      const [existing] = await db
+        .select()
+        .from(glossaryTerm)
+        .where(and(isNull(glossaryTerm.tenantId), eq(glossaryTerm.term, t.term)));
+      if (existing) continue;
+      await db
+        .insert(glossaryTerm)
+        .values({ tenantId: null, term: t.term, definitionI18n: t.definition, category: t.category });
+    }
+    console.log(`✓ Глоссарий: ${GLOSSARY_TERMS.length} терминов (idempotent)`);
   } finally {
     await owner.end().catch(() => {});
   }

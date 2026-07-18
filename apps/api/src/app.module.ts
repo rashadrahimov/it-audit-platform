@@ -28,6 +28,7 @@ import { EngagementsModule } from './engagements/engagements.module';
 import { FilesModule } from './files/files.module';
 import { FindingsModule } from './findings/findings.module';
 import { FrameworksModule } from './frameworks/frameworks.module';
+import { GlossaryModule } from './glossary/glossary.module';
 import { GroupModule } from './group/group.module';
 import { InvitesModule } from './invites/invites.module';
 import { JobsModule } from './jobs/jobs.module';
@@ -82,6 +83,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     FilesModule,
     FindingsModule,
     FrameworksModule,
+    GlossaryModule,
     GroupModule,
     InvitesModule,
     JobsModule,

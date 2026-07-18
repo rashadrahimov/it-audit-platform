@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-SEARCH (ядро GEN-05) закрыт (T-094). Следующая — декомпозиция EP-HELP (встроенная помощь: глоссарий, подсказки, GEN-09).
-- **Следующий шаг:** Распишу EP-HELP на атомы T-095+ (glossary_term + help-контент) и сделаю. Дальше — EP-MSG / EP-SCHED.
-- **Последнее готово:** **Марафон-4 18.07.2026: M2 (T-060…073) + M3 (T-074…083) + RFP EP-AUDITTYPES/CONFIG/TIME/API (T-084…091) — 32 задачи.** GitHub+CI зелёный.
+- **Текущая задача:** EP-HELP (ядро GEN-09) закрыт (T-095). Следующая — декомпозиция EP-MSG (сообщения из системы, satisfaction surveys, GEN-04/ISS-06).
+- **Следующий шаг:** Распишу EP-MSG на атомы T-096+ (notification/message-центр + satisfaction survey) и сделаю. Дальше — EP-REPWIZ / EP-SCHED.
+- **Последнее готово:** **Марафон-4 18.07.2026: M2 (T-060…073) + M3 (T-074…083) + RFP EP-AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP (T-084…095) — 36 задач, миграции до 0057.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -363,7 +363,13 @@ OpenAPI-спека уже отдаётся (SwaggerModule /docs + /docs-json, ma
 - [x] **T-091** — OpenAPI + версионированный API-эндпоинт: подтвердить `/docs-json` (публичная OpenAPI-спека) + защищённый API-ключом read-эндпоинт `GET /api/v1/controls` (программный доступ end-to-end). _Deps: T-090, T-031._ DoD: /docs-json отдаёт валидный OpenAPI (paths непусты), /api/v1/controls с валидным API-ключом отдаёт контроли, без ключа→401. **Готово: ApiV1Controller (`@Controller('api/v1')` под ApiKeyGuard) — `GET /api/v1/controls` читает контроли под withTenant(резолв из ключа). main.ts: DocumentBuilder.addApiKey(X-Api-Key) — security-scheme в спеке. E2e: /docs-json openapi 3.0.0, 158 путей, /api/v1/controls присутствует, api-key security-scheme есть; программный доступ с ключом→32 контроля (GOV-01), без ключа→401, битый/не-iap→401, отозванный→401. Миграции нет. **EP-API закрыт целиком** (T-090 API keys + T-091 OpenAPI+v1). RFP INT-01 Mandatory закрыт.**
 
 - [x] **EP-API** — публичный документированный REST API + OpenAPI-спека (INT-01, Mandatory!). Принцип API-first с фазы 1 (наш UI ест свой же API), публичная документация — фаза 2. Поднято из EP-MISC, т.к. в RFP это M, а не «Developer console когда-нибудь». **Расписан на T-090–T-091. Закрыт: API-ключи (SHA-256, ApiKeyGuard) + OpenAPI-спека (/docs, /docs-json, X-Api-Key security) + версионированный /api/v1/controls с программным доступом.**
-- **EP-HELP** — встроенная помощь: подсказки, инструкции, глоссарий терминов в UI (GEN-09, D) + требование responsive/планшеты во всех UI-задачах (GEN-10, D).
+### Эпик: Встроенная помощь (EP-HELP, RFP GEN-09/10) — расписан на атомы 18.07.2026 (марафон-4)
+
+Глоссарий терминов + справка в UI. GEN-10 (responsive/планшеты) — сквозное UI-требование (не backend-атом).
+
+- [x] **T-095** — Глоссарий терминов (GEN-09): `glossary_term` (tenant_id NULL=глобальный сид / tenant=кастом, term, definition_i18n, category); сид базовых GRC-терминов (control, finding, RCM, DPIA…); `GET /glossary` (global+tenant, ?q поиск по термину) + `POST /glossary` (кастомный термин тенанта, settings.edit, дедуп). _Deps: T-020._ DoD: глоссарий отдаёт сид+кастомные термины локализованно, поиск по термину находит, тенант заводит кастомный с дедупом, дубликат→400. **Готово: миграция 0057 — glossary_term (FORCE RLS glossary_read=global|tenant / glossary_write=tenant, паттерн audit_type; UNIQUE tenant+term). Сид 6 GRC-терминов под owner (Control/Finding/RCM/DPIA/ROPA/ITGC, EN+RU). list (global+кастом, ?q ILIKE по term, локализовано, isGlobal-флаг), create (дедуп onConflict→400). API engagement.view(list)/settings.edit(create). audit_log glossary_term.created. E2e: глоссарий 6 сид (RCM ru «Матрица риск-контроль», isGlobal=true), поиск DPIA→1, кастомный CBAR (isGlobal=false), дубликат→400, всего 7, Collaborator→403. **EP-HELP (ядро GEN-09) закрыт.**
+
+- [x] **EP-HELP** — встроенная помощь: подсказки, инструкции, глоссарий терминов в UI (GEN-09, D) + требование responsive/планшеты во всех UI-задачах (GEN-10, D). **Расписан на T-095. Ядро GEN-09 закрыто: глоссарий (global-сид + кастом тенанта, локализованный, поиск). GEN-10 responsive/планшеты — сквозное UI-требование (не backend-атом).**
 
 Тяжёлые gap'ы — фаза 3+, осознанно приняты (ADR-0017):
 - **EP-ANNOT** — аннотация документов (tick marks, комменты) в Office/PDF внутри приложения (WP-06) + exception reporting (WP-09).
