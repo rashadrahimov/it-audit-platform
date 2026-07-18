@@ -42,7 +42,8 @@
     "universe": "Audit Universe",
     "riskHeatmap": "Risk Heat Map",
     "plans": "Audit Plans",
-    "chartDashboards": "Chart Dashboards"
+    "chartDashboards": "Chart Dashboards",
+    "trustCenter": "Trust Center"
   },
   "engagements": {
     "title": "Engagements",
@@ -264,5 +265,17 @@
     "toAccount": "Account",
     "empty": "No dashboards yet",
     "widgets": "widgets"
+  },
+  "trustCenter": {
+    "title": "Trust Center",
+    "toAccount": "Account",
+    "notConfigured": "Trust Center not configured yet",
+    "public": "Public",
+    "private": "Private",
+    "items": "Published posture",
+    "published": "Published",
+    "draft": "Draft",
+    "accessRequests": "access requests",
+    "slug": "Public URL"
   }
 }

@@ -42,7 +42,8 @@
     "universe": "Аудируемая вселенная",
     "riskHeatmap": "Тепловая карта рисков",
     "plans": "Планы аудита",
-    "chartDashboards": "Чарт-дашборды"
+    "chartDashboards": "Чарт-дашборды",
+    "trustCenter": "Центр доверия"
   },
   "engagements": {
     "title": "Аудиты",
@@ -264,5 +265,17 @@
     "toAccount": "Аккаунт",
     "empty": "Пока нет дашбордов",
     "widgets": "виджетов"
+  },
+  "trustCenter": {
+    "title": "Центр доверия",
+    "toAccount": "Аккаунт",
+    "notConfigured": "Центр доверия ещё не настроен",
+    "public": "Публичный",
+    "private": "Приватный",
+    "items": "Опубликованная постура",
+    "published": "Опубликовано",
+    "draft": "Черновик",
+    "accessRequests": "запросов доступа",
+    "slug": "Публичный URL"
   }
 }

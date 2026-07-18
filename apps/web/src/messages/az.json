@@ -42,7 +42,8 @@
     "universe": "Audit Kainatı",
     "riskHeatmap": "Risk İstilik Xəritəsi",
     "plans": "Audit Planları",
-    "chartDashboards": "Qrafik Panelləri"
+    "chartDashboards": "Qrafik Panelləri",
+    "trustCenter": "Etibar Mərkəzi"
   },
   "engagements": {
     "title": "Auditlər",
@@ -264,5 +265,17 @@
     "toAccount": "Hesab",
     "empty": "Hələ panel yoxdur",
     "widgets": "vidjet"
+  },
+  "trustCenter": {
+    "title": "Etibar Mərkəzi",
+    "toAccount": "Hesab",
+    "notConfigured": "Etibar Mərkəzi hələ qurulmayıb",
+    "public": "Açıq",
+    "private": "Məxfi",
+    "items": "Dərc olunmuş vəziyyət",
+    "published": "Dərc olunub",
+    "draft": "Qaralama",
+    "accessRequests": "giriş sorğusu",
+    "slug": "Açıq URL"
   }
 }
