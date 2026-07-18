@@ -28,6 +28,7 @@ import { LicenseModule } from './license/license.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { PersonnelModule } from './personnel/personnel.module';
 import { PoliciesModule } from './policies/policies.module';
+import { PrivacyModule } from './privacy/privacy.module';
 import { ProcessesModule } from './processes/processes.module';
 import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
@@ -67,6 +68,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     OnboardingModule,
     PersonnelModule,
     PoliciesModule,
+    PrivacyModule,
     ProcessesModule,
     RbacModule,
     ReportsModule,

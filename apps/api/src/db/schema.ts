@@ -984,6 +984,31 @@ export const codeChange = pgTable(
   (table) => [index('code_change_tenant_idx').on(table.tenantId)],
 );
 
+/** ROPA — операция обработки ПДн (T-074, GDPR Art. 30, EP-PRIV). */
+export const processingActivity = pgTable(
+  'processing_activity',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    nameI18n: jsonb('name_i18n').$type<I18nText>().notNull(),
+    purpose: text('purpose'),
+    legalBasis: text('legal_basis').notNull(),
+    role: text('role').notNull().default('controller'),
+    dataCategories: jsonb('data_categories').notNull().default([]),
+    dataSubjects: jsonb('data_subjects').notNull().default([]),
+    recipients: jsonb('recipients').notNull().default([]),
+    retentionPeriod: text('retention_period'),
+    crossBorder: boolean('cross_border').notNull().default(false),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    status: text('status').notNull().default('active'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('processing_activity_tenant_idx').on(table.tenantId)],
+);
+
 /** Настраиваемый чарт-дашборд (T-072, B9): widgets jsonb — список {metric, chartType, title}. */
 export const dashboard = pgTable(
   'dashboard',

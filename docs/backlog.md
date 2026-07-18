@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** **M2 ЗАКРЫТ ЦЕЛИКОМ** (EP-REP закрыт T-072/073). Следующая — декомпозиция M3: EP-PRIV (Privacy/ROPA + DPIA).
-- **Следующий шаг:** Распишу EP-PRIV на атомы T-074+ (processing_activity ROPA + privacy_assessment DPIA-workflow) и сделаю. Дальше — EP-FWK / EP-MISC / EP-TRUST.
+- **Текущая задача:** M3 EP-PRIV — T-074 (ROPA register) закрыта. Следующая — T-075 (DPIA workflow + документы), закроет EP-PRIV.
+- **Следующий шаг:** T-075 (privacy_assessment — DPIA draft→in_progress→completed + документы) закроет EP-PRIV. Дальше — EP-FWK / EP-MISC / EP-TRUST.
 - **Последнее готово:** **Марафон-4 18.07.2026: EP-VEND + EP-VULN + EP-ASSET + EP-PERS + EP-REP — ПЯТЬ эпиков, весь M2 (T-060…073, 14 задач).** До того марафон-3 (EP-INT/POL/IAM/RISK, 12), M1 (7), марафон-1 (12). GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -262,7 +262,14 @@ IAM встроен в Control→Test→Finding (ADR-0012): аккаунты — 
 ## M3. Полный паритет (эпики)
 
 - **EP-TRUST** — Trust Center (B7): публичный portal, access requests, activity log, knowledge base.
-- **EP-PRIV** — Privacy/ROPA + DPIA (раздел C).
+### Эпик: Privacy/ROPA + DPIA (EP-PRIV, раздел C) — расписан на атомы 18.07.2026 (марафон-4, первый M3-эпик)
+
+GDPR-приватность: ROPA (Records of Processing Activities, Art. 30 — реестр операций обработки ПДн) + DPIA (Data Protection Impact Assessment — оценка влияния на защиту данных). Самодостаточно, паттерн register+assessment+workflow+документы (как EP-RISK/EP-VEND). Модель — data-model §12 (processing_activity/privacy_assessment).
+
+- [x] **T-074** — ROPA register: `processing_activity` (name_i18n, purpose, legal_basis consent/contract/legal_obligation/vital/public/legitimate, data_categories jsonb, data_subjects jsonb, recipients jsonb, retention_period, cross_border bool, role controller/processor/joint, owner_membership_id, status active/archived); CRUD, lifecycle. _Deps: T-020._ DoD: операция обработки создаётся с правовым основанием и категориями ПДн, видна в реестре, недопустимый legal_basis→400. **Готово: миграция 0041 — processing_activity (FORCE RLS; name_i18n, purpose, legal_basis, role controller/processor/joint, data_categories/subjects/recipients jsonb, retention_period, cross_border bool, owner, status). create (legal_basis/role по enum→400), archive (повторная→400), list, get. API control.edit/view. audit_log processing_activity.created/archived. E2e: payroll с legal_basis=contract+cross_border+категории ПДн, недопустимый legal_basis→400, недопустимая role→400, архивация→повторная 400, реестр, Collaborator→403.**
+- [ ] **T-075** — DPIA workflow + документы: `privacy_assessment` (processing_activity_id, title, risk_level low/medium/high, necessity_note, mitigations jsonb, status draft→in_progress→completed); workflow (скип→400), документы через document_link (entity_type=privacy_assessment). _Deps: T-074, T-034._ DoD: DPIA создаётся для операции обработки, проходит workflow, high-risk фиксируется, документы прикладываются.
+
+- [ ] **EP-PRIV** — Privacy/ROPA + DPIA (раздел C). **Расписан на T-074–T-075.**
 - **EP-QA** — Questionnaire Automation (AI отвечает на опросники, раздел C).
 - **EP-FWK** — Широкая библиотека фреймворков до паритета с Vanta.
 - **EP-MISC** — Commitments, Developer console/API, Tags, AI Memory.
