@@ -25,6 +25,7 @@
     "drizzle-orm": "^0.45.2",
     "ioredis": "^5.11.1",
     "nodemailer": "^9.0.3",
+    "openid-client": "^6.8.4",
     "otplib": "^13.4.1",
     "pg": "^8.22.0",
     "qrcode": "^1.5.4",

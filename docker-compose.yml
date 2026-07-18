@@ -65,6 +65,30 @@ services:
       "
     restart: 'no'
 
+  # Тестовый IdP для SSO (T-016 OIDC, позже T-024 SAML). Дев-режим, in-memory H2.
+  # Realm it-audit импортируется из infra/keycloak при старте (идемпотентно).
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: 'true'
+    ports:
+      - '8081:8080' # админка: http://localhost:8081 (admin/admin)
+    volumes:
+      - ./infra/keycloak:/opt/keycloak/data/import:ro
+    healthcheck:
+      # в образе нет curl/wget — health через bash /dev/tcp на management-порт 9000
+      test:
+        [
+          'CMD-SHELL',
+          "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '\"UP\"'",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+
   mailpit:
     image: axllent/mailpit:v1.27
     ports:

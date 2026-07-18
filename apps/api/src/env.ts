@@ -22,4 +22,9 @@ export const env = {
   inactivityDeactivationDays: Number(process.env.INACTIVITY_DEACTIVATION_DAYS ?? 90),
   /** База ссылок в письмах (веб-приложение). */
   appUrl: process.env.APP_URL ?? 'http://localhost:3000',
+  /** OIDC SSO (T-016). Дефолты — локальный Keycloak из docker-compose (realm it-audit). */
+  oidcIssuerUrl: process.env.OIDC_ISSUER_URL ?? 'http://localhost:8081/realms/it-audit',
+  oidcClientId: process.env.OIDC_CLIENT_ID ?? 'it-audit-app',
+  oidcClientSecret: process.env.OIDC_CLIENT_SECRET ?? 'it-audit-dev-secret',
+  oidcRedirectUrl: process.env.OIDC_REDIRECT_URL ?? 'http://localhost:3001/auth/oidc/callback',
 };

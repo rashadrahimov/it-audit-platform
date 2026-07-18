@@ -15,7 +15,8 @@ description: Как собрать, запустить и руками пров�
 
 ```bash
 pnpm infra:up         # docker compose up -d + scripts/wait-infra.mjs (не compose --wait: он спотыкается об one-shot minio-init)
-                      # Postgres :5433, Redis :6380, MinIO :9000 (консоль :9001), Mailpit :1025 (UI :8025)
+                      # Postgres :5433, Redis :6380, MinIO :9000 (консоль :9001), Mailpit :1025 (UI :8025),
+                      # Keycloak :8081 (админка admin/admin; realm it-audit автоимпортируется, стартует ~30с)
 pnpm install          # если менялись зависимости
 pnpm build            # shared → api (nest build) → web (next build); порядок топологический
 pnpm db:migrate       # drizzle-kit: применяет миграции из apps/api/drizzle (схема — src/db/schema.ts)
@@ -54,6 +55,7 @@ pnpm seed             # идемпотентный (apps/api/src/seed.ts): ба�
 - Журналы (T-021): после логина — строка в `auth_event` (event/ip/user_agent), после `POST /subsidiaries` — в `audit_log` (action `subsidiary.created`, actor, after). Append-only: `psql -U app -d audit -c "UPDATE audit_log SET action='x'"` → permission denied.
 - Soft-delete/comments (T-023): `DELETE /subsidiaries/:id` → 204, usage перестаёт считать удалённую; `POST /subsidiaries/:id/restore` возвращает (повторный — 404). `POST /comments` `{entityType, entityId, body}` → `GET /comments?entityType=&entityId=`; всё пишется в audit_log.
 - Invite (T-015): `POST /invites` (Admin) `{email, roleId, isAuditSeat, locale}` → письмо в Mailpit с `token=` в тексте; до accept логин 401; `POST /invites/accept` `{token, password}` (слабый — 400) → 204 → логин приглашённого работает, seat считается в usage; в audit_log — `membership.granted` (LOG-05) и `invite.accepted`.
+- OIDC SSO (T-016): `curl -i http://localhost:3001/auth/oidc/login` → 302 в Keycloak; полный код-флоу без браузера: страница логина → распарсить `action=` формы → POST `username=sso-user&password=Sso-User-2026` с cookie-jar → 302 на callback с кодом → `GET callback` отдаёт наш `{accessToken}`; `/auth/me` = sso-user@demo.io; повторный код → 401; JIT-юзер в БД с `password_hash IS NULL`.
 - MFA (T-014): готовый сценарий `bash <scratchpad>/mfa-e2e.sh` или руками: `POST /auth/mfa/setup` (Bearer) → `{secret, qrDataUrl}`; TOTP-код: `node -e "console.log(require('<repo>/apps/api/node_modules/otplib').generateSync({secret:'...'}))"` (запускать с резолвом из apps/api!); `POST /auth/mfa/enable {code}` → 10 recovery-кодов; логин становится двухшаговым (`{mfaRequired, mfaToken}` → `POST /auth/mfa/verify`); recovery-код одноразов (10→9, повтор — 401).
 - ⚠ Гоча портов: если 3001 занят «бессмертным» процессом — ищи родителя `nest start --watch` (`fuser 3001/tcp` → `ps -o ppid`), он воскрешает убитого ребёнка; гасить надо всё дерево (pkill -f 'nest start').
 - Фоновые задачи (T-040): `curl -X POST 'http://localhost:3001/jobs/demo?delayMs=2000'` → `{id}`; сразу `GET /jobs/demo/<id>` — `state:"delayed"`, через ~3с — `completed` с `returnValue`. `GET /jobs/heartbeat` — свежий `lastRunAt` (repeatable-джоба: первый прогон при старте api, дальше раз в минуту).
