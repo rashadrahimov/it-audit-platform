@@ -37,4 +37,14 @@ export const env = {
   /** EntityID нашего SP = clientId SAML-клиента в Keycloak / identifier в ADFS. */
   samlSpIssuer: process.env.SAML_SP_ISSUER ?? 'it-audit-saml',
   samlCallbackUrl: process.env.SAML_CALLBACK_URL ?? 'http://localhost:3001/auth/saml/callback',
+  /**
+   * LDAP-федерация (T-025): search+bind сервисным аккаунтом — AD-совместимый
+   * паттерн. Дефолты — тестовый openldap из docker-compose. Для AD:
+   * LDAP_SEARCH_FILTER=(sAMAccountName={{username}}) и сервисный bind-аккаунт.
+   */
+  ldapUrl: process.env.LDAP_URL ?? 'ldap://localhost:1389',
+  ldapBindDn: process.env.LDAP_BIND_DN ?? 'cn=admin,dc=demo,dc=io',
+  ldapBindPassword: process.env.LDAP_BIND_PASSWORD ?? 'admin',
+  ldapSearchBase: process.env.LDAP_SEARCH_BASE ?? 'ou=people,dc=demo,dc=io',
+  ldapSearchFilter: process.env.LDAP_SEARCH_FILTER ?? '(|(uid={{username}})(mail={{username}}))',
 };

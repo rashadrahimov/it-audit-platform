@@ -26,6 +26,7 @@
     "bullmq": "^5.80.5",
     "drizzle-orm": "^0.45.2",
     "ioredis": "^5.11.1",
+    "ldapts": "^9.0.0",
     "nodemailer": "^9.0.3",
     "openid-client": "^6.8.4",
     "otplib": "^13.4.1",

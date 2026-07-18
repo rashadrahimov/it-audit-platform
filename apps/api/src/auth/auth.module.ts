@@ -4,6 +4,8 @@ import { env } from '../env';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { LdapController } from './ldap.controller';
+import { LdapService } from './ldap.service';
 import { MfaService } from './mfa.service';
 import { OidcController } from './oidc.controller';
 import { OidcService } from './oidc.service';
@@ -19,9 +21,10 @@ import { SsoUserService } from './sso-user.service';
       signOptions: { expiresIn: env.jwtTtlSeconds },
     }),
   ],
-  controllers: [AuthController, OidcController, SamlController],
+  controllers: [AuthController, OidcController, SamlController, LdapController],
   providers: [
     AuthService,
+    LdapService,
     MfaService,
     OidcService,
     SamlService,

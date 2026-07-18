@@ -1,0 +1,15 @@
+# Сид тестового LDAP (T-025): структура как в типовом AD-заменителе.
+# Логин e2e: ldap-user / Ldap-User-2026.
+dn: ou=people,dc=demo,dc=io
+objectClass: organizationalUnit
+ou: people
+
+dn: uid=ldap-user,ou=people,dc=demo,dc=io
+objectClass: inetOrgPerson
+uid: ldap-user
+cn: LDAP User
+sn: User
+givenName: LDAP
+displayName: LDAP User
+mail: ldap-user@demo.io
+userPassword: Ldap-User-2026

@@ -65,6 +65,30 @@ services:
       "
     restart: 'no'
 
+  # Тестовый LDAP (T-025): заменитель локального AD on-prem клиента.
+  # Base DN dc=demo,dc=io из LDAP_DOMAIN; сид-юзеры — infra/ldap/*.ldif
+  # (--copy-service применяет их при первом старте; правки = пересоздать контейнер).
+  ldap:
+    image: osixia/openldap:1.5.0
+    command: [--copy-service]
+    environment:
+      LDAP_ORGANISATION: Demo Group
+      LDAP_DOMAIN: demo.io
+      LDAP_ADMIN_PASSWORD: admin
+    ports:
+      - '1389:389' # хост-порт непривилегированный; внутри стандартный 389
+    volumes:
+      - ./infra/ldap:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'ldapsearch -x -H ldap://localhost -D cn=admin,dc=demo,dc=io -w admin -b dc=demo,dc=io -s base >/dev/null',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   # Тестовый IdP для SSO (T-016 OIDC, позже T-024 SAML). Дев-режим, in-memory H2.
   # Realm it-audit импортируется из infra/keycloak при старте (идемпотентно).
   keycloak:

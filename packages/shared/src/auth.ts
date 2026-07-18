@@ -29,6 +29,12 @@ export const loginRequestSchema = z.object({
   password: z.string().min(1),
 });
 
+/** LDAP-логин (T-025): username — uid/sAMAccountName/mail, что найдёт фильтр поиска. */
+export const ldapLoginRequestSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
 export const changePasswordRequestSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: z.string().min(1),
@@ -76,6 +82,7 @@ export const meResponseSchema = z.object({
 export type PasswordPolicy = z.infer<typeof passwordPolicySchema>;
 export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
+export type LdapLoginRequest = z.infer<typeof ldapLoginRequestSchema>;
 export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>;
 export type AuthTokenResponse = z.infer<typeof authTokenResponseSchema>;
 export type MfaChallengeResponse = z.infer<typeof mfaChallengeResponseSchema>;
