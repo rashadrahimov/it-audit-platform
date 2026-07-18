@@ -27,6 +27,7 @@ import { PoliciesModule } from './policies/policies.module';
 import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
 import { RisksModule } from './risks/risks.module';
+import { SecurityAlertsModule } from './security-alerts/security-alerts.module';
 import { TestsModule } from './tests/tests.module';
 import { UsersModule } from './users/users.module';
 import { VendorsModule } from './vendors/vendors.module';
@@ -59,6 +60,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     RbacModule,
     ReportsModule,
     RisksModule,
+    SecurityAlertsModule,
     TestsModule,
     UsersModule,
     VendorsModule,

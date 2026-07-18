@@ -984,6 +984,28 @@ export const codeChange = pgTable(
   (table) => [index('code_change_tenant_idx').on(table.tenantId)],
 );
 
+/** Security alert (T-064): сигнал из коннектора/сканера → triage → закрытие. */
+export const securityAlert = pgTable(
+  'security_alert',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    title: text('title').notNull(),
+    source: text('source'),
+    severity: text('severity').notNull().default('medium'),
+    status: text('status').notNull().default('new'),
+    triageNote: text('triage_note'),
+    connectorId: uuid('connector_id').references(() => connector.id),
+    triagedAt: timestamp('triaged_at', { withTimezone: true }),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('security_alert_tenant_idx').on(table.tenantId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

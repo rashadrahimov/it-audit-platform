@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-VULN — T-063 (change management: approval-workflow) закрыта. Следующая — T-064 (security alerts).
-- **Следующий шаг:** T-064 (security alerts new→triaged→closed) закроет EP-VULN. Дальше — EP-ASSET / EP-PERS или M3.
-- **Последнее готово:** **Марафон-3 18.07.2026: EP-INT, EP-POL, EP-IAM, EP-RISK — четыре эпика M2 целиком (T-048…T-059, 12 задач).** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
+- **Текущая задача:** EP-VULN закрыт целиком (T-062+T-063+T-064). Следующая — декомпозиция EP-ASSET (Asset/Process Universe, B3).
+- **Следующий шаг:** Распишу EP-ASSET на атомы T-065+ (auditable_entity дерево + активы + авто-обнаружение коннектором) и сделаю. Дальше — EP-PERS / EP-REP или M3.
+- **Последнее готово:** **Марафон-4 18.07.2026: EP-VEND (T-060/061) + EP-VULN (T-062/063/064) — два эпика M2 целиком.** До того марафон-3 (EP-INT/POL/IAM/RISK, 12 задач), M1 (7), марафон-1 (12). GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -222,7 +222,7 @@ IAM встроен в Control→Test→Finding (ADR-0012): аккаунты — 
 
 - [x] **T-062** — Vulnerability register: `vulnerability` (cve, severity, title, status open→remediating→resolved, account_id NULL, connector_id, due_date, sla_status); CRUD, lifecycle, SLA на джобе T-043; импорт из коннектора. _Deps: T-020, T-043._ DoD: уязвимость создаётся, проходит статусы, SLA считается. **Готово: миграция 0031 — vulnerability (FORCE RLS; cve, severity, status, account_id/connector_id-задел под импорт, due_date, sla_status). Lifecycle open→remediating→resolved (недопустимый→400). SLA-джоба T-043 расширена на vulnerability (due_date→overdue/due_soon/ok, resolved не трогается). API control.edit/view. audit_log. E2e: critical CVE, lifecycle, SLA due-вчера→overdue, resolve, недопустимый/мусорный→400, RBAC 403.**
 - [x] **T-063** — Change management: `code_change` (title, type, status requested→approved→deployed, approver, risk); approval-workflow. _Deps: T-020._ DoD: изменение создаётся, проходит approval. **Готово: миграция 0032 — code_change (FORCE RLS; title, type, risk, status requested→approved→deployed, requester/approver membership, approved_at/deployed_at). Workflow requested→approved/rejected→deployed (approve/reject — только назначенный approver, иначе 403; недопустимый→400). API: create control.edit, transition/list control.view. audit_log change.created/status_changed. E2e: approver approve→approved, deploy→deployed, чужой approve→403, requested→deployed→400, Collaborator create→403.**
-- [ ] **T-064** — Security alerts: `security_alert` (source, severity, status new→triaged→closed, triage-note). _Deps: T-020._ DoD: алерт создаётся, триажится, закрывается.
+- [x] **T-064** — Security alerts: `security_alert` (source, severity, status new→triaged→closed, triage-note). _Deps: T-020._ DoD: алерт создаётся, триажится, закрывается. **Готово: миграция 0033 — security_alert (FORCE RLS; title, source, severity, status new→triaged→closed, triage_note, connector_id-задел под импорт, triaged_at/closed_at). Workflow new→triaged/closed→closed (недопустимый→400). API: create/transition control.edit, list control.view. audit_log security_alert.created/status_changed. E2e: create→new, triage(+note)→triaged, close→closed, повторный close→400, мусорный severity→400, Collaborator create→403. EP-VULN закрыт (T-062+T-063+T-064).**
 
 - [x] **EP-VULN** — Vulnerability + Change management + Security alerts (B13). **Расписан на T-062–T-064.**
 ### Эпик: Vendor Risk (EP-VEND, B5) — расписан на атомы 18.07.2026 (марафон-3)
