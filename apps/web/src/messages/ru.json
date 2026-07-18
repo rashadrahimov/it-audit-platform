@@ -67,7 +67,16 @@
     "auditPrograms": "Программы аудита",
     "knowledgeBase": "База знаний",
     "questionnaires": "Опросники",
-    "satisfaction": "Удовлетворённость аудитом"
+    "satisfaction": "Удовлетворённость аудитом",
+    "nav": {
+      "overview": "Обзор",
+      "compliance": "Комплаенс и контроли",
+      "engagements": "Аудиты",
+      "risk": "Риски и приватность",
+      "security": "Безопасность и доступ",
+      "thirdParty": "Третьи стороны и доверие",
+      "org": "Организация и настройки"
+    }
   },
   "engagements": {
     "title": "Аудиты",

@@ -67,7 +67,16 @@
     "auditPrograms": "Audit proqramları",
     "knowledgeBase": "Bilik bazası",
     "questionnaires": "Sorğular",
-    "satisfaction": "Audit məmnunluğu"
+    "satisfaction": "Audit məmnunluğu",
+    "nav": {
+      "overview": "İcmal",
+      "compliance": "Uyğunluq və kontrollar",
+      "engagements": "Auditlər",
+      "risk": "Risk və məxfilik",
+      "security": "Təhlükəsizlik və giriş",
+      "thirdParty": "Üçüncü tərəflər və etibar",
+      "org": "Təşkilat və tənzimləmələr"
+    }
   },
   "engagements": {
     "title": "Auditlər",

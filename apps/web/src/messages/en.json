@@ -67,7 +67,16 @@
     "auditPrograms": "Audit programs",
     "knowledgeBase": "Knowledge base",
     "questionnaires": "Questionnaires",
-    "satisfaction": "Audit satisfaction"
+    "satisfaction": "Audit satisfaction",
+    "nav": {
+      "overview": "Overview",
+      "compliance": "Compliance & controls",
+      "engagements": "Engagements",
+      "risk": "Risk & privacy",
+      "security": "Security & access",
+      "thirdParty": "Third parties & trust",
+      "org": "Organization & settings"
+    }
   },
   "engagements": {
     "title": "Engagements",
