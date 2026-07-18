@@ -246,6 +246,13 @@
       "when": 1784384734646,
       "tag": "0034_auditable-entity",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1784385139045,
+      "tag": "0035_asset-risk-entity",
+      "breakpoints": true
     }
   ]
 }

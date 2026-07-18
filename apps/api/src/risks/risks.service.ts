@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { control, risk, riskControl, riskMatrixConfig } from '../db/schema';
+import { auditableEntity, control, risk, riskControl, riskEntity, riskMatrixConfig } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -185,6 +185,54 @@ export class RisksService {
   }
 
   /** RCM (T-058): привязать митигирующие контроли к риску (M:N). */
+  /** T-066: привязка риска к узлам audit universe (risk_entity, M:N). */
+  async linkEntities(actor: Actor, riskId: string, entityIds: string[]) {
+    const linked = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [r] = await tx
+        .select({ id: risk.id })
+        .from(risk)
+        .where(and(eq(risk.id, riskId), isNull(risk.deletedAt)));
+      if (!r) throw new NotFoundException(`Риск ${riskId} не найден`);
+      const nodes = await tx
+        .select({ id: auditableEntity.id })
+        .from(auditableEntity)
+        .where(and(inArray(auditableEntity.id, entityIds), isNull(auditableEntity.deletedAt)));
+      if (nodes.length !== entityIds.length) {
+        throw new BadRequestException('Часть узлов universe не найдена');
+      }
+      let added = 0;
+      for (const n of nodes) {
+        const [row] = await tx
+          .insert(riskEntity)
+          .values({ riskId, auditableEntityId: n.id })
+          .onConflictDoNothing()
+          .returning();
+        if (row) added += 1;
+      }
+      return added;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'risk.entities_linked',
+      entityType: 'risk',
+      entityId: riskId,
+      after: { added: linked },
+    });
+    return { linked };
+  }
+
+  async entitiesOf(tenantId: string, riskId: string) {
+    return this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ id: auditableEntity.id, kind: auditableEntity.kind, nameI18n: auditableEntity.nameI18n })
+        .from(riskEntity)
+        .innerJoin(auditableEntity, eq(riskEntity.auditableEntityId, auditableEntity.id))
+        .where(eq(riskEntity.riskId, riskId)),
+    );
+  }
+
   async linkControls(actor: Actor, riskId: string, controlIds: string[]) {
     const linked = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [r] = await tx

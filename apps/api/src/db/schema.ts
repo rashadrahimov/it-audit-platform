@@ -1033,6 +1033,47 @@ export const auditableEntity = pgTable(
   ],
 );
 
+/** ИТ-актив (T-066): проецируется в universe (kind=system, ref_id=asset.id). connector_id — авто-обнаружение B3. */
+export const asset = pgTable(
+  'asset',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    subsidiaryId: uuid('subsidiary_id'),
+    type: text('type').notNull(),
+    name: text('name').notNull(),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    connectorId: uuid('connector_id').references(() => connector.id),
+    externalId: text('external_id'),
+    attrs: jsonb('attrs').notNull().default({}),
+    custom: jsonb('custom').notNull().default({}),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('asset_tenant_idx').on(table.tenantId),
+    uniqueIndex('asset_connector_external_idx').on(table.connectorId, table.externalId),
+  ],
+);
+
+/** M:N risk↔auditable_entity (T-066, отложено из EP-RISK): риск затрагивает узлы universe. */
+export const riskEntity = pgTable(
+  'risk_entity',
+  {
+    id: id(),
+    riskId: uuid('risk_id')
+      .notNull()
+      .references(() => risk.id, { onDelete: 'cascade' }),
+    auditableEntityId: uuid('auditable_entity_id')
+      .notNull()
+      .references(() => auditableEntity.id, { onDelete: 'cascade' }),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('risk_entity_pair_idx').on(table.riskId, table.auditableEntityId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

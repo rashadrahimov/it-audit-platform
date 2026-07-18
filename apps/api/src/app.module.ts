@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AccessRequestsModule } from './access-requests/access-requests.module';
 import { AccessReviewsModule } from './access-reviews/access-reviews.module';
 import { AccountsModule } from './accounts/accounts.module';
+import { AssetsModule } from './assets/assets.module';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { ChangesModule } from './changes/changes.module';
@@ -39,6 +40,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     AccessRequestsModule,
     AccessReviewsModule,
     AccountsModule,
+    AssetsModule,
     AuditModule,
     AuthModule,
     ChangesModule,

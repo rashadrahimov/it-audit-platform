@@ -136,6 +136,30 @@ export class RisksController {
     );
   }
 
+  @Post(':id/entities')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-066: привязать риск к узлам audit universe' })
+  linkEntities(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ entityIds: z.array(z.uuid()).min(1) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.linkEntities(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.entityIds,
+    );
+  }
+
+  @Get(':id/entities')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Узлы universe, затрагиваемые риском' })
+  entitiesOf(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.entitiesOf(req.tenantId, id);
+  }
+
   @Get('heatmap')
   @RequirePermission('control', 'view')
   @ApiOperation({ summary: 'Heat map (T-058): распределение рисков по классам' })
