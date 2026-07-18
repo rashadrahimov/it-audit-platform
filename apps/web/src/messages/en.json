@@ -345,7 +345,11 @@
       "procurement": "Procurement",
       "active": "Active",
       "archived": "Archived"
-    }
+    },
+    "create": "New vendor",
+    "namePh": "Vendor name",
+    "add": "Add",
+    "lifecycle": "Lifecycle"
   },
   "workingPapers": {
     "title": "Working Papers",

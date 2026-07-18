@@ -345,7 +345,11 @@
       "procurement": "Satınalma",
       "active": "Aktiv",
       "archived": "Arxiv"
-    }
+    },
+    "create": "Yeni təchizatçı",
+    "namePh": "Təchizatçı adı",
+    "add": "Əlavə et",
+    "lifecycle": "Həyat dövrü"
   },
   "workingPapers": {
     "title": "İş Sənədləri",
