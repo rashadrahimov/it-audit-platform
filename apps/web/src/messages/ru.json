@@ -54,7 +54,8 @@
     "securityAlerts": "Оповещения ИБ",
     "commitments": "Обязательства",
     "accessReviews": "Ревью доступа",
-    "risks": "Реестр рисков"
+    "risks": "Реестр рисков",
+    "privacy": "Приватность (ROPA/DPIA)"
   },
   "engagements": {
     "title": "Аудиты",
@@ -473,6 +474,47 @@
       "transfer": "Передать",
       "accept": "Принять",
       "avoid": "Избегать"
+    }
+  },
+  "privacy": {
+    "title": "Приватность — ROPA и DPIA",
+    "toAccount": "Аккаунт",
+    "ropa": "Операции обработки (ROPA)",
+    "dpia": "Оценки влияния (DPIA)",
+    "empty": "Пока пусто",
+    "name": "Название",
+    "legalBasis": "Правовое основание",
+    "role": "Роль",
+    "crossBorder": "Трансграничная",
+    "status": "Статус",
+    "add": "Добавить",
+    "titlePh": "Название",
+    "riskLevel": "Уровень риска",
+    "archive": "В архив",
+    "lb": {
+      "consent": "Согласие",
+      "contract": "Договор",
+      "legal_obligation": "Юр. обязанность",
+      "vital": "Жизненные интересы",
+      "public": "Публичные",
+      "legitimate": "Законный интерес"
+    },
+    "rl": {
+      "controller": "Контролёр",
+      "processor": "Обработчик",
+      "joint": "Совместный"
+    },
+    "lvl": {
+      "low": "Низкий",
+      "medium": "Средний",
+      "high": "Высокий"
+    },
+    "st": {
+      "active": "Активна",
+      "archived": "Архив",
+      "draft": "Черновик",
+      "in_progress": "В процессе",
+      "completed": "Завершена"
     }
   }
 }

@@ -54,7 +54,8 @@
     "securityAlerts": "Təhlükəsizlik Bildirişləri",
     "commitments": "Öhdəliklər",
     "accessReviews": "Giriş Baxışları",
-    "risks": "Risk Reyestri"
+    "risks": "Risk Reyestri",
+    "privacy": "Məxfilik (ROPA/DPIA)"
   },
   "engagements": {
     "title": "Auditlər",
@@ -473,6 +474,47 @@
       "transfer": "Ötürmək",
       "accept": "Qəbul",
       "avoid": "Qaçınmaq"
+    }
+  },
+  "privacy": {
+    "title": "Məxfilik — ROPA və DPIA",
+    "toAccount": "Hesab",
+    "ropa": "Emal fəaliyyətləri (ROPA)",
+    "dpia": "Təsir qiymətləndirmələri (DPIA)",
+    "empty": "Hələ yoxdur",
+    "name": "Ad",
+    "legalBasis": "Hüquqi əsas",
+    "role": "Rol",
+    "crossBorder": "Sərhədlərarası",
+    "status": "Status",
+    "add": "Əlavə et",
+    "titlePh": "Ad",
+    "riskLevel": "Risk səviyyəsi",
+    "archive": "Arxivə",
+    "lb": {
+      "consent": "Razılıq",
+      "contract": "Müqavilə",
+      "legal_obligation": "Hüquqi öhdəlik",
+      "vital": "Həyati",
+      "public": "İctimai",
+      "legitimate": "Qanuni maraq"
+    },
+    "rl": {
+      "controller": "Nəzarətçi",
+      "processor": "Emalçı",
+      "joint": "Birgə"
+    },
+    "lvl": {
+      "low": "Aşağı",
+      "medium": "Orta",
+      "high": "Yüksək"
+    },
+    "st": {
+      "active": "Aktiv",
+      "archived": "Arxiv",
+      "draft": "Qaralama",
+      "in_progress": "Davam edir",
+      "completed": "Tamamlanıb"
     }
   }
 }

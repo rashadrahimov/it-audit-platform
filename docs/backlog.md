@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** Марафон Трека A (roadmap-to-release, UI-глубина). Начато: T-A01 `/risks` — реестр рисков + форма создания (impact×likelihood → risk_class + treatment). До того: 15 экранов + интерактивность (T-U16…U18) + drill-down (T-U19).
-- **Следующий шаг:** По приоритету A1: ROPA/DPIA (privacy) → IAM (accounts/access-requests) → audit programs/code-changes → config → reports → api-keys/notifications/KPI/time. Каждый — server actions по эталону, зелёный чекпоинт.
+- **Текущая задача:** Марафон Трека A (UI-глубина). Готово: T-A01 `/risks` (реестр+создание), T-A02 `/privacy` (ROPA создание+архив + DPIA создание+workflow). До того: 15 экранов + T-U16…U19.
+- **Следующий шаг:** По приоритету A1: IAM (accounts/access-requests) → audit programs/code-changes → config (custom-fields/config-lists/audit-types/tags) → reports → api-keys/notifications/KPI/time. Каждый — server actions по эталону, зелёный чекпоинт.
 - **Последнее готово:** **Марафон-4 18.07.2026 — 43 задачи (T-060…103): весь M2 + весь M3 + RFP-эпики (AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP/MSG/REPWIZ/SCHED) + Добавки (PLAN/GROUP), EP-I18N backend-ядро. Миграции до 0061. Стоп-условие достигнуто.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._

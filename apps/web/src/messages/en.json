@@ -54,7 +54,8 @@
     "securityAlerts": "Security Alerts",
     "commitments": "Commitments",
     "accessReviews": "Access Reviews",
-    "risks": "Risk Register"
+    "risks": "Risk Register",
+    "privacy": "Privacy (ROPA/DPIA)"
   },
   "engagements": {
     "title": "Engagements",
@@ -473,6 +474,47 @@
       "transfer": "Transfer",
       "accept": "Accept",
       "avoid": "Avoid"
+    }
+  },
+  "privacy": {
+    "title": "Privacy — ROPA & DPIA",
+    "toAccount": "Account",
+    "ropa": "Processing activities (ROPA)",
+    "dpia": "Impact assessments (DPIA)",
+    "empty": "None yet",
+    "name": "Name",
+    "legalBasis": "Legal basis",
+    "role": "Role",
+    "crossBorder": "Cross-border",
+    "status": "Status",
+    "add": "Add",
+    "titlePh": "Title",
+    "riskLevel": "Risk level",
+    "archive": "Archive",
+    "lb": {
+      "consent": "Consent",
+      "contract": "Contract",
+      "legal_obligation": "Legal obligation",
+      "vital": "Vital",
+      "public": "Public",
+      "legitimate": "Legitimate"
+    },
+    "rl": {
+      "controller": "Controller",
+      "processor": "Processor",
+      "joint": "Joint"
+    },
+    "lvl": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "st": {
+      "active": "Active",
+      "archived": "Archived",
+      "draft": "Draft",
+      "in_progress": "In progress",
+      "completed": "Completed"
     }
   }
 }

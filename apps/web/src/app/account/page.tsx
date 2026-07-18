@@ -208,6 +208,13 @@ export default async function AccountPage() {
           {t('workingPapers')}
         </Link>
         <Link
+          href="/privacy"
+          data-testid="go-privacy"
+          className="mb-3 block w-full rounded-md bg-accent px-4 py-2 text-center font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          {t('privacy')}
+        </Link>
+        <Link
           href="/vulnerabilities"
           data-testid="go-vulnerabilities"
           className="mb-3 block w-full rounded-md bg-accent px-4 py-2 text-center font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
