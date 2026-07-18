@@ -58,7 +58,8 @@
     "privacy": "Приватность (ROPA/DPIA)",
     "iam": "IAM — учётки",
     "codeChanges": "Управление изменениями",
-    "config": "Настройки"
+    "config": "Настройки",
+    "reports": "Отчёты"
   },
   "engagements": {
     "title": "Аудиты",
@@ -583,5 +584,28 @@
     "global": "Глобальный",
     "custom": "Свой",
     "empty": "Пока пусто"
+  },
+  "reports": {
+    "title": "Отчёты",
+    "toAccount": "В аккаунт",
+    "export": "Выгрузка данных",
+    "compare": "Сравнение снапшотов",
+    "needTwo": "Для сравнения нужно минимум два снапшота",
+    "periodA": "Период A",
+    "periodB": "Период B",
+    "run": "Сравнить",
+    "entities": {
+      "findings": "Находки",
+      "risks": "Риски",
+      "controls": "Контроли"
+    },
+    "metrics": {
+      "controls_total": "Контролей всего",
+      "risks_by_class": "Риски по классам",
+      "tests_by_status": "Тесты по статусу",
+      "vendors_by_risk": "Вендоры по риску",
+      "findings_by_severity": "Находки по критичности",
+      "findings_open": "Открытые находки"
+    }
   }
 }

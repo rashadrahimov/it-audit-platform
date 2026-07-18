@@ -58,7 +58,8 @@
     "privacy": "Privacy (ROPA/DPIA)",
     "iam": "IAM — Accounts",
     "codeChanges": "Change Management",
-    "config": "Settings"
+    "config": "Settings",
+    "reports": "Reports"
   },
   "engagements": {
     "title": "Engagements",
@@ -583,5 +584,28 @@
     "global": "Global",
     "custom": "Custom",
     "empty": "Nothing yet"
+  },
+  "reports": {
+    "title": "Reports",
+    "toAccount": "To account",
+    "export": "Data export",
+    "compare": "Snapshot comparison",
+    "needTwo": "Need at least two snapshots to compare",
+    "periodA": "Period A",
+    "periodB": "Period B",
+    "run": "Compare",
+    "entities": {
+      "findings": "Findings",
+      "risks": "Risks",
+      "controls": "Controls"
+    },
+    "metrics": {
+      "controls_total": "Controls total",
+      "risks_by_class": "Risks by class",
+      "tests_by_status": "Tests by status",
+      "vendors_by_risk": "Vendors by risk",
+      "findings_by_severity": "Findings by severity",
+      "findings_open": "Open findings"
+    }
   }
 }

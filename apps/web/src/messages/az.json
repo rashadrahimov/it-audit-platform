@@ -58,7 +58,8 @@
     "privacy": "Məxfilik (ROPA/DPIA)",
     "iam": "IAM — Hesablar",
     "codeChanges": "Dəyişiklik İdarəetməsi",
-    "config": "Tənzimləmələr"
+    "config": "Tənzimləmələr",
+    "reports": "Hesabatlar"
   },
   "engagements": {
     "title": "Auditlər",
@@ -583,5 +584,28 @@
     "global": "Qlobal",
     "custom": "Fərdi",
     "empty": "Hələ boşdur"
+  },
+  "reports": {
+    "title": "Hesabatlar",
+    "toAccount": "Hesaba",
+    "export": "Məlumat ixracı",
+    "compare": "Snapşotların müqayisəsi",
+    "needTwo": "Müqayisə üçün ən azı iki snapşot lazımdır",
+    "periodA": "Dövr A",
+    "periodB": "Dövr B",
+    "run": "Müqayisə et",
+    "entities": {
+      "findings": "Tapıntılar",
+      "risks": "Risklər",
+      "controls": "Kontrollar"
+    },
+    "metrics": {
+      "controls_total": "Kontrollar (cəmi)",
+      "risks_by_class": "Risklər (sinif üzrə)",
+      "tests_by_status": "Testlər (status üzrə)",
+      "vendors_by_risk": "Vendorlar (risk üzrə)",
+      "findings_by_severity": "Tapıntılar (kritiklik üzrə)",
+      "findings_open": "Açıq tapıntılar"
+    }
   }
 }
