@@ -253,6 +253,13 @@
       "when": 1784385139045,
       "tag": "0035_asset-risk-entity",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1784385375528,
+      "tag": "0036_business-process",
+      "breakpoints": true
     }
   ]
 }

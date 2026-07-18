@@ -1058,6 +1058,28 @@ export const asset = pgTable(
   ],
 );
 
+/**
+ * Бизнес-процесс (T-067, ADR-0016 гибрид): subsidiary_id NULL = каталог группы, иначе локальный дочки.
+ * Проецируется в universe (kind=process, ref_id=business_process.id).
+ */
+export const businessProcess = pgTable(
+  'business_process',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    subsidiaryId: uuid('subsidiary_id'),
+    nameI18n: jsonb('name_i18n').$type<I18nText>().notNull(),
+    criticality: text('criticality').notNull().default('medium'),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    scoring: jsonb('scoring').notNull().default({}),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('business_process_tenant_idx').on(table.tenantId)],
+);
+
 /** M:N risk↔auditable_entity (T-066, отложено из EP-RISK): риск затрагивает узлы universe. */
 export const riskEntity = pgTable(
   'risk_entity',
