@@ -4,15 +4,13 @@ import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { auditableEntity, control, risk, riskControl, riskEntity, riskMatrixConfig } from '../db/schema';
+import { classifyRisk, DEFAULT_THRESHOLDS } from './classify-risk';
 
 interface Actor {
   tenantId: string;
   userId: string;
   ip?: string;
 }
-
-/** Дефолтные пороги классов по impact×likelihood (5×5 → max 25). */
-const DEFAULT_THRESHOLDS = { medium: 6, high: 12, critical: 20 };
 
 export interface CreateRiskInput {
   titleI18n: I18nText;
@@ -35,20 +33,6 @@ export class RisksService {
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
   ) {}
-
-  /** Класс риска по произведению impact×likelihood и порогам матрицы. */
-  private classify(
-    impact: number | null | undefined,
-    likelihood: number | null | undefined,
-    thresholds: { medium: number; high: number; critical: number },
-  ): string | null {
-    if (!impact || !likelihood) return null;
-    const score = impact * likelihood;
-    if (score >= thresholds.critical) return 'critical';
-    if (score >= thresholds.high) return 'high';
-    if (score >= thresholds.medium) return 'medium';
-    return 'low';
-  }
 
   private async thresholds(
     tx: Parameters<Parameters<DbService['withTenant']>[1]>[0],
@@ -115,8 +99,8 @@ export class RisksService {
           inherentLikelihood: input.inherentLikelihood ?? null,
           residualImpact: input.residualImpact ?? null,
           residualLikelihood: input.residualLikelihood ?? null,
-          riskClass: this.classify(input.inherentImpact, input.inherentLikelihood, thresholds),
-          residualClass: this.classify(input.residualImpact, input.residualLikelihood, thresholds),
+          riskClass: classifyRisk(input.inherentImpact, input.inherentLikelihood, thresholds),
+          residualClass: classifyRisk(input.residualImpact, input.residualLikelihood, thresholds),
           treatment: input.treatment ?? null,
           ownerMembershipId: input.ownerMembershipId ?? null,
         })
@@ -165,8 +149,8 @@ export class RisksService {
           inherentLikelihood,
           residualImpact,
           residualLikelihood,
-          riskClass: this.classify(inherentImpact, inherentLikelihood, thresholds),
-          residualClass: this.classify(residualImpact, residualLikelihood, thresholds),
+          riskClass: classifyRisk(inherentImpact, inherentLikelihood, thresholds),
+          residualClass: classifyRisk(residualImpact, residualLikelihood, thresholds),
         })
         .where(eq(risk.id, id))
         .returning();
