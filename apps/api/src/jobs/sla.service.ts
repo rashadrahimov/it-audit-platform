@@ -9,6 +9,7 @@ export interface SlaRecalcResult {
   tests: number;
   deprovisioning: number;
   vulnerabilities: number;
+  commitments: number;
 }
 
 /**
@@ -27,6 +28,7 @@ export class SlaService {
       tests: 0,
       deprovisioning: 0,
       vulnerabilities: 0,
+      commitments: 0,
     };
     const dueSoon = env.slaDueSoonDays;
     for (const t of tenants) {
@@ -59,10 +61,18 @@ export class SlaService {
             ELSE 'ok' END
           WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'resolved'
         `);
+        const commitments = await tx.execute(sql`
+          UPDATE "commitment" SET "sla_status" = CASE
+            WHEN "due_date" < now() THEN 'overdue'
+            WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
+            ELSE 'ok' END
+          WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'met'
+        `);
         totals.findings += findings.rowCount ?? 0;
         totals.tests += tests.rowCount ?? 0;
         totals.deprovisioning += deprov.rowCount ?? 0;
         totals.vulnerabilities += vulns.rowCount ?? 0;
+        totals.commitments += commitments.rowCount ?? 0;
       });
     }
     return totals;

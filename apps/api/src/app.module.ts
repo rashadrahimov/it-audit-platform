@@ -7,6 +7,7 @@ import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { ChangesModule } from './changes/changes.module';
 import { CommentsModule } from './comments/comments.module';
+import { CommitmentsModule } from './commitments/commitments.module';
 import { ConnectorsModule } from './connectors/connectors.module';
 import { ControlsModule } from './controls/controls.module';
 import { DashboardsModule } from './dashboards/dashboards.module';
@@ -51,6 +52,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     AuthModule,
     ChangesModule,
     CommentsModule,
+    CommitmentsModule,
     ConnectorsModule,
     ControlsModule,
     DashboardsModule,

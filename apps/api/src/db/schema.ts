@@ -984,6 +984,28 @@ export const codeChange = pgTable(
   (table) => [index('code_change_tenant_idx').on(table.tenantId)],
 );
 
+/** Контрактное обязательство (T-077, EP-MISC): реестр commitments + SLA на due_date. */
+export const commitment = pgTable(
+  'commitment',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    title: text('title').notNull(),
+    source: text('source'),
+    description: text('description'),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    reviewCadence: text('review_cadence'),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    status: text('status').notNull().default('met'),
+    slaStatus: text('sla_status').notNull().default('ok'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('commitment_tenant_idx').on(table.tenantId)],
+);
+
 /** Тег (T-076, EP-MISC): полиморфная навеска на любую сущность через tag_link. */
 export const tag = pgTable(
   'tag',
