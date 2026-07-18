@@ -23,6 +23,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { CAPABILITIES, ConnectorsService } from './connectors.service';
+import { ConnectorSyncService } from './connector-sync.service';
 
 const createConnectorSchema = z.object({
   provider: z.string().min(1),
@@ -35,7 +36,10 @@ const createConnectorSchema = z.object({
 @ApiBearerAuth()
 @ApiHeader({ name: 'X-Tenant-Slug', required: true })
 export class ConnectorsController {
-  constructor(private readonly connectorsService: ConnectorsService) {}
+  constructor(
+    private readonly connectorsService: ConnectorsService,
+    private readonly connectorSyncService: ConnectorSyncService,
+  ) {}
 
   @Post()
   @RequirePermission('settings', 'edit', 'edit')
@@ -63,6 +67,20 @@ export class ConnectorsController {
   @ApiOperation({ summary: 'Карточка коннектора + история sync_run' })
   detail(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
     return this.connectorsService.detail(req.tenantId, id);
+  }
+
+  @Post(':id/sync')
+  @HttpCode(200)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({
+    summary: 'Запустить синхронизацию (T-049): пишет sync_run; сбой → outcome=error',
+  })
+  @ApiOkResponse({ description: 'Результат прогона {outcome, stats, error}' })
+  sync(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.connectorSyncService.run(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
   }
 
   @Delete(':id')

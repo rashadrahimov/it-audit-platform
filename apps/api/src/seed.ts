@@ -20,6 +20,7 @@ import {
   auditLog,
   auditType,
   comment,
+  connector,
   control,
   controlDomain,
   controlMapping,
@@ -37,6 +38,7 @@ import {
 } from './db/schema';
 import { PasswordService } from './auth/password.service';
 import { CONTROL_DOMAINS, GLOBAL_CONTROLS } from './seed-data/global-controls';
+import { encryptConfig } from './connectors/config-crypto';
 
 const DEMO_OBJECT_KEY = 'demo/welcome.txt';
 const DEMO_TENANT_SLUG = 'demo';
@@ -123,6 +125,7 @@ async function seedPostgres(): Promise<void> {
     await seedDemoUsers(db, demoTenant.id);
     await seedDemoDepartments(db, demoTenant.id);
     await seedDemoControlAdaptation(db, demoTenant.id);
+    await seedDemoConnector(db, demoTenant.id);
   } finally {
     await client.end().catch(() => {});
   }
@@ -588,6 +591,36 @@ async function seedDemoControlAdaptation(db: NodePgDatabase, tenantId: string): 
     });
   });
   console.log('✓ Демо-адаптация GOV-01 (owner: admin, history+comment) (idempotent)');
+}
+
+/** Демо-LDAP-коннектор (T-049): указывает на тестовый openldap, capability personnel. */
+async function seedDemoConnector(db: NodePgDatabase, tenantId: string): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.tenant_id', ${tenantId}, true)`);
+    const existing = await tx
+      .select()
+      .from(connector)
+      .where(
+        and(
+          eq(connector.tenantId, tenantId),
+          eq(connector.provider, 'ldap'),
+          isNull(connector.deletedAt),
+        ),
+      );
+    if (existing.length > 0) return;
+    await tx.insert(connector).values({
+      tenantId,
+      provider: 'ldap',
+      capabilities: ['personnel', 'access'],
+      configEncrypted: encryptConfig({
+        url: 'ldap://localhost:1389',
+        bindDn: 'cn=admin,dc=demo,dc=io',
+        bindPassword: 'admin',
+        searchBase: 'ou=people,dc=demo,dc=io',
+      }),
+    });
+  });
+  console.log('✓ Демо-коннектор LDAP (personnel, тестовый openldap) (idempotent)');
 }
 
 async function seedRedis(): Promise<void> {
