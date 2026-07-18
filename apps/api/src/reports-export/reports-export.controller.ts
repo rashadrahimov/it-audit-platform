@@ -1,0 +1,33 @@
+import { BadRequestException, Controller, Get, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import type { Response } from 'express';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
+import { RequirePermission } from '../rbac/require-permission.decorator';
+import { ReportsExportService } from './reports-export.service';
+
+@Controller('reports')
+@UseGuards(JwtAuthGuard, PermissionGuard)
+@ApiBearerAuth()
+@ApiHeader({ name: 'X-Tenant-Slug', required: true })
+export class ReportsExportController {
+  constructor(private readonly service: ReportsExportService) {}
+
+  @Get('export')
+  @RequirePermission('report', 'export', 'edit')
+  @ApiOperation({ summary: 'Tenant-wide выгрузка findings/risks/controls в CSV/XML (T-098, REP-05)' })
+  @ApiQuery({ name: 'entity', required: true, description: 'findings|risks|controls' })
+  @ApiQuery({ name: 'format', required: true, description: 'csv|xml' })
+  async export(
+    @Req() req: TenantRequest,
+    @Res() res: Response,
+    @Query('entity') entity?: string,
+    @Query('format') format?: string,
+  ) {
+    if (!entity || !format) throw new BadRequestException('Нужны entity и format');
+    const out = await this.service.export(req.tenantId, entity, format);
+    res.setHeader('Content-Type', out.contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${out.filename}"`);
+    res.send(out.body);
+  }
+}

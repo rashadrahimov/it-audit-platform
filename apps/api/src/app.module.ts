@@ -43,6 +43,7 @@ import { ProcessesModule } from './processes/processes.module';
 import { QuestionnairesModule } from './questionnaires/questionnaires.module';
 import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
+import { ReportsExportModule } from './reports-export/reports-export.module';
 import { RisksModule } from './risks/risks.module';
 import { SatisfactionModule } from './satisfaction/satisfaction.module';
 import { SearchModule } from './search/search.module';
@@ -100,6 +101,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     QuestionnairesModule,
     RbacModule,
     ReportsModule,
+    ReportsExportModule,
     RisksModule,
     SatisfactionModule,
     SearchModule,

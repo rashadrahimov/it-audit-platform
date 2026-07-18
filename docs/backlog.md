@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-MSG закрыт (T-096/097). Следующая — декомпозиция EP-REPWIZ (стандартные отчёты + XML/CSV экспорт + сравнение периодов).
-- **Следующий шаг:** Распишу EP-REPWIZ на атомы T-098+ (CSV/XML экспорт метрик + сравнение снапшотов по периодам) и сделаю. Дальше — EP-SCHED / фаза-3.
+- **Текущая задача:** EP-REPWIZ — T-098 (tenant-wide CSV/XML выгрузки) закрыта. Следующая — T-099 (сравнение по периодам REP-03), закроет EP-REPWIZ.
+- **Следующий шаг:** T-099 (сравнение двух снапшотов T-073 → дельта метрик) закроет EP-REPWIZ. Дальше — EP-SCHED / фаза-3.
 - **Последнее готово:** **Марафон-4 18.07.2026: M2 (T-060…073) + M3 (T-074…083) + RFP EP-AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP (T-084…095) — 36 задач, миграции до 0057.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -352,7 +352,14 @@ WP как контейнер fieldwork + audit programs с roll-forward + sign-o
 - [x] **T-094** — Global search (GEN-05): `GET /search?q=` — поиск по ключевому слову across finding (title/description i18n), control (ref/objective), working_paper (title), kb_entry (question/answer), audit_program (title); результат [{type, id, label, snippet}] с ограничением на тип; RLS-изоляция тенанта. _Deps: T-038, T-031, T-092, T-082._ DoD: поиск находит совпадения в нескольких типах сущностей, пустой q→400, результаты только своего тенанта, лимит на тип. **Готово: SearchService — 5 источников (finding title/description i18n через `::text ILIKE`, control ref+objective, working_paper title, kb_entry question/answer, audit_program title), лимит PER_TYPE=5 на источник, все под withTenant (RLS-изоляция). `GET /search?q=` (engagement.view; пустой/без q→400). Миграции нет (читает существующие таблицы). E2e: 'access'→5 hits (finding/control/WP), 'encryption'→control DP-01+kb_entry, пустой q→400, без q→400, бессмысленное→0, лимит на тип ≤5. **EP-SEARCH (ядро GEN-05) закрыт.**
 
 - [x] **EP-SEARCH** — глобальный поиск best-match по findings/WP/чеклистам/шаблонам (GEN-05) + полнотекстовый поиск внутри Office/PDF (DAT-04). **Расписан на T-094. Ядро GEN-05 закрыто: кросс-сущностный ILIKE-поиск с лимитом на тип. Полнотекст в документах (DAT-04) — фаза 2 (нужен pipeline извлечения текста).**
-- **EP-REPWIZ** — report wizard + стандартные отчёты + сравнение по периодам + XML/CSV экспорт (REP-01/02/03/05/07).
+### Эпик: Report wizard (EP-REPWIZ, RFP REP) — расписан на атомы 18.07.2026 (марафон-4)
+
+Per-engagement экспорт (PDF/Word/Excel/CSV/XML) уже в T-045. Остаток: tenant-wide стандартные отчёты-выгрузки (REP-02/05) + сравнение по периодам (REP-03).
+
+- [x] **T-098** — Tenant-wide стандартные выгрузки (REP-02/05): `GET /reports/export?entity=findings|risks|controls&format=csv|xml` — выгрузка ВСЕХ сущностей тенанта (не per-engagement) с экранированием; неизвестный entity/format→400. _Deps: T-038, T-057, T-031._ DoD: findings/risks/controls тенанта выгружаются в CSV (заголовки+строки) и XML, мусорный entity/format→400. **Готово: ReportsExportService — 3 сущности (findings id/title/severity/status, risks id/title/riskClass/treatment/status, controls id/ref/objective) в CSV (экранирование кавычек/запятых/переносов) и XML (экранирование &<>"). `GET /reports/export?entity=&format=` (report.export=edit) — Content-Disposition attachment. Миграции нет. E2e: controls CSV заголовки+32 строки, risks XML валиден (корень <risks>), Content-Disposition findings.csv, мусорный entity→400, мусорный format→400, Collaborator→403.**
+- [ ] **T-099** — Сравнение по периодам (REP-03): `GET /reports/compare?a=<snapshotA>&b=<snapshotB>` — дельта метрик двух снапшотов (T-073) по каждому breakdown-ключу. _Deps: T-073._ DoD: сравнение двух снапшотов даёт дельту по метрикам (added/removed/changed значения), несуществующий снапшот→404. **EP-REPWIZ (ядро) закрыт этими двумя.**
+
+- [ ] **EP-REPWIZ** — report wizard + стандартные отчёты + сравнение по периодам + XML/CSV экспорт (REP-01/02/03/05/07). **Расписан на T-098–T-099 (tenant-wide выгрузки + сравнение периодов); per-engagement экспорт — T-045; визуальный wizard — UI-атомом.**
 ### Эпик: Сообщения и опросы (EP-MSG, RFP GEN-04/ISS-06) — расписан на атомы 18.07.2026 (марафон-4)
 
 In-app notification-центр (сообщения из системы) + satisfaction surveys. Опросники из audit file (ENG-07) — переиспользуют questionnaire (T-083).
