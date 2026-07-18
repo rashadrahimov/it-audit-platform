@@ -60,7 +60,8 @@
     "codeChanges": "Dəyişiklik İdarəetməsi",
     "config": "Tənzimləmələr",
     "reports": "Hesabatlar",
-    "apiKeys": "API açarları"
+    "apiKeys": "API açarları",
+    "notifications": "Bildirişlər"
   },
   "engagements": {
     "title": "Auditlər",
@@ -624,5 +625,17 @@
     "active": "Aktiv",
     "revoked": "Ləğv edilib",
     "revoke": "Ləğv et"
+  },
+  "notifications": {
+    "title": "Bildirişlər",
+    "toAccount": "Hesaba",
+    "empty": "Bildiriş yoxdur",
+    "markRead": "Oxundu",
+    "new": "yeni",
+    "type": {
+      "info": "Məlumat",
+      "warning": "Xəbərdarlıq",
+      "action": "Fəaliyyət"
+    }
   }
 }

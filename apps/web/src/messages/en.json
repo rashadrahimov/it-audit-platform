@@ -60,7 +60,8 @@
     "codeChanges": "Change Management",
     "config": "Settings",
     "reports": "Reports",
-    "apiKeys": "API keys"
+    "apiKeys": "API keys",
+    "notifications": "Notifications"
   },
   "engagements": {
     "title": "Engagements",
@@ -624,5 +625,17 @@
     "active": "Active",
     "revoked": "Revoked",
     "revoke": "Revoke"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "toAccount": "To account",
+    "empty": "No notifications",
+    "markRead": "Mark read",
+    "new": "new",
+    "type": {
+      "info": "Info",
+      "warning": "Warning",
+      "action": "Action"
+    }
   }
 }

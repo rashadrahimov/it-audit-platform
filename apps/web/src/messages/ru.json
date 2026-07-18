@@ -60,7 +60,8 @@
     "codeChanges": "Управление изменениями",
     "config": "Настройки",
     "reports": "Отчёты",
-    "apiKeys": "API-ключи"
+    "apiKeys": "API-ключи",
+    "notifications": "Уведомления"
   },
   "engagements": {
     "title": "Аудиты",
@@ -624,5 +625,17 @@
     "active": "Активен",
     "revoked": "Отозван",
     "revoke": "Отозвать"
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "toAccount": "В аккаунт",
+    "empty": "Уведомлений нет",
+    "markRead": "Прочитано",
+    "new": "новое",
+    "type": {
+      "info": "Инфо",
+      "warning": "Внимание",
+      "action": "Действие"
+    }
   }
 }
