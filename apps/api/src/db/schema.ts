@@ -1033,6 +1033,38 @@ export const auditableEntity = pgTable(
   ],
 );
 
+/**
+ * Профиль сотрудника (T-069, B6): standalone — сотрудник ≠ обязательно платформенный user.
+ * Источник — HRIS/IdP-коннектор (personnel capability) или ручное заведение.
+ */
+export const personnelProfile = pgTable(
+  'personnel_profile',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    membershipId: uuid('membership_id').references(() => membership.id),
+    departmentId: uuid('department_id').references(() => department.id),
+    externalId: text('external_id'),
+    fullName: text('full_name').notNull(),
+    email: text('email'),
+    unit: text('unit'),
+    position: text('position'),
+    employmentStatus: text('employment_status').notNull().default('active'),
+    hiredAt: timestamp('hired_at', { withTimezone: true }),
+    contacts: jsonb('contacts').notNull().default({}),
+    certificates: jsonb('certificates').notNull().default([]),
+    connectorId: uuid('connector_id').references(() => connector.id),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('personnel_profile_tenant_idx').on(table.tenantId),
+    uniqueIndex('personnel_profile_connector_external_idx').on(table.connectorId, table.externalId),
+  ],
+);
+
 /** ИТ-актив (T-066): проецируется в universe (kind=system, ref_id=asset.id). connector_id — авто-обнаружение B3. */
 export const asset = pgTable(
   'asset',

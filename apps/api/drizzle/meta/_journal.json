@@ -260,6 +260,13 @@
       "when": 1784385375528,
       "tag": "0036_business-process",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1784386075847,
+      "tag": "0037_personnel-profile",
+      "breakpoints": true
     }
   ]
 }
