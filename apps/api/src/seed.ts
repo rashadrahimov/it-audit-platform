@@ -209,7 +209,7 @@ async function seedPresetRoles(catalog: (typeof permission.$inferSelect)[]): Pro
 }
 
 /** Демо-логины (T-020): admin@demo.io / Demo-Admin-2026 и collaborator@demo.io / Demo-Collab-2026. */
-/** Приоритетные стандарты из ответов клиента (T-001); местный (CBAR) — когда клиент назовёт. */
+/** Приоритетные стандарты из ответов клиента (T-001) + местный регулятор CBAR (T-C01, назван клиентом). */
 const GLOBAL_FRAMEWORKS = [
   {
     name: { en: 'ISO/IEC 27001' },
@@ -320,6 +320,31 @@ const GLOBAL_FRAMEWORKS = [
     requirements: [
       { ref: '164.308', title: { en: 'Administrative safeguards', ru: 'Административные меры защиты' } },
       { ref: '164.312', title: { en: 'Technical safeguards', ru: 'Технические меры защиты' } },
+    ],
+  },
+  // Местный регулятор (T-001/T-C01): CBAR — Центробанк Азербайджана (из client-answers.md,
+  // контроль IR-02). Требования — по 16 доменам IT-аудита из клиентского чеклиста
+  // (docs/client-templates/checklist-analysis.md), не выдуманные номера регуляций.
+  {
+    name: { en: 'CBAR IT Audit', az: 'MB İT Audit', ru: 'ЦБА ИТ-аудит' },
+    version: 'v1.0',
+    requirements: [
+      { ref: 'GOV', title: { en: 'IT governance', az: 'İT idarəetməsi', ru: 'ИТ-управление' } },
+      { ref: 'AC', title: { en: 'Access control', az: 'Girişə nəzarət', ru: 'Управление доступом' } },
+      { ref: 'CM', title: { en: 'Change management', az: 'Dəyişikliklərin idarə edilməsi', ru: 'Управление изменениями' } },
+      { ref: 'BK', title: { en: 'Backup & recovery', az: 'Ehtiyat nüsxə və bərpa', ru: 'Резервное копирование и восстановление' } },
+      { ref: 'DR', title: { en: 'Business continuity', az: 'Biznesin fasiləsizliyi', ru: 'Непрерывность бизнеса' } },
+      { ref: 'NW', title: { en: 'Network security', az: 'Şəbəkə təhlükəsizliyi', ru: 'Сетевая безопасность' } },
+      { ref: 'VM', title: { en: 'Vulnerability management', az: 'Zəifliklərin idarə edilməsi', ru: 'Управление уязвимостями' } },
+      { ref: 'EP', title: { en: 'Endpoint security', az: 'Son nöqtə təhlükəsizliyi', ru: 'Защита конечных устройств' } },
+      { ref: 'LM', title: { en: 'Logging & monitoring', az: 'Jurnal və monitorinq', ru: 'Логирование и мониторинг' } },
+      { ref: 'DP', title: { en: 'Data protection', az: 'Məlumatların qorunması', ru: 'Защита данных' } },
+      { ref: 'TP', title: { en: 'Third-party / vendor', az: 'Üçüncü tərəf / təchizatçı', ru: 'Третьи стороны / вендоры' } },
+      { ref: 'IR', title: { en: 'Incident management', az: 'İnsidentlərin idarə edilməsi', ru: 'Управление инцидентами' } },
+      { ref: 'AM', title: { en: 'Asset management', az: 'Aktivlərin idarə edilməsi', ru: 'Управление активами' } },
+      { ref: 'CL', title: { en: 'Cloud security', az: 'Bulud təhlükəsizliyi', ru: 'Безопасность облака' } },
+      { ref: 'PH', title: { en: 'Physical security', az: 'Fiziki təhlükəsizlik', ru: 'Физическая безопасность' } },
+      { ref: 'SA', title: { en: 'Security awareness', az: 'Təhlükəsizlik maarifləndirməsi', ru: 'Осведомлённость о безопасности' } },
     ],
   },
 ];
