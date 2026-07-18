@@ -144,9 +144,13 @@ export class EngagementsController {
 
   @Get()
   @RequirePermission('engagement', 'view')
-  @ApiOperation({ summary: 'Список engagement’ов тенанта' })
-  list(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
-    return this.engagementsService.list(req.tenantId, parseLocale(localeQuery));
+  @ApiOperation({ summary: 'Список engagement’ов тенанта (?auditTypeCode — фильтр по типу)' })
+  list(
+    @Req() req: TenantRequest,
+    @Query('locale') localeQuery?: string,
+    @Query('auditTypeCode') auditTypeCode?: string,
+  ) {
+    return this.engagementsService.list(req.tenantId, parseLocale(localeQuery), auditTypeCode);
   }
 
   @Get(':id')

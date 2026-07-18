@@ -511,6 +511,7 @@ const AUDIT_TYPES = [
   { code: 'compliance', name: { en: 'Compliance', az: 'Uyğunluq', ru: 'Комплаенс' } },
   { code: 'quality', name: { en: 'Quality', az: 'Keyfiyyət', ru: 'Качество' } },
   { code: 'advisory', name: { en: 'Advisory', az: 'Məsləhət', ru: 'Консультационный' } },
+  { code: 'investigations', name: { en: 'Investigations', az: 'Araşdırmalar', ru: 'Расследования' } },
 ];
 
 async function seedAuditTypes(): Promise<void> {

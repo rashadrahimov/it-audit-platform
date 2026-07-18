@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** **M3 закрыт целиком** (EP-PRIV/MISC/FWK/TRUST/QA). Следующая — RFP-эпики: декомпозиция EP-AUDITTYPES (типы аудита как атрибут engagement).
-- **Следующий шаг:** Распишу EP-AUDITTYPES на атомы T-084+ (audit_type справочник + атрибут engagement) и сделаю. Дальше — EP-UNIVERSE / EP-CONFIG.
+- **Текущая задача:** EP-AUDITTYPES — T-084 (audit types API + кастомные) закрыта. Следующая — T-085 (типо-специфичные шаблоны чеклиста, UNI-06).
+- **Следующий шаг:** T-085 (audit_type_template_item + засев checklist engagement) закроет EP-AUDITTYPES. Дальше — EP-UNIVERSE / EP-CONFIG.
 - **Последнее готово:** **Марафон-4 18.07.2026: весь M2 (T-060…073) + M3 EP-PRIV (T-074/075) + EP-MISC (T-076/077) + EP-FWK (T-078/079) + EP-TRUST (T-080/081) — 22 задачи.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -309,7 +309,14 @@ GDPR-приватность: ROPA (Records of Processing Activities, Art. 30 —
 Источник: [rfp-coverage.md](client-templates/rfp-coverage.md). Порядок внутри — от фундаментальных (влияют на ERD) к тяжёлым отделяемым модулям.
 
 Влияют на модель данных — учесть в T-003, реализация фаза 2:
-- **EP-AUDITTYPES** — все типы аудита (операционный/финансовый/IT/комплаенс/качество/расследования) как атрибут engagement/плана + типо-специфичные шаблоны (UNI-06).
+### Эпик: Типы аудита (EP-AUDITTYPES, RFP UNI-06) — расписан на атомы 18.07.2026 (марафон-4)
+
+Основа уже есть (T-011): таблица `audit_type` (global-seed + tenant-custom, RLS read=global|tenant / write=tenant), `engagement.audit_type_id`, сид 6 типов, отчёты рендерят тип. Не хватает: API справочника типов (для UI-выбора), кастомные типы тенанта, тип «investigations», типо-специфичные шаблоны чеклиста (UNI-06).
+
+- [x] **T-084** — Audit types API + кастомные типы: добавить тип `investigations` в сид; `GET /audit-types` (global+tenant, локализовано) + `POST /audit-types` (тенант заводит кастомный, settings.edit, дедуп code); фильтр engagements по типу (?auditTypeCode). _Deps: T-011._ DoD: список типов (сид+кастомные) отдаётся локализованно, тенант заводит кастомный тип с дедупом code, engagement создаётся и фильтруется по типу. **Готово: сид AUDIT_TYPES +investigations (7 типов). Новый AuditTypesModule: `GET /audit-types` (engagement.view; RLS read=global|tenant отдаёт сид+кастомные, локализовано, isGlobal-флаг) + `POST /audit-types` (settings.edit; дедуп по (tenant,code) onConflict→400, невалидный code→400). engagement.list расширен фильтром ?auditTypeCode (JOIN на code). audit_log audit_type.created. Миграции нет (таблица+RLS из 0011). E2e: список 7 локализован (ru «Расследования»), investigations present, кастомный forensic_it (isGlobal=false), дубликат→400, невалидный code→400, engagements ?auditTypeCode=it→2 все IT, Collaborator→403.**
+- [ ] **T-085** — Типо-специфичные шаблоны чеклиста (UNI-06): `audit_type_template_item` (audit_type_id, ref, objective_i18n, question_i18n, order) — заготовки чеклиста per type; управление items + действие «засеять checklist engagement из шаблона типа». _Deps: T-084, T-035._ DoD: шаблон чеклиста привязан к типу, engagement выбранного типа предзаполняет checklist из шаблона, пустой шаблон→0 items.
+
+- [ ] **EP-AUDITTYPES** — все типы аудита (операционный/финансовый/IT/комплаенс/качество/расследования) как атрибут engagement/плана + типо-специфичные шаблоны (UNI-06). **Расписан на T-084–T-085.**
 - **EP-UNIVERSE** — Audit Universe: дерево auditable entities неограниченной глубины (locations/processes/systems/activities), permanent files на узел, связь с рисками/планом (UNI-01/02, RSK-06).
 - **EP-CONFIG** — конфигурируемость: per-tenant терминология/названия полей/списков (GEN-06), неограниченные custom fields без кода (GEN-07), audit opinions из настраиваемых списков (ENG-09).
 - **EP-WPAPERS** — электронные working papers: WP как контейнер fieldwork (WP-02), audit programs + roll-forward год→год (ENG-04/05), rich-редактор (WP-01), cross-reference/гиперссылки (WP-05), sign-off preparer≠reviewer с 'edited since review' (WP-07/08 — частично есть в audit trail).

@@ -277,9 +277,11 @@ export class EngagementsService {
     return saved.row;
   }
 
-  async list(tenantId: string, locale: Locale) {
-    const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx
+  async list(tenantId: string, locale: Locale, auditTypeCode?: string) {
+    const rows = await this.dbService.withTenant(tenantId, (tx) => {
+      const conds = [isNull(engagement.deletedAt)];
+      if (auditTypeCode) conds.push(eq(auditType.code, auditTypeCode));
+      return tx
         .select({
           id: engagement.id,
           titleI18n: engagement.titleI18n,
@@ -292,9 +294,9 @@ export class EngagementsService {
         .from(engagement)
         .innerJoin(subsidiary, eq(engagement.subsidiaryId, subsidiary.id))
         .leftJoin(auditType, eq(engagement.auditTypeId, auditType.id))
-        .where(isNull(engagement.deletedAt))
-        .orderBy(asc(engagement.createdAt)),
-    );
+        .where(and(...conds))
+        .orderBy(asc(engagement.createdAt));
+    });
     return rows.map((row) => ({
       id: row.id,
       title: resolveLocalized(row.titleI18n, locale),

@@ -4,6 +4,7 @@ import { AccessReviewsModule } from './access-reviews/access-reviews.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { AssetsModule } from './assets/assets.module';
 import { AuditModule } from './audit/audit.module';
+import { AuditTypesModule } from './audit-types/audit-types.module';
 import { AuthModule } from './auth/auth.module';
 import { ChangesModule } from './changes/changes.module';
 import { CommentsModule } from './comments/comments.module';
@@ -52,6 +53,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     AccountsModule,
     AssetsModule,
     AuditModule,
+    AuditTypesModule,
     AuthModule,
     ChangesModule,
     CommentsModule,
