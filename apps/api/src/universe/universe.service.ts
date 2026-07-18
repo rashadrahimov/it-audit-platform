@@ -87,7 +87,8 @@ export class UniverseService {
       if (!byId.has(id)) throw new NotFoundException(`Узел ${id} не найден`);
       if (newParentId) {
         if (newParentId === id) throw new BadRequestException('Узел не может быть своим родителем');
-        if (!byId.has(newParentId)) throw new BadRequestException(`Родитель ${newParentId} не найден`);
+        if (!byId.has(newParentId))
+          throw new BadRequestException(`Родитель ${newParentId} не найден`);
         // подъём от нового родителя к корню — если встретим id, значит это потомок → цикл
         let cur: string | null | undefined = newParentId;
         while (cur) {
@@ -135,7 +136,11 @@ export class UniverseService {
         .where(and(eq(auditableEntity.id, id), isNull(auditableEntity.deletedAt)));
       if (!node) throw new NotFoundException(`Узел ${id} не найден`);
       const children = await tx
-        .select({ id: auditableEntity.id, kind: auditableEntity.kind, nameI18n: auditableEntity.nameI18n })
+        .select({
+          id: auditableEntity.id,
+          kind: auditableEntity.kind,
+          nameI18n: auditableEntity.nameI18n,
+        })
         .from(auditableEntity)
         .where(and(eq(auditableEntity.parentId, id), isNull(auditableEntity.deletedAt)));
       const docs = await tx

@@ -29,14 +29,7 @@ const dpiaCreateSchema = z.object({
 
 const createSchema = z.object({
   nameI18n: i18nTextSchema,
-  legalBasis: z.enum([
-    'consent',
-    'contract',
-    'legal_obligation',
-    'vital',
-    'public',
-    'legitimate',
-  ]),
+  legalBasis: z.enum(['consent', 'contract', 'legal_obligation', 'vital', 'public', 'legitimate']),
   purpose: z.string().optional(),
   role: z.enum(['controller', 'processor', 'joint']).optional(),
   dataCategories: z.array(z.unknown()).optional(),
@@ -74,7 +67,11 @@ export class PrivacyController {
   @HttpCode(200)
   @RequirePermission('control', 'edit', 'edit')
   @ApiOperation({ summary: 'DPIA workflow: draft→in_progress→completed' })
-  transitionDpia(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  transitionDpia(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = z.object({ to: z.enum(['in_progress', 'completed']) }).safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.dpia.transition(

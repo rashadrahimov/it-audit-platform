@@ -23,6 +23,10 @@ export class ApiV1Controller {
         .from(control)
         .where(isNull(control.deletedAt)),
     );
-    return rows.map((c) => ({ id: c.id, ref: c.ref, objective: resolveLocalized(c.objectiveI18n, 'en') }));
+    return rows.map((c) => ({
+      id: c.id,
+      ref: c.ref,
+      objective: resolveLocalized(c.objectiveI18n, 'en'),
+    }));
   }
 }

@@ -18,9 +18,7 @@ import { RequirePermission } from '../rbac/require-permission.decorator';
 import { ConfigListsService } from './config-lists.service';
 
 const setSchema = z.object({
-  items: z
-    .array(z.object({ code: z.string().min(1), labelI18n: i18nTextSchema }))
-    .min(1),
+  items: z.array(z.object({ code: z.string().min(1), labelI18n: i18nTextSchema })).min(1),
 });
 
 @Controller('config-lists')
@@ -55,7 +53,11 @@ export class ConfigListsController {
   @RequirePermission('settings', 'view')
   @ApiOperation({ summary: 'Проверить значение по списку (?code)' })
   @ApiQuery({ name: 'code', required: true })
-  validate(@Req() req: TenantRequest, @Param('listKey') listKey: string, @Query('code') code?: string) {
+  validate(
+    @Req() req: TenantRequest,
+    @Param('listKey') listKey: string,
+    @Query('code') code?: string,
+  ) {
     if (!code) throw new BadRequestException('Нужен code');
     return this.service.validateValue(req.tenantId, listKey, code);
   }

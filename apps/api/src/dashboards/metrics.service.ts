@@ -1,14 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { isNull, sql } from 'drizzle-orm';
 import { DbService } from '../db/db.service';
-import {
-  control,
-  device,
-  finding,
-  risk,
-  test as testTable,
-  vendor,
-} from '../db/schema';
+import { control, device, finding, risk, test as testTable, vendor } from '../db/schema';
 
 /** Именованные метрики дашбордов/снапшотов (T-072, B9). Ключ → агрегат по живым данным. */
 export const METRIC_NAMES = [

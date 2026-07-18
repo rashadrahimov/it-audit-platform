@@ -46,7 +46,11 @@ export class QuestionnairesController {
   @Post(':id/questions')
   @RequirePermission('control', 'edit', 'edit')
   @ApiOperation({ summary: 'Добавить вопрос в опросник' })
-  addQuestion(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  addQuestion(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = questionSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.addQuestion(
@@ -60,7 +64,11 @@ export class QuestionnairesController {
   @HttpCode(200)
   @RequirePermission('control', 'edit', 'edit')
   @ApiOperation({ summary: 'Ответить вручную или reuse из KB (kbEntryId)' })
-  answer(@Req() req: TenantRequest, @Param('answerId', ParseUUIDPipe) answerId: string, @Body() body: unknown) {
+  answer(
+    @Req() req: TenantRequest,
+    @Param('answerId', ParseUUIDPipe) answerId: string,
+    @Body() body: unknown,
+  ) {
     const parsed = answerSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.answer(

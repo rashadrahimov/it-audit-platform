@@ -58,7 +58,11 @@ export class ProcessesService {
       action: 'business_process.created',
       entityType: 'business_process',
       entityId: created.id,
-      after: { criticality: created.criticality, scope: created.subsidiaryId ? 'local' : 'group', entityId: node.id },
+      after: {
+        criticality: created.criticality,
+        scope: created.subsidiaryId ? 'local' : 'group',
+        entityId: node.id,
+      },
     });
     return { id: created.id, entityId: node.id, scope: created.subsidiaryId ? 'local' : 'group' };
   }

@@ -12,7 +12,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
@@ -48,7 +54,11 @@ export class WorkingPapersController {
   @Put(':id/content')
   @RequirePermission('engagement', 'edit', 'edit')
   @ApiOperation({ summary: 'Правка content (после reviewed → edited_since_review, WP-08)' })
-  editContent(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  editContent(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = z.object({ content: z.unknown() }).safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.editContent(
@@ -62,7 +72,11 @@ export class WorkingPapersController {
   @HttpCode(200)
   @RequirePermission('engagement', 'edit', 'edit')
   @ApiOperation({ summary: 'WP workflow: draft→prepared→in_review→reviewed→signed_off' })
-  transition(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  transition(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = z
       .object({ to: z.enum(['prepared', 'in_review', 'reviewed', 'signed_off']) })
       .safeParse(body ?? {});

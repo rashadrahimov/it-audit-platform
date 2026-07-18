@@ -26,7 +26,10 @@ const inputCls =
 export default async function QuestionnairesPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug] = await Promise.all([getTranslations('questionnaires'), getActiveTenantSlug()]);
+  const [t, tenantSlug] = await Promise.all([
+    getTranslations('questionnaires'),
+    getActiveTenantSlug(),
+  ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
   const res = await apiFetch('/questionnaires', { headers });
@@ -44,7 +47,11 @@ export default async function QuestionnairesPage() {
         </Link>
       </div>
 
-      <form action={createQuestionnaireAction} data-testid="questionnaire-create" className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+      <form
+        action={createQuestionnaireAction}
+        data-testid="questionnaire-create"
+        className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+      >
         <input name="title" required placeholder={t('titlePh')} className={`flex-1 ${inputCls}`} />
         <input name="source" placeholder={t('source')} className={inputCls} />
         <button
@@ -56,7 +63,9 @@ export default async function QuestionnairesPage() {
       </form>
 
       {items.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">{t('empty')}</section>
+        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
+          {t('empty')}
+        </section>
       ) : (
         <ul className="flex flex-col gap-2" data-testid="questionnaires-list">
           {items.map((q) => (
@@ -69,7 +78,9 @@ export default async function QuestionnairesPage() {
                   <span className="font-medium text-foreground">{q.title}</span>
                   {q.source && <span className="text-xs text-secondary">{q.source}</span>}
                 </span>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[q.status]}`}>
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[q.status]}`}
+                >
                   {t(`st.${q.status}`)}
                 </span>
               </Link>

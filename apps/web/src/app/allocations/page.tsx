@@ -77,28 +77,48 @@ export default async function AllocationsPage({
       </div>
 
       {/* Создать аллокацию */}
-      <form action={createAllocationAction} data-testid="allocation-create" className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+      <form
+        action={createAllocationAction}
+        data-testid="allocation-create"
+        className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+      >
         <label className="flex flex-1 flex-col gap-1 text-xs text-secondary">
           {t('member')}
           <select name="membershipId" required defaultValue="" className={inputCls}>
-            <option value="" disabled>{t('pickMember')}</option>
+            <option value="" disabled>
+              {t('pickMember')}
+            </option>
             {members.map((m) => (
-              <option key={m.id} value={m.id}>{m.fullName} · {m.role}</option>
+              <option key={m.id} value={m.id}>
+                {m.fullName} · {m.role}
+              </option>
             ))}
           </select>
         </label>
         <label className="flex flex-1 flex-col gap-1 text-xs text-secondary">
           {t('engagement')}
           <select name="engagementId" required defaultValue="" className={inputCls}>
-            <option value="" disabled>{t('pickEngagement')}</option>
+            <option value="" disabled>
+              {t('pickEngagement')}
+            </option>
             {engagements.map((e) => (
-              <option key={e.id} value={e.id}>{e.title}</option>
+              <option key={e.id} value={e.id}>
+                {e.title}
+              </option>
             ))}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs text-secondary">
           {t('hours')}
-          <input name="allocatedHours" type="number" min="1" step="1" required defaultValue="40" className={`w-24 ${inputCls}`} />
+          <input
+            name="allocatedHours"
+            type="number"
+            min="1"
+            step="1"
+            required
+            defaultValue="40"
+            className={`w-24 ${inputCls}`}
+          />
         </label>
         <input name="period" placeholder={t('period')} className={`w-28 ${inputCls}`} />
         <button
@@ -116,7 +136,13 @@ export default async function AllocationsPage({
           <form method="GET" data-testid="capacity-form" className="flex items-end gap-2">
             <label className="flex flex-col gap-1 text-xs text-secondary">
               {t('capacity')}
-              <input name="capacity" type="number" min="1" defaultValue={capacity} className={`w-24 ${inputCls}`} />
+              <input
+                name="capacity"
+                type="number"
+                min="1"
+                defaultValue={capacity}
+                className={`w-24 ${inputCls}`}
+              />
             </label>
             <button
               type="submit"
@@ -128,20 +154,29 @@ export default async function AllocationsPage({
         </div>
 
         {members.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">{t('empty')}</p>
+          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
+            {t('empty')}
+          </p>
         ) : (
           <ul className="flex flex-col gap-3" data-testid="utilization-list">
             {utils.map(({ member, util }) => {
               const pct = util?.utilizationPct ?? 0;
               const over = util?.overallocated ?? false;
               return (
-                <li key={member.id} className="rounded-xl border border-border bg-white p-4 shadow-sm">
+                <li
+                  key={member.id}
+                  className="rounded-xl border border-border bg-white p-4 shadow-sm"
+                >
                   <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                     <span className="flex items-center gap-2">
                       <span className="font-medium text-foreground">{member.fullName}</span>
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-secondary">{member.role}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-secondary">
+                        {member.role}
+                      </span>
                     </span>
-                    <span className={`text-sm font-medium ${over ? 'text-destructive' : 'text-secondary'}`}>
+                    <span
+                      className={`text-sm font-medium ${over ? 'text-destructive' : 'text-secondary'}`}
+                    >
                       {util?.allocated ?? 0} / {capacity} {t('h')} · {pct}%
                       {over && <span className="ml-1">· {t('overallocated')}</span>}
                     </span>

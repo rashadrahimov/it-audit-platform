@@ -43,7 +43,10 @@ export class PrivacyAssessmentsService {
             isNull(processingActivity.deletedAt),
           ),
         );
-      if (!pa) throw new BadRequestException(`Операция обработки ${input.processingActivityId} не найдена`);
+      if (!pa)
+        throw new BadRequestException(
+          `Операция обработки ${input.processingActivityId} не найдена`,
+        );
       const [row] = await tx
         .insert(privacyAssessment)
         .values({

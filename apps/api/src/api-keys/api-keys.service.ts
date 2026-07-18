@@ -93,7 +93,9 @@ export class ApiKeysService {
       tx
         .update(apiKey)
         .set({ revokedAt: sql`now()` })
-        .where(and(eq(apiKey.id, id), eq(apiKey.tenantId, actor.tenantId), isNull(apiKey.revokedAt)))
+        .where(
+          and(eq(apiKey.id, id), eq(apiKey.tenantId, actor.tenantId), isNull(apiKey.revokedAt)),
+        )
         .returning({ id: apiKey.id }),
     );
     await this.auditLogService.record({

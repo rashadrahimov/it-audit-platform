@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
@@ -109,6 +114,12 @@ export class ChangesService {
         .where(isNull(codeChange.deletedAt))
         .orderBy(desc(codeChange.createdAt)),
     );
-    return rows.map((c) => ({ id: c.id, title: c.title, type: c.type, risk: c.risk, status: c.status }));
+    return rows.map((c) => ({
+      id: c.id,
+      title: c.title,
+      type: c.type,
+      risk: c.risk,
+      status: c.status,
+    }));
   }
 }

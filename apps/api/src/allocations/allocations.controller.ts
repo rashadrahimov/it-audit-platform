@@ -8,7 +8,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
@@ -54,7 +60,8 @@ export class AllocationsController {
   ) {
     if (!membershipId) throw new BadRequestException('Нужен membershipId');
     const cap = Number(capacity);
-    if (!Number.isFinite(cap) || cap < 0) throw new BadRequestException('capacity: неотрицательное число');
+    if (!Number.isFinite(cap) || cap < 0)
+      throw new BadRequestException('capacity: неотрицательное число');
     return this.service.utilization(req.tenantId, membershipId, cap);
   }
 }

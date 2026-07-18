@@ -11,7 +11,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, type Locale } from '@it-audit/shared';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -20,7 +26,10 @@ import { RequirePermission } from '../rbac/require-permission.decorator';
 import { AuditTypesService } from './audit-types.service';
 
 const createSchema = z.object({
-  code: z.string().min(1).regex(/^[a-z0-9_]+$/, 'code: только a-z0-9_'),
+  code: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9_]+$/, 'code: только a-z0-9_'),
   nameI18n: i18nTextSchema,
 });
 
@@ -69,7 +78,11 @@ export class AuditTypesController {
   @Post(':id/template-items')
   @RequirePermission('settings', 'edit', 'edit')
   @ApiOperation({ summary: 'Добавить пункт в типо-специфичный шаблон чеклиста (T-085, UNI-06)' })
-  addTemplateItem(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  addTemplateItem(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = templateItemSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.addTemplateItem(
@@ -90,7 +103,10 @@ export class AuditTypesController {
   @HttpCode(200)
   @RequirePermission('engagement', 'edit', 'edit')
   @ApiOperation({ summary: 'Засеять checklist engagement из шаблона его типа (UNI-06)' })
-  seedChecklist(@Req() req: TenantRequest, @Param('engagementId', ParseUUIDPipe) engagementId: string) {
+  seedChecklist(
+    @Req() req: TenantRequest,
+    @Param('engagementId', ParseUUIDPipe) engagementId: string,
+  ) {
     return this.service.seedChecklist(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       engagementId,

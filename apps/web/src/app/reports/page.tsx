@@ -77,7 +77,10 @@ export default async function ReportsPage({
       {/* Выгрузка */}
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-secondary">{t('export')}</h2>
-        <div className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm" data-testid="export-table">
+        <div
+          className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm"
+          data-testid="export-table"
+        >
           <table className="w-full text-left text-sm">
             <tbody>
               {ENTITIES.map((e) => (
@@ -112,12 +115,18 @@ export default async function ReportsPage({
             {t('needTwo')}
           </p>
         ) : (
-          <form method="GET" data-testid="compare-form" className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+          <form
+            method="GET"
+            data-testid="compare-form"
+            className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+          >
             <label className="flex flex-col gap-1 text-xs text-secondary">
               {t('periodA')}
               <select name="a" defaultValue={sp.a ?? snapshots[0]?.id} className={selectCls}>
                 {snapshots.map((s) => (
-                  <option key={s.id} value={s.id}>{s.label}</option>
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
                 ))}
               </select>
             </label>
@@ -125,7 +134,9 @@ export default async function ReportsPage({
               {t('periodB')}
               <select name="b" defaultValue={sp.b ?? snapshots[1]?.id} className={selectCls}>
                 {snapshots.map((s) => (
-                  <option key={s.id} value={s.id}>{s.label}</option>
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
                 ))}
               </select>
             </label>
@@ -145,7 +156,10 @@ export default async function ReportsPage({
               <span className="font-medium text-foreground">{compare.b.label}</span>
             </p>
             {Object.entries(compare.diff).map(([group, rows]) => (
-              <div key={group} className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+              <div
+                key={group}
+                className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm"
+              >
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr className="border-b border-border text-secondary">

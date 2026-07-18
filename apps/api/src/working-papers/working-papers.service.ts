@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
@@ -25,7 +30,10 @@ export class WorkingPapersService {
     private readonly auditLogService: AuditLogService,
   ) {}
 
-  private async myMembership(tx: Parameters<Parameters<DbService['withTenant']>[1]>[0], actor: Actor) {
+  private async myMembership(
+    tx: Parameters<Parameters<DbService['withTenant']>[1]>[0],
+    actor: Actor,
+  ) {
     const [me] = await tx
       .select({ id: membership.id })
       .from(membership)
@@ -76,7 +84,10 @@ export class WorkingPapersService {
       const afterReview = wp.status === 'reviewed' || wp.status === 'signed_off';
       await tx
         .update(workingPaper)
-        .set({ content: content as object, editedSinceReview: afterReview ? true : wp.editedSinceReview })
+        .set({
+          content: content as object,
+          editedSinceReview: afterReview ? true : wp.editedSinceReview,
+        })
         .where(eq(workingPaper.id, id));
       return { editedSinceReview: afterReview || wp.editedSinceReview };
     });
@@ -103,11 +114,15 @@ export class WorkingPapersService {
           .update(workingPaper)
           .set({ status: to, reviewerMembershipId: meId, editedSinceReview: false })
           .where(eq(workingPaper.id, id));
-        await tx.insert(signOff).values({ workingPaperId: id, membershipId: meId!, role: 'reviewer' });
+        await tx
+          .insert(signOff)
+          .values({ workingPaperId: id, membershipId: meId!, role: 'reviewer' });
       } else {
         await tx.update(workingPaper).set({ status: to }).where(eq(workingPaper.id, id));
         if (to === 'prepared' && meId) {
-          await tx.insert(signOff).values({ workingPaperId: id, membershipId: meId, role: 'preparer' });
+          await tx
+            .insert(signOff)
+            .values({ workingPaperId: id, membershipId: meId, role: 'preparer' });
         }
       }
       return { before: wp.status, after: to };
@@ -149,7 +164,11 @@ export class WorkingPapersService {
         .where(and(eq(workingPaper.id, id), isNull(workingPaper.deletedAt)));
       if (!wp) throw new NotFoundException(`WP ${id} не найден`);
       const signs = await tx
-        .select({ role: signOff.role, membershipId: signOff.membershipId, signedAt: signOff.signedAt })
+        .select({
+          role: signOff.role,
+          membershipId: signOff.membershipId,
+          signedAt: signOff.signedAt,
+        })
         .from(signOff)
         .where(eq(signOff.workingPaperId, id));
       return {

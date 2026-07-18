@@ -26,7 +26,12 @@ export class AuditProgramsService {
 
   async create(
     actor: Actor,
-    input: { titleI18n: I18nText; engagementId?: string; subjectArea?: string; steps?: StepInput[] },
+    input: {
+      titleI18n: I18nText;
+      engagementId?: string;
+      subjectArea?: string;
+      steps?: StepInput[];
+    },
   ) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       if (input.engagementId) {
@@ -146,7 +151,12 @@ export class AuditProgramsService {
         .where(and(eq(auditProgram.id, id), isNull(auditProgram.deletedAt)));
       if (!prog) throw new NotFoundException(`Программа ${id} не найдена`);
       const steps = await tx
-        .select({ id: programStep.id, order: programStep.order, titleI18n: programStep.titleI18n, status: programStep.status })
+        .select({
+          id: programStep.id,
+          order: programStep.order,
+          titleI18n: programStep.titleI18n,
+          status: programStep.status,
+        })
         .from(programStep)
         .where(eq(programStep.programId, id))
         .orderBy(asc(programStep.order));

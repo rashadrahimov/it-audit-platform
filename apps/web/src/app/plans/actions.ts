@@ -17,7 +17,8 @@ export async function createPlanAction(formData: FormData): Promise<void> {
     body: JSON.stringify({
       name,
       year: Number.isInteger(year) ? year : undefined,
-      capacityHours: Number.isFinite(capacityHours) && capacityHours >= 0 ? capacityHours : undefined,
+      capacityHours:
+        Number.isFinite(capacityHours) && capacityHours >= 0 ? capacityHours : undefined,
     }),
   });
   revalidatePath('/plans');

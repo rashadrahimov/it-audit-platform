@@ -29,7 +29,10 @@ const TYPE_TONE: Record<NotifType, string> = {
 export default async function NotificationsPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug] = await Promise.all([getTranslations('notifications'), getActiveTenantSlug()]);
+  const [t, tenantSlug] = await Promise.all([
+    getTranslations('notifications'),
+    getActiveTenantSlug(),
+  ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
   const res = await apiFetch('/notifications', { headers });
@@ -58,7 +61,9 @@ export default async function NotificationsPage() {
       </div>
 
       {data.items.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">{t('empty')}</section>
+        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
+          {t('empty')}
+        </section>
       ) : (
         <ul className="flex flex-col gap-2" data-testid="notifications-list">
           {data.items.map((n) => (
@@ -70,11 +75,15 @@ export default async function NotificationsPage() {
             >
               <div className="flex flex-1 flex-col gap-1">
                 <span className="flex items-center gap-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_TONE[n.type]}`}>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_TONE[n.type]}`}
+                  >
                     {t(`type.${n.type}`)}
                   </span>
                   <span className="font-medium text-foreground">{n.title}</span>
-                  {!n.read && <span className="h-2 w-2 rounded-full bg-accent" aria-label={t('new')} />}
+                  {!n.read && (
+                    <span className="h-2 w-2 rounded-full bg-accent" aria-label={t('new')} />
+                  )}
                 </span>
                 {n.body && <p className="text-sm text-secondary">{n.body}</p>}
               </div>

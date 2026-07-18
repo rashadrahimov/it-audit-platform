@@ -92,7 +92,9 @@ export default async function VulnerabilitiesPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${SEV_TONE[v.severity]}`}>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${SEV_TONE[v.severity]}`}
+                    >
                       {t(`sev.${v.severity}`)}
                     </span>
                   </td>

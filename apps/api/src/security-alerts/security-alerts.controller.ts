@@ -53,7 +53,11 @@ export class SecurityAlertsController {
   @HttpCode(200)
   @RequirePermission('control', 'edit', 'edit')
   @ApiOperation({ summary: 'Triage (T-064): new→triaged→closed' })
-  transition(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  transition(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = transitionSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.transition(

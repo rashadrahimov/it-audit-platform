@@ -27,7 +27,9 @@ function canonical(row: {
   ]);
 }
 const chainHash = (prevHash: string | null, content: string): string =>
-  createHash('sha256').update((prevHash ?? '') + content).digest('hex');
+  createHash('sha256')
+    .update((prevHash ?? '') + content)
+    .digest('hex');
 
 export interface AuditRecord {
   tenantId?: string | null;

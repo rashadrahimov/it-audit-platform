@@ -90,8 +90,7 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
         )}
         {vendor.url && (
           <p className="text-sm text-secondary">
-            {t('url')}:{' '}
-            <span className="break-all text-foreground">{vendor.url}</span>
+            {t('url')}: <span className="break-all text-foreground">{vendor.url}</span>
           </p>
         )}
       </section>
@@ -103,7 +102,10 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
             {t('noAssessments')}
           </p>
         ) : (
-          <ul className="overflow-hidden rounded-xl border border-border bg-white shadow-sm" data-testid="vendor-assessments">
+          <ul
+            className="overflow-hidden rounded-xl border border-border bg-white shadow-sm"
+            data-testid="vendor-assessments"
+          >
             {assessments.map((a) => (
               <li
                 key={a.id}

@@ -55,14 +55,20 @@ export default async function AuditProgramsPage() {
       </div>
 
       {/* Создание программы */}
-      <form action={createProgramAction} data-testid="program-create" className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+      <form
+        action={createProgramAction}
+        data-testid="program-create"
+        className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+      >
         <div className="flex flex-wrap gap-3">
           <input name="title" required placeholder={t('namePh')} className={`flex-1 ${inputCls}`} />
           <input name="subjectArea" placeholder={t('subjectArea')} className={inputCls} />
           <select name="engagementId" defaultValue="" className={inputCls}>
             <option value="">{t('noEngagement')}</option>
             {engagements.map((e) => (
-              <option key={e.id} value={e.id}>{e.title}</option>
+              <option key={e.id} value={e.id}>
+                {e.title}
+              </option>
             ))}
           </select>
         </div>
@@ -80,31 +86,53 @@ export default async function AuditProgramsPage() {
       </form>
 
       {programs.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">{t('empty')}</section>
+        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
+          {t('empty')}
+        </section>
       ) : (
         <ul className="flex flex-col gap-3" data-testid="programs-list">
           {programs.map((p) => (
-            <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+            <li
+              key={p.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+            >
               <div className="flex flex-col gap-1">
                 <span className="flex items-center gap-2">
-                  <span className="font-medium text-foreground">{resolveLocalized(p.titleI18n, locale)}</span>
+                  <span className="font-medium text-foreground">
+                    {resolveLocalized(p.titleI18n, locale)}
+                  </span>
                   {p.subjectArea && (
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-secondary">{p.subjectArea}</span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-secondary">
+                      {p.subjectArea}
+                    </span>
                   )}
                   {p.originProgramId && (
-                    <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">{t('rolled')}</span>
+                    <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">
+                      {t('rolled')}
+                    </span>
                   )}
                 </span>
                 {p.engagementId && (
-                  <span className="text-xs text-secondary">{engById.get(p.engagementId) ?? p.engagementId}</span>
+                  <span className="text-xs text-secondary">
+                    {engById.get(p.engagementId) ?? p.engagementId}
+                  </span>
                 )}
               </div>
               <form action={rollForwardAction} className="flex items-center gap-2">
                 <input type="hidden" name="id" value={p.id} />
-                <select name="targetEngagementId" defaultValue="" required className={`${inputCls} px-2 py-1 text-xs`}>
-                  <option value="" disabled>{t('rollTarget')}</option>
+                <select
+                  name="targetEngagementId"
+                  defaultValue=""
+                  required
+                  className={`${inputCls} px-2 py-1 text-xs`}
+                >
+                  <option value="" disabled>
+                    {t('rollTarget')}
+                  </option>
                   {engagements.map((e) => (
-                    <option key={e.id} value={e.id}>{e.title}</option>
+                    <option key={e.id} value={e.id}>
+                      {e.title}
+                    </option>
                   ))}
                 </select>
                 <button

@@ -31,7 +31,14 @@ function TrendChart({ points }: { points: Array<{ label: string; value: number }
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" data-testid="trend-svg">
       {/* базовая линия */}
-      <line x1={pad} y1={H - pad} x2={W - pad} y2={H - pad} stroke="var(--color-border, #e2e8f0)" strokeWidth="1" />
+      <line
+        x1={pad}
+        y1={H - pad}
+        x2={W - pad}
+        y2={H - pad}
+        stroke="var(--color-border, #e2e8f0)"
+        strokeWidth="1"
+      />
       <polyline
         fill="none"
         stroke="var(--color-accent, #0369A1)"
@@ -41,7 +48,13 @@ function TrendChart({ points }: { points: Array<{ label: string; value: number }
       {points.map((p, i) => (
         <g key={i}>
           <circle cx={x(i)} cy={y(p.value)} r="3.5" fill="var(--color-accent, #0369A1)" />
-          <text x={x(i)} y={y(p.value) - 8} textAnchor="middle" fontSize="11" fill="var(--color-foreground, #0f172a)">
+          <text
+            x={x(i)}
+            y={y(p.value) - 8}
+            textAnchor="middle"
+            fontSize="11"
+            fill="var(--color-foreground, #0f172a)"
+          >
             {p.value}
           </text>
         </g>
@@ -86,9 +99,7 @@ export default async function TrendsPage({
   const key = sp.key && keys.includes(sp.key) ? sp.key : keys[0];
 
   const series =
-    group && key
-      ? snaps.map((s) => ({ label: s.label, value: s.metrics[group]?.[key] ?? 0 }))
-      : [];
+    group && key ? snaps.map((s) => ({ label: s.label, value: s.metrics[group]?.[key] ?? 0 })) : [];
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
@@ -103,7 +114,9 @@ export default async function TrendsPage({
       </div>
 
       {snaps.length < 2 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">{t('needTwo')}</section>
+        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
+          {t('needTwo')}
+        </section>
       ) : (
         <>
           <form method="GET" data-testid="trend-select" className="flex flex-wrap items-end gap-3">
@@ -111,7 +124,9 @@ export default async function TrendsPage({
               {t('metric')}
               <select name="group" defaultValue={group} className={inputCls}>
                 {groups.map((g) => (
-                  <option key={g} value={g}>{t.has(`groups.${g}`) ? t(`groups.${g}`) : g}</option>
+                  <option key={g} value={g}>
+                    {t.has(`groups.${g}`) ? t(`groups.${g}`) : g}
+                  </option>
                 ))}
               </select>
             </label>
@@ -119,7 +134,9 @@ export default async function TrendsPage({
               {t('series')}
               <select name="key" defaultValue={key} className={inputCls}>
                 {keys.map((k) => (
-                  <option key={k} value={k}>{k}</option>
+                  <option key={k} value={k}>
+                    {k}
+                  </option>
                 ))}
               </select>
             </label>
@@ -131,7 +148,10 @@ export default async function TrendsPage({
             </button>
           </form>
 
-          <section className="rounded-xl border border-border bg-white p-5 shadow-sm" data-testid="trend-chart">
+          <section
+            className="rounded-xl border border-border bg-white p-5 shadow-sm"
+            data-testid="trend-chart"
+          >
             <TrendChart points={series} />
             <ul className="mt-3 flex flex-wrap justify-between gap-2 text-xs text-secondary">
               {series.map((p, i) => (

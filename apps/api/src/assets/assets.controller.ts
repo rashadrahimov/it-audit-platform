@@ -52,7 +52,9 @@ export class AssetsController {
 
   @Post('import')
   @RequirePermission('control', 'edit', 'edit')
-  @ApiOperation({ summary: 'Авто-обнаружение активов из коннектора (T-068, B3, capability=inventory)' })
+  @ApiOperation({
+    summary: 'Авто-обнаружение активов из коннектора (T-068, B3, capability=inventory)',
+  })
   @ApiCreatedResponse({ description: '{imported, updated}' })
   import(@Req() req: TenantRequest, @Body() body: unknown) {
     const parsed = importSchema.safeParse(body ?? {});

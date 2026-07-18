@@ -11,7 +11,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { i18nTextSchema } from '@it-audit/shared';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -56,7 +62,11 @@ export class AuditProgramsController {
   @HttpCode(200)
   @RequirePermission('engagement', 'edit', 'edit')
   @ApiOperation({ summary: 'Roll-forward программы в новый engagement (T-093, ENG-05)' })
-  rollForward(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  rollForward(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = z.object({ targetEngagementId: z.uuid() }).safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.rollForward(

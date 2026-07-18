@@ -3,7 +3,14 @@ import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { auditableEntity, control, risk, riskControl, riskEntity, riskMatrixConfig } from '../db/schema';
+import {
+  auditableEntity,
+  control,
+  risk,
+  riskControl,
+  riskEntity,
+  riskMatrixConfig,
+} from '../db/schema';
 import { classifyRisk, DEFAULT_THRESHOLDS } from './classify-risk';
 
 interface Actor {
@@ -210,7 +217,11 @@ export class RisksService {
   async entitiesOf(tenantId: string, riskId: string) {
     return this.dbService.withTenant(tenantId, (tx) =>
       tx
-        .select({ id: auditableEntity.id, kind: auditableEntity.kind, nameI18n: auditableEntity.nameI18n })
+        .select({
+          id: auditableEntity.id,
+          kind: auditableEntity.kind,
+          nameI18n: auditableEntity.nameI18n,
+        })
         .from(riskEntity)
         .innerJoin(auditableEntity, eq(riskEntity.auditableEntityId, auditableEntity.id))
         .where(eq(riskEntity.riskId, riskId)),

@@ -8,7 +8,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, type Locale } from '@it-audit/shared';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

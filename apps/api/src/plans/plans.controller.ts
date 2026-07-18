@@ -52,7 +52,11 @@ export class PlansController {
   @Post(':id/items')
   @RequirePermission('engagement', 'edit', 'edit')
   @ApiOperation({ summary: 'Добавить узел universe в план (priority по риску, UNI-04)' })
-  addItem(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  addItem(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = itemSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.addItem(

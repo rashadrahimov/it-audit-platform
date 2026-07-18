@@ -74,10 +74,7 @@ export default async function UniversePage() {
         className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-150 hover:bg-muted/60"
         style={{ marginInlineStart: depth * 20 }}
       >
-        <span
-          aria-hidden
-          className="h-1.5 w-1.5 shrink-0 rounded-full bg-border"
-        />
+        <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-border" />
         <span className="font-medium text-foreground">{resolveName(node.nameI18n, locale)}</span>
         <span
           className={`rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${KIND_BADGE[node.kind] ?? KIND_BADGE.function}`}

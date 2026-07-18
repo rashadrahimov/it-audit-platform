@@ -81,12 +81,16 @@ export default async function SecurityAlertsPage() {
                   <td className="px-4 py-3 font-medium text-foreground">{a.title}</td>
                   <td className="px-4 py-3 text-secondary">{a.source ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${SEV_TONE[a.severity]}`}>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${SEV_TONE[a.severity]}`}
+                    >
                       {t(`sev.${a.severity}`)}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[a.status]}`}>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[a.status]}`}
+                    >
                       {t(`st.${a.status}`)}
                     </span>
                   </td>

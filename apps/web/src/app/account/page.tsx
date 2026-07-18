@@ -13,7 +13,10 @@ interface Onboarding {
 export const dynamic = 'force-dynamic';
 
 /** Навигационные группы хаба (T-A16). testid go-<slug> сохранены для verify. */
-const NAV_GROUPS: Array<{ group: string; items: Array<{ href: string; testid: string; label: string }> }> = [
+const NAV_GROUPS: Array<{
+  group: string;
+  items: Array<{ href: string; testid: string; label: string }>;
+}> = [
   {
     group: 'overview',
     items: [
@@ -109,10 +112,16 @@ export default async function AccountPage() {
           <h1 className="text-xl font-bold text-primary">{t('title')}</h1>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
             <span className="text-secondary">
-              {t('name')}: <span data-testid="account-name" className="font-medium text-foreground">{user.fullName}</span>
+              {t('name')}:{' '}
+              <span data-testid="account-name" className="font-medium text-foreground">
+                {user.fullName}
+              </span>
             </span>
             <span className="text-secondary">
-              Email: <span data-testid="account-email" className="font-medium text-foreground">{user.email}</span>
+              Email:{' '}
+              <span data-testid="account-email" className="font-medium text-foreground">
+                {user.email}
+              </span>
             </span>
           </div>
         </div>
@@ -129,10 +138,15 @@ export default async function AccountPage() {
 
       {/* Onboarding */}
       {onboarding && (
-        <section className="rounded-xl border border-border bg-white p-5 shadow-sm" data-testid="onboarding">
+        <section
+          className="rounded-xl border border-border bg-white p-5 shadow-sm"
+          data-testid="onboarding"
+        >
           <div className="mb-2 flex items-baseline justify-between gap-3">
             <h2 className="text-sm font-semibold text-primary">{t('onboardingTitle')}</h2>
-            <span className="text-xs font-medium text-secondary">{onboarding.done}/{onboarding.total}</span>
+            <span className="text-xs font-medium text-secondary">
+              {onboarding.done}/{onboarding.total}
+            </span>
           </div>
           <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted">
             <div
@@ -165,7 +179,9 @@ export default async function AccountPage() {
       {/* Навигация по категориям */}
       {NAV_GROUPS.map(({ group, items }) => (
         <section key={group} className="flex flex-col gap-3">
-          <h2 className="text-xs font-semibold tracking-wide text-secondary uppercase">{t(`nav.${group}`)}</h2>
+          <h2 className="text-xs font-semibold tracking-wide text-secondary uppercase">
+            {t(`nav.${group}`)}
+          </h2>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {items.map((it) => (
               <li key={it.href}>

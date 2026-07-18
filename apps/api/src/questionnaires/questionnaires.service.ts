@@ -54,11 +54,7 @@ export class QuestionnairesService {
   }
 
   /** Ответить вручную (answer) или переиспользовать KB-запись (kbEntryId → копирует answer). */
-  async answer(
-    actor: Actor,
-    answerId: string,
-    input: { answer?: string; kbEntryId?: string },
-  ) {
+  async answer(actor: Actor, answerId: string, input: { answer?: string; kbEntryId?: string }) {
     const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [row] = await tx
         .select({ id: questionnaireAnswer.id })

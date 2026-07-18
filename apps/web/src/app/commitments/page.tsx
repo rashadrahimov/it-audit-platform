@@ -33,7 +33,10 @@ const SLA_TONE: Record<Sla, string> = {
 export default async function CommitmentsPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug] = await Promise.all([getTranslations('commitments'), getActiveTenantSlug()]);
+  const [t, tenantSlug] = await Promise.all([
+    getTranslations('commitments'),
+    getActiveTenantSlug(),
+  ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
   const res = await apiFetch('/commitments', { headers });
@@ -100,7 +103,9 @@ export default async function CommitmentsPage() {
                   <td className="px-4 py-3 font-medium text-foreground">{c.title}</td>
                   <td className="px-4 py-3 text-secondary">{c.source ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[c.status]}`}>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[c.status]}`}
+                    >
                       {t(`st.${c.status}`)}
                     </span>
                   </td>

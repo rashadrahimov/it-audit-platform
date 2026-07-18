@@ -15,11 +15,18 @@ interface Labels {
 
 /** Форма создания ключа: показывает plaintext один раз (useActionState, без навигации). */
 export function NewKeyForm({ labels }: { labels: Labels }) {
-  const [state, formAction, pending] = useActionState<NewKeyState, FormData>(createApiKeyAction, {});
+  const [state, formAction, pending] = useActionState<NewKeyState, FormData>(
+    createApiKeyAction,
+    {},
+  );
 
   return (
     <div className="flex flex-col gap-3">
-      <form action={formAction} data-testid="apikey-create" className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+      <form
+        action={formAction}
+        data-testid="apikey-create"
+        className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+      >
         <input name="name" required placeholder={labels.namePh} className={`flex-1 ${inputCls}`} />
         <button
           type="submit"
@@ -33,7 +40,10 @@ export function NewKeyForm({ labels }: { labels: Labels }) {
       {state.error && <p className="text-sm text-red-600">{labels.error}</p>}
 
       {state.key && (
-        <div data-testid="apikey-plaintext" className="flex flex-col gap-1 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <div
+          data-testid="apikey-plaintext"
+          className="flex flex-col gap-1 rounded-xl border border-emerald-200 bg-emerald-50 p-4"
+        >
           <span className="text-xs font-medium text-emerald-700">{labels.once}</span>
           <code className="block overflow-x-auto rounded-md bg-white px-3 py-2 font-mono text-sm text-foreground select-all">
             {state.key}

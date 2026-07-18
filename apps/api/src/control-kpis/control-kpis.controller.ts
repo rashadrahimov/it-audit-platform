@@ -11,7 +11,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
@@ -52,7 +58,11 @@ export class ControlKpisController {
   @HttpCode(200)
   @RequirePermission('control', 'edit', 'edit')
   @ApiOperation({ summary: 'Замер текущего значения KPI → on-track' })
-  setValue(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  setValue(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = z.object({ currentValue: z.number() }).safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.setValue(

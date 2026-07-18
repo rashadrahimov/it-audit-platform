@@ -50,8 +50,14 @@ export class CommitmentsController {
   @HttpCode(200)
   @RequirePermission('control', 'edit', 'edit')
   @ApiOperation({ summary: 'Сменить статус (met/at_risk/breached)' })
-  setStatus(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
-    const parsed = z.object({ status: z.enum(['met', 'at_risk', 'breached']) }).safeParse(body ?? {});
+  setStatus(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z
+      .object({ status: z.enum(['met', 'at_risk', 'breached']) })
+      .safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.setStatus(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },

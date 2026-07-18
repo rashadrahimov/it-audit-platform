@@ -35,9 +35,7 @@ export default async function RiskHeatmapPage() {
     headers: tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {},
   });
   const empty: Record<RiskClass, number> = { low: 0, medium: 0, high: 0, critical: 0 };
-  const data: Heatmap = res.ok
-    ? await res.json()
-    : { total: 0, inherent: empty, residual: empty };
+  const data: Heatmap = res.ok ? await res.json() : { total: 0, inherent: empty, residual: empty };
 
   const rows: Array<{ key: 'inherent' | 'residual'; values: Record<RiskClass, number> }> = [
     { key: 'inherent', values: data.inherent },

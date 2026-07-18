@@ -73,15 +73,21 @@ export class SearchService {
         .select({ id: kbEntry.id, question: kbEntry.question, answer: kbEntry.answer })
         .from(kbEntry)
         .where(
-          and(isNull(kbEntry.deletedAt), or(ilike(kbEntry.question, like), ilike(kbEntry.answer, like))),
+          and(
+            isNull(kbEntry.deletedAt),
+            or(ilike(kbEntry.question, like), ilike(kbEntry.answer, like)),
+          ),
         )
         .limit(PER_TYPE);
-      for (const k of kbs) out.push({ type: 'kb_entry', id: k.id, label: k.question, snippet: k.answer });
+      for (const k of kbs)
+        out.push({ type: 'kb_entry', id: k.id, label: k.question, snippet: k.answer });
 
       const programs = await tx
         .select({ id: auditProgram.id, titleI18n: auditProgram.titleI18n })
         .from(auditProgram)
-        .where(and(isNull(auditProgram.deletedAt), sql`${auditProgram.titleI18n}::text ILIKE ${like}`))
+        .where(
+          and(isNull(auditProgram.deletedAt), sql`${auditProgram.titleI18n}::text ILIKE ${like}`),
+        )
         .limit(PER_TYPE);
       for (const p of programs) {
         out.push({ type: 'audit_program', id: p.id, label: resolveLocalized(p.titleI18n, 'en') });

@@ -9,7 +9,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { i18nTextSchema } from '@it-audit/shared';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -19,7 +25,10 @@ import { CustomFieldsService, FIELD_TYPES } from './custom-fields.service';
 
 const defineSchema = z.object({
   entityType: z.string().min(1),
-  key: z.string().min(1).regex(/^[a-z0-9_]+$/, 'key: только a-z0-9_'),
+  key: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9_]+$/, 'key: только a-z0-9_'),
   labelI18n: i18nTextSchema,
   fieldType: z.enum(FIELD_TYPES),
   options: z.array(z.string()).optional(),

@@ -58,7 +58,10 @@ export class PersonnelService {
             target: [personnelProfile.connectorId, personnelProfile.externalId],
             set: { fullName, email },
           })
-          .returning({ createdAt: personnelProfile.createdAt, updatedAt: personnelProfile.updatedAt });
+          .returning({
+            createdAt: personnelProfile.createdAt,
+            updatedAt: personnelProfile.updatedAt,
+          });
         // новый, если created==updated (только что вставлен)
         if (row && row.createdAt.getTime() === row.updatedAt.getTime()) imported += 1;
         else updated += 1;

@@ -61,7 +61,10 @@ export class AuditTypesService {
     input: { ref: string; objectiveI18n: I18nText; questionI18n: I18nText; order?: number },
   ) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
-      const [type] = await tx.select({ id: auditType.id }).from(auditType).where(eq(auditType.id, auditTypeId));
+      const [type] = await tx
+        .select({ id: auditType.id })
+        .from(auditType)
+        .where(eq(auditType.id, auditTypeId));
       if (!type) throw new BadRequestException(`Тип аудита ${auditTypeId} не найден`);
       const [row] = await tx
         .insert(auditTypeTemplateItem)

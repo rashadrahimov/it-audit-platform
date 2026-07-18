@@ -18,7 +18,10 @@ import { RequirePermission } from '../rbac/require-permission.decorator';
 import { TrustService } from './trust.service';
 
 const configureSchema = z.object({
-  slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'slug: только a-z0-9-'),
+  slug: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9-]+$/, 'slug: только a-z0-9-'),
   title: z.string().min(1),
   intro: z.string().optional(),
   isPublic: z.boolean().optional(),

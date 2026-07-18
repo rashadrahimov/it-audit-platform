@@ -31,8 +31,14 @@ export class ReportsExportService {
   /** Сравнение двух снапшотов (T-099, REP-03): дельта по каждой метрике и breakdown-ключу. */
   async compare(tenantId: string, aId: string, bId: string) {
     const [a, b] = await this.dbService.withTenant(tenantId, async (tx) => {
-      const [ra] = await tx.select().from(reportSnapshot).where(and(eq(reportSnapshot.id, aId)));
-      const [rb] = await tx.select().from(reportSnapshot).where(and(eq(reportSnapshot.id, bId)));
+      const [ra] = await tx
+        .select()
+        .from(reportSnapshot)
+        .where(and(eq(reportSnapshot.id, aId)));
+      const [rb] = await tx
+        .select()
+        .from(reportSnapshot)
+        .where(and(eq(reportSnapshot.id, bId)));
       return [ra, rb];
     });
     if (!a) throw new NotFoundException(`Снапшот ${aId} не найден`);
@@ -45,7 +51,12 @@ export class ReportsExportService {
     return this.dbService.withTenant(tenantId, async (tx) => {
       if (entity === 'findings') {
         const rs = await tx
-          .select({ id: finding.id, titleI18n: finding.titleI18n, riskRating: finding.riskRating, status: finding.status })
+          .select({
+            id: finding.id,
+            titleI18n: finding.titleI18n,
+            riskRating: finding.riskRating,
+            status: finding.status,
+          })
           .from(finding)
           .where(isNull(finding.deletedAt));
         return rs.map((r) => ({
@@ -57,7 +68,13 @@ export class ReportsExportService {
       }
       if (entity === 'risks') {
         const rs = await tx
-          .select({ id: risk.id, titleI18n: risk.titleI18n, riskClass: risk.riskClass, treatment: risk.treatment, status: risk.status })
+          .select({
+            id: risk.id,
+            titleI18n: risk.titleI18n,
+            riskClass: risk.riskClass,
+            treatment: risk.treatment,
+            status: risk.status,
+          })
           .from(risk)
           .where(isNull(risk.deletedAt));
         return rs.map((r) => ({
@@ -72,7 +89,11 @@ export class ReportsExportService {
         .select({ id: control.id, ref: control.ref, objectiveI18n: control.objectiveI18n })
         .from(control)
         .where(isNull(control.deletedAt));
-      return rs.map((r) => ({ id: r.id, ref: r.ref, objective: resolveLocalized(r.objectiveI18n, 'en') }));
+      return rs.map((r) => ({
+        id: r.id,
+        ref: r.ref,
+        objective: resolveLocalized(r.objectiveI18n, 'en'),
+      }));
     });
   }
 

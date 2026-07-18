@@ -50,7 +50,9 @@ export class AssetsService {
     );
     if (!conn) throw new NotFoundException(`Коннектор ${connectorId} не найден`);
     if (!conn.capabilities.includes('inventory')) {
-      throw new BadRequestException('Коннектор не имеет capability «inventory» (авто-обнаружение активов)');
+      throw new BadRequestException(
+        'Коннектор не имеет capability «inventory» (авто-обнаружение активов)',
+      );
     }
 
     const { records } = await this.connectorSyncService.collectRecords(actor.tenantId, connectorId);

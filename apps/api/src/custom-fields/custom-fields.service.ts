@@ -48,7 +48,8 @@ export class CustomFieldsService {
           target: [customFieldDef.tenantId, customFieldDef.entityType, customFieldDef.key],
         })
         .returning();
-      if (!row) throw new BadRequestException(`Поле «${input.key}» для ${input.entityType} уже определено`);
+      if (!row)
+        throw new BadRequestException(`Поле «${input.key}» для ${input.entityType} уже определено`);
       return row;
     });
     await this.auditLogService.record({

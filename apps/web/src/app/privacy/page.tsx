@@ -3,7 +3,12 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
-import { archiveRopaAction, createDpiaAction, createRopaAction, transitionDpiaAction } from './actions';
+import {
+  archiveRopaAction,
+  createDpiaAction,
+  createRopaAction,
+  transitionDpiaAction,
+} from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,37 +90,70 @@ export default async function PrivacyPage() {
       {/* ROPA */}
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-secondary">{t('ropa')}</h2>
-        <form action={createRopaAction} data-testid="ropa-create" className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+        <form
+          action={createRopaAction}
+          data-testid="ropa-create"
+          className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+        >
           <input name="name" required placeholder={t('name')} className={`flex-1 ${inputCls}`} />
           <select name="legalBasis" defaultValue="consent" className={inputCls}>
             {LEGAL_BASES.map((b) => (
-              <option key={b} value={b}>{t(`lb.${b}`)}</option>
+              <option key={b} value={b}>
+                {t(`lb.${b}`)}
+              </option>
             ))}
           </select>
           <select name="role" defaultValue="controller" className={inputCls}>
             {ROLES.map((r) => (
-              <option key={r} value={r}>{t(`rl.${r}`)}</option>
+              <option key={r} value={r}>
+                {t(`rl.${r}`)}
+              </option>
             ))}
           </select>
-          <button type="submit" className={btnCls}>{t('add')}</button>
+          <button type="submit" className={btnCls}>
+            {t('add')}
+          </button>
         </form>
         {ropa.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">{t('empty')}</p>
+          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
+            {t('empty')}
+          </p>
         ) : (
-          <ul className="overflow-hidden rounded-xl border border-border bg-white shadow-sm" data-testid="ropa-list">
+          <ul
+            className="overflow-hidden rounded-xl border border-border bg-white shadow-sm"
+            data-testid="ropa-list"
+          >
             {ropa.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 last:border-0">
+              <li
+                key={r.id}
+                className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 last:border-0"
+              >
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium text-foreground">{resolveName(r.nameI18n, locale)}</span>
-                  <span className="text-xs text-secondary">{t(`lb.${r.legalBasis}`)} · {t(`rl.${r.role}`)}</span>
-                  {r.crossBorder && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">{t('crossBorder')}</span>}
+                  <span className="font-medium text-foreground">
+                    {resolveName(r.nameI18n, locale)}
+                  </span>
+                  <span className="text-xs text-secondary">
+                    {t(`lb.${r.legalBasis}`)} · {t(`rl.${r.role}`)}
+                  </span>
+                  {r.crossBorder && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
+                      {t('crossBorder')}
+                    </span>
+                  )}
                 </div>
                 <span className="flex items-center gap-2">
-                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-secondary">{t(`st.${r.status}`)}</span>
+                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-secondary">
+                    {t(`st.${r.status}`)}
+                  </span>
                   {r.status === 'active' && (
                     <form action={archiveRopaAction}>
                       <input type="hidden" name="id" value={r.id} />
-                      <button type="submit" className="rounded-md border border-border px-2 py-1 text-xs text-secondary hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">{t('archive')}</button>
+                      <button
+                        type="submit"
+                        className="rounded-md border border-border px-2 py-1 text-xs text-secondary hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {t('archive')}
+                      </button>
                     </form>
                   )}
                 </span>
@@ -129,38 +167,72 @@ export default async function PrivacyPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-secondary">{t('dpia')}</h2>
         {ropa.length > 0 && (
-          <form action={createDpiaAction} data-testid="dpia-create" className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+          <form
+            action={createDpiaAction}
+            data-testid="dpia-create"
+            className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+          >
             <select name="processingActivityId" className={inputCls} defaultValue={ropa[0]!.id}>
               {ropa.map((r) => (
-                <option key={r.id} value={r.id}>{resolveName(r.nameI18n, locale)}</option>
+                <option key={r.id} value={r.id}>
+                  {resolveName(r.nameI18n, locale)}
+                </option>
               ))}
             </select>
-            <input name="title" required placeholder={t('titlePh')} className={`flex-1 ${inputCls}`} />
+            <input
+              name="title"
+              required
+              placeholder={t('titlePh')}
+              className={`flex-1 ${inputCls}`}
+            />
             <select name="riskLevel" defaultValue="medium" className={inputCls}>
               {RISK_LEVELS.map((l) => (
-                <option key={l} value={l}>{t(`lvl.${l}`)}</option>
+                <option key={l} value={l}>
+                  {t(`lvl.${l}`)}
+                </option>
               ))}
             </select>
-            <button type="submit" className={btnCls}>{t('add')}</button>
+            <button type="submit" className={btnCls}>
+              {t('add')}
+            </button>
           </form>
         )}
         {dpia.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">{t('empty')}</p>
+          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
+            {t('empty')}
+          </p>
         ) : (
-          <ul className="overflow-hidden rounded-xl border border-border bg-white shadow-sm" data-testid="dpia-list">
+          <ul
+            className="overflow-hidden rounded-xl border border-border bg-white shadow-sm"
+            data-testid="dpia-list"
+          >
             {dpia.map((d) => (
-              <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 last:border-0">
+              <li
+                key={d.id}
+                className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 last:border-0"
+              >
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-foreground">{d.title}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${LVL_TONE[d.riskLevel]}`}>{t(`lvl.${d.riskLevel}`)}</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${LVL_TONE[d.riskLevel]}`}
+                  >
+                    {t(`lvl.${d.riskLevel}`)}
+                  </span>
                 </div>
                 <span className="flex items-center gap-2">
-                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-secondary">{t(`st.${d.status}`)}</span>
+                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-secondary">
+                    {t(`st.${d.status}`)}
+                  </span>
                   {DPIA_NEXT[d.status].map((to) => (
                     <form key={to} action={transitionDpiaAction}>
                       <input type="hidden" name="id" value={d.id} />
                       <input type="hidden" name="to" value={to} />
-                      <button type="submit" className="rounded-md border border-border px-2 py-1 text-xs text-secondary hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">{t(`st.${to}`)}</button>
+                      <button
+                        type="submit"
+                        className="rounded-md border border-border px-2 py-1 text-xs text-secondary hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {t(`st.${to}`)}
+                      </button>
                     </form>
                   ))}
                 </span>

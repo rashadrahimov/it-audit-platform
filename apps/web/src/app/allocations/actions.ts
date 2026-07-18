@@ -10,7 +10,8 @@ export async function createAllocationAction(formData: FormData): Promise<void> 
   const engagementId = String(formData.get('engagementId') ?? '');
   const membershipId = String(formData.get('membershipId') ?? '');
   const allocatedHours = Number(formData.get('allocatedHours'));
-  if (!engagementId || !membershipId || !Number.isFinite(allocatedHours) || allocatedHours <= 0) return;
+  if (!engagementId || !membershipId || !Number.isFinite(allocatedHours) || allocatedHours <= 0)
+    return;
   const period = String(formData.get('period') ?? '').trim();
   await apiFetch('/allocations', {
     method: 'POST',

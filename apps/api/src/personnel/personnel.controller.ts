@@ -68,7 +68,11 @@ export class PersonnelController {
   @HttpCode(200)
   @RequirePermission('settings', 'edit', 'edit')
   @ApiOperation({ summary: 'Сменить статус занятости (onboarding/active/offboarded)' })
-  setStatus(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+  setStatus(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
     const parsed = z
       .object({ status: z.enum(['active', 'onboarding', 'offboarded']) })
       .safeParse(body ?? {});

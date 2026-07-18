@@ -48,8 +48,14 @@ export class ChangesController {
   @HttpCode(200)
   @RequirePermission('control', 'view')
   @ApiOperation({ summary: 'Workflow (T-063): approve/reject (approver)/deployed' })
-  transition(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
-    const parsed = z.object({ to: z.enum(['approved', 'rejected', 'deployed']) }).safeParse(body ?? {});
+  transition(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z
+      .object({ to: z.enum(['approved', 'rejected', 'deployed']) })
+      .safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.transition(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },

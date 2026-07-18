@@ -65,10 +65,7 @@ export class TrustService {
     return { id: row.id, slug: row.slug, isPublic: row.isPublic };
   }
 
-  async addItem(
-    actor: Actor,
-    input: { label: string; category: string; published?: boolean },
-  ) {
+  async addItem(actor: Actor, input: { label: string; category: string; published?: boolean }) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [tc] = await tx
         .select({ id: trustCenter.id })
@@ -125,7 +122,13 @@ export class TrustService {
     const [tc] = await this.dbService.db
       .select()
       .from(trustCenter)
-      .where(and(eq(trustCenter.slug, slug), eq(trustCenter.isPublic, true), isNull(trustCenter.deletedAt)));
+      .where(
+        and(
+          eq(trustCenter.slug, slug),
+          eq(trustCenter.isPublic, true),
+          isNull(trustCenter.deletedAt),
+        ),
+      );
     if (!tc) throw new NotFoundException('Trust Center не найден или не опубликован');
     const items = await this.dbService.withTenant(tc.tenantId, (tx) =>
       tx
@@ -137,14 +140,17 @@ export class TrustService {
   }
 
   /** ПУБЛИЧНЫЙ (без auth) запрос доступа к деталям Trust Center по slug (T-081). */
-  async requestAccess(
-    slug: string,
-    input: { email: string; company?: string; message?: string },
-  ) {
+  async requestAccess(slug: string, input: { email: string; company?: string; message?: string }) {
     const [tc] = await this.dbService.db
       .select({ id: trustCenter.id, tenantId: trustCenter.tenantId })
       .from(trustCenter)
-      .where(and(eq(trustCenter.slug, slug), eq(trustCenter.isPublic, true), isNull(trustCenter.deletedAt)));
+      .where(
+        and(
+          eq(trustCenter.slug, slug),
+          eq(trustCenter.isPublic, true),
+          isNull(trustCenter.deletedAt),
+        ),
+      );
     if (!tc) throw new NotFoundException('Trust Center не найден или не опубликован');
     const created = await this.dbService.withTenant(tc.tenantId, async (tx) => {
       const [row] = await tx
@@ -203,10 +209,7 @@ export class TrustService {
       if (row.status !== 'pending') {
         throw new BadRequestException(`Запрос уже ${row.status}`);
       }
-      await tx
-        .update(trustAccessRequest)
-        .set({ status: to })
-        .where(eq(trustAccessRequest.id, id));
+      await tx.update(trustAccessRequest).set({ status: to }).where(eq(trustAccessRequest.id, id));
       return { before: row.status, after: to };
     });
     await this.auditLogService.record({

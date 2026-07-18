@@ -15,7 +15,9 @@ export class ReportsExportController {
 
   @Get('export')
   @RequirePermission('report', 'export', 'edit')
-  @ApiOperation({ summary: 'Tenant-wide выгрузка findings/risks/controls в CSV/XML (T-098, REP-05)' })
+  @ApiOperation({
+    summary: 'Tenant-wide выгрузка findings/risks/controls в CSV/XML (T-098, REP-05)',
+  })
   @ApiQuery({ name: 'entity', required: true, description: 'findings|risks|controls' })
   @ApiQuery({ name: 'format', required: true, description: 'csv|xml' })
   async export(

@@ -15,7 +15,9 @@ export class ConfigTransferController {
   @Get('export')
   @RequirePermission('settings', 'edit', 'edit')
   @ApiOperation({ summary: 'Экспорт кастомной конфигурации тенанта (T-105, TEC-04)' })
-  @ApiOkResponse({ description: 'JSON-бандл {version, auditTypes, configLists, customFieldDefs, glossaryTerms}' })
+  @ApiOkResponse({
+    description: 'JSON-бандл {version, auditTypes, configLists, customFieldDefs, glossaryTerms}',
+  })
   exportConfig(@Req() req: TenantRequest) {
     return this.service.export(req.tenantId);
   }

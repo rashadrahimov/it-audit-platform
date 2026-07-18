@@ -38,7 +38,10 @@ export class ConfigListsService {
     listKey: string,
   ): Promise<{ listKey: string; items: ListItem[]; isDefault: boolean }> {
     const [override] = await this.dbService.withTenant(tenantId, (tx) =>
-      tx.select().from(configList).where(and(eq(configList.tenantId, tenantId), eq(configList.listKey, listKey))),
+      tx
+        .select()
+        .from(configList)
+        .where(and(eq(configList.tenantId, tenantId), eq(configList.listKey, listKey))),
     );
     if (override) {
       return { listKey, items: override.items as ListItem[], isDefault: false };

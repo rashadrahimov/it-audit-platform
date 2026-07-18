@@ -47,7 +47,9 @@ export default async function ApiKeysPage() {
       />
 
       {keys.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">{t('empty')}</section>
+        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
+          {t('empty')}
+        </section>
       ) : (
         <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
           <table className="w-full text-left text-sm" data-testid="apikeys-table">

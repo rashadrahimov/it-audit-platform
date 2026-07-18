@@ -290,35 +290,80 @@ const GLOBAL_FRAMEWORKS = [
     name: { en: 'SOC 2' },
     version: '2017 (rev. 2022)',
     requirements: [
-      { ref: 'CC1.1', title: { en: 'Control environment: integrity and ethical values', ru: 'Контрольная среда: честность и этические ценности' } },
-      { ref: 'CC6.1', title: { en: 'Logical and physical access controls', ru: 'Логический и физический контроль доступа' } },
-      { ref: 'CC7.2', title: { en: 'System monitoring for anomalies', ru: 'Мониторинг системы на аномалии' } },
-      { ref: 'A1.2', title: { en: 'Availability: environmental protections and backup', ru: 'Доступность: защита среды и резервное копирование' } },
+      {
+        ref: 'CC1.1',
+        title: {
+          en: 'Control environment: integrity and ethical values',
+          ru: 'Контрольная среда: честность и этические ценности',
+        },
+      },
+      {
+        ref: 'CC6.1',
+        title: {
+          en: 'Logical and physical access controls',
+          ru: 'Логический и физический контроль доступа',
+        },
+      },
+      {
+        ref: 'CC7.2',
+        title: { en: 'System monitoring for anomalies', ru: 'Мониторинг системы на аномалии' },
+      },
+      {
+        ref: 'A1.2',
+        title: {
+          en: 'Availability: environmental protections and backup',
+          ru: 'Доступность: защита среды и резервное копирование',
+        },
+      },
     ],
   },
   {
     name: { en: 'PCI DSS' },
     version: '4.0',
     requirements: [
-      { ref: 'Req.1', title: { en: 'Install and maintain network security controls', ru: 'Установка и поддержка сетевых средств защиты' } },
-      { ref: 'Req.3', title: { en: 'Protect stored account data', ru: 'Защита хранимых данных держателей карт' } },
-      { ref: 'Req.8', title: { en: 'Identify users and authenticate access', ru: 'Идентификация пользователей и аутентификация доступа' } },
+      {
+        ref: 'Req.1',
+        title: {
+          en: 'Install and maintain network security controls',
+          ru: 'Установка и поддержка сетевых средств защиты',
+        },
+      },
+      {
+        ref: 'Req.3',
+        title: { en: 'Protect stored account data', ru: 'Защита хранимых данных держателей карт' },
+      },
+      {
+        ref: 'Req.8',
+        title: {
+          en: 'Identify users and authenticate access',
+          ru: 'Идентификация пользователей и аутентификация доступа',
+        },
+      },
     ],
   },
   {
     name: { en: 'GDPR' },
     version: '2016/679',
     requirements: [
-      { ref: 'Art.30', title: { en: 'Records of processing activities', ru: 'Реестр операций обработки' } },
+      {
+        ref: 'Art.30',
+        title: { en: 'Records of processing activities', ru: 'Реестр операций обработки' },
+      },
       { ref: 'Art.32', title: { en: 'Security of processing', ru: 'Безопасность обработки' } },
-      { ref: 'Art.35', title: { en: 'Data protection impact assessment', ru: 'Оценка влияния на защиту данных' } },
+      {
+        ref: 'Art.35',
+        title: { en: 'Data protection impact assessment', ru: 'Оценка влияния на защиту данных' },
+      },
     ],
   },
   {
     name: { en: 'HIPAA' },
     version: 'Security Rule',
     requirements: [
-      { ref: '164.308', title: { en: 'Administrative safeguards', ru: 'Административные меры защиты' } },
+      {
+        ref: '164.308',
+        title: { en: 'Administrative safeguards', ru: 'Административные меры защиты' },
+      },
       { ref: '164.312', title: { en: 'Technical safeguards', ru: 'Технические меры защиты' } },
     ],
   },
@@ -330,21 +375,110 @@ const GLOBAL_FRAMEWORKS = [
     version: 'v1.0',
     requirements: [
       { ref: 'GOV', title: { en: 'IT governance', az: 'İT idarəetməsi', ru: 'ИТ-управление' } },
-      { ref: 'AC', title: { en: 'Access control', az: 'Girişə nəzarət', ru: 'Управление доступом' } },
-      { ref: 'CM', title: { en: 'Change management', az: 'Dəyişikliklərin idarə edilməsi', ru: 'Управление изменениями' } },
-      { ref: 'BK', title: { en: 'Backup & recovery', az: 'Ehtiyat nüsxə və bərpa', ru: 'Резервное копирование и восстановление' } },
-      { ref: 'DR', title: { en: 'Business continuity', az: 'Biznesin fasiləsizliyi', ru: 'Непрерывность бизнеса' } },
-      { ref: 'NW', title: { en: 'Network security', az: 'Şəbəkə təhlükəsizliyi', ru: 'Сетевая безопасность' } },
-      { ref: 'VM', title: { en: 'Vulnerability management', az: 'Zəifliklərin idarə edilməsi', ru: 'Управление уязвимостями' } },
-      { ref: 'EP', title: { en: 'Endpoint security', az: 'Son nöqtə təhlükəsizliyi', ru: 'Защита конечных устройств' } },
-      { ref: 'LM', title: { en: 'Logging & monitoring', az: 'Jurnal və monitorinq', ru: 'Логирование и мониторинг' } },
-      { ref: 'DP', title: { en: 'Data protection', az: 'Məlumatların qorunması', ru: 'Защита данных' } },
-      { ref: 'TP', title: { en: 'Third-party / vendor', az: 'Üçüncü tərəf / təchizatçı', ru: 'Третьи стороны / вендоры' } },
-      { ref: 'IR', title: { en: 'Incident management', az: 'İnsidentlərin idarə edilməsi', ru: 'Управление инцидентами' } },
-      { ref: 'AM', title: { en: 'Asset management', az: 'Aktivlərin idarə edilməsi', ru: 'Управление активами' } },
-      { ref: 'CL', title: { en: 'Cloud security', az: 'Bulud təhlükəsizliyi', ru: 'Безопасность облака' } },
-      { ref: 'PH', title: { en: 'Physical security', az: 'Fiziki təhlükəsizlik', ru: 'Физическая безопасность' } },
-      { ref: 'SA', title: { en: 'Security awareness', az: 'Təhlükəsizlik maarifləndirməsi', ru: 'Осведомлённость о безопасности' } },
+      {
+        ref: 'AC',
+        title: { en: 'Access control', az: 'Girişə nəzarət', ru: 'Управление доступом' },
+      },
+      {
+        ref: 'CM',
+        title: {
+          en: 'Change management',
+          az: 'Dəyişikliklərin idarə edilməsi',
+          ru: 'Управление изменениями',
+        },
+      },
+      {
+        ref: 'BK',
+        title: {
+          en: 'Backup & recovery',
+          az: 'Ehtiyat nüsxə və bərpa',
+          ru: 'Резервное копирование и восстановление',
+        },
+      },
+      {
+        ref: 'DR',
+        title: {
+          en: 'Business continuity',
+          az: 'Biznesin fasiləsizliyi',
+          ru: 'Непрерывность бизнеса',
+        },
+      },
+      {
+        ref: 'NW',
+        title: { en: 'Network security', az: 'Şəbəkə təhlükəsizliyi', ru: 'Сетевая безопасность' },
+      },
+      {
+        ref: 'VM',
+        title: {
+          en: 'Vulnerability management',
+          az: 'Zəifliklərin idarə edilməsi',
+          ru: 'Управление уязвимостями',
+        },
+      },
+      {
+        ref: 'EP',
+        title: {
+          en: 'Endpoint security',
+          az: 'Son nöqtə təhlükəsizliyi',
+          ru: 'Защита конечных устройств',
+        },
+      },
+      {
+        ref: 'LM',
+        title: {
+          en: 'Logging & monitoring',
+          az: 'Jurnal və monitorinq',
+          ru: 'Логирование и мониторинг',
+        },
+      },
+      {
+        ref: 'DP',
+        title: { en: 'Data protection', az: 'Məlumatların qorunması', ru: 'Защита данных' },
+      },
+      {
+        ref: 'TP',
+        title: {
+          en: 'Third-party / vendor',
+          az: 'Üçüncü tərəf / təchizatçı',
+          ru: 'Третьи стороны / вендоры',
+        },
+      },
+      {
+        ref: 'IR',
+        title: {
+          en: 'Incident management',
+          az: 'İnsidentlərin idarə edilməsi',
+          ru: 'Управление инцидентами',
+        },
+      },
+      {
+        ref: 'AM',
+        title: {
+          en: 'Asset management',
+          az: 'Aktivlərin idarə edilməsi',
+          ru: 'Управление активами',
+        },
+      },
+      {
+        ref: 'CL',
+        title: { en: 'Cloud security', az: 'Bulud təhlükəsizliyi', ru: 'Безопасность облака' },
+      },
+      {
+        ref: 'PH',
+        title: {
+          en: 'Physical security',
+          az: 'Fiziki təhlükəsizlik',
+          ru: 'Физическая безопасность',
+        },
+      },
+      {
+        ref: 'SA',
+        title: {
+          en: 'Security awareness',
+          az: 'Təhlükəsizlik maarifləndirməsi',
+          ru: 'Осведомлённость о безопасности',
+        },
+      },
     ],
   },
 ];
@@ -557,7 +691,10 @@ const AUDIT_TYPES = [
   { code: 'compliance', name: { en: 'Compliance', az: 'Uyğunluq', ru: 'Комплаенс' } },
   { code: 'quality', name: { en: 'Quality', az: 'Keyfiyyət', ru: 'Качество' } },
   { code: 'advisory', name: { en: 'Advisory', az: 'Məsləhət', ru: 'Консультационный' } },
-  { code: 'investigations', name: { en: 'Investigations', az: 'Araşdırmalar', ru: 'Расследования' } },
+  {
+    code: 'investigations',
+    name: { en: 'Investigations', az: 'Araşdırmalar', ru: 'Расследования' },
+  },
 ];
 
 async function seedAuditTypes(): Promise<void> {
@@ -584,16 +721,55 @@ async function seedAuditTypes(): Promise<void> {
 
 /** Базовые GRC-термины глоссария (T-095, GEN-09) — глобальные (tenant_id NULL). */
 const GLOSSARY_TERMS = [
-  { term: 'Control', category: 'core', definition: { en: 'A safeguard that mitigates risk.', ru: 'Мера, снижающая риск.' } },
-  { term: 'Finding', category: 'core', definition: { en: 'An identified deficiency or exception.', ru: 'Выявленное несоответствие или отклонение.' } },
-  { term: 'RCM', category: 'risk', definition: { en: 'Risk-Control Matrix: mapping of risks to mitigating controls.', ru: 'Матрица «риск-контроль»: связь рисков с митигирующими контролями.' } },
-  { term: 'DPIA', category: 'privacy', definition: { en: 'Data Protection Impact Assessment.', ru: 'Оценка влияния на защиту данных.' } },
-  { term: 'ROPA', category: 'privacy', definition: { en: 'Records of Processing Activities (GDPR Art. 30).', ru: 'Реестр операций обработки ПДн (GDPR ст. 30).' } },
-  { term: 'ITGC', category: 'it', definition: { en: 'IT General Controls.', ru: 'Общие ИТ-контроли.' } },
+  {
+    term: 'Control',
+    category: 'core',
+    definition: { en: 'A safeguard that mitigates risk.', ru: 'Мера, снижающая риск.' },
+  },
+  {
+    term: 'Finding',
+    category: 'core',
+    definition: {
+      en: 'An identified deficiency or exception.',
+      ru: 'Выявленное несоответствие или отклонение.',
+    },
+  },
+  {
+    term: 'RCM',
+    category: 'risk',
+    definition: {
+      en: 'Risk-Control Matrix: mapping of risks to mitigating controls.',
+      ru: 'Матрица «риск-контроль»: связь рисков с митигирующими контролями.',
+    },
+  },
+  {
+    term: 'DPIA',
+    category: 'privacy',
+    definition: {
+      en: 'Data Protection Impact Assessment.',
+      ru: 'Оценка влияния на защиту данных.',
+    },
+  },
+  {
+    term: 'ROPA',
+    category: 'privacy',
+    definition: {
+      en: 'Records of Processing Activities (GDPR Art. 30).',
+      ru: 'Реестр операций обработки ПДн (GDPR ст. 30).',
+    },
+  },
+  {
+    term: 'ITGC',
+    category: 'it',
+    definition: { en: 'IT General Controls.', ru: 'Общие ИТ-контроли.' },
+  },
 ];
 
 async function seedGlossary(): Promise<void> {
-  const owner = new Client({ connectionString: env.databaseUrlOwner, connectionTimeoutMillis: 5000 });
+  const owner = new Client({
+    connectionString: env.databaseUrlOwner,
+    connectionTimeoutMillis: 5000,
+  });
   try {
     await owner.connect();
     const db = drizzle(owner);
@@ -603,9 +779,12 @@ async function seedGlossary(): Promise<void> {
         .from(glossaryTerm)
         .where(and(isNull(glossaryTerm.tenantId), eq(glossaryTerm.term, t.term)));
       if (existing) continue;
-      await db
-        .insert(glossaryTerm)
-        .values({ tenantId: null, term: t.term, definitionI18n: t.definition, category: t.category });
+      await db.insert(glossaryTerm).values({
+        tenantId: null,
+        term: t.term,
+        definitionI18n: t.definition,
+        category: t.category,
+      });
     }
     console.log(`✓ Глоссарий: ${GLOSSARY_TERMS.length} терминов (idempotent)`);
   } finally {

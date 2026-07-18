@@ -22,7 +22,10 @@ const STATUS_TONE: Record<Status, string> = {
 export default async function AccessReviewsPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug] = await Promise.all([getTranslations('accessReviews'), getActiveTenantSlug()]);
+  const [t, tenantSlug] = await Promise.all([
+    getTranslations('accessReviews'),
+    getActiveTenantSlug(),
+  ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
   const res = await apiFetch('/access-reviews', { headers });

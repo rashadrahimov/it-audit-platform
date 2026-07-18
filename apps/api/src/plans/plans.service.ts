@@ -50,7 +50,12 @@ export class PlansService {
   async addItem(
     actor: Actor,
     planId: string,
-    input: { auditableEntityId: string; plannedHours?: number; plannedQuarter?: string; recurrence?: unknown },
+    input: {
+      auditableEntityId: string;
+      plannedHours?: number;
+      plannedQuarter?: string;
+      recurrence?: unknown;
+    },
   ) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [plan] = await tx
@@ -61,7 +66,9 @@ export class PlansService {
       const [node] = await tx
         .select({ id: auditableEntity.id })
         .from(auditableEntity)
-        .where(and(eq(auditableEntity.id, input.auditableEntityId), isNull(auditableEntity.deletedAt)));
+        .where(
+          and(eq(auditableEntity.id, input.auditableEntityId), isNull(auditableEntity.deletedAt)),
+        );
       if (!node) throw new BadRequestException(`Узел ${input.auditableEntityId} не найден`);
 
       // риски, затрагивающие узел → макс класс → приоритет
@@ -69,7 +76,9 @@ export class PlansService {
         .select({ riskClass: risk.riskClass })
         .from(riskEntity)
         .innerJoin(risk, eq(riskEntity.riskId, risk.id))
-        .where(and(eq(riskEntity.auditableEntityId, input.auditableEntityId), isNull(risk.deletedAt)));
+        .where(
+          and(eq(riskEntity.auditableEntityId, input.auditableEntityId), isNull(risk.deletedAt)),
+        );
       let maxWeight = 0;
       let topClass = 'none';
       for (const r of risks) {
@@ -146,7 +155,12 @@ export class PlansService {
   async list(tenantId: string) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
-        .select({ id: annualPlan.id, name: annualPlan.name, year: annualPlan.year, status: annualPlan.status })
+        .select({
+          id: annualPlan.id,
+          name: annualPlan.name,
+          year: annualPlan.year,
+          status: annualPlan.status,
+        })
         .from(annualPlan)
         .where(isNull(annualPlan.deletedAt))
         .orderBy(desc(annualPlan.createdAt)),

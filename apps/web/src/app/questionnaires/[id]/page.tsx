@@ -71,11 +71,16 @@ export default async function QuestionnaireDetailPage({
       {/* Ответы */}
       <ul className="flex flex-col gap-3" data-testid="answers-list">
         {q.answers.map((a) => (
-          <li key={a.id} className="flex flex-col gap-2 rounded-xl border border-border bg-white p-4 shadow-sm">
+          <li
+            key={a.id}
+            className="flex flex-col gap-2 rounded-xl border border-border bg-white p-4 shadow-sm"
+          >
             <span className="flex items-center gap-2">
               <span className="font-medium text-foreground">{a.question}</span>
               {a.reusedFromKb && (
-                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">{t('fromKb')}</span>
+                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">
+                  {t('fromKb')}
+                </span>
               )}
             </span>
             {a.answer ? (
@@ -84,7 +89,12 @@ export default async function QuestionnaireDetailPage({
               <form action={answerAction} className="flex flex-wrap items-end gap-2">
                 <input type="hidden" name="id" value={q.id} />
                 <input type="hidden" name="answerId" value={a.id} />
-                <input name="answer" required placeholder={t('answerPh')} className={`flex-1 ${inputCls}`} />
+                <input
+                  name="answer"
+                  required
+                  placeholder={t('answerPh')}
+                  className={`flex-1 ${inputCls}`}
+                />
                 <button
                   type="submit"
                   className="rounded-md border border-border px-3 py-2 text-sm text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
@@ -98,16 +108,27 @@ export default async function QuestionnaireDetailPage({
           </li>
         ))}
         {q.answers.length === 0 && (
-          <li className="rounded-xl border border-border bg-white p-6 text-center text-secondary shadow-sm">{t('noQuestions')}</li>
+          <li className="rounded-xl border border-border bg-white p-6 text-center text-secondary shadow-sm">
+            {t('noQuestions')}
+          </li>
         )}
       </ul>
 
       {isDraft && (
         <div className="flex flex-col gap-4">
           {/* Добавить вопрос */}
-          <form action={addQuestionAction} data-testid="question-add" className="flex flex-wrap items-end gap-2">
+          <form
+            action={addQuestionAction}
+            data-testid="question-add"
+            className="flex flex-wrap items-end gap-2"
+          >
             <input type="hidden" name="id" value={q.id} />
-            <input name="question" required placeholder={t('questionPh')} className={`flex-1 ${inputCls}`} />
+            <input
+              name="question"
+              required
+              placeholder={t('questionPh')}
+              className={`flex-1 ${inputCls}`}
+            />
             <button
               type="submit"
               className="rounded-md border border-border px-3 py-2 text-sm text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

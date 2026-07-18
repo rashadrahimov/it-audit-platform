@@ -59,7 +59,9 @@ export default async function ConfigPage() {
         >
           <input name="code" required placeholder={t('codePh')} className={inputCls} />
           <input name="name" required placeholder={t('namePh')} className={`flex-1 ${inputCls}`} />
-          <button type="submit" className={btnCls}>{t('add')}</button>
+          <button type="submit" className={btnCls}>
+            {t('add')}
+          </button>
         </form>
         <ul className="flex flex-wrap gap-2" data-testid="audit-types-list">
           {types.map((at) => (
@@ -89,11 +91,21 @@ export default async function ConfigPage() {
           className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
         >
           <input name="name" required placeholder={t('tagPh')} className={`flex-1 ${inputCls}`} />
-          <input name="color" type="color" defaultValue="#0369A1" className="h-10 w-14 rounded-md border border-border" aria-label={t('color')} />
-          <button type="submit" className={btnCls}>{t('add')}</button>
+          <input
+            name="color"
+            type="color"
+            defaultValue="#0369A1"
+            className="h-10 w-14 rounded-md border border-border"
+            aria-label={t('color')}
+          />
+          <button type="submit" className={btnCls}>
+            {t('add')}
+          </button>
         </form>
         {tags.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">{t('empty')}</p>
+          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
+            {t('empty')}
+          </p>
         ) : (
           <ul className="flex flex-wrap gap-2" data-testid="tags-list">
             {tags.map((tag) => (

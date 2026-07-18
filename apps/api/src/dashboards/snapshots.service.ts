@@ -58,7 +58,10 @@ export class SnapshotsService {
 
   async get(tenantId: string, id: string) {
     const [row] = await this.dbService.withTenant(tenantId, (tx) =>
-      tx.select().from(reportSnapshot).where(and(eq(reportSnapshot.id, id))),
+      tx
+        .select()
+        .from(reportSnapshot)
+        .where(and(eq(reportSnapshot.id, id))),
     );
     if (!row) throw new NotFoundException(`Снапшот ${id} не найден`);
     return { id: row.id, label: row.label, capturedAt: row.capturedAt, metrics: row.metrics };

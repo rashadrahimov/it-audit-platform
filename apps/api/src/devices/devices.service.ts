@@ -166,7 +166,10 @@ export class DevicesService {
         passwordPolicy: patch.passwordPolicy ?? row.passwordPolicy,
       };
       const complianceStatus = complianceOf(checks);
-      await tx.update(device).set({ ...checks, complianceStatus }).where(eq(device.id, id));
+      await tx
+        .update(device)
+        .set({ ...checks, complianceStatus })
+        .where(eq(device.id, id));
       return { before: row.complianceStatus, complianceStatus };
     });
     await this.auditLogService.record({
@@ -184,11 +187,7 @@ export class DevicesService {
 
   async list(tenantId: string) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx
-        .select()
-        .from(device)
-        .where(isNull(device.deletedAt))
-        .orderBy(desc(device.createdAt)),
+      tx.select().from(device).where(isNull(device.deletedAt)).orderBy(desc(device.createdAt)),
     );
     return rows.map((d) => ({
       id: d.id,

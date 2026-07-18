@@ -30,7 +30,13 @@ const bundleSchema = z.object({
     )
     .default([]),
   glossaryTerms: z
-    .array(z.object({ term: z.string(), definitionI18n: i18nTextSchema, category: z.string().nullable().optional() }))
+    .array(
+      z.object({
+        term: z.string(),
+        definitionI18n: i18nTextSchema,
+        category: z.string().nullable().optional(),
+      }),
+    )
     .default([]),
 });
 export type ConfigBundle = z.infer<typeof bundleSchema>;
@@ -64,7 +70,11 @@ export class ConfigTransferService {
         .from(customFieldDef)
         .where(isNull(customFieldDef.deletedAt));
       const glossaryTerms = await tx
-        .select({ term: glossaryTerm.term, definitionI18n: glossaryTerm.definitionI18n, category: glossaryTerm.category })
+        .select({
+          term: glossaryTerm.term,
+          definitionI18n: glossaryTerm.definitionI18n,
+          category: glossaryTerm.category,
+        })
         .from(glossaryTerm)
         .where(and(isNotNull(glossaryTerm.tenantId), isNull(glossaryTerm.deletedAt)));
       return {
@@ -87,13 +97,19 @@ export class ConfigTransferService {
         await tx
           .insert(auditType)
           .values({ tenantId: actor.tenantId, code: t.code, nameI18n: t.nameI18n })
-          .onConflictDoUpdate({ target: [auditType.tenantId, auditType.code], set: { nameI18n: t.nameI18n } });
+          .onConflictDoUpdate({
+            target: [auditType.tenantId, auditType.code],
+            set: { nameI18n: t.nameI18n },
+          });
       }
       for (const l of b.configLists) {
         await tx
           .insert(configList)
           .values({ tenantId: actor.tenantId, listKey: l.listKey, items: l.items })
-          .onConflictDoUpdate({ target: [configList.tenantId, configList.listKey], set: { items: l.items } });
+          .onConflictDoUpdate({
+            target: [configList.tenantId, configList.listKey],
+            set: { items: l.items },
+          });
       }
       for (const f of b.customFieldDefs) {
         await tx
@@ -109,14 +125,27 @@ export class ConfigTransferService {
           })
           .onConflictDoUpdate({
             target: [customFieldDef.tenantId, customFieldDef.entityType, customFieldDef.key],
-            set: { labelI18n: f.labelI18n, fieldType: f.fieldType, options: f.options, required: f.required },
+            set: {
+              labelI18n: f.labelI18n,
+              fieldType: f.fieldType,
+              options: f.options,
+              required: f.required,
+            },
           });
       }
       for (const g of b.glossaryTerms) {
         await tx
           .insert(glossaryTerm)
-          .values({ tenantId: actor.tenantId, term: g.term, definitionI18n: g.definitionI18n, category: g.category ?? null })
-          .onConflictDoUpdate({ target: [glossaryTerm.tenantId, glossaryTerm.term], set: { definitionI18n: g.definitionI18n } });
+          .values({
+            tenantId: actor.tenantId,
+            term: g.term,
+            definitionI18n: g.definitionI18n,
+            category: g.category ?? null,
+          })
+          .onConflictDoUpdate({
+            target: [glossaryTerm.tenantId, glossaryTerm.term],
+            set: { definitionI18n: g.definitionI18n },
+          });
       }
       return {
         auditTypes: b.auditTypes.length,

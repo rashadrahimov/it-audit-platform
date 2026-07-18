@@ -57,12 +57,18 @@ export default async function SatisfactionPage({
       </div>
 
       {/* Выбор engagement */}
-      <form method="GET" data-testid="satisfaction-select" className="flex flex-wrap items-end gap-3">
+      <form
+        method="GET"
+        data-testid="satisfaction-select"
+        className="flex flex-wrap items-end gap-3"
+      >
         <label className="flex flex-1 flex-col gap-1 text-xs text-secondary">
           {t('engagement')}
           <select name="engagementId" defaultValue={engagementId} className={inputCls}>
             {engagements.map((e) => (
-              <option key={e.id} value={e.id}>{e.title}</option>
+              <option key={e.id} value={e.id}>
+                {e.title}
+              </option>
             ))}
           </select>
         </label>
@@ -76,7 +82,10 @@ export default async function SatisfactionPage({
 
       {/* Сводка */}
       {summary && (
-        <section data-testid="satisfaction-summary" className="flex items-center gap-6 rounded-xl border border-border bg-white p-6 shadow-sm">
+        <section
+          data-testid="satisfaction-summary"
+          className="flex items-center gap-6 rounded-xl border border-border bg-white p-6 shadow-sm"
+        >
           <div className="flex flex-col">
             <span className="text-3xl font-bold text-primary">
               {summary.averageRating !== null ? summary.averageRating.toFixed(1) : '—'}
@@ -92,13 +101,26 @@ export default async function SatisfactionPage({
 
       {/* Новая оценка */}
       {engagementId && (
-        <form action={submitSurveyAction} data-testid="satisfaction-submit" className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+        <form
+          action={submitSurveyAction}
+          data-testid="satisfaction-submit"
+          className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+        >
           <input type="hidden" name="engagementId" value={engagementId} />
           <span className="text-sm font-semibold text-secondary">{t('rate')}</span>
           <div className="flex flex-wrap gap-4">
             {[1, 2, 3, 4, 5].map((n) => (
-              <label key={n} className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground">
-                <input type="radio" name="rating" value={n} defaultChecked={n === 5} className="accent-accent" />
+              <label
+                key={n}
+                className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
+              >
+                <input
+                  type="radio"
+                  name="rating"
+                  value={n}
+                  defaultChecked={n === 5}
+                  className="accent-accent"
+                />
                 {n}
               </label>
             ))}

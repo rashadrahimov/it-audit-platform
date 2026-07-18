@@ -65,22 +65,24 @@ export class TimeEntriesService {
   }
 
   async list(tenantId: string, engagementId?: string) {
-    return this.dbService.withTenant(tenantId, (tx) => {
-      const conds: SQL[] = [isNull(timeEntry.deletedAt)];
-      if (engagementId) conds.push(eq(timeEntry.engagementId, engagementId));
-      return tx
-        .select({
-          id: timeEntry.id,
-          date: timeEntry.date,
-          hours: timeEntry.hours,
-          phase: timeEntry.phase,
-          category: timeEntry.category,
-          engagementId: timeEntry.engagementId,
-        })
-        .from(timeEntry)
-        .where(and(...conds))
-        .orderBy(desc(timeEntry.date));
-    }).then((rows) => rows.map((r) => ({ ...r, hours: Number(r.hours) })));
+    return this.dbService
+      .withTenant(tenantId, (tx) => {
+        const conds: SQL[] = [isNull(timeEntry.deletedAt)];
+        if (engagementId) conds.push(eq(timeEntry.engagementId, engagementId));
+        return tx
+          .select({
+            id: timeEntry.id,
+            date: timeEntry.date,
+            hours: timeEntry.hours,
+            phase: timeEntry.phase,
+            category: timeEntry.category,
+            engagementId: timeEntry.engagementId,
+          })
+          .from(timeEntry)
+          .where(and(...conds))
+          .orderBy(desc(timeEntry.date));
+      })
+      .then((rows) => rows.map((r) => ({ ...r, hours: Number(r.hours) })));
   }
 
   /** Задать бюджет часов на engagement (T-089, UNI-07). */

@@ -1488,7 +1488,9 @@ export const customFieldDef = pgTable(
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
-  (table) => [uniqueIndex('custom_field_def_key_idx').on(table.tenantId, table.entityType, table.key)],
+  (table) => [
+    uniqueIndex('custom_field_def_key_idx').on(table.tenantId, table.entityType, table.key),
+  ],
 );
 
 /** Типо-специфичный шаблон пункта чеклиста (T-085, UNI-06): заготовка per audit_type. */

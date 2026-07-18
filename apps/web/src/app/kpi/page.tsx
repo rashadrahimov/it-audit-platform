@@ -45,7 +45,9 @@ export default async function KpiPage({
 
   let kpis: Kpi[] = [];
   if (controlId) {
-    const kpiRes = await apiFetch(`/control-kpis?controlId=${encodeURIComponent(controlId)}`, { headers });
+    const kpiRes = await apiFetch(`/control-kpis?controlId=${encodeURIComponent(controlId)}`, {
+      headers,
+    });
     kpis = kpiRes.ok ? await kpiRes.json() : [];
   }
 
@@ -62,7 +64,11 @@ export default async function KpiPage({
       </div>
 
       {/* Выбор контроля */}
-      <form method="GET" data-testid="kpi-control-select" className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+      <form
+        method="GET"
+        data-testid="kpi-control-select"
+        className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+      >
         <label className="flex flex-1 flex-col gap-1 text-xs text-secondary">
           {t('control')}
           <select name="controlId" defaultValue={controlId} className={inputCls}>
@@ -85,12 +91,33 @@ export default async function KpiPage({
       {controlId && (
         <>
           {/* Создание KPI */}
-          <form action={createKpiAction} data-testid="kpi-create" className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+          <form
+            action={createKpiAction}
+            data-testid="kpi-create"
+            className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+          >
             <input type="hidden" name="controlId" value={controlId} />
-            <input name="name" required placeholder={t('namePh')} className={`flex-1 ${inputCls}`} />
+            <input
+              name="name"
+              required
+              placeholder={t('namePh')}
+              className={`flex-1 ${inputCls}`}
+            />
             <input name="unit" placeholder={t('unit')} className={`w-20 ${inputCls}`} />
-            <input name="targetValue" type="number" step="any" placeholder={t('target')} className={`w-24 ${inputCls}`} />
-            <input name="currentValue" type="number" step="any" placeholder={t('current')} className={`w-24 ${inputCls}`} />
+            <input
+              name="targetValue"
+              type="number"
+              step="any"
+              placeholder={t('target')}
+              className={`w-24 ${inputCls}`}
+            />
+            <input
+              name="currentValue"
+              type="number"
+              step="any"
+              placeholder={t('current')}
+              className={`w-24 ${inputCls}`}
+            />
             <select name="direction" defaultValue="higher_better" className={inputCls}>
               <option value="higher_better">{t('dir.higher_better')}</option>
               <option value="lower_better">{t('dir.lower_better')}</option>
@@ -104,7 +131,9 @@ export default async function KpiPage({
           </form>
 
           {kpis.length === 0 ? (
-            <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">{t('empty')}</section>
+            <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
+              {t('empty')}
+            </section>
           ) : (
             <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
               <table className="w-full text-left text-sm" data-testid="kpi-table">
@@ -125,7 +154,9 @@ export default async function KpiPage({
                         {k.unit && <span className="ml-1 text-xs text-secondary">({k.unit})</span>}
                       </td>
                       <td className="px-4 py-3 text-right text-secondary">{k.target ?? '—'}</td>
-                      <td className="px-4 py-3 text-right font-medium text-foreground">{k.current ?? '—'}</td>
+                      <td className="px-4 py-3 text-right font-medium text-foreground">
+                        {k.current ?? '—'}
+                      </td>
                       <td className="px-4 py-3">
                         <span
                           className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
