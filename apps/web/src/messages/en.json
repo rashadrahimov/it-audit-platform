@@ -62,7 +62,8 @@
     "reports": "Reports",
     "apiKeys": "API keys",
     "notifications": "Notifications",
-    "time": "Time tracking"
+    "time": "Time tracking",
+    "kpi": "Control KPIs"
   },
   "engagements": {
     "title": "Engagements",
@@ -661,6 +662,29 @@
       "training": "Training",
       "leave": "Leave",
       "admin": "Admin"
+    }
+  },
+  "kpi": {
+    "title": "Control KPIs",
+    "toAccount": "To account",
+    "control": "Control",
+    "show": "Show",
+    "namePh": "KPI name",
+    "unit": "Unit",
+    "target": "Target",
+    "current": "Current",
+    "add": "Add",
+    "empty": "No KPIs for this control",
+    "name": "Name",
+    "state": "State",
+    "measure": "Measure",
+    "value": "Value",
+    "save": "Save",
+    "onTrack": "On track",
+    "offTrack": "Off track",
+    "dir": {
+      "higher_better": "Higher is better",
+      "lower_better": "Lower is better"
     }
   }
 }

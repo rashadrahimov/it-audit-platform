@@ -62,7 +62,8 @@
     "reports": "Hesabatlar",
     "apiKeys": "API açarları",
     "notifications": "Bildirişlər",
-    "time": "Vaxt uçotu"
+    "time": "Vaxt uçotu",
+    "kpi": "Kontrol KPI-ları"
   },
   "engagements": {
     "title": "Auditlər",
@@ -661,6 +662,29 @@
       "training": "Təlim",
       "leave": "Məzuniyyət",
       "admin": "Admin"
+    }
+  },
+  "kpi": {
+    "title": "Kontrol KPI-ları",
+    "toAccount": "Hesaba",
+    "control": "Kontrol",
+    "show": "Göstər",
+    "namePh": "KPI adı",
+    "unit": "Vahid",
+    "target": "Hədəf",
+    "current": "Cari",
+    "add": "Əlavə et",
+    "empty": "Bu kontrol üçün KPI yoxdur",
+    "name": "Ad",
+    "state": "Status",
+    "measure": "Ölçmə",
+    "value": "Dəyər",
+    "save": "Yadda saxla",
+    "onTrack": "Normada",
+    "offTrack": "Kənarlaşma",
+    "dir": {
+      "higher_better": "Çox — yaxşı",
+      "lower_better": "Az — yaxşı"
     }
   }
 }

@@ -62,7 +62,8 @@
     "reports": "Отчёты",
     "apiKeys": "API-ключи",
     "notifications": "Уведомления",
-    "time": "Учёт времени"
+    "time": "Учёт времени",
+    "kpi": "KPI контролей"
   },
   "engagements": {
     "title": "Аудиты",
@@ -661,6 +662,29 @@
       "training": "Обучение",
       "leave": "Отпуск",
       "admin": "Админ"
+    }
+  },
+  "kpi": {
+    "title": "KPI контролей",
+    "toAccount": "В аккаунт",
+    "control": "Контроль",
+    "show": "Показать",
+    "namePh": "Название KPI",
+    "unit": "Ед.",
+    "target": "Цель",
+    "current": "Текущее",
+    "add": "Добавить",
+    "empty": "У этого контроля нет KPI",
+    "name": "Название",
+    "state": "Статус",
+    "measure": "Замер",
+    "value": "Значение",
+    "save": "Сохранить",
+    "onTrack": "В норме",
+    "offTrack": "Отклонение",
+    "dir": {
+      "higher_better": "Больше — лучше",
+      "lower_better": "Меньше — лучше"
     }
   }
 }
