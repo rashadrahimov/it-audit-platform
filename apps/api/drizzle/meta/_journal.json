@@ -435,6 +435,13 @@
       "when": 1784400148294,
       "tag": "0061_resource-allocation",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1784402890900,
+      "tag": "0062_control-kpi",
+      "breakpoints": true
     }
   ]
 }

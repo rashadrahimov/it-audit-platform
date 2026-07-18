@@ -1345,6 +1345,29 @@ export const programStep = pgTable(
   (table) => [index('program_step_program_idx').on(table.programId)],
 );
 
+/** KPI контроля (T-106, CTL-04, подмножество EP-LOWCODE): измеримая метрика эффективности. */
+export const controlKpi = pgTable(
+  'control_kpi',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    controlId: uuid('control_id')
+      .notNull()
+      .references(() => control.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    unit: text('unit'),
+    targetValue: numeric('target_value', { precision: 12, scale: 2 }),
+    currentValue: numeric('current_value', { precision: 12, scale: 2 }),
+    direction: text('direction').notNull().default('higher_better'),
+    period: text('period'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('control_kpi_control_idx').on(table.controlId)],
+);
+
 /** Working paper (T-092, EP-WPAPERS, WP-02): контейнер fieldwork с sign-off preparer≠reviewer. */
 export const workingPaper = pgTable(
   'working_paper',

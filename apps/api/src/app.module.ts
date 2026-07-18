@@ -16,6 +16,7 @@ import { CommitmentsModule } from './commitments/commitments.module';
 import { ConfigListsModule } from './config-lists/config-lists.module';
 import { ConfigTransferModule } from './config-transfer/config-transfer.module';
 import { ConnectorsModule } from './connectors/connectors.module';
+import { ControlKpisModule } from './control-kpis/control-kpis.module';
 import { ControlsModule } from './controls/controls.module';
 import { CustomFieldsModule } from './custom-fields/custom-fields.module';
 import { DashboardsModule } from './dashboards/dashboards.module';
@@ -80,6 +81,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     ConfigListsModule,
     ConfigTransferModule,
     ConnectorsModule,
+    ControlKpisModule,
     ControlsModule,
     CustomFieldsModule,
     DashboardsModule,
