@@ -55,7 +55,8 @@
     "commitments": "Обязательства",
     "accessReviews": "Ревью доступа",
     "risks": "Реестр рисков",
-    "privacy": "Приватность (ROPA/DPIA)"
+    "privacy": "Приватность (ROPA/DPIA)",
+    "iam": "IAM — учётки"
   },
   "engagements": {
     "title": "Аудиты",
@@ -515,6 +516,33 @@
       "draft": "Черновик",
       "in_progress": "В процессе",
       "completed": "Завершена"
+    }
+  },
+  "iam": {
+    "title": "IAM — учётки и доступ",
+    "toAccount": "Аккаунт",
+    "accounts": "Учётные записи",
+    "requests": "Запросы доступа",
+    "empty": "Пока пусто",
+    "identifier": "Идентификатор",
+    "type": "Тип",
+    "mfa": "MFA",
+    "system": "Система",
+    "deactivate": "Деактивировать",
+    "approve": "Одобрить",
+    "reject": "Отклонить",
+    "fromConnector": "Коннектор",
+    "manual": "Вручную",
+    "st": {
+      "active": "Активна",
+      "deactivated": "Деактивирована",
+      "pending": "Ожидает",
+      "approved": "Одобрено",
+      "rejected": "Отклонено"
+    },
+    "tp": {
+      "human": "Человек",
+      "service": "Сервис"
     }
   }
 }

@@ -55,7 +55,8 @@
     "commitments": "Commitments",
     "accessReviews": "Access Reviews",
     "risks": "Risk Register",
-    "privacy": "Privacy (ROPA/DPIA)"
+    "privacy": "Privacy (ROPA/DPIA)",
+    "iam": "IAM — Accounts"
   },
   "engagements": {
     "title": "Engagements",
@@ -515,6 +516,33 @@
       "draft": "Draft",
       "in_progress": "In progress",
       "completed": "Completed"
+    }
+  },
+  "iam": {
+    "title": "IAM — Accounts & Access",
+    "toAccount": "Account",
+    "accounts": "Accounts",
+    "requests": "Access requests",
+    "empty": "None yet",
+    "identifier": "Identifier",
+    "type": "Type",
+    "mfa": "MFA",
+    "system": "System",
+    "deactivate": "Deactivate",
+    "approve": "Approve",
+    "reject": "Reject",
+    "fromConnector": "Connector",
+    "manual": "Manual",
+    "st": {
+      "active": "Active",
+      "deactivated": "Deactivated",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "tp": {
+      "human": "Human",
+      "service": "Service"
     }
   }
 }

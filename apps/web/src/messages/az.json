@@ -55,7 +55,8 @@
     "commitments": "Öhdəliklər",
     "accessReviews": "Giriş Baxışları",
     "risks": "Risk Reyestri",
-    "privacy": "Məxfilik (ROPA/DPIA)"
+    "privacy": "Məxfilik (ROPA/DPIA)",
+    "iam": "IAM — Hesablar"
   },
   "engagements": {
     "title": "Auditlər",
@@ -515,6 +516,33 @@
       "draft": "Qaralama",
       "in_progress": "Davam edir",
       "completed": "Tamamlanıb"
+    }
+  },
+  "iam": {
+    "title": "IAM — Hesablar və Giriş",
+    "toAccount": "Hesab",
+    "accounts": "Hesablar",
+    "requests": "Giriş sorğuları",
+    "empty": "Hələ yoxdur",
+    "identifier": "İdentifikator",
+    "type": "Tip",
+    "mfa": "MFA",
+    "system": "Sistem",
+    "deactivate": "Deaktiv et",
+    "approve": "Təsdiq",
+    "reject": "Rədd et",
+    "fromConnector": "Konnektor",
+    "manual": "Əl ilə",
+    "st": {
+      "active": "Aktiv",
+      "deactivated": "Deaktiv",
+      "pending": "Gözləyir",
+      "approved": "Təsdiqlənib",
+      "rejected": "Rədd edilib"
+    },
+    "tp": {
+      "human": "İnsan",
+      "service": "Servis"
     }
   }
 }
