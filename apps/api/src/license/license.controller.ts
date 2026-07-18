@@ -9,6 +9,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -21,20 +22,17 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { z } from 'zod';
+import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, resolveLocalized } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { subsidiary } from '../db/schema';
+import { subsidiary, user } from '../db/schema';
 import { LicenseService } from './license.service';
 
 const createSubsidiarySchema = z.object({
-  nameI18n: z.object({
-    en: z.string().min(1),
-    az: z.string().optional(),
-    ru: z.string().optional(),
-  }),
+  nameI18n: i18nTextSchema,
   code: z.string().optional(),
   country: z.string().optional(),
 });
@@ -56,6 +54,40 @@ export class LicenseController {
   @ApiOkResponse({ description: 'план, дочки used/max, audit-seats used/max' })
   usage(@Req() req: TenantRequest) {
     return this.licenseService.usage(req.tenantId);
+  }
+
+  @Get('subsidiaries')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({
+    summary: 'Список дочек; name — на выбранном языке (T-022, ADR-0009): ?locale= или локаль юзера',
+  })
+  @ApiOkResponse({ description: '[{id, name, nameI18n, code, country}]' })
+  async listSubsidiaries(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
+    let locale = DEFAULT_LOCALE;
+    if (localeQuery !== undefined) {
+      const parsed = localeSchema.safeParse(localeQuery);
+      if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+      locale = parsed.data;
+    } else {
+      const [me] = await this.dbService.db.select().from(user).where(eq(user.id, req.user.sub));
+      const stored = localeSchema.safeParse(me?.locale);
+      locale = stored.success ? stored.data : DEFAULT_LOCALE;
+    }
+    const rows = await this.dbService.withTenant(req.tenantId, (tx) =>
+      tx
+        .select()
+        .from(subsidiary)
+        .where(isNull(subsidiary.deletedAt))
+        .orderBy(subsidiary.createdAt),
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      name: resolveLocalized(row.nameI18n, locale),
+      nameI18n: row.nameI18n,
+      code: row.code,
+      country: row.country,
+      locale,
+    }));
   }
 
   @Post('subsidiaries')

@@ -1,0 +1,8 @@
+{
+  "home": {
+    "title": "IT Audit Platform",
+    "skeleton": "Скелет монорепо (T-005). Функционал появится в M0/M1.",
+    "apiOk": "{service} v{version} — {status}",
+    "apiDown": "API недоступен"
+  }
+}

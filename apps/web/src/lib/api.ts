@@ -13,8 +13,3 @@ export async function fetchApiHealth(): Promise<HealthResponse | null> {
     return null;
   }
 }
-
-export function formatHealthLabel(health: HealthResponse | null): string {
-  if (!health) return 'API недоступен';
-  return `${health.service} v${health.version} — ${health.status}`;
-}

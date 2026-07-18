@@ -1,4 +1,4 @@
-import type { Locale } from '@it-audit/shared';
+import { resolveLocalized, type Locale } from '@it-audit/shared';
 
 /**
  * Мультиязычные шаблоны писем (ADR-0009): контент на EN/AZ/RU, fallback на EN.
@@ -13,14 +13,6 @@ interface RenderedEmail {
 type TemplateVars = Record<string, string>;
 type TemplateRenderer = (vars: TemplateVars) => RenderedEmail;
 type LocalizedTemplate = Partial<Record<Locale, TemplateRenderer>> & { en: TemplateRenderer };
-
-/** Fallback на EN, если перевода нет (ADR-0009). Экспорт — ради тестируемости механизма. */
-export function resolveLocalized<T>(
-  localized: Partial<Record<Locale, T>> & { en: T },
-  locale: Locale,
-): T {
-  return localized[locale] ?? localized.en;
-}
 
 const wrap = (body: string): string =>
   `<div style="font-family:sans-serif;max-width:600px">${body}</div>`;

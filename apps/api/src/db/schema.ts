@@ -10,6 +10,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { v7 as uuidv7 } from 'uuid';
+import type { I18nText } from '@it-audit/shared';
 
 /**
  * Схема БД — строго по docs/data-model.md (§1 паттерны, §2 identity).
@@ -18,8 +19,8 @@ import { v7 as uuidv7 } from 'uuid';
  * в Postgres 17 нет uuidv7(), появится в 18 — тогда можно перенести в DEFAULT.
  */
 
-/** Переводимый контент (ADR-0009): {"en": "...", "az": "...", "ru": "..."}, fallback EN. */
-export type I18nText = { en: string; az?: string; ru?: string };
+/** Переводимый контент (ADR-0009) — контракт i18nTextSchema в shared (T-022). */
+export type { I18nText };
 
 const id = () =>
   uuid('id')

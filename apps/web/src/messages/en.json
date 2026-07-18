@@ -1,0 +1,8 @@
+{
+  "home": {
+    "title": "IT Audit Platform",
+    "skeleton": "Monorepo skeleton (T-005). Features arrive in M0/M1.",
+    "apiOk": "{service} v{version} — {status}",
+    "apiDown": "API unavailable"
+  }
+}

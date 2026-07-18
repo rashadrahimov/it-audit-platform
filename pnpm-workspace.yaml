@@ -8,6 +8,8 @@ allowBuilds:
   '@swc/core': true
   esbuild: true
   sharp: true
+  # транзитивный у next-intl; нативный watcher не нужен (дев-watch у Next свой)
+  '@parcel/watcher': false
 
 catalog:
   typescript: ^5.9.0

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderEmail, resolveLocalized } from '../src/email/email.templates';
+import { renderEmail } from '../src/email/email.templates';
 
 describe('renderEmail', () => {
   it('рендерит шаблон на запрошенном языке с подстановкой', () => {
@@ -14,10 +14,4 @@ describe('renderEmail', () => {
   });
 });
 
-describe('resolveLocalized', () => {
-  it('падает обратно на EN при отсутствии перевода', () => {
-    const localized = { en: 'hello', ru: 'привет' };
-    expect(resolveLocalized(localized, 'az')).toBe('hello');
-    expect(resolveLocalized(localized, 'ru')).toBe('привет');
-  });
-});
+// resolveLocalized переехал в shared (T-022) — тесты в packages/shared/src/i18n.test.ts
