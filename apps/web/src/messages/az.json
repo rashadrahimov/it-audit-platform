@@ -119,7 +119,18 @@
     "history": "Tarixçə",
     "historyEmpty": "Dəyişiklik olmayıb",
     "comments": "Şərhlər",
-    "commentsEmpty": "Hələ şərh yoxdur"
+    "commentsEmpty": "Hələ şərh yoxdur",
+    "tests": "Testlər",
+    "testsEmpty": "Hələ test yoxdur",
+    "testTitle": "Test",
+    "testOwner": "Sahib",
+    "testStatus": "Status",
+    "testStatuses": {
+      "ok": "OK",
+      "failing": "Uğursuz",
+      "needs_attention": "Diqqət tələb edir",
+      "deactivated": "Deaktiv"
+    }
   },
   "frameworks": {
     "title": "Standartlar",

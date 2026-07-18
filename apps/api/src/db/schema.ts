@@ -477,6 +477,56 @@ export const documentLink = pgTable(
   ],
 );
 
+/**
+ * Test — проверка контроля (T-033, ADR-0010): Control 1→N Test; ручные сейчас,
+ * автоматические получат connector_id/check_config с EP-INT. sla_status статичен
+ * до джобы T-043. status: ok/failing/needs_attention/deactivated.
+ */
+export const test = pgTable(
+  'test',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    controlId: uuid('control_id')
+      .notNull()
+      .references(() => control.id),
+    titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
+    kind: text('kind').notNull().default('manual'),
+    checkConfig: jsonb('check_config'),
+    frequency: text('frequency'),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    slaStatus: text('sla_status').notNull().default('ok'),
+    status: text('status').notNull().default('needs_attention'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('test_tenant_idx').on(table.tenantId),
+    index('test_control_idx').on(table.controlId),
+  ],
+);
+
+/** Результат прогона (ADR-0010): outcome двигает статус теста; failing_entities — кто не прошёл. */
+export const testResult = pgTable(
+  'test_result',
+  {
+    id: id(),
+    testId: uuid('test_id')
+      .notNull()
+      .references(() => test.id, { onDelete: 'cascade' }),
+    runAt: timestamp('run_at', { withTimezone: true }).notNull().defaultNow(),
+    outcome: text('outcome').notNull(),
+    failingEntities: jsonb('failing_entities').notNull().default([]),
+    evidenceDocumentId: uuid('evidence_document_id').references(() => document.id),
+    details: jsonb('details').notNull().default({}),
+    ...timestamps,
+  },
+  (table) => [index('test_result_test_idx').on(table.testId, table.runAt)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

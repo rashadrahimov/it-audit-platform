@@ -119,7 +119,18 @@
     "history": "History",
     "historyEmpty": "No changes recorded",
     "comments": "Comments",
-    "commentsEmpty": "No comments yet"
+    "commentsEmpty": "No comments yet",
+    "tests": "Tests",
+    "testsEmpty": "No tests yet",
+    "testTitle": "Test",
+    "testOwner": "Owner",
+    "testStatus": "Status",
+    "testStatuses": {
+      "ok": "OK",
+      "failing": "Failing",
+      "needs_attention": "Needs attention",
+      "deactivated": "Deactivated"
+    }
   },
   "frameworks": {
     "title": "Frameworks",

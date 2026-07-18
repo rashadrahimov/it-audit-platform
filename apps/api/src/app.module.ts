@@ -17,6 +17,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { LicenseModule } from './license/license.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { RbacModule } from './rbac/rbac.module';
+import { TestsModule } from './tests/tests.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -36,6 +37,7 @@ import { UsersModule } from './users/users.module';
     LicenseModule,
     OnboardingModule,
     RbacModule,
+    TestsModule,
     UsersModule,
   ],
   controllers: [HealthController, InfraHealthController],

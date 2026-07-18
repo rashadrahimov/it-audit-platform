@@ -6,6 +6,16 @@ import { getCurrentLocale } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
 
+interface ControlTest {
+  id: string;
+  title: string;
+  kind: string;
+  status: string;
+  slaStatus: string;
+  dueDate: string | null;
+  owner: string | null;
+}
+
 interface ControlDetail {
   id: string;
   ref: string;
@@ -48,6 +58,15 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
   if (res.status === 404 || res.status === 400) notFound();
   if (!res.ok) throw new Error(`API /controls/${id}: ${res.status}`);
   const control: ControlDetail = await res.json();
+
+  // тесты контроля (T-033): под тенант-контекстом
+  let tests: ControlTest[] = [];
+  if (tenantSlug) {
+    const tRes = await apiFetch(`/tests?controlId=${id}&locale=${locale}`, {
+      headers: { 'X-Tenant-Slug': tenantSlug },
+    });
+    if (tRes.ok) tests = await tRes.json();
+  }
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
 
@@ -97,6 +116,45 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
             )}
           </Field>
         </dl>
+      </section>
+
+      <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-primary">{t('tests')}</h2>
+        {tests.length === 0 ? (
+          <p className="text-sm text-secondary">{t('testsEmpty')}</p>
+        ) : (
+          <table className="w-full text-left text-sm" data-testid="control-tests">
+            <thead>
+              <tr className="border-b border-border text-secondary">
+                <th className="py-2 pr-4 font-medium">{t('testTitle')}</th>
+                <th className="py-2 pr-4 font-medium">{t('testOwner')}</th>
+                <th className="py-2 font-medium">{t('testStatus')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tests.map((tst) => (
+                <tr key={tst.id} className="border-b border-border last:border-0">
+                  <td className="py-2 pr-4 text-foreground">{tst.title}</td>
+                  <td className="py-2 pr-4 text-secondary">{tst.owner ?? '—'}</td>
+                  <td className="py-2">
+                    <span
+                      className={
+                        'rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ' +
+                        (tst.status === 'ok'
+                          ? 'bg-green-100 text-green-800'
+                          : tst.status === 'failing'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-muted text-secondary')
+                      }
+                    >
+                      {t(`testStatuses.${tst.status}`)}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
 
       <section className="rounded-xl border border-border bg-white p-6 shadow-sm">

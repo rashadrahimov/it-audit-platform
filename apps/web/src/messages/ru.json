@@ -119,7 +119,18 @@
     "history": "История",
     "historyEmpty": "Изменений не было",
     "comments": "Комментарии",
-    "commentsEmpty": "Комментариев пока нет"
+    "commentsEmpty": "Комментариев пока нет",
+    "tests": "Тесты",
+    "testsEmpty": "Тестов пока нет",
+    "testTitle": "Тест",
+    "testOwner": "Владелец",
+    "testStatus": "Статус",
+    "testStatuses": {
+      "ok": "OK",
+      "failing": "Проваливается",
+      "needs_attention": "Требует внимания",
+      "deactivated": "Деактивирован"
+    }
   },
   "frameworks": {
     "title": "Стандарты",
