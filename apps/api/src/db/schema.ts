@@ -762,6 +762,48 @@ export const accessReviewItem = pgTable(
   (table) => [uniqueIndex('access_review_item_idx').on(table.reviewId, table.accountId)],
 );
 
+/** Access request (T-056, ADR-0012): запрос доступа с approver-workflow (в т.ч. JIT). */
+export const accessRequest = pgTable(
+  'access_request',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    requesterMembershipId: uuid('requester_membership_id')
+      .notNull()
+      .references(() => membership.id),
+    system: text('system').notNull(),
+    justification: text('justification'),
+    status: text('status').notNull().default('pending'),
+    approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('access_request_tenant_idx').on(table.tenantId)],
+);
+
+/** Deprovisioning task (T-056, ADR-0012): отзыв доступа уволенного; SLA считается джобой T-043. */
+export const deprovisioningTask = pgTable(
+  'deprovisioning_task',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => account.id),
+    reason: text('reason'),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    slaStatus: text('sla_status').notNull().default('ok'),
+    status: text('status').notNull().default('open'),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('deprovisioning_task_tenant_idx').on(table.tenantId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

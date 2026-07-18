@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AccessRequestsModule } from './access-requests/access-requests.module';
 import { AccessReviewsModule } from './access-reviews/access-reviews.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { AuditModule } from './audit/audit.module';
@@ -29,6 +30,7 @@ import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
+    AccessRequestsModule,
     AccessReviewsModule,
     AccountsModule,
     AuditModule,
