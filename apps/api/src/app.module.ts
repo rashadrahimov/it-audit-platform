@@ -48,6 +48,7 @@ import { TimeEntriesModule } from './time-entries/time-entries.module';
 import { TrustModule } from './trust/trust.module';
 import { UniverseModule } from './universe/universe.module';
 import { UsersModule } from './users/users.module';
+import { WorkingPapersModule } from './working-papers/working-papers.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module';
 
@@ -101,6 +102,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     UsersModule,
     VendorsModule,
     VulnerabilitiesModule,
+    WorkingPapersModule,
   ],
   controllers: [HealthController, InfraHealthController],
   providers: [InfraHealthService],

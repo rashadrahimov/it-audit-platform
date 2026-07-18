@@ -1196,6 +1196,46 @@ export const privacyAssessment = pgTable(
   (table) => [index('privacy_assessment_tenant_idx').on(table.tenantId)],
 );
 
+/** Working paper (T-092, EP-WPAPERS, WP-02): контейнер fieldwork с sign-off preparer≠reviewer. */
+export const workingPaper = pgTable(
+  'working_paper',
+  {
+    id: id(),
+    engagementId: uuid('engagement_id')
+      .notNull()
+      .references(() => engagement.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    content: jsonb('content').notNull().default({}),
+    status: text('status').notNull().default('draft'),
+    preparerMembershipId: uuid('preparer_membership_id').references(() => membership.id),
+    reviewerMembershipId: uuid('reviewer_membership_id').references(() => membership.id),
+    editedSinceReview: boolean('edited_since_review').notNull().default(false),
+    custom: jsonb('custom').notNull().default({}),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('working_paper_engagement_idx').on(table.engagementId)],
+);
+
+/** Атрибутируемая подпись WP (T-092, WP-07): кто и в какой роли подписал. */
+export const signOff = pgTable(
+  'sign_off',
+  {
+    id: id(),
+    workingPaperId: uuid('working_paper_id')
+      .notNull()
+      .references(() => workingPaper.id, { onDelete: 'cascade' }),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id),
+    role: text('role').notNull(),
+    note: text('note'),
+    signedAt: timestamp('signed_at', { withTimezone: true }).notNull().defaultNow(),
+    ...timestamps,
+  },
+  (table) => [index('sign_off_wp_idx').on(table.workingPaperId)],
+);
+
 /** API-ключ (T-090, EP-API, INT-01): программный bearer-доступ. В БД — только SHA-256 хэш. */
 export const apiKey = pgTable(
   'api_key',
