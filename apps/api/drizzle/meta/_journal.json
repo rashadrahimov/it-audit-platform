@@ -148,6 +148,13 @@
       "when": 1784377556641,
       "tag": "0020_connector",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1784379202363,
+      "tag": "0021_test-connector",
+      "breakpoints": true
     }
   ]
 }

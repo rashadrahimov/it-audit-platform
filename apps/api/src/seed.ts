@@ -34,6 +34,7 @@ import {
   rolePermission,
   subsidiary,
   tenant,
+  test,
   user,
 } from './db/schema';
 import { PasswordService } from './auth/password.service';
@@ -126,6 +127,7 @@ async function seedPostgres(): Promise<void> {
     await seedDemoDepartments(db, demoTenant.id);
     await seedDemoControlAdaptation(db, demoTenant.id);
     await seedDemoConnector(db, demoTenant.id);
+    await seedDemoAutoTest(db, demoTenant.id);
   } finally {
     await client.end().catch(() => {});
   }
@@ -621,6 +623,37 @@ async function seedDemoConnector(db: NodePgDatabase, tenantId: string): Promise<
     });
   });
   console.log('✓ Демо-коннектор LDAP (personnel, тестовый openldap) (idempotent)');
+}
+
+/** Демо-автотест (T-050): на демо-LDAP-коннекторе, правило «у всех аккаунтов есть email». */
+async function seedDemoAutoTest(db: NodePgDatabase, tenantId: string): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.tenant_id', ${tenantId}, true)`);
+    const [existing] = await tx
+      .select()
+      .from(test)
+      .where(and(eq(test.tenantId, tenantId), eq(test.kind, 'automated'), isNull(test.deletedAt)));
+    if (existing) return;
+    const [conn] = await tx
+      .select()
+      .from(connector)
+      .where(and(eq(connector.tenantId, tenantId), isNull(connector.deletedAt)));
+    // AC-01 — глобальный контроль (tenant_id NULL, читаем без ограничения)
+    const [ac01] = await tx
+      .select()
+      .from(control)
+      .where(and(isNull(control.tenantId), eq(control.ref, 'AC-01')));
+    if (!conn || !ac01) return;
+    await tx.insert(test).values({
+      tenantId,
+      controlId: ac01.id,
+      titleI18n: { en: 'All LDAP accounts have email', ru: 'У всех LDAP-аккаунтов есть email' },
+      kind: 'automated',
+      connectorId: conn.id,
+      checkConfig: { type: 'field_present', field: 'email' },
+    });
+  });
+  console.log('✓ Демо-автотест (LDAP-коннектор, правило email) (idempotent)');
 }
 
 async function seedRedis(): Promise<void> {

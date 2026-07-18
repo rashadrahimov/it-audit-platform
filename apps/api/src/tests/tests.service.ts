@@ -7,7 +7,8 @@ import { control, document, membership, test, testResult, user } from '../db/sch
 
 interface Actor {
   tenantId: string;
-  userId: string;
+  /** null = системный прогон (repeatable-джоба автотестов, T-050). */
+  userId: string | null;
   ip?: string;
 }
 
@@ -18,6 +19,9 @@ export interface CreateTestInput {
   frequency?: string;
   dueDate?: string;
   ownerMembershipId?: string;
+  /** T-050: коннектор-источник + правило автопроверки (для kind=automated). */
+  connectorId?: string;
+  checkConfig?: Record<string, unknown>;
 }
 
 export interface RecordResultInput {
@@ -69,6 +73,8 @@ export class TestsService {
           titleI18n: input.titleI18n,
           kind: input.kind,
           frequency: input.frequency ?? null,
+          connectorId: input.connectorId ?? null,
+          checkConfig: input.checkConfig ?? null,
           dueDate: input.dueDate ? new Date(input.dueDate) : null,
           ownerMembershipId: input.ownerMembershipId ?? null,
         })

@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { AuthModule } from '../auth/auth.module';
 import { EmailModule } from '../email/email.module';
 import { env } from '../env';
+import { TestsModule } from '../tests/tests.module';
 import { UsersModule } from '../users/users.module';
 import { FindingRemindersService } from './finding-reminders.service';
 import { SYSTEM_QUEUE } from './jobs.constants';
@@ -21,6 +22,7 @@ const redisUrl = new URL(env.redisUrl);
     BullModule.registerQueue({ name: SYSTEM_QUEUE }),
     AuthModule,
     EmailModule,
+    TestsModule,
     UsersModule,
   ],
   controllers: [JobsController],

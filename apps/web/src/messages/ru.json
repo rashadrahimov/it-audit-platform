@@ -36,7 +36,8 @@
       "build_checklist": "Соберите чеклист",
       "collect_responses": "Соберите первые ответы"
     },
-    "dashboard": "Дашборды"
+    "dashboard": "Дашборды",
+    "connectors": "Коннекторы"
   },
   "engagements": {
     "title": "Аудиты",
@@ -179,5 +180,18 @@
     "levelGroup": "Группа",
     "levelSubsidiary": "Дочка",
     "open": "Открыто"
+  },
+  "connectors": {
+    "title": "Коннекторы",
+    "toAccount": "Аккаунт",
+    "subtitle": "Интеграции, питающие автотесты и данные (ADR-0011).",
+    "empty": "Коннекторов пока нет",
+    "sync": "Синхронизировать",
+    "lastSync": "Последняя синхронизация",
+    "statuses": {
+      "active": "Активен",
+      "error": "Ошибка",
+      "disabled": "Отключён"
+    }
   }
 }

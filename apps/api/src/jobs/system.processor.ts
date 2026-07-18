@@ -2,10 +2,12 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { env } from '../env';
 import { UsersService } from '../users/users.service';
+import { AutoTestService } from '../tests/auto-test.service';
 import { FindingRemindersService } from './finding-reminders.service';
 import { JobsService } from './jobs.service';
 import { SlaService } from './sla.service';
 import {
+  JOB_AUTO_TEST_RUN,
   JOB_DEACTIVATE_INACTIVE,
   JOB_DEMO_DELAYED,
   JOB_FINDING_REMINDERS,
@@ -22,6 +24,7 @@ export class SystemProcessor extends WorkerHost {
     private readonly usersService: UsersService,
     private readonly slaService: SlaService,
     private readonly findingRemindersService: FindingRemindersService,
+    private readonly autoTestService: AutoTestService,
   ) {
     super();
   }
@@ -44,6 +47,10 @@ export class SystemProcessor extends WorkerHost {
       case JOB_FINDING_REMINDERS: {
         const result = await this.findingRemindersService.send();
         return `напоминаний отправлено: ${result.sent}`;
+      }
+      case JOB_AUTO_TEST_RUN: {
+        const result = await this.autoTestService.runAll();
+        return `автотестов прогнано: ${result.ran}`;
       }
       default:
         throw new Error(`Неизвестная джоба «${job.name}» в очереди ${SYSTEM_QUEUE}`);

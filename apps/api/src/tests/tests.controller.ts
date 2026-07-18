@@ -24,6 +24,7 @@ import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, type Locale } from '@it-a
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
+import { AutoTestService } from './auto-test.service';
 import { TestsService } from './tests.service';
 
 const createTestSchema = z.object({
@@ -33,6 +34,8 @@ const createTestSchema = z.object({
   frequency: z.string().optional(),
   dueDate: z.iso.datetime().optional(),
   ownerMembershipId: z.uuid().optional(),
+  connectorId: z.uuid().optional(),
+  checkConfig: z.record(z.string(), z.unknown()).optional(),
 });
 
 const recordResultSchema = z.object({
@@ -54,7 +57,23 @@ function parseLocale(localeQuery?: string): Locale {
 @ApiBearerAuth()
 @ApiHeader({ name: 'X-Tenant-Slug', required: true })
 export class TestsController {
-  constructor(private readonly testsService: TestsService) {}
+  constructor(
+    private readonly testsService: TestsService,
+    private readonly autoTestService: AutoTestService,
+  ) {}
+
+  @Post(':id/run-auto')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({
+    summary: 'Автопрогон теста через коннектор (T-050): правило check_config → test_result',
+  })
+  runAuto(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.autoTestService.run(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
+  }
 
   @Post()
   @RequirePermission('control', 'edit', 'edit')

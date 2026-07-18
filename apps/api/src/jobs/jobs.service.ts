@@ -5,10 +5,12 @@ import { Redis } from 'ioredis';
 import type { DemoJobEnqueued, DemoJobStatus, HeartbeatStatus } from '@it-audit/shared';
 import { env } from '../env';
 import {
+  AUTO_TEST_RUN_EVERY_MS,
   DEACTIVATE_INACTIVE_EVERY_MS,
   FINDING_REMINDERS_EVERY_MS,
   HEARTBEAT_EVERY_MS,
   HEARTBEAT_KEY,
+  JOB_AUTO_TEST_RUN,
   JOB_DEACTIVATE_INACTIVE,
   JOB_DEMO_DELAYED,
   JOB_FINDING_REMINDERS,
@@ -45,6 +47,11 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       'finding-reminders-scheduler',
       { every: FINDING_REMINDERS_EVERY_MS },
       { name: JOB_FINDING_REMINDERS },
+    );
+    await this.queue.upsertJobScheduler(
+      'auto-test-run-scheduler',
+      { every: AUTO_TEST_RUN_EVERY_MS },
+      { name: JOB_AUTO_TEST_RUN },
     );
   }
 

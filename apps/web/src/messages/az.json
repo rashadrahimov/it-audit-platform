@@ -36,7 +36,8 @@
       "build_checklist": "Çeklisti qurun",
       "collect_responses": "İlk cavabları toplayın"
     },
-    "dashboard": "İdarə panelləri"
+    "dashboard": "İdarə panelləri",
+    "connectors": "Konnektorlar"
   },
   "engagements": {
     "title": "Auditlər",
@@ -179,5 +180,18 @@
     "levelGroup": "Qrup",
     "levelSubsidiary": "Törəmə şirkət",
     "open": "Açıq"
+  },
+  "connectors": {
+    "title": "Konnektorlar",
+    "toAccount": "Hesab",
+    "subtitle": "Avtomatik testləri və məlumatları qidalandıran inteqrasiyalar (ADR-0011).",
+    "empty": "Hələ konnektor yoxdur",
+    "sync": "Sinxronlaşdır",
+    "lastSync": "Son sinxronizasiya",
+    "statuses": {
+      "active": "Aktiv",
+      "error": "Xəta",
+      "disabled": "Deaktiv"
+    }
   }
 }

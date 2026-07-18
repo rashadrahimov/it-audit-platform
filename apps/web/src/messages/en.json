@@ -36,7 +36,8 @@
       "build_checklist": "Build the checklist",
       "collect_responses": "Collect the first responses"
     },
-    "dashboard": "Dashboards"
+    "dashboard": "Dashboards",
+    "connectors": "Connectors"
   },
   "engagements": {
     "title": "Engagements",
@@ -179,5 +180,18 @@
     "levelGroup": "Group",
     "levelSubsidiary": "Subsidiary",
     "open": "Open"
+  },
+  "connectors": {
+    "title": "Connectors",
+    "toAccount": "Account",
+    "subtitle": "Integrations feeding automated tests and data (ADR-0011).",
+    "empty": "No connectors yet",
+    "sync": "Sync",
+    "lastSync": "Last sync",
+    "statuses": {
+      "active": "Active",
+      "error": "Error",
+      "disabled": "Disabled"
+    }
   }
 }

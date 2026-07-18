@@ -513,6 +513,8 @@ export const test = pgTable(
       .references(() => control.id),
     titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
     kind: text('kind').notNull().default('manual'),
+    /** T-050: коннектор-источник для автотеста (FK в SQL — connector определён ниже). */
+    connectorId: uuid('connector_id'),
     checkConfig: jsonb('check_config'),
     frequency: text('frequency'),
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),

@@ -4,7 +4,7 @@ import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { connector, syncRun } from '../db/schema';
 import { decryptConfig } from './config-crypto';
-import type { ConnectorProvider } from './connector-provider';
+import type { ConnectorProvider, SyncResult } from './connector-provider';
 import { LdapConnectorProvider } from './providers/ldap.provider';
 
 interface Actor {
@@ -95,6 +95,24 @@ export class ConnectorSyncService {
       });
       return run;
     }
+  }
+
+  /**
+   * Собрать записи коннектора без записи sync_run (T-050): для автотестов.
+   * Кидает при отсутствии провайдера/конфига/сбое — вызывающий решает, что писать.
+   */
+  async collectRecords(tenantId: string, connectorId: string): Promise<SyncResult> {
+    const [row] = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select()
+        .from(connector)
+        .where(and(eq(connector.id, connectorId), isNull(connector.deletedAt))),
+    );
+    if (!row) throw new NotFoundException(`Коннектор ${connectorId} не найден`);
+    const provider = this.providers.get(row.provider);
+    if (!provider) throw new BadRequestException(`Провайдер «${row.provider}» не поддерживается`);
+    if (!row.configEncrypted) throw new BadRequestException('У коннектора нет конфига');
+    return provider.sync(decryptConfig(row.configEncrypted));
   }
 
   private async finish(
