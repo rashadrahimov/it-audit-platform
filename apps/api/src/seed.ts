@@ -473,8 +473,27 @@ async function seedGlobalControls(): Promise<void> {
         .values({ controlId, requirementId: req.id })
         .onConflictDoNothing();
     }
+
+    // T-C01: авто-маппинг всех глобальных контролей на CBAR по домену
+    // (ref CBAR-требования = код домена контроля) → покрытие местного регулятора.
+    const cbarReqs = await db
+      .select({ id: frameworkRequirement.id, ref: frameworkRequirement.ref })
+      .from(frameworkRequirement)
+      .innerJoin(framework, eq(frameworkRequirement.frameworkId, framework.id))
+      .where(and(isNull(framework.tenantId), sql`${framework.nameI18n}->>'en' = 'CBAR IT Audit'`));
+    const cbarByDomain = new Map(cbarReqs.map((r) => [r.ref, r.id]));
+    for (const c of GLOBAL_CONTROLS) {
+      const controlId = controlIds.get(c.ref);
+      const reqId = cbarByDomain.get(c.domain);
+      if (!controlId || !reqId) continue;
+      await db
+        .insert(controlMapping)
+        .values({ controlId, requirementId: reqId })
+        .onConflictDoNothing();
+    }
+
     console.log(
-      `✓ Библиотека контролей: ${CONTROL_DOMAINS.length} доменов, ${GLOBAL_CONTROLS.length} контролей, маппинги (idempotent)`,
+      `✓ Библиотека контролей: ${CONTROL_DOMAINS.length} доменов, ${GLOBAL_CONTROLS.length} контролей, маппинги + CBAR-покрытие (idempotent)`,
     );
   } finally {
     await owner.end().catch(() => {});
