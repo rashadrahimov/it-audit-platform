@@ -317,6 +317,66 @@ export const controlMapping = pgTable(
   (table) => [uniqueIndex('control_mapping_pair_idx').on(table.controlId, table.requirementId)],
 );
 
+/** Тип аудита — lookup UNI-06 (сид: operational/financial/it/compliance/quality/advisory). */
+export const auditType = pgTable(
+  'audit_type',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id').references(() => tenant.id),
+    code: text('code').notNull(),
+    nameI18n: jsonb('name_i18n').$type<I18nText>().notNull(),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('audit_type_tenant_code_idx').on(table.tenantId, table.code)],
+);
+
+/**
+ * Engagement — ядро (T-035, ADR-0005): одна state machine (§8 data-model),
+ * режим formal/light выбирается при создании. opinion_id/plan_item_id
+ * придут со своими lookup/plan-задачами (ENG-09, UNI-x).
+ */
+export const engagement = pgTable(
+  'engagement',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    subsidiaryId: uuid('subsidiary_id')
+      .notNull()
+      .references(() => subsidiary.id),
+    auditTypeId: uuid('audit_type_id').references(() => auditType.id),
+    titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
+    periodStart: timestamp('period_start', { withTimezone: true }),
+    periodEnd: timestamp('period_end', { withTimezone: true }),
+    mode: text('mode').notNull().default('formal'),
+    state: text('state').notNull().default('draft'),
+    /** Откуда ушли в paused — resume возвращает ровно туда (SCH-06). */
+    pausedFromState: text('paused_from_state'),
+    custom: jsonb('custom').notNull().default({}),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('engagement_tenant_idx').on(table.tenantId)],
+);
+
+/** Вехи стадий (ENG-03): план/факт; факт проставляется переходом state machine. */
+export const engagementMilestone = pgTable(
+  'engagement_milestone',
+  {
+    id: id(),
+    engagementId: uuid('engagement_id')
+      .notNull()
+      .references(() => engagement.id, { onDelete: 'cascade' }),
+    stage: text('stage').notNull(),
+    plannedDate: timestamp('planned_date', { withTimezone: true }),
+    actualDate: timestamp('actual_date', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('engagement_milestone_stage_idx').on(table.engagementId, table.stage)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** T-032 закрыта (control detail: /controls/:id со всеми блоками, /auth/me/tenants — тенант-контекст UI, сид-адаптация GOV-01). Следующая — T-035 (Engagement: state machine, вехи) — T-033/T-034 ждут T-043[!]/T-042-привязку.
-- **Следующий шаг:** T-035 → T-036 (чеклист) → T-037 (ответы). Решения по `[!]`: T-012 (deps += T-013, T-020?), T-043 (deps += доменные поля finding/test).
-- **Последнее готово:** **Марафон 18.07.2026: T-024, T-025, T-022, T-047, T-030, T-031, T-032 (7 задач)**. GitHub-remote не заведён (CI потребует postgres для rls.spec). Открыто у заказчика: Excel-шаблоны, регулятор, оплата.
+- **Текущая задача:** T-035 закрыта (Engagement: state machine formal/light, вехи план/факт, /engagements в UI). Следующая — T-036 (чеклист engagement'а: подбор контролей из библиотеки).
+- **Следующий шаг:** T-036 → T-037 (ответы респондентов) → T-038 (Finding; ждёт T-043[!]). Решения по `[!]`: T-012 (deps += T-013, T-020?), T-043 (deps += доменные поля finding/test).
+- **Последнее готово:** **Марафон 18.07.2026: T-024, T-025, T-022, T-047, T-030, T-031, T-032, T-035 (8 задач)**. GitHub-remote не заведён (CI потребует postgres для rls.spec). Открыто у заказчика: Excel-шаблоны, регулятор, оплата.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -160,7 +160,7 @@ _Правило промта: не пересказывать контекст �
 - [ ] **T-034** — Document/Evidence: ручные доказательства с owner, cadence, маппингом на фреймворк, статусом. _Deps: T-031, T-042._ DoD: документ-доказательство создаётся и привязывается.
 
 ### Эпик: Engagement и findings (ядро клиента)
-- [ ] **T-035** — Engagement: сущность + state machine жизненного цикла + выбор режима (формальный/облегчённый, ADR-0005). **+ вехи/milestones (плановая и фактическая дата) по стадиям и правила переходов между ними (ENG-03 RFP).** _Deps: T-032._ DoD: engagement проходит переходы статусов; вехи план/факт видны.
+- [x] **T-035** — Engagement: сущность + state machine жизненного цикла + выбор режима (формальный/облегчённый, ADR-0005). **+ вехи/milestones (плановая и фактическая дата) по стадиям и правила переходов между ними (ENG-03 RFP).** _Deps: T-032._ DoD: engagement проходит переходы статусов; вехи план/факт видны. **Готово: миграция 0011 — `audit_type` (lookup UNI-06, сид 6 глобальных под owner), `engagement` (FORCE RLS как subsidiary; mode formal/light, state §8, paused_from_state для resume, archived_at; opinion_id/plan_item_id придут со своими lookup/plan-задачами), `engagement_milestone` (план/факт, RLS через EXISTS). State machine в коде (engagement-states.ts): полный цикл draft→…→closed; formal — строго следующая стадия, light — скип разрешён только через согласовательные (manager_review/management_response/approval); paused из любого рабочего + resume ровно в paused_from_state; archived только из closed. Переход проставляет actual_date вехи (создаёт фактическую, если план не задавался). API под PermissionGuard (первый доменный CRUD с enforcement: Collaborator create→403): POST /engagements, POST /:id/transition, GET список/карточка (+allowedTransitions[] для UI-кнопок); всё в audit_log. UI: /engagements + /engagements/<id> — состояние, кнопки переходов (server actions), вехи план/факт; локализация состояний en/az/ru. E2e: formal-запрет скипа, light-скип, пауза/resume/архив, RBAC, факт вехи после перехода, кнопка в UI двигает состояние.**
 - [ ] **T-036** — Чеклист engagement'а: подбор контролей из библиотеки (ручной) в engagement. _Deps: T-035, T-031._ DoD: в engagement добавлены контроли-вопросы.
 - [ ] **T-037** — Ответы респондентов: заполнение ответа на пункт чеклиста (2-я колонка клиента). _Deps: T-036._ DoD: респондент сохраняет ответ.
 - [ ] **T-038** — Finding: severity(risk), owner с обеих сторон, deadline, resolution date, linked control, remediation, ссылка на стандарт. _Deps: T-037, T-043._ DoD: finding создаётся со всеми колонками клиента.

@@ -38,6 +38,13 @@ export default async function AccountPage() {
           {t('frameworks')}
         </Link>
         <Link
+          href="/engagements"
+          data-testid="go-engagements"
+          className="mb-3 block w-full rounded-md bg-accent px-4 py-2 text-center font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          {t('engagements')}
+        </Link>
+        <Link
           href="/controls"
           data-testid="go-controls"
           className="mb-3 block w-full rounded-md bg-accent px-4 py-2 text-center font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

@@ -25,7 +25,46 @@
     "name": "Name",
     "signOut": "Sign out",
     "frameworks": "Frameworks library",
-    "controls": "Controls library"
+    "controls": "Controls library",
+    "engagements": "Engagements"
+  },
+  "engagements": {
+    "title": "Engagements",
+    "toAccount": "Account",
+    "name": "Title",
+    "subsidiary": "Subsidiary",
+    "auditType": "Audit type",
+    "mode": "Mode",
+    "state": "State",
+    "empty": "No engagements yet",
+    "modes": { "formal": "Formal", "light": "Light" }
+  },
+  "engagementDetail": {
+    "back": "All engagements",
+    "subsidiary": "Subsidiary",
+    "auditType": "Audit type",
+    "mode": "Mode",
+    "state": "State",
+    "milestones": "Milestones",
+    "milestonesEmpty": "No milestones planned",
+    "stage": "Stage",
+    "planned": "Planned",
+    "actual": "Actual",
+    "modes": { "formal": "Formal", "light": "Light" }
+  },
+  "engagementStates": {
+    "draft": "Draft",
+    "manager_review": "Manager review",
+    "issued_to_respondents": "Issued to respondents",
+    "responses_in_progress": "Responses in progress",
+    "findings_drafting": "Findings drafting",
+    "management_response": "Management response",
+    "approval": "Approval",
+    "report_issued": "Report issued",
+    "follow_up": "Follow-up",
+    "closed": "Closed",
+    "paused": "Paused",
+    "archived": "Archived"
   },
   "controls": {
     "title": "Controls",

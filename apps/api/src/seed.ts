@@ -18,6 +18,7 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 import { env } from './env';
 import {
   auditLog,
+  auditType,
   comment,
   control,
   controlDomain,
@@ -117,6 +118,7 @@ async function seedPostgres(): Promise<void> {
     await seedPresetRoles(catalog);
     await seedGlobalFrameworks();
     await seedGlobalControls();
+    await seedAuditTypes();
     await seedDemoUsers(db, demoTenant.id);
     await seedDemoControlAdaptation(db, demoTenant.id);
   } finally {
@@ -446,6 +448,38 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       .onConflictDoNothing();
   }
   console.log('✓ Демо-юзеры: admin@demo.io (Admin), collaborator@demo.io (Collaborator)');
+}
+
+/** Типы аудита — lookup UNI-06 (data-model §4), глобальные. */
+const AUDIT_TYPES = [
+  { code: 'operational', name: { en: 'Operational', az: 'Əməliyyat', ru: 'Операционный' } },
+  { code: 'financial', name: { en: 'Financial', az: 'Maliyyə', ru: 'Финансовый' } },
+  { code: 'it', name: { en: 'IT', az: 'İT', ru: 'ИТ' } },
+  { code: 'compliance', name: { en: 'Compliance', az: 'Uyğunluq', ru: 'Комплаенс' } },
+  { code: 'quality', name: { en: 'Quality', az: 'Keyfiyyət', ru: 'Качество' } },
+  { code: 'advisory', name: { en: 'Advisory', az: 'Məsləhət', ru: 'Консультационный' } },
+];
+
+async function seedAuditTypes(): Promise<void> {
+  const owner = new Client({
+    connectionString: env.databaseUrlOwner,
+    connectionTimeoutMillis: 5000,
+  });
+  try {
+    await owner.connect();
+    const db = drizzle(owner);
+    for (const t of AUDIT_TYPES) {
+      const [existing] = await db
+        .select()
+        .from(auditType)
+        .where(and(isNull(auditType.tenantId), eq(auditType.code, t.code)));
+      if (existing) continue;
+      await db.insert(auditType).values({ tenantId: null, code: t.code, nameI18n: t.name });
+    }
+    console.log(`✓ Типы аудита: ${AUDIT_TYPES.length} (idempotent)`);
+  } finally {
+    await owner.end().catch(() => {});
+  }
 }
 
 /**

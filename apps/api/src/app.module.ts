@@ -8,6 +8,7 @@ import { HealthController } from './health.controller';
 import { InfraHealthController } from './infra-health.controller';
 import { InfraHealthService } from './infra-health.service';
 import { EmailModule } from './email/email.module';
+import { EngagementsModule } from './engagements/engagements.module';
 import { FilesModule } from './files/files.module';
 import { FrameworksModule } from './frameworks/frameworks.module';
 import { InvitesModule } from './invites/invites.module';
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     ControlsModule,
     DbModule,
     EmailModule,
+    EngagementsModule,
     FilesModule,
     FrameworksModule,
     InvitesModule,

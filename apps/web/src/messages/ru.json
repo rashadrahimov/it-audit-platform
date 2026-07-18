@@ -25,7 +25,46 @@
     "name": "Имя",
     "signOut": "Выйти",
     "frameworks": "Библиотека стандартов",
-    "controls": "Библиотека контролей"
+    "controls": "Библиотека контролей",
+    "engagements": "Аудиты (engagements)"
+  },
+  "engagements": {
+    "title": "Аудиты",
+    "toAccount": "Аккаунт",
+    "name": "Название",
+    "subsidiary": "Дочка",
+    "auditType": "Тип аудита",
+    "mode": "Режим",
+    "state": "Состояние",
+    "empty": "Аудитов пока нет",
+    "modes": { "formal": "Формальный", "light": "Облегчённый" }
+  },
+  "engagementDetail": {
+    "back": "Все аудиты",
+    "subsidiary": "Дочка",
+    "auditType": "Тип аудита",
+    "mode": "Режим",
+    "state": "Состояние",
+    "milestones": "Вехи",
+    "milestonesEmpty": "Вехи не запланированы",
+    "stage": "Стадия",
+    "planned": "План",
+    "actual": "Факт",
+    "modes": { "formal": "Формальный", "light": "Облегчённый" }
+  },
+  "engagementStates": {
+    "draft": "Черновик",
+    "manager_review": "Ревью менеджера",
+    "issued_to_respondents": "Отправлен респондентам",
+    "responses_in_progress": "Сбор ответов",
+    "findings_drafting": "Черновики findings",
+    "management_response": "Ответ менеджмента",
+    "approval": "Утверждение",
+    "report_issued": "Отчёт выпущен",
+    "follow_up": "Follow-up",
+    "closed": "Закрыт",
+    "paused": "Пауза",
+    "archived": "Архив"
   },
   "controls": {
     "title": "Контроли",

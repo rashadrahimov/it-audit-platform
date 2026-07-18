@@ -25,7 +25,46 @@
     "name": "Ad",
     "signOut": "Çıxış",
     "frameworks": "Standartlar kitabxanası",
-    "controls": "Nəzarətlər kitabxanası"
+    "controls": "Nəzarətlər kitabxanası",
+    "engagements": "Auditlər (engagements)"
+  },
+  "engagements": {
+    "title": "Auditlər",
+    "toAccount": "Hesab",
+    "name": "Ad",
+    "subsidiary": "Törəmə şirkət",
+    "auditType": "Audit növü",
+    "mode": "Rejim",
+    "state": "Vəziyyət",
+    "empty": "Hələ audit yoxdur",
+    "modes": { "formal": "Formal", "light": "Yüngül" }
+  },
+  "engagementDetail": {
+    "back": "Bütün auditlər",
+    "subsidiary": "Törəmə şirkət",
+    "auditType": "Audit növü",
+    "mode": "Rejim",
+    "state": "Vəziyyət",
+    "milestones": "Mərhələ vəhləri",
+    "milestonesEmpty": "Vəhlər planlaşdırılmayıb",
+    "stage": "Mərhələ",
+    "planned": "Plan",
+    "actual": "Fakt",
+    "modes": { "formal": "Formal", "light": "Yüngül" }
+  },
+  "engagementStates": {
+    "draft": "Qaralama",
+    "manager_review": "Menecer baxışı",
+    "issued_to_respondents": "Respondentlərə göndərilib",
+    "responses_in_progress": "Cavablar toplanır",
+    "findings_drafting": "Findings qaralamaları",
+    "management_response": "Rəhbərliyin cavabı",
+    "approval": "Təsdiq",
+    "report_issued": "Hesabat dərc edilib",
+    "follow_up": "Follow-up",
+    "closed": "Bağlanıb",
+    "paused": "Pauza",
+    "archived": "Arxiv"
   },
   "controls": {
     "title": "Nəzarətlər",
