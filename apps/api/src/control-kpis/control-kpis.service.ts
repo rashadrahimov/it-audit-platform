@@ -3,17 +3,12 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { control, controlKpi } from '../db/schema';
 import { DbService } from '../db/db.service';
+import { onTrack } from './on-track';
 
 interface Actor {
   tenantId: string;
   userId: string;
   ip?: string;
-}
-
-/** on-track: current достиг target с учётом направления. */
-function onTrack(direction: string, target: number | null, current: number | null): boolean | null {
-  if (target === null || current === null) return null;
-  return direction === 'lower_better' ? current <= target : current >= target;
 }
 
 @Injectable()
