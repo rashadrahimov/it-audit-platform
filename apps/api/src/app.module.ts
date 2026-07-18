@@ -34,6 +34,7 @@ import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
 import { RisksModule } from './risks/risks.module';
 import { SecurityAlertsModule } from './security-alerts/security-alerts.module';
+import { TagsModule } from './tags/tags.module';
 import { TestsModule } from './tests/tests.module';
 import { UniverseModule } from './universe/universe.module';
 import { UsersModule } from './users/users.module';
@@ -74,6 +75,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     ReportsModule,
     RisksModule,
     SecurityAlertsModule,
+    TagsModule,
     TestsModule,
     UniverseModule,
     UsersModule,

@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** M3 EP-PRIV закрыт целиком (T-074/075). Следующая — декомпозиция EP-MISC (Tags + Commitments).
-- **Следующий шаг:** Распишу EP-MISC на атомы T-076+ (полиморфные tags + commitments-реестр) и сделаю. Дальше — EP-FWK / EP-TRUST / EP-QA.
+- **Текущая задача:** EP-MISC — T-076 (полиморфные tags) закрыта. Следующая — T-077 (commitments-реестр), закроет Tags+Commitments в EP-MISC.
+- **Следующий шаг:** T-077 (commitment — контрактные обязательства + SLA) закроет Tags+Commitments. Дальше — EP-FWK / EP-TRUST / EP-QA.
 - **Последнее готово:** **Марафон-4 18.07.2026: весь M2 (EP-VEND/VULN/ASSET/PERS/REP, T-060…073, 14 задач) + M3 EP-PRIV (T-074/075).** До того марафон-3 (EP-INT/POL/IAM/RISK, 12), M1 (7), марафон-1 (12). GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -272,7 +272,14 @@ GDPR-приватность: ROPA (Records of Processing Activities, Art. 30 —
 - [x] **EP-PRIV** — Privacy/ROPA + DPIA (раздел C). **Расписан на T-074–T-075. Закрыт: ROPA-реестр (GDPR Art.30) + DPIA-workflow с документами. Первый M3-эпик.**
 - **EP-QA** — Questionnaire Automation (AI отвечает на опросники, раздел C).
 - **EP-FWK** — Широкая библиотека фреймворков до паритета с Vanta.
-- **EP-MISC** — Commitments, Developer console/API, Tags, AI Memory.
+### Эпик: Tags + Commitments (EP-MISC, Vanta-паритет) — расписан на атомы 18.07.2026 (марафон-4)
+
+Кросс-срезовые фичи Vanta: полиморфные теги (навесить на любую сущность) + реестр контрактных обязательств (commitments). Developer console/API → EP-API. AI Memory → отдельным AI-эпиком при надобности.
+
+- [x] **T-076** — Tags (полиморфные): `tag` (tenant, name, color) + `tag_link` (tag_id, entity_type, entity_id, UNIQUE тройка); создать тег, навесить/снять на сущность (finding/control/risk/vendor/…), теги сущности, дедуп. _Deps: T-020._ DoD: тег создаётся, вешается на сущность, повторное навешивание не дублирует, снимается, недопустимый entity_type→400. **Готово: миграция 0043 — tag (FORCE RLS; name, color, UNIQUE tenant+name) + tag_link (полиморфная тройка tag↔entity, RLS через tag EXISTS, UNIQUE). create (дубликат имени→400 через onConflictDoNothing), attach (whitelist из 9 типов, дедуп onConflictDoNothing, битый тег→404, недопустимый entityType→400), detach, tagsOf (JOIN). API control.edit/view. audit_log tag.created/attached. E2e: тег SOX-critical, дубликат→400, навесить на control→true, повтор→false (дедуп), теги контроля=1, недопустимый entityType→400, снять→teги 0, Collaborator→403.**
+- [ ] **T-077** — Commitments: `commitment` (контрактное обязательство: title, source, description, due_date, review_cadence, owner_membership_id, status met/at_risk/breached); CRUD + смена статуса; SLA на due_date (джоба T-043). _Deps: T-020, T-043._ DoD: обязательство создаётся, статус меняется (met/at_risk/breached), недопустимый статус→400.
+
+- [ ] **EP-MISC** — Commitments, Developer console/API, Tags, AI Memory. **Tags+Commitments расписаны на T-076–T-077; Developer console/API → EP-API; AI Memory — отдельным AI-эпиком.**
 
 ## RFP-эпики (Cyberross, ADR-0017) — весь RFP в скоупе
 

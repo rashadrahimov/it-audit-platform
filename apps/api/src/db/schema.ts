@@ -984,6 +984,40 @@ export const codeChange = pgTable(
   (table) => [index('code_change_tenant_idx').on(table.tenantId)],
 );
 
+/** Тег (T-076, EP-MISC): полиморфная навеска на любую сущность через tag_link. */
+export const tag = pgTable(
+  'tag',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    name: text('name').notNull(),
+    color: text('color'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('tag_tenant_idx').on(table.tenantId),
+    uniqueIndex('tag_tenant_name_idx').on(table.tenantId, table.name),
+  ],
+);
+
+/** Полиморфная привязка тега (T-076): tag ↔ (entity_type, entity_id). */
+export const tagLink = pgTable(
+  'tag_link',
+  {
+    id: id(),
+    tagId: uuid('tag_id')
+      .notNull()
+      .references(() => tag.id, { onDelete: 'cascade' }),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('tag_link_triple_idx').on(table.tagId, table.entityType, table.entityId)],
+);
+
 /** ROPA — операция обработки ПДн (T-074, GDPR Art. 30, EP-PRIV). */
 export const processingActivity = pgTable(
   'processing_activity',
