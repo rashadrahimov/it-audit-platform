@@ -1021,6 +1021,26 @@ export const questionnaireAnswer = pgTable(
   (table) => [index('questionnaire_answer_q_idx').on(table.questionnaireId)],
 );
 
+/** Satisfaction survey (T-097, ISS-06): оценка удовлетворённости аудитом 1-5. */
+export const satisfactionSurvey = pgTable(
+  'satisfaction_survey',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    engagementId: uuid('engagement_id')
+      .notNull()
+      .references(() => engagement.id, { onDelete: 'cascade' }),
+    respondentMembershipId: uuid('respondent_membership_id').references(() => membership.id),
+    rating: integer('rating').notNull(),
+    comment: text('comment'),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
+    ...timestamps,
+  },
+  (table) => [index('satisfaction_survey_engagement_idx').on(table.engagementId)],
+);
+
 /** In-app уведомление (T-096, GEN-04): сообщение из системы адресату. */
 export const notification = pgTable(
   'notification',

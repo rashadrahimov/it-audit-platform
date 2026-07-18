@@ -44,6 +44,7 @@ import { QuestionnairesModule } from './questionnaires/questionnaires.module';
 import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
 import { RisksModule } from './risks/risks.module';
+import { SatisfactionModule } from './satisfaction/satisfaction.module';
 import { SearchModule } from './search/search.module';
 import { SecurityAlertsModule } from './security-alerts/security-alerts.module';
 import { TagsModule } from './tags/tags.module';
@@ -100,6 +101,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     RbacModule,
     ReportsModule,
     RisksModule,
+    SatisfactionModule,
     SearchModule,
     SecurityAlertsModule,
     TagsModule,
