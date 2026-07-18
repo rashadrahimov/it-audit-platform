@@ -330,6 +330,13 @@
       "when": 1784391209057,
       "tag": "0046_trust-access-request",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1784391437138,
+      "tag": "0047_kb-entry",
+      "breakpoints": true
     }
   ]
 }

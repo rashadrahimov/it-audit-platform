@@ -984,6 +984,24 @@ export const codeChange = pgTable(
   (table) => [index('code_change_tenant_idx').on(table.tenantId)],
 );
 
+/** Knowledge base (T-082, EP-QA): библиотека переиспользуемых Q&A для опросников. */
+export const kbEntry = pgTable(
+  'kb_entry',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    question: text('question').notNull(),
+    answer: text('answer').notNull(),
+    category: text('category'),
+    tags: jsonb('tags').notNull().default([]),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('kb_entry_tenant_idx').on(table.tenantId)],
+);
+
 /** Trust Center (T-080, B7): публичная страница постуры тенанта по slug. */
 export const trustCenter = pgTable(
   'trust_center',

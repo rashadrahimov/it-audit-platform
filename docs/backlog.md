@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-TRUST закрыт целиком (T-080/081). Следующая — декомпозиция EP-QA (Questionnaire Automation: KB + опросники, без AI-части — она EP-AI).
-- **Следующий шаг:** Распишу EP-QA на атомы T-082+ (kb_entry knowledge base + questionnaire/answer с reuse из KB) и сделаю. Дальше — RFP-эпики / «Добавки».
+- **Текущая задача:** EP-QA — T-082 (knowledge base) закрыта. Следующая — T-083 (questionnaires + reuse из KB), закроет EP-QA (ядро).
+- **Следующий шаг:** T-083 (questionnaire/answer с reuse KB) закроет EP-QA. Дальше — RFP-эпики / «Добавки».
 - **Последнее готово:** **Марафон-4 18.07.2026: весь M2 (T-060…073) + M3 EP-PRIV (T-074/075) + EP-MISC (T-076/077) + EP-FWK (T-078/079) + EP-TRUST (T-080/081) — 22 задачи.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -277,7 +277,14 @@ GDPR-приватность: ROPA (Records of Processing Activities, Art. 30 —
 - [x] **T-075** — DPIA workflow + документы: `privacy_assessment` (processing_activity_id, title, risk_level low/medium/high, necessity_note, mitigations jsonb, status draft→in_progress→completed); workflow (скип→400), документы через document_link (entity_type=privacy_assessment). _Deps: T-074, T-034._ DoD: DPIA создаётся для операции обработки, проходит workflow, high-risk фиксируется, документы прикладываются. **Готово: миграция 0042 — privacy_assessment (FORCE RLS; processing_activity_id FK, title, risk_level, necessity_note, mitigations jsonb, status). create (битая операция→400), transition draft→in_progress→completed (скип→400), list, get (+документы). document_link whitelist +privacy_assessment. API control.edit/view: POST/GET /processing-activities/dpia(+/:id/transition, /:id) — маршруты dpia объявлены до :id операции. audit_log privacy_assessment.created/status_changed. E2e: DPIA биометрия high, битая операция→400, скип draft→completed→400, workflow, документ приложен (docs=1), карточка high/mitigations=2, Collaborator→403. **EP-PRIV закрыт целиком** (T-074 ROPA + T-075 DPIA).**
 
 - [x] **EP-PRIV** — Privacy/ROPA + DPIA (раздел C). **Расписан на T-074–T-075. Закрыт: ROPA-реестр (GDPR Art.30) + DPIA-workflow с документами. Первый M3-эпик.**
-- **EP-QA** — Questionnaire Automation (AI отвечает на опросники, раздел C).
+### Эпик: Questionnaire Automation (EP-QA, раздел C) — расписан на атомы 18.07.2026 (марафон-4)
+
+Автоматизация ответов на security-опросники. Ядро (без AI): knowledge base переиспользуемых Q&A + опросники, где ответ берётся из KB (детерминированное «переиспользование прошлых ответов» — субстрат, поверх которого AI-подсказка = EP-AI, работает и offline на on-prem ADR-0002). Модель — data-model §12 (questionnaire/questionnaire_answer/kb_entry).
+
+- [x] **T-082** — Knowledge base: `kb_entry` (question, answer, category, tags jsonb) — библиотека переиспользуемых Q&A; CRUD + поиск по ключевому слову (ILIKE по question/answer). _Deps: T-020._ DoD: KB-запись создаётся, находится поиском по ключевому слову, пустой поиск отдаёт всё. **Готово: миграция 0047 — kb_entry (FORCE RLS; question, answer, category, tags jsonb). create, search (ILIKE OR по question/answer; пустой q→все). API control.edit/view. audit_log kb_entry.created. E2e: 2 записи, поиск «encrypt»→1 (по вопросу), «annually»→1 (по ответу), «zzzz»→0, пустой q→2, пустая question→400, Collaborator→403.**
+- [ ] **T-083** — Questionnaires + reuse из KB: `questionnaire` (title, source, status draft→in_progress→submitted) + `questionnaire_answer` (question, answer, kb_entry_id NULL — переиспользовано из KB, status pending/answered); добавить вопросы, ответить (вручную или reuse KB → копирует answer + ставит kb_entry_id), submit (все ответы answered, иначе→400). _Deps: T-082._ DoD: опросник создаётся, вопрос отвечается вручную и переиспользованием из KB, submit требует полноты. **EP-QA (ядро) закрыт этими двумя; AI-автоответ — EP-AI.**
+
+- [ ] **EP-QA** — Questionnaire Automation (AI отвечает на опросники, раздел C). **Расписан на T-082–T-083 (ядро KB+опросники без AI); AI-автоответ поверх KB — EP-AI.**
 ### Эпик: Широкая библиотека фреймворков (EP-FWK, паритет с Vanta) — расписан на атомы 18.07.2026 (марафон-4)
 
 Расширение глобальной библиотеки стандартов (ADR-0016) до Vanta-паритета + framework coverage (сколько требований покрыто замапленными контролями — ключевая Vanta-метрика). Поверх T-030/031 (framework/framework_requirement/control_mapping уже есть).
