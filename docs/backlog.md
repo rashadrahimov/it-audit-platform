@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-POL расписан (T-051–T-053), T-051 (Policy core: policy+policy_version, версии-документы) закрыта. Следующая — T-052 (approver-workflow: draft→in_review→approved→archived, только approver утверждает).
-- **Следующий шаг:** T-052 → T-053 (attestation). Дальше — EP-IAM (access review на LDAP) или EP-RISK. Остаток T-001 (Excel-шаблоны, регулятор, оплата) гейтит часть фич.
-- **Последнее готово:** **Марафон-3 18.07.2026: EP-INT целиком (T-048/049/050), EP-POL начат (T-051).** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
+- **Текущая задача:** EP-POL — T-052 (approver-workflow) закрыта. Следующая — T-053 (attestation: сотрудники подтверждают ознакомление с approved-версией + UI /policies).
+- **Следующий шаг:** T-053 закроет EP-POL. Дальше — EP-IAM (access review на LDAP) или EP-RISK. Остаток T-001 (Excel-шаблоны, регулятор, оплата) гейтит часть фич.
+- **Последнее готово:** **Марафон-3 18.07.2026: EP-INT целиком (T-048/049/050), EP-POL — T-051, T-052.** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -194,7 +194,7 @@ _Правило промта: не пересказывать контекст �
 Самодостаточный эпик (без коннекторов): policy → версии-документы → approver-workflow → attestation сотрудников. Модель — data-model §6 (policy/policy_version/policy_attestation).
 
 - [x] **T-051** — Policy core: сущности `policy` (title_i18n, owner/approver membership, renew_by, status, framework_ids-маппинг) + `policy_version` (version, document_id→T-034, changelog, approved_at/by); CRUD, загрузка версии-документа; RLS. _Deps: T-034, T-020._ DoD: политика создаётся с версией-документом, видна со статусом и владельцем. **Готово: миграция 0022 — `policy` (FORCE RLS; title/owner/approver/renew_by/status/framework_ids) + `policy_version` (version авто-инкремент, document_id→T-034, changelog, approved_at/by — задел T-052; RLS через EXISTS). CRUD под settings.edit/view (политики = governance-конфиг, как connectors; отдельный ресурс `policy` в каталоге прав — при расширении RBAC): POST /policies, POST /:id/versions (номер авто-инкремент, документ из T-034), GET список/карточка+версии. audit_log policy.created/version_added. E2e: политика→v1 с документом→v2, framework-маппинг, статус draft+owner, RBAC 403. UI — с T-052 (workflow).**
-- [ ] **T-052** — Approver-workflow: state machine draft→in_review→approved→archived; approver назначается и только он утверждает/отклоняет; approved-версия фиксируется. _Deps: T-051._ DoD: политика проходит workflow, не-approver не утверждает, approved пишет approved_at/by.
+- [x] **T-052** — Approver-workflow: state machine draft→in_review→approved→archived; approver назначается и только он утверждает/отклоняет; approved-версия фиксируется. _Deps: T-051._ DoD: политика проходит workflow, не-approver не утверждает, approved пишет approved_at/by. **Готово: `transition` в PoliciesService — таблица переходов draft→in_review→approved→archived (+in_review→draft reject); `POST /:id/submit` (settings.edit: submit/archive) и `POST /:id/decision` (approve/reject). **Развилка approver≠RBAC решена**: decision под settings.view (пресет-роль Approver его имеет, но не settings.edit), реальная авторизация — approver_membership в сервисе (не-approver → 403 ForbiddenException). approve фиксирует approved_at/by на последней версии. Демо-approver в seed (approver@demo.io, роль Approver). audit_log policy.status_changed. E2e: полный цикл, admin-не-approver→403, approver→approved, недопустимые→400. UI — с T-053.**
 - [ ] **T-053** — Attestation: `policy_attestation` — сотрудники подтверждают ознакомление с approved-версией; кампания (кому разослать), трекинг подтверждённых/нет, письмо-напоминание. _Deps: T-052, T-041._ DoD: attestation создаётся для членов, member подтверждает, видно кто не подтвердил.
 
 - [x] **EP-POL** — Policies (B4): версии, approver-workflow, attestation. **Расписан на T-051–T-053.**

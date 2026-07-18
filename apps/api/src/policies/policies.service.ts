@@ -1,5 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, max } from 'drizzle-orm';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { and, asc, desc, eq, isNull, max, sql } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
@@ -109,6 +114,78 @@ export class PoliciesService {
       after: { version: created.version },
     });
     return created;
+  }
+
+  /**
+   * Workflow политики (T-052, B4): draft→in_review→approved→archived.
+   * approve — только назначенный approver; approved фиксирует approved_at/by
+   * на последней версии.
+   */
+  async transition(actor: Actor, id: string, action: 'submit' | 'approve' | 'reject' | 'archive') {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(policy)
+        .where(and(eq(policy.id, id), isNull(policy.deletedAt)));
+      if (!row) throw new NotFoundException(`Политика ${id} не найдена`);
+
+      const nextStatus = this.nextStatus(row.status, action);
+      if (!nextStatus) {
+        throw new BadRequestException(`Действие «${action}» недоступно из статуса ${row.status}`);
+      }
+
+      // approve/reject — только назначенный approver (проверка по membership юзера)
+      if (action === 'approve' || action === 'reject') {
+        const [me] = await tx
+          .select({ id: membership.id })
+          .from(membership)
+          .where(
+            and(eq(membership.userId, actor.userId!), eq(membership.tenantId, actor.tenantId)),
+          );
+        if (!row.approverMembershipId || me?.id !== row.approverMembershipId) {
+          throw new ForbiddenException('Утверждать/отклонять может только назначенный approver');
+        }
+      }
+
+      await tx.update(policy).set({ status: nextStatus }).where(eq(policy.id, id));
+
+      // approve фиксирует утверждение на последней версии
+      if (action === 'approve') {
+        const latest = await tx
+          .select()
+          .from(policyVersion)
+          .where(eq(policyVersion.policyId, id))
+          .orderBy(desc(policyVersion.version))
+          .limit(1);
+        if (latest[0]) {
+          await tx
+            .update(policyVersion)
+            .set({ approvedAt: sql`now()`, approvedBy: row.approverMembershipId })
+            .where(eq(policyVersion.id, latest[0].id));
+        }
+      }
+      return { before: row.status, after: nextStatus };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'policy.status_changed',
+      entityType: 'policy',
+      entityId: id,
+      before: { status: result.before },
+      after: { status: result.after, action },
+    });
+    return result;
+  }
+
+  private nextStatus(current: string, action: string): string | null {
+    const table: Record<string, Record<string, string>> = {
+      draft: { submit: 'in_review', archive: 'archived' },
+      in_review: { approve: 'approved', reject: 'draft' },
+      approved: { archive: 'archived' },
+    };
+    return table[current]?.[action] ?? null;
   }
 
   async list(tenantId: string, locale: Locale) {

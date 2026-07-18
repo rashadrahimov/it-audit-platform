@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Post,
@@ -82,6 +83,42 @@ export class PoliciesController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data,
+    );
+  }
+
+  @Post(':id/submit')
+  @HttpCode(200)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Workflow (T-052): отправить на ревью (draft→in_review) или archive' })
+  @ApiOkResponse({ description: '{before, after}' })
+  submit(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = z.object({ action: z.enum(['submit', 'archive']) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.policiesService.transition(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.action,
+    );
+  }
+
+  // approve/reject — под settings.view (пресет-роль Approver его имеет): реальная
+  // авторизация в сервисе по approver_membership (workflow-роль ортогональна RBAC).
+  @Post(':id/decision')
+  @HttpCode(200)
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'Workflow (T-052): решение approver — approve/reject (in_review)' })
+  @ApiOkResponse({ description: '{before, after}' })
+  decision(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ action: z.enum(['approve', 'reject']) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.policiesService.transition(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.action,
     );
   }
 

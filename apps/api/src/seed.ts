@@ -432,6 +432,13 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       password: 'Demo-Collab-2026',
       roleEn: 'Collaborator',
     },
+    {
+      // T-052: approver политик — роль Approver (settings.view, но не settings.edit)
+      email: 'approver@demo.io',
+      fullName: 'Demo Approver',
+      password: 'Demo-Approver-2026',
+      roleEn: 'Approver',
+    },
   ];
   const systemRoles = await db.select().from(role).where(eq(role.isSystem, true));
   for (const demo of demoUsers) {
@@ -454,7 +461,9 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       .values({ userId: seededUser.id, tenantId, roleId: presetRole.id, isAuditSeat: true })
       .onConflictDoNothing();
   }
-  console.log('✓ Демо-юзеры: admin@demo.io (Admin), collaborator@demo.io (Collaborator)');
+  console.log(
+    '✓ Демо-юзеры: admin@demo.io (Admin), collaborator@demo.io (Collaborator), approver@demo.io (Approver)',
+  );
 }
 
 /** Типы аудита — lookup UNI-06 (data-model §4), глобальные. */
