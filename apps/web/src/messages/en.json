@@ -45,7 +45,8 @@
     "chartDashboards": "Chart Dashboards",
     "trustCenter": "Trust Center",
     "glossary": "Glossary",
-    "snapshots": "Snapshots"
+    "snapshots": "Snapshots",
+    "devices": "Endpoint Compliance"
   },
   "engagements": {
     "title": "Engagements",
@@ -296,5 +297,18 @@
     "controls": "Controls",
     "risks": "Risks",
     "findings": "Findings"
+  },
+  "devices": {
+    "title": "Endpoint Compliance",
+    "toAccount": "Account",
+    "empty": "No devices yet",
+    "compliant": "Compliant",
+    "non_compliant": "Non-compliant",
+    "checks": {
+      "diskEncryption": "Disk encryption",
+      "screenLock": "Screen lock",
+      "antivirus": "Antivirus",
+      "passwordPolicy": "Password policy"
+    }
   }
 }

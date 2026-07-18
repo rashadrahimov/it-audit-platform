@@ -45,7 +45,8 @@
     "chartDashboards": "Чарт-дашборды",
     "trustCenter": "Центр доверия",
     "glossary": "Глоссарий",
-    "snapshots": "Снапшоты"
+    "snapshots": "Снапшоты",
+    "devices": "Соответствие устройств"
   },
   "engagements": {
     "title": "Аудиты",
@@ -296,5 +297,18 @@
     "controls": "Контроли",
     "risks": "Риски",
     "findings": "Находки"
+  },
+  "devices": {
+    "title": "Соответствие устройств",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет устройств",
+    "compliant": "Соответствует",
+    "non_compliant": "Не соответствует",
+    "checks": {
+      "diskEncryption": "Шифрование диска",
+      "screenLock": "Блокировка экрана",
+      "antivirus": "Антивирус",
+      "passwordPolicy": "Парольная политика"
+    }
   }
 }

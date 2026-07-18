@@ -45,7 +45,8 @@
     "chartDashboards": "Qrafik Panelləri",
     "trustCenter": "Etibar Mərkəzi",
     "glossary": "Lüğət",
-    "snapshots": "Anlıq görüntülər"
+    "snapshots": "Anlıq görüntülər",
+    "devices": "Cihaz Uyğunluğu"
   },
   "engagements": {
     "title": "Auditlər",
@@ -296,5 +297,18 @@
     "controls": "Kontrollar",
     "risks": "Risklər",
     "findings": "Tapıntılar"
+  },
+  "devices": {
+    "title": "Cihaz Uyğunluğu",
+    "toAccount": "Hesab",
+    "empty": "Hələ cihaz yoxdur",
+    "compliant": "Uyğun",
+    "non_compliant": "Uyğun deyil",
+    "checks": {
+      "diskEncryption": "Disk şifrələmə",
+      "screenLock": "Ekran kilidi",
+      "antivirus": "Antivirus",
+      "passwordPolicy": "Parol siyasəti"
+    }
   }
 }
