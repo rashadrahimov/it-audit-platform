@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import type { DemoJobEnqueued, DemoJobStatus, HeartbeatStatus } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { FindingRemindersService } from './finding-reminders.service';
 import { JobsService } from './jobs.service';
 import { SlaService, type SlaRecalcResult } from './sla.service';
 
@@ -27,7 +28,19 @@ export class JobsController {
   constructor(
     private readonly jobsService: JobsService,
     private readonly slaService: SlaService,
+    private readonly findingRemindersService: FindingRemindersService,
   ) {}
+
+  @Post('finding-reminders')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Напоминания о дедлайнах findings вручную (T-039); планово — раз в сутки',
+  })
+  @ApiCreatedResponse({ description: '{sent} — сколько писем отправлено' })
+  findingReminders(): Promise<{ sent: number }> {
+    return this.findingRemindersService.send();
+  }
 
   @Post('sla-recalc')
   @UseGuards(JwtAuthGuard)

@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Post,
@@ -72,6 +73,55 @@ export class FindingsController {
     return this.findingsService.create(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       parsed.data,
+    );
+  }
+
+  @Post(':id/assign')
+  @HttpCode(200)
+  @RequirePermission('finding', 'edit', 'edit')
+  @ApiOperation({ summary: 'Назначить owner’а (T-039): статус assigned + письмо владельцу' })
+  @ApiOkResponse({ description: 'Finding назначен, письмо отправлено' })
+  assign(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = z.object({ ownerMembershipId: z.uuid() }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.findingsService.assign(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.ownerMembershipId,
+    );
+  }
+
+  @Post(':id/transition')
+  @HttpCode(200)
+  @RequirePermission('finding', 'edit', 'edit')
+  @ApiOperation({
+    summary: 'Шаг lifecycle (T-039): строго следующий; closed через transition — только вне formal',
+  })
+  transition(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ to: z.string().min(1) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.findingsService.transition(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.to,
+    );
+  }
+
+  @Post(':id/retest')
+  @HttpCode(200)
+  @RequirePermission('finding', 'edit', 'edit')
+  @ApiOperation({ summary: 'Re-test аудитором (T-039): passed → closed, failed → in_progress' })
+  retest(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = z.object({ result: z.enum(['passed', 'failed']) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.findingsService.retest(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.result,
     );
   }
 

@@ -1,9 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, isNull } from 'drizzle-orm';
-import { resolveLocalized, type I18nText, type Locale, type RiskRating } from '@it-audit/shared';
+import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import {
+  localeSchema,
+  resolveLocalized,
+  type I18nText,
+  type Locale,
+  type RiskRating,
+} from '@it-audit/shared';
 import { alias } from 'drizzle-orm/pg-core';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
+import { EmailService } from '../email/email.service';
 import {
   checklistItem,
   control,
@@ -19,6 +26,20 @@ interface Actor {
   userId: string;
   ip?: string;
 }
+
+/**
+ * Lifecycle (T-039, data-model §8): identified → assigned → in_progress →
+ * remediated → pending_retest → closed; overdue — вычисляемый флаг SLA, не состояние.
+ */
+const FINDING_FLOW = [
+  'identified',
+  'assigned',
+  'in_progress',
+  'remediated',
+  'pending_retest',
+  'closed',
+] as const;
+const flowIndex = (s: string): number => FINDING_FLOW.indexOf(s as (typeof FINDING_FLOW)[number]);
 
 export interface CreateFindingInput {
   engagementId?: string;
@@ -41,6 +62,7 @@ export class FindingsService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(actor: Actor, input: CreateFindingInput) {
@@ -117,6 +139,150 @@ export class FindingsService {
       after: { title: created.titleI18n.en, riskRating: created.riskRating },
     });
     return created;
+  }
+
+  /** Назначение owner'а (T-039): identified/assigned → assigned + письмо владельцу. */
+  async assign(actor: Actor, id: string, ownerMembershipId: string) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(finding)
+        .where(and(eq(finding.id, id), isNull(finding.deletedAt)));
+      if (!row) throw new NotFoundException(`Finding ${id} не найден`);
+      if (!['identified', 'assigned'].includes(row.status)) {
+        throw new BadRequestException(`Назначение из статуса ${row.status} недоступно`);
+      }
+      const [updated] = await tx
+        .update(finding)
+        .set({ ownerMembershipId, status: 'assigned' })
+        .where(eq(finding.id, id))
+        .returning();
+      return { row, updated };
+    });
+    // owner над-тенантный: membership→user вне RLS
+    const [owner] = await this.dbService.db
+      .select({ email: user.email, locale: user.locale, fullName: user.fullName })
+      .from(membership)
+      .innerJoin(user, eq(membership.userId, user.id))
+      .where(and(eq(membership.id, ownerMembershipId), eq(membership.tenantId, actor.tenantId)));
+    if (!owner) throw new BadRequestException('ownerMembershipId: membership не найден в тенанте');
+    const parsedLocale = localeSchema.safeParse(owner.locale);
+    await this.emailService.sendTemplate(
+      'finding-assigned',
+      parsedLocale.success ? parsedLocale.data : 'en',
+      owner.email,
+      {
+        findingTitle: result.row.titleI18n.en,
+        dueDate: result.row.dueDate?.toISOString().slice(0, 10) ?? '',
+      },
+    );
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'finding.assigned',
+      entityType: 'finding',
+      entityId: id,
+      after: { owner: owner.email },
+    });
+    return result.updated;
+  }
+
+  /**
+   * Переход по цепочке (строго следующий шаг). Закрытие через transition —
+   * только вне формального режима (formal закрывается retest'ом, диаграмма RFP).
+   */
+  async transition(actor: Actor, id: string, to: string) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(finding)
+        .where(and(eq(finding.id, id), isNull(finding.deletedAt)));
+      if (!row) throw new NotFoundException(`Finding ${id} не найден`);
+      const fromIdx = flowIndex(row.status);
+      const toIdx = flowIndex(to);
+      if (fromIdx < 0 || toIdx < 0 || toIdx !== fromIdx + 1) {
+        throw new BadRequestException(`Переход ${row.status} → ${to} недопустим`);
+      }
+      if (to === 'closed') {
+        let mode = 'light';
+        if (row.engagementId) {
+          const [eng] = await tx
+            .select({ mode: engagement.mode })
+            .from(engagement)
+            .where(eq(engagement.id, row.engagementId));
+          mode = eng?.mode ?? 'light';
+        }
+        if (mode === 'formal') {
+          throw new BadRequestException(
+            'В формальном режиме закрытие — только через re-test аудитора',
+          );
+        }
+      }
+      const [updated] = await tx
+        .update(finding)
+        .set({
+          status: to,
+          remediatedAt: to === 'remediated' ? sql`now()` : row.remediatedAt,
+          resolutionDate: to === 'closed' ? sql`now()` : row.resolutionDate,
+        })
+        .where(eq(finding.id, id))
+        .returning();
+      return { before: row.status, updated };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'finding.status_changed',
+      entityType: 'finding',
+      entityId: id,
+      before: { status: result.before },
+      after: { status: to },
+    });
+    return result.updated;
+  }
+
+  /** Re-test аудитором (T-039): passed → closed, failed → назад в in_progress. */
+  async retest(actor: Actor, id: string, resultValue: 'passed' | 'failed') {
+    const [auditorMembership] = await this.dbService.db
+      .select()
+      .from(membership)
+      .where(and(eq(membership.userId, actor.userId), eq(membership.tenantId, actor.tenantId)));
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(finding)
+        .where(and(eq(finding.id, id), isNull(finding.deletedAt)));
+      if (!row) throw new NotFoundException(`Finding ${id} не найден`);
+      if (row.status !== 'pending_retest') {
+        throw new BadRequestException(
+          `Re-test доступен только из pending_retest (сейчас ${row.status})`,
+        );
+      }
+      const [updated] = await tx
+        .update(finding)
+        .set({
+          status: resultValue === 'passed' ? 'closed' : 'in_progress',
+          retestResult: resultValue,
+          retestedBy: auditorMembership?.id ?? null,
+          resolutionDate: resultValue === 'passed' ? sql`now()` : row.resolutionDate,
+        })
+        .where(eq(finding.id, id))
+        .returning();
+      return { before: row.status, updated };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'finding.retested',
+      entityType: 'finding',
+      entityId: id,
+      before: { status: result.before },
+      after: { status: result.updated?.status, retestResult: resultValue },
+    });
+    return result.updated;
   }
 
   async list(tenantId: string, locale: Locale, engagementId?: string) {

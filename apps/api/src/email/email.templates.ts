@@ -41,6 +41,48 @@ export const emailTemplates = {
       text: `Вас пригласили в ${tenantName}. Принять: ${inviteUrl} (действует 7 дней)`,
     }),
   },
+  'finding-assigned': {
+    en: ({ findingTitle, dueDate }) => ({
+      subject: `Finding assigned to you: ${findingTitle}`,
+      html: wrap(
+        `<p>A finding has been assigned to you: <b>${findingTitle}</b>.</p><p>Deadline: ${dueDate || 'not set'}.</p>`,
+      ),
+      text: `A finding has been assigned to you: ${findingTitle}. Deadline: ${dueDate || 'not set'}.`,
+    }),
+    az: ({ findingTitle, dueDate }) => ({
+      subject: `Sizə finding təyin edildi: ${findingTitle}`,
+      html: wrap(
+        `<p>Sizə finding təyin edildi: <b>${findingTitle}</b>.</p><p>Son tarix: ${dueDate || 'təyin edilməyib'}.</p>`,
+      ),
+      text: `Sizə finding təyin edildi: ${findingTitle}. Son tarix: ${dueDate || 'təyin edilməyib'}.`,
+    }),
+    ru: ({ findingTitle, dueDate }) => ({
+      subject: `Вам назначен finding: ${findingTitle}`,
+      html: wrap(
+        `<p>Вам назначен finding: <b>${findingTitle}</b>.</p><p>Дедлайн: ${dueDate || 'не задан'}.</p>`,
+      ),
+      text: `Вам назначен finding: ${findingTitle}. Дедлайн: ${dueDate || 'не задан'}.`,
+    }),
+  },
+  'finding-reminder': {
+    en: ({ findingTitle, dueDate }) => ({
+      subject: `Deadline approaching: ${findingTitle}`,
+      html: wrap(
+        `<p>The deadline for finding <b>${findingTitle}</b> is approaching: ${dueDate}.</p>`,
+      ),
+      text: `The deadline for finding ${findingTitle} is approaching: ${dueDate}.`,
+    }),
+    az: ({ findingTitle, dueDate }) => ({
+      subject: `Son tarix yaxınlaşır: ${findingTitle}`,
+      html: wrap(`<p><b>${findingTitle}</b> finding-i üçün son tarix yaxınlaşır: ${dueDate}.</p>`),
+      text: `${findingTitle} üçün son tarix yaxınlaşır: ${dueDate}.`,
+    }),
+    ru: ({ findingTitle, dueDate }) => ({
+      subject: `Приближается дедлайн: ${findingTitle}`,
+      html: wrap(`<p>Приближается дедлайн по finding <b>${findingTitle}</b>: ${dueDate}.</p>`),
+      text: `Приближается дедлайн по finding ${findingTitle}: ${dueDate}.`,
+    }),
+  },
   'test-email': {
     en: ({ sentAt }) => ({
       subject: 'Test email — IT Audit Platform',

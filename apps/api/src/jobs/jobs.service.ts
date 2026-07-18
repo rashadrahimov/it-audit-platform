@@ -6,10 +6,12 @@ import type { DemoJobEnqueued, DemoJobStatus, HeartbeatStatus } from '@it-audit/
 import { env } from '../env';
 import {
   DEACTIVATE_INACTIVE_EVERY_MS,
+  FINDING_REMINDERS_EVERY_MS,
   HEARTBEAT_EVERY_MS,
   HEARTBEAT_KEY,
   JOB_DEACTIVATE_INACTIVE,
   JOB_DEMO_DELAYED,
+  JOB_FINDING_REMINDERS,
   JOB_HEARTBEAT,
   JOB_SLA_RECALC,
   SLA_RECALC_EVERY_MS,
@@ -38,6 +40,11 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       'sla-recalc-scheduler',
       { every: SLA_RECALC_EVERY_MS },
       { name: JOB_SLA_RECALC },
+    );
+    await this.queue.upsertJobScheduler(
+      'finding-reminders-scheduler',
+      { every: FINDING_REMINDERS_EVERY_MS },
+      { name: JOB_FINDING_REMINDERS },
     );
   }
 

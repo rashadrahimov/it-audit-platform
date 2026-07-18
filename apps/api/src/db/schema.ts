@@ -559,6 +559,8 @@ export const finding = pgTable(
     retestedBy: uuid('retested_by').references(() => membership.id),
     resolutionDate: timestamp('resolution_date', { withTimezone: true }),
     managementResponse: text('management_response'),
+    /** T-039: дедуп суточных напоминаний о дедлайне. */
+    reminderSentAt: timestamp('reminder_sent_at', { withTimezone: true }),
     custom: jsonb('custom').notNull().default({}),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,

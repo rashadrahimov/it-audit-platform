@@ -18,3 +18,8 @@ export const JOB_SLA_RECALC = 'sla-recalc';
 
 /** SLA-пересчёт (T-043): первый прогон при старте, дальше раз в час. */
 export const SLA_RECALC_EVERY_MS = 60 * 60 * 1000;
+
+export const JOB_FINDING_REMINDERS = 'finding-reminders';
+
+/** Напоминания о дедлайнах findings (T-039): раз в сутки. */
+export const FINDING_REMINDERS_EVERY_MS = 24 * 60 * 60 * 1000;
