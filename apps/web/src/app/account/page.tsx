@@ -21,6 +21,7 @@ const NAV_GROUPS: Array<{ group: string; items: Array<{ href: string; testid: st
       { href: '/dashboards', testid: 'go-dashboards-charts', label: 'chartDashboards' },
       { href: '/reports', testid: 'go-reports', label: 'reports' },
       { href: '/snapshots', testid: 'go-snapshots', label: 'snapshots' },
+      { href: '/trends', testid: 'go-trends', label: 'trends' },
       { href: '/kpi', testid: 'go-kpi', label: 'kpi' },
     ],
   },

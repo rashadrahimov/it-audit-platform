@@ -76,7 +76,8 @@
       "security": "Security & access",
       "thirdParty": "Third parties & trust",
       "org": "Organization & settings"
-    }
+    },
+    "trends": "Trends"
   },
   "engagements": {
     "title": "Engagements",
@@ -762,5 +763,22 @@
     "rate": "Rate this audit (1–5)",
     "commentPh": "Comment (optional)",
     "submit": "Submit rating"
+  },
+  "trends": {
+    "title": "Trends",
+    "toAccount": "To account",
+    "needTwo": "Need at least two snapshots for a trend",
+    "metric": "Metric",
+    "series": "Series",
+    "show": "Show",
+    "groups": {
+      "controls_total": "Controls total",
+      "risks_by_class": "Risks by class",
+      "tests_by_status": "Tests by status",
+      "vendors_by_risk": "Vendors by risk",
+      "devices_compliance": "Device compliance",
+      "findings_by_status": "Findings by status",
+      "findings_by_severity": "Findings by severity"
+    }
   }
 }

@@ -76,7 +76,8 @@
       "security": "Təhlükəsizlik və giriş",
       "thirdParty": "Üçüncü tərəflər və etibar",
       "org": "Təşkilat və tənzimləmələr"
-    }
+    },
+    "trends": "Trendlər"
   },
   "engagements": {
     "title": "Auditlər",
@@ -762,5 +763,22 @@
     "rate": "Bu auditi qiymətləndirin (1–5)",
     "commentPh": "Şərh (istəyə görə)",
     "submit": "Qiyməti göndər"
+  },
+  "trends": {
+    "title": "Trendlər",
+    "toAccount": "Hesaba",
+    "needTwo": "Trend üçün ən azı iki snapşot lazımdır",
+    "metric": "Metrika",
+    "series": "Seriya",
+    "show": "Göstər",
+    "groups": {
+      "controls_total": "Kontrollar (cəmi)",
+      "risks_by_class": "Risklər (sinif üzrə)",
+      "tests_by_status": "Testlər (status üzrə)",
+      "vendors_by_risk": "Vendorlar (risk üzrə)",
+      "devices_compliance": "Cihaz uyğunluğu",
+      "findings_by_status": "Tapıntılar (status üzrə)",
+      "findings_by_severity": "Tapıntılar (kritiklik üzrə)"
+    }
   }
 }
