@@ -51,7 +51,8 @@
     "vendors": "Vendor Risk",
     "workingPapers": "Working Papers",
     "vulnerabilities": "Vulnerabilities",
-    "securityAlerts": "Security Alerts"
+    "securityAlerts": "Security Alerts",
+    "commitments": "Commitments"
   },
   "engagements": {
     "title": "Engagements",
@@ -400,6 +401,22 @@
       "new": "New",
       "triaged": "Triaged",
       "closed": "Closed"
+    }
+  },
+  "commitments": {
+    "title": "Commitments",
+    "toAccount": "Account",
+    "empty": "No commitments yet",
+    "source": "Source",
+    "st": {
+      "met": "Met",
+      "at_risk": "At risk",
+      "breached": "Breached"
+    },
+    "sla": {
+      "ok": "OK",
+      "due_soon": "Due soon",
+      "overdue": "Overdue"
     }
   }
 }

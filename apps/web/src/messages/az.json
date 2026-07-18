@@ -51,7 +51,8 @@
     "vendors": "Təchizatçı Riski",
     "workingPapers": "İş Sənədləri",
     "vulnerabilities": "Zəifliklər",
-    "securityAlerts": "Təhlükəsizlik Bildirişləri"
+    "securityAlerts": "Təhlükəsizlik Bildirişləri",
+    "commitments": "Öhdəliklər"
   },
   "engagements": {
     "title": "Auditlər",
@@ -400,6 +401,22 @@
       "new": "Yeni",
       "triaged": "Təsnif",
       "closed": "Bağlı"
+    }
+  },
+  "commitments": {
+    "title": "Öhdəliklər",
+    "toAccount": "Hesab",
+    "empty": "Hələ öhdəlik yoxdur",
+    "source": "Mənbə",
+    "st": {
+      "met": "Yerinə yetirilir",
+      "at_risk": "Risk altında",
+      "breached": "Pozulub"
+    },
+    "sla": {
+      "ok": "OK",
+      "due_soon": "Vaxtı yaxınlaşır",
+      "overdue": "Gecikib"
     }
   }
 }

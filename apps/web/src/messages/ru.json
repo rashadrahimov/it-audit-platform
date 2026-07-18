@@ -51,7 +51,8 @@
     "vendors": "Риск вендоров",
     "workingPapers": "Рабочие документы",
     "vulnerabilities": "Уязвимости",
-    "securityAlerts": "Оповещения ИБ"
+    "securityAlerts": "Оповещения ИБ",
+    "commitments": "Обязательства"
   },
   "engagements": {
     "title": "Аудиты",
@@ -400,6 +401,22 @@
       "new": "Новое",
       "triaged": "Триаж",
       "closed": "Закрыто"
+    }
+  },
+  "commitments": {
+    "title": "Обязательства",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет обязательств",
+    "source": "Источник",
+    "st": {
+      "met": "Выполняется",
+      "at_risk": "Под угрозой",
+      "breached": "Нарушено"
+    },
+    "sla": {
+      "ok": "OK",
+      "due_soon": "Скоро срок",
+      "overdue": "Просрочено"
     }
   }
 }
