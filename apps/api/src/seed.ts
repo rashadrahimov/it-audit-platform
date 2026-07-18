@@ -45,6 +45,17 @@ import { encryptConfig } from './connectors/config-crypto';
 const DEMO_OBJECT_KEY = 'demo/welcome.txt';
 const DEMO_TENANT_SLUG = 'demo';
 
+/** Глобальный каталог прав (T-018, без RLS): 5 ресурсов × 6 действий. Идемпотентно. */
+export async function seedPermissionCatalog(db: NodePgDatabase) {
+  const RESOURCES = ['engagement', 'finding', 'control', 'report', 'settings'];
+  const ACTIONS = ['view', 'create', 'edit', 'delete', 'approve', 'export'];
+  await db
+    .insert(permission)
+    .values(RESOURCES.flatMap((resource) => ACTIONS.map((action) => ({ resource, action }))))
+    .onConflictDoNothing();
+  return db.select().from(permission);
+}
+
 async function seedPostgres(): Promise<void> {
   const client = new Client({ connectionString: env.databaseUrl, connectionTimeoutMillis: 5000 });
   try {
@@ -89,13 +100,7 @@ async function seedPostgres(): Promise<void> {
     console.log('✓ Лицензия demo: план demo, 2 дочки, 5 audit-seats');
 
     // RBAC (T-018): глобальный каталог прав (без RLS) + демо-роль тенанта с матрицей
-    const RESOURCES = ['engagement', 'finding', 'control', 'report', 'settings'];
-    const ACTIONS = ['view', 'create', 'edit', 'delete', 'approve', 'export'];
-    await db
-      .insert(permission)
-      .values(RESOURCES.flatMap((resource) => ACTIONS.map((action) => ({ resource, action }))))
-      .onConflictDoNothing();
-    const catalog = await db.select().from(permission);
+    const catalog = await seedPermissionCatalog(db);
     console.log(`✓ Каталог прав: ${catalog.length} permission'ов`);
 
     await db.transaction(async (tx) => {
@@ -177,7 +182,7 @@ const PRESET_ROLES: Array<{
   },
 ];
 
-async function seedPresetRoles(catalog: (typeof permission.$inferSelect)[]): Promise<void> {
+export async function seedPresetRoles(catalog: (typeof permission.$inferSelect)[]): Promise<void> {
   const owner = new Client({
     connectionString: env.databaseUrlOwner,
     connectionTimeoutMillis: 5000,
@@ -484,7 +489,7 @@ const GLOBAL_FRAMEWORKS = [
 ];
 
 /** Глобальная библиотека (ADR-0016) — под owner: RLS-политика записи не пускает app к tenant_id NULL. */
-async function seedGlobalFrameworks(): Promise<void> {
+export async function seedGlobalFrameworks(): Promise<void> {
   const owner = new Client({
     connectionString: env.databaseUrlOwner,
     connectionTimeoutMillis: 5000,
@@ -534,7 +539,7 @@ const DEMO_CONTROL_MAPPINGS: Array<{ control: string; framework: string; require
 ];
 
 /** Библиотека контролей из шаблона клиента (T-031) — под owner, как и фреймворки. */
-async function seedGlobalControls(): Promise<void> {
+export async function seedGlobalControls(): Promise<void> {
   const owner = new Client({
     connectionString: env.databaseUrlOwner,
     connectionTimeoutMillis: 5000,
@@ -697,7 +702,7 @@ const AUDIT_TYPES = [
   },
 ];
 
-async function seedAuditTypes(): Promise<void> {
+export async function seedAuditTypes(): Promise<void> {
   const owner = new Client({
     connectionString: env.databaseUrlOwner,
     connectionTimeoutMillis: 5000,
@@ -765,7 +770,7 @@ const GLOSSARY_TERMS = [
   },
 ];
 
-async function seedGlossary(): Promise<void> {
+export async function seedGlossary(): Promise<void> {
   const owner = new Client({
     connectionString: env.databaseUrlOwner,
     connectionTimeoutMillis: 5000,
@@ -1010,7 +1015,11 @@ async function main(): Promise<void> {
   console.log('Seed завершён.');
 }
 
-main().catch((error) => {
-  console.error('Seed провалился:', error instanceof Error ? error.message : error);
-  process.exit(1);
-});
+// Гард: демо-сид запускается только при прямом вызове (node dist/seed.js),
+// не при импорте функций из bootstrap.ts (T-I07).
+if (require.main === module) {
+  main().catch((error) => {
+    console.error('Seed провалился:', error instanceof Error ? error.message : error);
+    process.exit(1);
+  });
+}

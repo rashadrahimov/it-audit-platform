@@ -69,6 +69,26 @@ services:
         condition: service_healthy
     restart: 'no'
 
+  # One-shot: референс-данные (роли/фреймворки вкл. CBAR/контроли) + первый admin из
+  # BOOTSTRAP_* (T-I07). Без BOOTSTRAP_* — только референс. Демо-данные не сеются.
+  bootstrap:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: sh -c "cd apps/api && node dist/bootstrap.js"
+    environment:
+      DATABASE_URL: postgres://app:app@postgres:5432/audit
+      DATABASE_URL_OWNER: postgres://audit:${DB_PASSWORD:-audit}@postgres:5432/audit
+      BOOTSTRAP_TENANT_SLUG: ${BOOTSTRAP_TENANT_SLUG:-}
+      BOOTSTRAP_TENANT_NAME: ${BOOTSTRAP_TENANT_NAME:-}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: 'no'
+
   api:
     build:
       context: .
@@ -91,7 +111,7 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-      migrate:
+      bootstrap:
         condition: service_completed_successfully
     ports:
       - '${API_PORT:-3001}:3001'
