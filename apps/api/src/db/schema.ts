@@ -873,6 +873,28 @@ export const riskControl = pgTable(
   (table) => [uniqueIndex('risk_control_pair_idx').on(table.riskId, table.controlId)],
 );
 
+/**
+ * Risk assessment — сессия оценки рисков (T-059, RSK-01): период, методология,
+ * охват (scope jsonb: риски/дочки), статус. Документы — через document_link (T-034).
+ */
+export const riskAssessment = pgTable(
+  'risk_assessment',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    title: text('title').notNull(),
+    period: text('period'),
+    methodologyNote: text('methodology_note'),
+    scope: jsonb('scope').notNull().default({}),
+    status: text('status').notNull().default('draft'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('risk_assessment_tenant_idx').on(table.tenantId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
