@@ -25,6 +25,11 @@ const createSchema = z.object({
   custom: z.record(z.string(), z.unknown()).optional(),
 });
 
+const importSchema = z.object({
+  connectorId: z.uuid(),
+  type: z.enum(['erp', 'db', 'network', 'app', 'cloud', 'endpoint', 'other']).optional(),
+});
+
 @Controller('assets')
 @UseGuards(JwtAuthGuard, PermissionGuard)
 @ApiBearerAuth()
@@ -42,6 +47,20 @@ export class AssetsController {
     return this.service.create(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       parsed.data,
+    );
+  }
+
+  @Post('import')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Авто-обнаружение активов из коннектора (T-068, B3, capability=inventory)' })
+  @ApiCreatedResponse({ description: '{imported, updated}' })
+  import(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = importSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.importFromConnector(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.connectorId,
+      parsed.data.type,
     );
   }
 
