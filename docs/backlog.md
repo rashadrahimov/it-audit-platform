@@ -6,7 +6,7 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** ✅ allocations разблокирован. T-A23 backend `GET /memberships` + T-A24 UI `/allocations` (аллокация engagement+member+hours + утилизация команды vs capacity, progressbar). E2E проверен: POST 40ч → utilization 40 (25%). Единственный buildable-блокер Трека A снят.
+- **Текущая задача:** ✅ allocations разблокирован (T-A23 `/memberships` + T-A24 `/allocations`, E2E POST 40ч→25%). T-A25: `deriveUtilization` вынесен + 5 unit-кейсов (api-suite 56 зелёных).
 - **Следующий шаг:** Трек A полностью исчерпан (все buildable — [x], остаток [!] инфра/форки). По желанию Рашада: Трек C (client-answers T-001), деплой-пайплайн (EP-ONPREM), либо новый эпик.
 - **Последнее готово:** **Марафон-5 (Трек A UI-глубина) 18.07.2026 — T-A01…A22 (22 задачи): 15 экранов интерактива (risks/privacy/iam/code-changes/config/reports/api-keys/notifications/time/kpi/audit-programs/kb/questionnaires/satisfaction/plans/trends) + навигационный хаб (7 категорий) + i18n-гвард (610 ключей ×3) + 5 вынесенных unit-модулей (api 20→51 тест).** Все 17 экранов 200, verify зелёный, GitHub каждый коммит запушен.
 

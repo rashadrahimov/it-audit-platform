@@ -3,6 +3,7 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { engagement, resourceAllocation } from '../db/schema';
+import { deriveUtilization } from './utilization';
 
 interface Actor {
   tenantId: string;
@@ -66,12 +67,6 @@ export class AllocationsService {
         ),
     );
     const allocated = Number(agg?.allocated ?? 0);
-    return {
-      membershipId,
-      allocated,
-      capacity,
-      utilizationPct: capacity > 0 ? Math.round((allocated / capacity) * 100) : null,
-      overallocated: capacity > 0 && allocated > capacity,
-    };
+    return { membershipId, allocated, capacity, ...deriveUtilization(allocated, capacity) };
   }
 }
