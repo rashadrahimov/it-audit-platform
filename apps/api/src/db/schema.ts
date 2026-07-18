@@ -857,6 +857,22 @@ export const risk = pgTable(
   (table) => [index('risk_tenant_idx').on(table.tenantId)],
 );
 
+/** RCM (T-058, CTL-02): M:N риск↔митигирующий контроль. Изоляция через risk (FORCE). */
+export const riskControl = pgTable(
+  'risk_control',
+  {
+    id: id(),
+    riskId: uuid('risk_id')
+      .notNull()
+      .references(() => risk.id, { onDelete: 'cascade' }),
+    controlId: uuid('control_id')
+      .notNull()
+      .references(() => control.id, { onDelete: 'cascade' }),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('risk_control_pair_idx').on(table.riskId, table.controlId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

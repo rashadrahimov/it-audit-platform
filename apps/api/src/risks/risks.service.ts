@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { risk, riskMatrixConfig } from '../db/schema';
+import { control, risk, riskControl, riskMatrixConfig } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -182,6 +182,75 @@ export class RisksService {
       after: { riskClass: updated.riskClass, residualClass: updated.residualClass },
     });
     return { riskClass: updated.riskClass, residualClass: updated.residualClass };
+  }
+
+  /** RCM (T-058): привязать митигирующие контроли к риску (M:N). */
+  async linkControls(actor: Actor, riskId: string, controlIds: string[]) {
+    const linked = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [r] = await tx
+        .select({ id: risk.id })
+        .from(risk)
+        .where(and(eq(risk.id, riskId), isNull(risk.deletedAt)));
+      if (!r) throw new NotFoundException(`Риск ${riskId} не найден`);
+      const controls = await tx
+        .select({ id: control.id })
+        .from(control)
+        .where(and(inArray(control.id, controlIds), isNull(control.deletedAt)));
+      if (controls.length !== controlIds.length) {
+        throw new BadRequestException('Часть контролей не найдена');
+      }
+      let added = 0;
+      for (const c of controls) {
+        const [row] = await tx
+          .insert(riskControl)
+          .values({ riskId, controlId: c.id })
+          .onConflictDoNothing()
+          .returning();
+        if (row) added += 1;
+      }
+      return added;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'risk.controls_linked',
+      entityType: 'risk',
+      entityId: riskId,
+      after: { added: linked },
+    });
+    return { linked };
+  }
+
+  /** Митигирующие контроли риска. */
+  async controlsOf(tenantId: string, riskId: string) {
+    return this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ id: control.id, ref: control.ref })
+        .from(riskControl)
+        .innerJoin(control, eq(riskControl.controlId, control.id))
+        .where(eq(riskControl.riskId, riskId)),
+    );
+  }
+
+  /** Heat map (T-058): распределение рисков по классам (inherent и residual). */
+  async heatmap(tenantId: string) {
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ riskClass: risk.riskClass, residualClass: risk.residualClass })
+        .from(risk)
+        .where(isNull(risk.deletedAt)),
+    );
+    const empty = () => ({ low: 0, medium: 0, high: 0, critical: 0 });
+    const inherent = empty();
+    const residual = empty();
+    for (const r of rows) {
+      if (r.riskClass && r.riskClass in inherent)
+        inherent[r.riskClass as keyof typeof inherent] += 1;
+      if (r.residualClass && r.residualClass in residual)
+        residual[r.residualClass as keyof typeof residual] += 1;
+    }
+    return { total: rows.length, inherent, residual };
   }
 
   async list(tenantId: string, locale: Locale) {

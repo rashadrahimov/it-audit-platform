@@ -119,6 +119,38 @@ export class RisksController {
     );
   }
 
+  @Post(':id/controls')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'RCM (T-058): привязать митигирующие контроли к риску' })
+  linkControls(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ controlIds: z.array(z.uuid()).min(1) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.linkControls(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.controlIds,
+    );
+  }
+
+  @Get('heatmap')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Heat map (T-058): распределение рисков по классам' })
+  @ApiOkResponse({ description: '{total, inherent:{low,medium,high,critical}, residual:{…}}' })
+  heatmap(@Req() req: TenantRequest) {
+    return this.service.heatmap(req.tenantId);
+  }
+
+  @Get(':id/controls')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Митигирующие контроли риска' })
+  controlsOf(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.controlsOf(req.tenantId, id);
+  }
+
   @Get()
   @RequirePermission('control', 'view')
   @ApiOperation({ summary: 'Реестр рисков' })
