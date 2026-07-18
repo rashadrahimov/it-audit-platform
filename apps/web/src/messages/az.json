@@ -349,7 +349,14 @@
     "create": "Yeni təchizatçı",
     "namePh": "Təchizatçı adı",
     "add": "Əlavə et",
-    "lifecycle": "Həyat dövrü"
+    "lifecycle": "Həyat dövrü",
+    "back": "Təchizatçılara qayıt",
+    "category": "Kateqoriya",
+    "url": "URL",
+    "residual": "Qalıq risk",
+    "assessments": "Qiymətləndirmələr",
+    "noAssessments": "Hələ qiymətləndirmə yoxdur",
+    "statusLabel": "Status"
   },
   "workingPapers": {
     "title": "İş Sənədləri",

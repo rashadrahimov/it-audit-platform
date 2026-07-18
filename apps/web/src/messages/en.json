@@ -349,7 +349,14 @@
     "create": "New vendor",
     "namePh": "Vendor name",
     "add": "Add",
-    "lifecycle": "Lifecycle"
+    "lifecycle": "Lifecycle",
+    "back": "Back to vendors",
+    "category": "Category",
+    "url": "URL",
+    "residual": "Residual risk",
+    "assessments": "Assessments",
+    "noAssessments": "No assessments yet",
+    "statusLabel": "Status"
   },
   "workingPapers": {
     "title": "Working Papers",

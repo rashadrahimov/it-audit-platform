@@ -349,7 +349,14 @@
     "create": "Новый вендор",
     "namePh": "Название вендора",
     "add": "Добавить",
-    "lifecycle": "Жизненный цикл"
+    "lifecycle": "Жизненный цикл",
+    "back": "К вендорам",
+    "category": "Категория",
+    "url": "URL",
+    "residual": "Остаточный риск",
+    "assessments": "Оценки",
+    "noAssessments": "Пока нет оценок",
+    "statusLabel": "Статус"
   },
   "workingPapers": {
     "title": "Рабочие документы",
