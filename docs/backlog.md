@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** Трек I деплой ЗАВЕРШЁН: **T-I01** Dockerfile API + **T-I02** Dockerfile web + **T-I03** миграции в образе + **T-I04** `docker-compose.prod.yml` (single-command deploy: postgres+redis+minio+migrate+api+web). Проверено сквозно из чистого состояния на изолированном проекте (alt-порты): migrate exit 0 «migrations applied» → api /health 200 → web /login 200, /account 307; затем `down -v` начисто, dev-стек цел.
-- **Следующий шаг:** Buildable по всем трём направлениям /goal ИСЧЕРПАН: allocations (T-A23…A25), CBAR (T-C01/C02), деплой (T-I01…I04). Остаток строго [!]: EP-ONPREM инфра (pgBackRest/WAL-PITR, hardened-образы, backup-интеграция, реальный target), T-001 бизнес (оплата/лицензия/Kerberos/позиционирование). Далее — по желанию Рашада.
+- **Текущая задача:** Трек I деплой (T-I01…I04) + **T-I05:** job `docker` в CI — сборка обоих прод-образов (api/web) + валидация `docker-compose.prod.yml config`, параллельно основному `ci`. Локально команды job'а проходят; финальный verify — реальный прогон GitHub Actions через `gh`.
+- **Следующий шаг:** Опц. prod-bootstrap-скрипт (админ+CBAR без демо-данных) для prod-compose. Затем buildable-подмножества [!]-эпиков (gap-analysis). Остаток строго [!]: EP-ONPREM инфра, T-001 бизнес.
 - **Последнее готово:** **Марафон-5 (Трек A UI-глубина) 18.07.2026 — T-A01…A22 (22 задачи): 15 экранов интерактива (risks/privacy/iam/code-changes/config/reports/api-keys/notifications/time/kpi/audit-programs/kb/questionnaires/satisfaction/plans/trends) + навигационный хаб (7 категорий) + i18n-гвард (610 ключей ×3) + 5 вынесенных unit-модулей (api 20→51 тест).** Все 17 экранов 200, verify зелёный, GitHub каждый коммит запушен.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._

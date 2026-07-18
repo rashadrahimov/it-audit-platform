@@ -76,3 +76,19 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+  # Прод-образы (T-I05): проверяем, что оба Dockerfile'а собираются и prod-compose валиден.
+  # Отдельный job — параллельно ci, не блокирует тесты.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build -f apps/api/Dockerfile -t it-audit-api:ci .
+
+      - name: Build web image
+        run: docker build -f apps/web/Dockerfile -t it-audit-web:ci .
+
+      - name: Validate prod compose
+        run: JWT_SECRET=ci-validate docker compose -f docker-compose.prod.yml config >/dev/null
