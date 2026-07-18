@@ -25,6 +25,9 @@ COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
+# миграции в образе → `drizzle-kit migrate` деплоится вместе с приложением (T-I03)
+COPY --from=builder /app/apps/api/drizzle ./apps/api/drizzle
+COPY --from=builder /app/apps/api/drizzle.config.ts ./apps/api/drizzle.config.ts
 EXPOSE 3001
 USER node
 # порт из API_PORT (дефолт 3001); DATABASE_URL и прочее — из окружения (см. .env.example)
