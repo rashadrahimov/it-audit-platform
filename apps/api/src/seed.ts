@@ -283,6 +283,43 @@ const GLOBAL_FRAMEWORKS = [
       },
     ],
   },
+  // EP-FWK (T-078): расширение библиотеки до паритета с Vanta.
+  {
+    name: { en: 'SOC 2' },
+    version: '2017 (rev. 2022)',
+    requirements: [
+      { ref: 'CC1.1', title: { en: 'Control environment: integrity and ethical values', ru: 'Контрольная среда: честность и этические ценности' } },
+      { ref: 'CC6.1', title: { en: 'Logical and physical access controls', ru: 'Логический и физический контроль доступа' } },
+      { ref: 'CC7.2', title: { en: 'System monitoring for anomalies', ru: 'Мониторинг системы на аномалии' } },
+      { ref: 'A1.2', title: { en: 'Availability: environmental protections and backup', ru: 'Доступность: защита среды и резервное копирование' } },
+    ],
+  },
+  {
+    name: { en: 'PCI DSS' },
+    version: '4.0',
+    requirements: [
+      { ref: 'Req.1', title: { en: 'Install and maintain network security controls', ru: 'Установка и поддержка сетевых средств защиты' } },
+      { ref: 'Req.3', title: { en: 'Protect stored account data', ru: 'Защита хранимых данных держателей карт' } },
+      { ref: 'Req.8', title: { en: 'Identify users and authenticate access', ru: 'Идентификация пользователей и аутентификация доступа' } },
+    ],
+  },
+  {
+    name: { en: 'GDPR' },
+    version: '2016/679',
+    requirements: [
+      { ref: 'Art.30', title: { en: 'Records of processing activities', ru: 'Реестр операций обработки' } },
+      { ref: 'Art.32', title: { en: 'Security of processing', ru: 'Безопасность обработки' } },
+      { ref: 'Art.35', title: { en: 'Data protection impact assessment', ru: 'Оценка влияния на защиту данных' } },
+    ],
+  },
+  {
+    name: { en: 'HIPAA' },
+    version: 'Security Rule',
+    requirements: [
+      { ref: '164.308', title: { en: 'Administrative safeguards', ru: 'Административные меры защиты' } },
+      { ref: '164.312', title: { en: 'Technical safeguards', ru: 'Технические меры защиты' } },
+    ],
+  },
 ];
 
 /** Глобальная библиотека (ADR-0016) — под owner: RLS-политика записи не пускает app к tenant_id NULL. */

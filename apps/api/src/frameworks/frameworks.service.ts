@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { asc, eq, isNull } from 'drizzle-orm';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import { resolveLocalized, type Locale } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { framework, tenant } from '../db/schema';
+import { framework, frameworkRequirement, tenant } from '../db/schema';
 
 export interface FrameworkListItem {
   id: string;
@@ -52,5 +52,30 @@ export class FrameworksService {
       isGlobal: row.tenantId === null,
       sourceFrameworkId: row.sourceFrameworkId,
     }));
+  }
+
+  /** Дерево требований фреймворка (T-078). parent_id — иерархия (клиент строит дерево). */
+  async requirements(frameworkId: string, locale: Locale) {
+    const [fw] = await this.dbService.db
+      .select({ id: framework.id, nameI18n: framework.nameI18n, version: framework.version })
+      .from(framework)
+      .where(and(eq(framework.id, frameworkId), isNull(framework.deletedAt)));
+    if (!fw) throw new NotFoundException(`Фреймворк ${frameworkId} не найден`);
+    const reqs = await this.dbService.db
+      .select()
+      .from(frameworkRequirement)
+      .where(eq(frameworkRequirement.frameworkId, frameworkId))
+      .orderBy(asc(frameworkRequirement.ref));
+    return {
+      id: fw.id,
+      name: resolveLocalized(fw.nameI18n, locale),
+      version: fw.version,
+      requirements: reqs.map((r) => ({
+        id: r.id,
+        ref: r.ref,
+        title: resolveLocalized(r.titleI18n, locale),
+        parentId: r.parentId,
+      })),
+    };
   }
 }

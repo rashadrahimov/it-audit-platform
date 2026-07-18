@@ -1,8 +1,23 @@
-import { BadRequestException, Controller, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { DEFAULT_LOCALE, localeSchema } from '@it-audit/shared';
+import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FrameworksService, type FrameworkListItem } from './frameworks.service';
+
+function parseLocale(localeQuery?: string): Locale {
+  if (localeQuery === undefined) return DEFAULT_LOCALE;
+  const parsed = localeSchema.safeParse(localeQuery);
+  if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+  return parsed.data;
+}
 
 @Controller('frameworks')
 @UseGuards(JwtAuthGuard)
@@ -21,12 +36,14 @@ export class FrameworksController {
     @Query('tenantSlug') tenantSlug?: string,
     @Query('locale') localeQuery?: string,
   ): Promise<FrameworkListItem[]> {
-    let locale = DEFAULT_LOCALE;
-    if (localeQuery !== undefined) {
-      const parsed = localeSchema.safeParse(localeQuery);
-      if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
-      locale = parsed.data;
-    }
-    return this.frameworksService.list(tenantSlug, locale);
+    return this.frameworksService.list(tenantSlug, parseLocale(localeQuery));
+  }
+
+  @Get(':id/requirements')
+  @ApiOperation({ summary: 'Дерево требований фреймворка (T-078, EP-FWK)' })
+  @ApiQuery({ name: 'locale', required: false })
+  @ApiOkResponse({ description: '{id, name, version, requirements:[{id, ref, title, parentId}]}' })
+  requirements(@Param('id', ParseUUIDPipe) id: string, @Query('locale') localeQuery?: string) {
+    return this.frameworksService.requirements(id, parseLocale(localeQuery));
   }
 }
