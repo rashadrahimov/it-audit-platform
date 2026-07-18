@@ -1006,6 +1006,33 @@ export const securityAlert = pgTable(
   (table) => [index('security_alert_tenant_idx').on(table.tenantId)],
 );
 
+/**
+ * Узел audit universe (T-065, UNI-01): umbrella-дерево неограниченной глубины.
+ * kind + ref_id проецируют специализированные сущности (subsidiary/process/asset).
+ */
+export const auditableEntity = pgTable(
+  'auditable_entity',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    parentId: uuid('parent_id'),
+    kind: text('kind').notNull(),
+    refId: uuid('ref_id'),
+    nameI18n: jsonb('name_i18n').$type<I18nText>().notNull(),
+    descriptionI18n: jsonb('description_i18n').$type<I18nText>(),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    custom: jsonb('custom').notNull().default({}),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('auditable_entity_tenant_idx').on(table.tenantId),
+    index('auditable_entity_parent_idx').on(table.parentId),
+  ],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

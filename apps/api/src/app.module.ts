@@ -29,6 +29,7 @@ import { ReportsModule } from './reports/reports.module';
 import { RisksModule } from './risks/risks.module';
 import { SecurityAlertsModule } from './security-alerts/security-alerts.module';
 import { TestsModule } from './tests/tests.module';
+import { UniverseModule } from './universe/universe.module';
 import { UsersModule } from './users/users.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module';
@@ -62,6 +63,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     RisksModule,
     SecurityAlertsModule,
     TestsModule,
+    UniverseModule,
     UsersModule,
     VendorsModule,
     VulnerabilitiesModule,
