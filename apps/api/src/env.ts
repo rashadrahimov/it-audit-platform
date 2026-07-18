@@ -51,4 +51,10 @@ export const env = {
   slaDueSoonDays: Number(process.env.SLA_DUE_SOON_DAYS ?? 7),
   /** T-048: ключ шифрования конфигов коннекторов (AES-256-GCM). В проде — обязателен свой. */
   encryptionKey: process.env.ENCRYPTION_KEY ?? 'dev-only-connector-encryption-key-change-me',
+  /**
+   * SEC-07 (T-H01): политика конкурентных сессий.
+   * 'detect' (дефолт) — писать security-событие; 'block' — отклонять новый логин,
+   * пока активна другая сессия (в окне JWT_TTL). Окно = jwtTtlSeconds.
+   */
+  concurrentSessionPolicy: process.env.CONCURRENT_SESSION_POLICY === 'block' ? 'block' : 'detect',
 };

@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gt } from 'drizzle-orm';
 import type {
   AuthTokenResponse,
   ChangePasswordRequest,
@@ -16,7 +16,7 @@ import type {
   RegisterRequest,
 } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { membership, role, tenant, user } from '../db/schema';
+import { authEvent, membership, role, tenant, user } from '../db/schema';
 import { AuditLogService } from '../audit/audit-log.service';
 import { PasswordService } from './password.service';
 import { resolvePolicy, validatePassword, DEFAULT_PASSWORD_POLICY } from './password-policy';
@@ -111,11 +111,35 @@ export class AuthService {
     return this.completeLogin(found.id, found.email, meta);
   }
 
+  /**
+   * SEC-07 (T-H01): активна ли уже другая сессия пользователя? Сессия считается
+   * активной, если был `login` в окне JWT_TTL и токен ещё не истёк. Возвращает
+   * число таких недавних логинов (0 = нет конкуренции).
+   */
+  private async recentActiveLogins(userId: string): Promise<number> {
+    const since = new Date(Date.now() - env.jwtTtlSeconds * 1000);
+    const rows = await this.dbService.db
+      .select({ id: authEvent.id })
+      .from(authEvent)
+      .where(
+        and(eq(authEvent.userId, userId), eq(authEvent.event, 'login'), gt(authEvent.at, since)),
+      );
+    return rows.length;
+  }
+
   private async completeLogin(
     userId: string,
     email: string,
     meta: RequestMeta,
   ): Promise<AuthTokenResponse> {
+    // SEC-07: детект конкурентных сессий до выдачи токена
+    if ((await this.recentActiveLogins(userId)) > 0) {
+      await this.auditLogService.recordAuthEvent({ userId, event: 'concurrent_session', ...meta });
+      if (env.concurrentSessionPolicy === 'block') {
+        throw new UnauthorizedException('Уже есть активная сессия — завершите её и повторите');
+      }
+    }
+
     await this.dbService.db
       .update(user)
       .set({ failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date() })
