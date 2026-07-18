@@ -38,7 +38,8 @@
     },
     "dashboard": "İdarə panelləri",
     "connectors": "Konnektorlar",
-    "policies": "Siyasətlər"
+    "policies": "Siyasətlər",
+    "universe": "Audit Kainatı"
   },
   "engagements": {
     "title": "Auditlər",
@@ -208,6 +209,21 @@
       "in_review": "Baxışda",
       "approved": "Təsdiqlənib",
       "archived": "Arxiv"
+    }
+  },
+  "universe": {
+    "title": "Audit Kainatı",
+    "toAccount": "Hesab",
+    "empty": "Hələ kainat qovşağı yoxdur",
+    "nodes": "qovşaq",
+    "owner": "sahib",
+    "kind": {
+      "subsidiary": "Törəmə",
+      "process": "Proses",
+      "system": "Sistem",
+      "location": "Məkan",
+      "activity": "Fəaliyyət",
+      "function": "Funksiya"
     }
   }
 }

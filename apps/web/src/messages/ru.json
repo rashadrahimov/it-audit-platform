@@ -38,7 +38,8 @@
     },
     "dashboard": "Дашборды",
     "connectors": "Коннекторы",
-    "policies": "Политики"
+    "policies": "Политики",
+    "universe": "Аудируемая вселенная"
   },
   "engagements": {
     "title": "Аудиты",
@@ -208,6 +209,21 @@
       "in_review": "На ревью",
       "approved": "Утверждена",
       "archived": "Архив"
+    }
+  },
+  "universe": {
+    "title": "Аудируемая вселенная",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет узлов вселенной",
+    "nodes": "узлов",
+    "owner": "владелец",
+    "kind": {
+      "subsidiary": "Дочка",
+      "process": "Процесс",
+      "system": "Система",
+      "location": "Локация",
+      "activity": "Активность",
+      "function": "Функция"
     }
   }
 }

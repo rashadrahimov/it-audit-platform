@@ -38,7 +38,8 @@
     },
     "dashboard": "Dashboards",
     "connectors": "Connectors",
-    "policies": "Policies"
+    "policies": "Policies",
+    "universe": "Audit Universe"
   },
   "engagements": {
     "title": "Engagements",
@@ -208,6 +209,21 @@
       "in_review": "In review",
       "approved": "Approved",
       "archived": "Archived"
+    }
+  },
+  "universe": {
+    "title": "Audit Universe",
+    "toAccount": "Account",
+    "empty": "No universe nodes yet",
+    "nodes": "nodes",
+    "owner": "owner",
+    "kind": {
+      "subsidiary": "Subsidiary",
+      "process": "Process",
+      "system": "System",
+      "location": "Location",
+      "activity": "Activity",
+      "function": "Function"
     }
   }
 }
