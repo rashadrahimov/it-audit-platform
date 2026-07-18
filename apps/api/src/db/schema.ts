@@ -984,6 +984,22 @@ export const codeChange = pgTable(
   (table) => [index('code_change_tenant_idx').on(table.tenantId)],
 );
 
+/** Настраиваемый чарт-дашборд (T-072, B9): widgets jsonb — список {metric, chartType, title}. */
+export const dashboard = pgTable(
+  'dashboard',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    name: text('name').notNull(),
+    widgets: jsonb('widgets').notNull().default([]),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('dashboard_tenant_idx').on(table.tenantId)],
+);
+
 /** Security alert (T-064): сигнал из коннектора/сканера → triage → закрытие. */
 export const securityAlert = pgTable(
   'security_alert',

@@ -274,6 +274,13 @@
       "when": 1784386644949,
       "tag": "0038_device",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1784387314896,
+      "tag": "0039_dashboard",
+      "breakpoints": true
     }
   ]
 }

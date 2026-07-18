@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-PERS закрыт целиком (T-069…T-071). Следующая — декомпозиция EP-REP (отчёты как чарт-дашборды B9 + snapshots B10) — последний stub-эпик M2.
-- **Следующий шаг:** Распишу EP-REP на атомы T-072+ (настраиваемые чарт-дашборды + snapshots состояния на дату) и сделаю. EP-REP закроет M2 целиком → дальше M3.
+- **Текущая задача:** EP-REP — T-072 (metrics + чарт-дашборды B9) закрыта. Следующая — T-073 (snapshots B10), закроет EP-REP и M2 целиком.
+- **Следующий шаг:** T-073 (report_snapshot — заморозка метрик на дату) → M2 закрыт целиком → M3 (EP-TRUST / EP-PRIV / EP-QA / EP-FWK) либо RFP-эпики.
 - **Последнее готово:** **Марафон-4 18.07.2026: EP-VEND (T-060/061) + EP-VULN (T-062/063/064) + EP-ASSET (T-065…068) + EP-PERS (T-069…071) — четыре эпика M2 целиком.** До того марафон-3 (EP-INT/POL/IAM/RISK, 12 задач), M1 (7), марафон-1 (12). GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -250,7 +250,14 @@ IAM встроен в Control→Test→Finding (ADR-0012): аккаунты — 
 - [x] **T-061** — Vendor assessment: `vendor_assessment` (type, state, due_date, owner, recommendation, evidence_status); assessment-workflow, документы через document_link, due на SLA-джобе. _Deps: T-060, T-034._ DoD: assessment вендора создаётся, проходит состояния, evidence прикладывается. **Готово: таблица vendor_assessment (миграция 0030). Workflow requested→in_progress→completed (скип→400); evidence_status авто-переходит в `provided` при наличии прикреплённого документа (document_link, entityType=vendor_assessment добавлен в whitelist T-034); recommendation при завершении. API control.edit/view: POST /vendors/:id/assessments, POST /vendors/assessments/:id/transition, GET /vendors/:id/assessments (с документами). audit_log vendor_assessment.created/state_changed. E2e: создание requested, evidence приложен→provided, workflow→completed с рекомендацией, docs=1, скип 400. **EP-VEND закрыт целиком** (T-060 register + T-061 assessment).**
 
 - [x] **EP-VEND** — Vendor Risk Management (B5). **Закрыт: T-060 (register+lifecycle+риск-класс) + T-061 (assessment-workflow с evidence). Настраиваемая intake-форма (jsonb) и SLA на due_date assessment — задел готов, подключается атомами при надобности.**
-- **EP-REP** — Reports как настраиваемые чарт-дашборды (B9) + snapshots (B10).
+### Эпик: Reports-дашборды + snapshots (EP-REP, B9/B10) — расписан на атомы 18.07.2026 (марафон-4, мандат на декомпозицию)
+
+Настраиваемые чарт-дашборды (B9: переиспользуемые наборы виджетов поверх живых метрик — findings/tests/vendors/risks/devices) + snapshots (B10: заморозка состояния метрик на дату, доказуемость «как было на дату аудита»). Поверх существующего engagement-PDF (M1). Метрики — агрегаты по status/severity/class уже существующих таблиц.
+
+- [x] **T-072** — Metrics service + dashboard config (B9): `dashboard` (name, widgets jsonb — список {metric, chartType, title}); MetricsService считает именованные метрики (findings_by_status/by_severity, tests_by_status, vendors_by_risk, risks_by_class, devices_compliance, controls_total) из живых данных; `GET /dashboards/:id/data` возвращает посчитанные виджеты. CRUD дашборда. _Deps: T-038, T-060, T-057, T-070._ DoD: дашборд создаётся из набора виджетов, данные каждого виджета считаются из живых данных, неизвестная метрика→400. **Готово: миграция 0039 — dashboard (FORCE RLS; name, widgets jsonb). MetricsService — 7 именованных метрик (агрегаты count/groupBy по finding.status/riskRating, test.status, vendor.inherentRisk, risk.riskClass, device.complianceStatus, control total); isKnown-валидация; computeAll (для снапшотов T-073). DashboardsService: create (валидация метрик виджетов→400), list, data (каждый виджет → посчитанный breakdown). API report.export (edit/view; Collaborator→403). `GET /dashboards/metrics` — каталог. audit_log dashboard.created. E2e: 7 метрик в каталоге, дашборд из 3 виджетов→данные из живых (findings_by_status {closed,identified}, devices_compliance, controls_total 32), неизвестная метрика→400, мусорный chartType→400, Collaborator→403.**
+- [ ] **T-073** — Snapshots (B10): `report_snapshot` (label, captured_at, metrics jsonb — заморозка текущих значений всех метрик); создание фиксирует срез на дату, список + карточка отдают историческое состояние неизменным. _Deps: T-072._ DoD: снапшот фиксирует метрики на дату; после изменения живых данных исторический снапшот остаётся прежним.
+
+- [ ] **EP-REP** — Reports как настраиваемые чарт-дашборды (B9) + snapshots (B10). **Расписан на T-072–T-073.**
 
 ## M3. Полный паритет (эпики)
 

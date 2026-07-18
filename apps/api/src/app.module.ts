@@ -9,6 +9,7 @@ import { ChangesModule } from './changes/changes.module';
 import { CommentsModule } from './comments/comments.module';
 import { ConnectorsModule } from './connectors/connectors.module';
 import { ControlsModule } from './controls/controls.module';
+import { DashboardsModule } from './dashboards/dashboards.module';
 import { DbModule } from './db/db.module';
 import { DevicesModule } from './devices/devices.module';
 import { DocumentsModule } from './documents/documents.module';
@@ -50,6 +51,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     CommentsModule,
     ConnectorsModule,
     ControlsModule,
+    DashboardsModule,
     DbModule,
     DevicesModule,
     DocumentsModule,
