@@ -984,6 +984,40 @@ export const codeChange = pgTable(
   (table) => [index('code_change_tenant_idx').on(table.tenantId)],
 );
 
+/** Security-опросник (T-083, EP-QA): набор вопросов с ответами (вручную или reuse из KB). */
+export const questionnaire = pgTable(
+  'questionnaire',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    title: text('title').notNull(),
+    source: text('source'),
+    status: text('status').notNull().default('draft'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('questionnaire_tenant_idx').on(table.tenantId)],
+);
+
+/** Ответ опросника (T-083): вручную или переиспользован из kb_entry. */
+export const questionnaireAnswer = pgTable(
+  'questionnaire_answer',
+  {
+    id: id(),
+    questionnaireId: uuid('questionnaire_id')
+      .notNull()
+      .references(() => questionnaire.id, { onDelete: 'cascade' }),
+    question: text('question').notNull(),
+    answer: text('answer'),
+    kbEntryId: uuid('kb_entry_id').references(() => kbEntry.id),
+    status: text('status').notNull().default('pending'),
+    ...timestamps,
+  },
+  (table) => [index('questionnaire_answer_q_idx').on(table.questionnaireId)],
+);
+
 /** Knowledge base (T-082, EP-QA): библиотека переиспользуемых Q&A для опросников. */
 export const kbEntry = pgTable(
   'kb_entry',

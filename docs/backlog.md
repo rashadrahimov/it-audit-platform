@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-QA — T-082 (knowledge base) закрыта. Следующая — T-083 (questionnaires + reuse из KB), закроет EP-QA (ядро).
-- **Следующий шаг:** T-083 (questionnaire/answer с reuse KB) закроет EP-QA. Дальше — RFP-эпики / «Добавки».
+- **Текущая задача:** **M3 закрыт целиком** (EP-PRIV/MISC/FWK/TRUST/QA). Следующая — RFP-эпики: декомпозиция EP-AUDITTYPES (типы аудита как атрибут engagement).
+- **Следующий шаг:** Распишу EP-AUDITTYPES на атомы T-084+ (audit_type справочник + атрибут engagement) и сделаю. Дальше — EP-UNIVERSE / EP-CONFIG.
 - **Последнее готово:** **Марафон-4 18.07.2026: весь M2 (T-060…073) + M3 EP-PRIV (T-074/075) + EP-MISC (T-076/077) + EP-FWK (T-078/079) + EP-TRUST (T-080/081) — 22 задачи.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -282,7 +282,9 @@ GDPR-приватность: ROPA (Records of Processing Activities, Art. 30 —
 Автоматизация ответов на security-опросники. Ядро (без AI): knowledge base переиспользуемых Q&A + опросники, где ответ берётся из KB (детерминированное «переиспользование прошлых ответов» — субстрат, поверх которого AI-подсказка = EP-AI, работает и offline на on-prem ADR-0002). Модель — data-model §12 (questionnaire/questionnaire_answer/kb_entry).
 
 - [x] **T-082** — Knowledge base: `kb_entry` (question, answer, category, tags jsonb) — библиотека переиспользуемых Q&A; CRUD + поиск по ключевому слову (ILIKE по question/answer). _Deps: T-020._ DoD: KB-запись создаётся, находится поиском по ключевому слову, пустой поиск отдаёт всё. **Готово: миграция 0047 — kb_entry (FORCE RLS; question, answer, category, tags jsonb). create, search (ILIKE OR по question/answer; пустой q→все). API control.edit/view. audit_log kb_entry.created. E2e: 2 записи, поиск «encrypt»→1 (по вопросу), «annually»→1 (по ответу), «zzzz»→0, пустой q→2, пустая question→400, Collaborator→403.**
-- [ ] **T-083** — Questionnaires + reuse из KB: `questionnaire` (title, source, status draft→in_progress→submitted) + `questionnaire_answer` (question, answer, kb_entry_id NULL — переиспользовано из KB, status pending/answered); добавить вопросы, ответить (вручную или reuse KB → копирует answer + ставит kb_entry_id), submit (все ответы answered, иначе→400). _Deps: T-082._ DoD: опросник создаётся, вопрос отвечается вручную и переиспользованием из KB, submit требует полноты. **EP-QA (ядро) закрыт этими двумя; AI-автоответ — EP-AI.**
+- [x] **T-083** — Questionnaires + reuse из KB: `questionnaire` (title, source, status draft→in_progress→submitted) + `questionnaire_answer` (question, answer, kb_entry_id NULL — переиспользовано из KB, status pending/answered); добавить вопросы, ответить (вручную или reuse KB → копирует answer + ставит kb_entry_id), submit (все ответы answered, иначе→400). _Deps: T-082._ DoD: опросник создаётся, вопрос отвечается вручную и переиспользованием из KB, submit требует полноты. **Готово: миграция 0048 — questionnaire (FORCE RLS) + questionnaire_answer (RLS через questionnaire EXISTS; kb_entry_id-линк). create, addQuestion (pending), answer (вручную ИЛИ reuse KB — kbEntryId копирует kb.answer + ставит kb_entry_id → answered; ни того ни другого→400, битый KB→400), submit (пусто→400, есть pending→400, всё answered→submitted). get с reusedFromKb-флагом. API control.edit/view. audit_log questionnaire.created/answered/submitted. E2e: submit до ответов→400, reuse KB→answered reused=true (ответ «Yes, AES-256...» скопирован), submit с 1 pending→400, ручной ответ→reused=false, submit→submitted, карточка reusedFromKb=true, без answer/kbEntryId→400, Collaborator→403. **EP-QA (ядро) закрыт целиком** (T-082 KB + T-083 опросники).**
+
+- [x] **EP-QA** — Questionnaire Automation (AI отвечает на опросники, раздел C). **Расписан на T-082–T-083. Ядро закрыто: knowledge base переиспользуемых Q&A + опросники с детерминированным reuse из KB (работает offline). AI-автоподбор ответа поверх KB — EP-AI.**
 
 - [ ] **EP-QA** — Questionnaire Automation (AI отвечает на опросники, раздел C). **Расписан на T-082–T-083 (ядро KB+опросники без AI); AI-автоответ поверх KB — EP-AI.**
 ### Эпик: Широкая библиотека фреймворков (EP-FWK, паритет с Vanta) — расписан на атомы 18.07.2026 (марафон-4)

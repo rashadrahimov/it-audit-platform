@@ -32,6 +32,7 @@ import { PersonnelModule } from './personnel/personnel.module';
 import { PoliciesModule } from './policies/policies.module';
 import { PrivacyModule } from './privacy/privacy.module';
 import { ProcessesModule } from './processes/processes.module';
+import { QuestionnairesModule } from './questionnaires/questionnaires.module';
 import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
 import { RisksModule } from './risks/risks.module';
@@ -76,6 +77,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     PoliciesModule,
     PrivacyModule,
     ProcessesModule,
+    QuestionnairesModule,
     RbacModule,
     ReportsModule,
     RisksModule,
