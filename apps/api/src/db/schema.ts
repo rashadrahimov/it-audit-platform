@@ -1193,6 +1193,21 @@ export const privacyAssessment = pgTable(
   (table) => [index('privacy_assessment_tenant_idx').on(table.tenantId)],
 );
 
+/** Настраиваемый список тенанта (T-087, GEN-06/ENG-09): audit_opinion и др. lookup'ы. */
+export const configList = pgTable(
+  'config_list',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    listKey: text('list_key').notNull(),
+    items: jsonb('items').notNull().default([]),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('config_list_key_idx').on(table.tenantId, table.listKey)],
+);
+
 /** Определение custom-поля (T-086, GEN-07): тенант описывает доп. поля per entity_type без кода. */
 export const customFieldDef = pgTable(
   'custom_field_def',

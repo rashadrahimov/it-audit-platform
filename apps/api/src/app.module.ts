@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChangesModule } from './changes/changes.module';
 import { CommentsModule } from './comments/comments.module';
 import { CommitmentsModule } from './commitments/commitments.module';
+import { ConfigListsModule } from './config-lists/config-lists.module';
 import { ConnectorsModule } from './connectors/connectors.module';
 import { ControlsModule } from './controls/controls.module';
 import { CustomFieldsModule } from './custom-fields/custom-fields.module';
@@ -59,6 +60,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     ChangesModule,
     CommentsModule,
     CommitmentsModule,
+    ConfigListsModule,
     ConnectorsModule,
     ControlsModule,
     CustomFieldsModule,

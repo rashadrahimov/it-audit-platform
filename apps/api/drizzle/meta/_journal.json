@@ -358,6 +358,13 @@
       "when": 1784392889413,
       "tag": "0050_custom-field-def",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1784393274999,
+      "tag": "0051_config-list",
+      "breakpoints": true
     }
   ]
 }
