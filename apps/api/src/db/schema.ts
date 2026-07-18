@@ -723,6 +723,45 @@ export const account = pgTable(
   ],
 );
 
+/** Access Review — кампания UAR (T-055, ADR-0012): периодическая сверка «кто к чему имеет доступ». */
+export const accessReview = pgTable(
+  'access_review',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    title: text('title').notNull(),
+    period: text('period'),
+    scope: jsonb('scope').notNull().default({}),
+    status: text('status').notNull().default('in_progress'),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('access_review_tenant_idx').on(table.tenantId)],
+);
+
+/** Пункт ревью (ADR-0012): решение по аккаунту — certify/revoke/modify; revoke может порождать finding. */
+export const accessReviewItem = pgTable(
+  'access_review_item',
+  {
+    id: id(),
+    reviewId: uuid('review_id')
+      .notNull()
+      .references(() => accessReview.id, { onDelete: 'cascade' }),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => account.id),
+    reviewerMembershipId: uuid('reviewer_membership_id').references(() => membership.id),
+    decision: text('decision'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    findingId: uuid('finding_id'),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('access_review_item_idx').on(table.reviewId, table.accountId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

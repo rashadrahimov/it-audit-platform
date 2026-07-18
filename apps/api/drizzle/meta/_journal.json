@@ -176,6 +176,13 @@
       "when": 1784381295260,
       "tag": "0024_account",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1784381569726,
+      "tag": "0025_access-review",
+      "breakpoints": true
     }
   ]
 }

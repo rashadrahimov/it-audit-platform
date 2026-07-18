@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-IAM расписан (T-054–T-056), T-054 (Account core: импорт из коннектора + ручное) закрыта. Следующая — T-055 (Access Review / UAR: кампания ревью аккаунтов, reviewer certify/revoke).
-- **Следующий шаг:** T-055 → T-056 (access requests + deprovisioning). Остаток T-001 (Excel-шаблоны, регулятор, оплата) гейтит часть фич.
-- **Последнее готово:** **Марафон-3 18.07.2026: EP-INT целиком (T-048/049/050), EP-POL целиком (T-051/052/053), EP-IAM начат (T-054).** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
+- **Текущая задача:** EP-IAM — T-055 (Access Review/UAR: кампания, certify/revoke) закрыта. Следующая — T-056 (access requests + deprovisioning tasks), закроет EP-IAM.
+- **Следующий шаг:** T-056 закроет EP-IAM. Дальше — EP-RISK / EP-ASSET / EP-PERS или M3. Остаток T-001 (Excel-шаблоны, регулятор, оплата) гейтит часть фич.
+- **Последнее готово:** **Марафон-3 18.07.2026: EP-INT целиком, EP-POL целиком, EP-IAM — T-054, T-055.** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -193,7 +193,7 @@ _Правило промта: не пересказывать контекст �
 IAM встроен в Control→Test→Finding (ADR-0012): аккаунты — из коннекторов (EP-INT, LDAP уже тянет), UAR порождает findings, аккаунты без owner/MFA → failing entities автотестов. Модель — data-model §6.
 
 - [x] **T-054** — Account core: сущность `account` (identifier, display_name, owner, groups, type human/service, mfa_enabled, status, connector_id/source); импорт из LDAP-коннектора (personnel-records → accounts, upsert по identifier) + ручное заведение; CRUD/список; RLS. _Deps: T-049._ DoD: аккаунты импортируются коннектором и видны в списке; ручной аккаунт создаётся. **Готово: миграция 0024 — `account` (FORCE RLS; connector_id-источник, identifier, owner/groups/type/mfa_enabled/status, created/deactivated_in_source; UNIQUE tenant+connector+identifier для upsert). `AccountsService.importFromConnector` — collectRecords из коннектора (переиспользует T-049) → upsert account; ручное createManual; list с fromConnector-флагом; deactivate. API под settings.edit/view: POST /accounts/import, POST /accounts, GET, POST /:id/deactivate. audit_log account.imported/created/deactivated. E2e: импорт из демо-LDAP→ldap-user, повторный upsert без дублей, ручной service-аккаунт, деактивация, RBAC 403. UI /accounts — с T-055.**
-- [ ] **T-055** — Access Review (UAR): `access_review` (кампания) + `access_review_item` (account, reviewer, decision certify/revoke/modify); reviewer выносит решение, revoke может порождать finding/deprovisioning. _Deps: T-054, T-038._ DoD: UAR-кампания создаётся по scope, reviewer сертифицирует/отзывает аккаунт, решения фиксируются.
+- [x] **T-055** — Access Review (UAR): `access_review` (кампания) + `access_review_item` (account, reviewer, decision certify/revoke/modify); reviewer выносит решение, revoke может порождать finding/deprovisioning. _Deps: T-054, T-038._ DoD: UAR-кампания создаётся по scope, reviewer сертифицирует/отзывает аккаунт, решения фиксируются. **Готово: миграция 0025 — `access_review` (кампания, scope jsonb, status; FORCE RLS) + `access_review_item` (account, reviewer, decision, decided_at, finding_id-задел; RLS через EXISTS). Создание кампании: item на каждый аккаунт scope (пустой = все активные); `POST /:id/items/:itemId/decision` (certify/revoke/modify) — revoke деактивирует аккаунт (deprovisioning-задача придёт в T-056), все решены → кампания completed. API под settings.edit/view. audit_log access_review.created/decided. E2e: кампания на 2 аккаунта, certify→remaining, revoke→deactivated+completed, 400/RBAC. finding_id — порождение finding из revoke подключится с полным IAM→Finding (задел есть). UI — с T-056.**
 - [ ] **T-056** — Access requests + deprovisioning: `access_request` (запрос доступа, approver-workflow) + `deprovisioning_task` (отзыв уволенных, due_date/sla_status — на SLA-джобе T-043). _Deps: T-054, T-043._ DoD: запрос доступа проходит approve/reject; deprovisioning-задача создаётся и закрывается, SLA считается.
 
 - [x] **EP-IAM** — Access Review / IAM (B11): аккаунты, UAR, access requests, deprovisioning. **Расписан на T-054–T-056.**
