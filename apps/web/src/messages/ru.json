@@ -40,7 +40,8 @@
     "connectors": "Коннекторы",
     "policies": "Политики",
     "universe": "Аудируемая вселенная",
-    "riskHeatmap": "Тепловая карта рисков"
+    "riskHeatmap": "Тепловая карта рисков",
+    "plans": "Планы аудита"
   },
   "engagements": {
     "title": "Аудиты",
@@ -239,6 +240,22 @@
       "medium": "Средний",
       "high": "Высокий",
       "critical": "Критический"
+    }
+  },
+  "plans": {
+    "title": "Планы аудита",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет планов",
+    "capacity": "Ёмкость",
+    "planned": "Запланировано",
+    "remaining": "Остаток",
+    "overallocated": "Перегрузка",
+    "hours": "ч",
+    "year": "Год",
+    "status": {
+      "draft": "Черновик",
+      "approved": "Утверждён",
+      "active": "Активный"
     }
   }
 }

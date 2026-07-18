@@ -40,7 +40,8 @@
     "connectors": "Konnektorlar",
     "policies": "Siyasətlər",
     "universe": "Audit Kainatı",
-    "riskHeatmap": "Risk İstilik Xəritəsi"
+    "riskHeatmap": "Risk İstilik Xəritəsi",
+    "plans": "Audit Planları"
   },
   "engagements": {
     "title": "Auditlər",
@@ -239,6 +240,22 @@
       "medium": "Orta",
       "high": "Yüksək",
       "critical": "Kritik"
+    }
+  },
+  "plans": {
+    "title": "Audit Planları",
+    "toAccount": "Hesab",
+    "empty": "Hələ plan yoxdur",
+    "capacity": "Tutum",
+    "planned": "Planlaşdırılıb",
+    "remaining": "Qalıq",
+    "overallocated": "Həddindən artıq yük",
+    "hours": "saat",
+    "year": "İl",
+    "status": {
+      "draft": "Qaralama",
+      "approved": "Təsdiqlənib",
+      "active": "Aktiv"
     }
   }
 }

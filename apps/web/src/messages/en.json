@@ -40,7 +40,8 @@
     "connectors": "Connectors",
     "policies": "Policies",
     "universe": "Audit Universe",
-    "riskHeatmap": "Risk Heat Map"
+    "riskHeatmap": "Risk Heat Map",
+    "plans": "Audit Plans"
   },
   "engagements": {
     "title": "Engagements",
@@ -239,6 +240,22 @@
       "medium": "Medium",
       "high": "High",
       "critical": "Critical"
+    }
+  },
+  "plans": {
+    "title": "Audit Plans",
+    "toAccount": "Account",
+    "empty": "No plans yet",
+    "capacity": "Capacity",
+    "planned": "Planned",
+    "remaining": "Remaining",
+    "overallocated": "Over capacity",
+    "hours": "h",
+    "year": "Year",
+    "status": {
+      "draft": "Draft",
+      "approved": "Approved",
+      "active": "Active"
     }
   }
 }
