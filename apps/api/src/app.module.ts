@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { CommentsModule } from './comments/comments.module';
 import { ControlsModule } from './controls/controls.module';
 import { DbModule } from './db/db.module';
+import { DocumentsModule } from './documents/documents.module';
 import { HealthController } from './health.controller';
 import { InfraHealthController } from './infra-health.controller';
 import { InfraHealthService } from './infra-health.service';
@@ -25,6 +26,7 @@ import { UsersModule } from './users/users.module';
     CommentsModule,
     ControlsModule,
     DbModule,
+    DocumentsModule,
     EmailModule,
     EngagementsModule,
     FilesModule,

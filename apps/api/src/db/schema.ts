@@ -425,6 +425,58 @@ export const response = pgTable(
   (table) => [uniqueIndex('response_checklist_item_idx').on(table.checklistItemId)],
 );
 
+/**
+ * Документ (T-034, data-model §6): метаданные поверх S3-хранилища (T-042).
+ * Новая версия = новая строка (prev_version_id); folder_id придёт с WP-04.
+ */
+export const document = pgTable(
+  'document',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    storageKey: text('storage_key').notNull(),
+    filename: text('filename').notNull(),
+    mime: text('mime').notNull(),
+    size: integer('size').notNull(),
+    sha256: text('sha256').notNull(),
+    version: integer('version').notNull().default(1),
+    prevVersionId: uuid('prev_version_id').references((): AnyPgColumn => document.id),
+    ownerMembershipId: uuid('owner_membership_id')
+      .notNull()
+      .references(() => membership.id),
+    /** Cadence: дата, к которой доказательство надо обновить (renew-by). */
+    renewBy: timestamp('renew_by', { withTimezone: true }),
+    status: text('status').notNull().default('active'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('document_tenant_idx').on(table.tenantId)],
+);
+
+/**
+ * Полиморфная привязка документа (data-model §10.5): evidence/permanent_file/
+ * attachment/report; одна версия файла видна из многих мест (WP-05).
+ */
+export const documentLink = pgTable(
+  'document_link',
+  {
+    id: id(),
+    documentId: uuid('document_id')
+      .notNull()
+      .references(() => document.id, { onDelete: 'cascade' }),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    relation: text('relation').notNull().default('evidence'),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('document_link_triple_idx').on(table.documentId, table.entityType, table.entityId),
+    index('document_link_entity_idx').on(table.entityType, table.entityId),
+  ],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
