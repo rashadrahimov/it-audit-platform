@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-WPAPERS закрыт (T-092/093). Следующая — декомпозиция EP-SEARCH (глобальный поиск best-match, GEN-05).
-- **Следующий шаг:** Распишу EP-SEARCH на атомы T-094+ (кросс-сущностный поиск findings/WP/controls/checklists) и сделаю. Дальше — EP-HELP / EP-SCHED.
+- **Текущая задача:** EP-SEARCH (ядро GEN-05) закрыт (T-094). Следующая — декомпозиция EP-HELP (встроенная помощь: глоссарий, подсказки, GEN-09).
+- **Следующий шаг:** Распишу EP-HELP на атомы T-095+ (glossary_term + help-контент) и сделаю. Дальше — EP-MSG / EP-SCHED.
 - **Последнее готово:** **Марафон-4 18.07.2026: M2 (T-060…073) + M3 (T-074…083) + RFP EP-AUDITTYPES/CONFIG/TIME/API (T-084…091) — 32 задачи.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -345,7 +345,13 @@ WP как контейнер fieldwork + audit programs с roll-forward + sign-o
 
 Отделяемые модули — фаза 2/3:
 - **EP-SCHED** — scheduling: Gantt с drag-drop (SCH-01), аллокация ресурсов и утилизация (SCH-02/03), конфликты (SCH-04), пауза аудита (SCH-06).
-- **EP-SEARCH** — глобальный поиск best-match по findings/WP/чеклистам/шаблонам (GEN-05) + полнотекстовый поиск внутри Office/PDF (DAT-04).
+### Эпик: Глобальный поиск (EP-SEARCH, RFP GEN-05) — расписан на атомы 18.07.2026 (марафон-4)
+
+Кросс-сущностный поиск по ключевому слову. Полнотекст внутри Office/PDF (DAT-04) — фаза 2 (нужен pipeline извлечения текста), пока метаданные.
+
+- [x] **T-094** — Global search (GEN-05): `GET /search?q=` — поиск по ключевому слову across finding (title/description i18n), control (ref/objective), working_paper (title), kb_entry (question/answer), audit_program (title); результат [{type, id, label, snippet}] с ограничением на тип; RLS-изоляция тенанта. _Deps: T-038, T-031, T-092, T-082._ DoD: поиск находит совпадения в нескольких типах сущностей, пустой q→400, результаты только своего тенанта, лимит на тип. **Готово: SearchService — 5 источников (finding title/description i18n через `::text ILIKE`, control ref+objective, working_paper title, kb_entry question/answer, audit_program title), лимит PER_TYPE=5 на источник, все под withTenant (RLS-изоляция). `GET /search?q=` (engagement.view; пустой/без q→400). Миграции нет (читает существующие таблицы). E2e: 'access'→5 hits (finding/control/WP), 'encryption'→control DP-01+kb_entry, пустой q→400, без q→400, бессмысленное→0, лимит на тип ≤5. **EP-SEARCH (ядро GEN-05) закрыт.**
+
+- [x] **EP-SEARCH** — глобальный поиск best-match по findings/WP/чеклистам/шаблонам (GEN-05) + полнотекстовый поиск внутри Office/PDF (DAT-04). **Расписан на T-094. Ядро GEN-05 закрыто: кросс-сущностный ILIKE-поиск с лимитом на тип. Полнотекст в документах (DAT-04) — фаза 2 (нужен pipeline извлечения текста).**
 - **EP-REPWIZ** — report wizard + стандартные отчёты + сравнение по периодам + XML/CSV экспорт (REP-01/02/03/05/07).
 - **EP-MSG** — сообщения из системы (GEN-04), опросники из audit file с консолидацией (ENG-07), satisfaction surveys (ISS-06).
 - **EP-MIGRATE** — инструмент миграции исторических данных (≥4 лет) из Office-файлов: планы/отчёты/findings/действия/тайм-листы (IMP-03).
