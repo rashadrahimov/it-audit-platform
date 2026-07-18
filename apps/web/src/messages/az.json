@@ -56,7 +56,8 @@
     "accessReviews": "Giriş Baxışları",
     "risks": "Risk Reyestri",
     "privacy": "Məxfilik (ROPA/DPIA)",
-    "iam": "IAM — Hesablar"
+    "iam": "IAM — Hesablar",
+    "codeChanges": "Dəyişiklik İdarəetməsi"
   },
   "engagements": {
     "title": "Auditlər",
@@ -543,6 +544,29 @@
     "tp": {
       "human": "İnsan",
       "service": "Servis"
+    }
+  },
+  "codeChanges": {
+    "title": "Dəyişiklik İdarəetməsi",
+    "toAccount": "Hesab",
+    "empty": "Hələ dəyişiklik yoxdur",
+    "type": "Tip",
+    "risk": "Risk",
+    "status": "Status",
+    "action": "Əməliyyat",
+    "create": "Yeni dəyişiklik",
+    "titlePh": "Dəyişiklik adı",
+    "add": "Əlavə et",
+    "risks": {
+      "low": "Aşağı",
+      "medium": "Orta",
+      "high": "Yüksək"
+    },
+    "st": {
+      "requested": "Sorğu edilib",
+      "approved": "Təsdiqlənib",
+      "rejected": "Rədd edilib",
+      "deployed": "Yerləşdirilib"
     }
   }
 }

@@ -56,7 +56,8 @@
     "accessReviews": "Access Reviews",
     "risks": "Risk Register",
     "privacy": "Privacy (ROPA/DPIA)",
-    "iam": "IAM — Accounts"
+    "iam": "IAM — Accounts",
+    "codeChanges": "Change Management"
   },
   "engagements": {
     "title": "Engagements",
@@ -543,6 +544,29 @@
     "tp": {
       "human": "Human",
       "service": "Service"
+    }
+  },
+  "codeChanges": {
+    "title": "Change Management",
+    "toAccount": "Account",
+    "empty": "No changes yet",
+    "type": "Type",
+    "risk": "Risk",
+    "status": "Status",
+    "action": "Action",
+    "create": "New change",
+    "titlePh": "Change title",
+    "add": "Add",
+    "risks": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "st": {
+      "requested": "Requested",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "deployed": "Deployed"
     }
   }
 }
