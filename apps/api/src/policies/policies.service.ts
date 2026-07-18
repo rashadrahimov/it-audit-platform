@@ -1,0 +1,170 @@
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { and, asc, desc, eq, isNull, max } from 'drizzle-orm';
+import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
+import { AuditLogService } from '../audit/audit-log.service';
+import { DbService } from '../db/db.service';
+import { document, membership, policy, policyVersion, user } from '../db/schema';
+
+interface Actor {
+  tenantId: string;
+  userId: string;
+  ip?: string;
+}
+
+export interface CreatePolicyInput {
+  titleI18n: I18nText;
+  ownerMembershipId?: string;
+  approverMembershipId?: string;
+  renewBy?: string;
+  frameworkIds?: string[];
+}
+
+/** Политики (T-051, B4): CRUD + версии-документы. Workflow — T-052, attestation — T-053. */
+@Injectable()
+export class PoliciesService {
+  constructor(
+    private readonly dbService: DbService,
+    private readonly auditLogService: AuditLogService,
+  ) {}
+
+  async create(actor: Actor, input: CreatePolicyInput) {
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      for (const membershipId of [input.ownerMembershipId, input.approverMembershipId]) {
+        if (!membershipId) continue;
+        const [m] = await tx
+          .select({ id: membership.id })
+          .from(membership)
+          .where(and(eq(membership.id, membershipId), eq(membership.tenantId, actor.tenantId)));
+        if (!m) throw new BadRequestException('owner/approver: membership не найден в тенанте');
+      }
+      const [row] = await tx
+        .insert(policy)
+        .values({
+          tenantId: actor.tenantId,
+          titleI18n: input.titleI18n,
+          ownerMembershipId: input.ownerMembershipId ?? null,
+          approverMembershipId: input.approverMembershipId ?? null,
+          renewBy: input.renewBy ? new Date(input.renewBy) : null,
+          frameworkIds: input.frameworkIds ?? [],
+        })
+        .returning();
+      if (!row) throw new Error('Политика не создалась');
+      return row;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'policy.created',
+      entityType: 'policy',
+      entityId: created.id,
+      after: { title: created.titleI18n.en },
+    });
+    return created;
+  }
+
+  /** Добавить версию (документ-содержимое из T-034); номер версии авто-инкремент. */
+  async addVersion(
+    actor: Actor,
+    policyId: string,
+    input: { documentId?: string; changelog?: string },
+  ) {
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [pol] = await tx
+        .select()
+        .from(policy)
+        .where(and(eq(policy.id, policyId), isNull(policy.deletedAt)));
+      if (!pol) throw new NotFoundException(`Политика ${policyId} не найдена`);
+      if (input.documentId) {
+        const [doc] = await tx
+          .select({ id: document.id })
+          .from(document)
+          .where(and(eq(document.id, input.documentId), isNull(document.deletedAt)));
+        if (!doc) throw new BadRequestException('documentId: документ не найден');
+      }
+      const maxRows = await tx
+        .select({ value: max(policyVersion.version) })
+        .from(policyVersion)
+        .where(eq(policyVersion.policyId, policyId));
+      const maxVersion = maxRows[0]?.value ?? 0;
+      const [row] = await tx
+        .insert(policyVersion)
+        .values({
+          policyId,
+          version: maxVersion + 1,
+          documentId: input.documentId ?? null,
+          changelog: input.changelog ?? null,
+        })
+        .returning();
+      if (!row) throw new Error('Версия не создалась');
+      return row;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'policy.version_added',
+      entityType: 'policy',
+      entityId: policyId,
+      after: { version: created.version },
+    });
+    return created;
+  }
+
+  async list(tenantId: string, locale: Locale) {
+    const ownerUser = user;
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          id: policy.id,
+          titleI18n: policy.titleI18n,
+          status: policy.status,
+          renewBy: policy.renewBy,
+          owner: ownerUser.fullName,
+        })
+        .from(policy)
+        .leftJoin(membership, eq(policy.ownerMembershipId, membership.id))
+        .leftJoin(ownerUser, eq(membership.userId, ownerUser.id))
+        .where(isNull(policy.deletedAt))
+        .orderBy(desc(policy.createdAt)),
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      title: resolveLocalized(row.titleI18n, locale),
+      status: row.status,
+      renewBy: row.renewBy?.toISOString() ?? null,
+      owner: row.owner,
+    }));
+  }
+
+  async detail(tenantId: string, id: string, locale: Locale) {
+    const data = await this.dbService.withTenant(tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(policy)
+        .where(and(eq(policy.id, id), isNull(policy.deletedAt)));
+      if (!row) throw new NotFoundException(`Политика ${id} не найдена`);
+      const versions = await tx
+        .select()
+        .from(policyVersion)
+        .where(eq(policyVersion.policyId, id))
+        .orderBy(asc(policyVersion.version));
+      return { row, versions };
+    });
+    return {
+      id: data.row.id,
+      title: resolveLocalized(data.row.titleI18n, locale),
+      status: data.row.status,
+      renewBy: data.row.renewBy?.toISOString() ?? null,
+      ownerMembershipId: data.row.ownerMembershipId,
+      approverMembershipId: data.row.approverMembershipId,
+      frameworkIds: data.row.frameworkIds,
+      versions: data.versions.map((v) => ({
+        version: v.version,
+        documentId: v.documentId,
+        changelog: v.changelog,
+        approvedAt: v.approvedAt?.toISOString() ?? null,
+      })),
+    };
+  }
+}

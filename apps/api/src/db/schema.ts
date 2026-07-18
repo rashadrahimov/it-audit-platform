@@ -633,6 +633,47 @@ export const syncRun = pgTable(
   (table) => [index('sync_run_connector_idx').on(table.connectorId, table.startedAt)],
 );
 
+/**
+ * Политика (T-051, B4, data-model §6): title_i18n, owner/approver, renew_by (cadence),
+ * маппинг на фреймворки. Версии — policy_version (approved-версия фиксируется T-052).
+ */
+export const policy = pgTable(
+  'policy',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
+    renewBy: timestamp('renew_by', { withTimezone: true }),
+    status: text('status').notNull().default('draft'),
+    frameworkIds: jsonb('framework_ids').$type<string[]>().notNull().default([]),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('policy_tenant_idx').on(table.tenantId)],
+);
+
+/** Версия политики (data-model §6): документ-содержимое (T-034), changelog, факт утверждения. */
+export const policyVersion = pgTable(
+  'policy_version',
+  {
+    id: id(),
+    policyId: uuid('policy_id')
+      .notNull()
+      .references(() => policy.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    documentId: uuid('document_id').references(() => document.id),
+    changelog: text('changelog'),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    approvedBy: uuid('approved_by').references(() => membership.id),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('policy_version_idx').on(table.policyId, table.version)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
