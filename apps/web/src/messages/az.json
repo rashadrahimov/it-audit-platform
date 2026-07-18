@@ -41,7 +41,8 @@
     "policies": "Siyasətlər",
     "universe": "Audit Kainatı",
     "riskHeatmap": "Risk İstilik Xəritəsi",
-    "plans": "Audit Planları"
+    "plans": "Audit Planları",
+    "chartDashboards": "Qrafik Panelləri"
   },
   "engagements": {
     "title": "Auditlər",
@@ -257,5 +258,11 @@
       "approved": "Təsdiqlənib",
       "active": "Aktiv"
     }
+  },
+  "chartDashboards": {
+    "title": "Qrafik Panelləri",
+    "toAccount": "Hesab",
+    "empty": "Hələ panel yoxdur",
+    "widgets": "vidjet"
   }
 }

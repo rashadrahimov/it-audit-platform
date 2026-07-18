@@ -41,7 +41,8 @@
     "policies": "Policies",
     "universe": "Audit Universe",
     "riskHeatmap": "Risk Heat Map",
-    "plans": "Audit Plans"
+    "plans": "Audit Plans",
+    "chartDashboards": "Chart Dashboards"
   },
   "engagements": {
     "title": "Engagements",
@@ -257,5 +258,11 @@
       "approved": "Approved",
       "active": "Active"
     }
+  },
+  "chartDashboards": {
+    "title": "Chart Dashboards",
+    "toAccount": "Account",
+    "empty": "No dashboards yet",
+    "widgets": "widgets"
   }
 }

@@ -41,7 +41,8 @@
     "policies": "Политики",
     "universe": "Аудируемая вселенная",
     "riskHeatmap": "Тепловая карта рисков",
-    "plans": "Планы аудита"
+    "plans": "Планы аудита",
+    "chartDashboards": "Чарт-дашборды"
   },
   "engagements": {
     "title": "Аудиты",
@@ -257,5 +258,11 @@
       "approved": "Утверждён",
       "active": "Активный"
     }
+  },
+  "chartDashboards": {
+    "title": "Чарт-дашборды",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет дашбордов",
+    "widgets": "виджетов"
   }
 }
