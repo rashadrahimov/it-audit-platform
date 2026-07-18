@@ -42,6 +42,7 @@ import { RisksModule } from './risks/risks.module';
 import { SecurityAlertsModule } from './security-alerts/security-alerts.module';
 import { TagsModule } from './tags/tags.module';
 import { TestsModule } from './tests/tests.module';
+import { TimeEntriesModule } from './time-entries/time-entries.module';
 import { TrustModule } from './trust/trust.module';
 import { UniverseModule } from './universe/universe.module';
 import { UsersModule } from './users/users.module';
@@ -90,6 +91,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     SecurityAlertsModule,
     TagsModule,
     TestsModule,
+    TimeEntriesModule,
     TrustModule,
     UniverseModule,
     UsersModule,

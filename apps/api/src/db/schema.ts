@@ -3,6 +3,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgTable,
   text,
   timestamp,
@@ -1191,6 +1192,33 @@ export const privacyAssessment = pgTable(
     ...timestamps,
   },
   (table) => [index('privacy_assessment_tenant_idx').on(table.tenantId)],
+);
+
+/** Тайм-запись (T-088, EP-TIME, TIME-01): часы по аудиту/фазе/категории. */
+export const timeEntry = pgTable(
+  'time_entry',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id),
+    engagementId: uuid('engagement_id').references(() => engagement.id),
+    date: timestamp('date', { withTimezone: true }).notNull(),
+    hours: numeric('hours', { precision: 6, scale: 2 }).notNull(),
+    phase: text('phase'),
+    category: text('category').notNull().default('audit'),
+    billableRate: numeric('billable_rate', { precision: 10, scale: 2 }),
+    note: text('note'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('time_entry_tenant_idx').on(table.tenantId),
+    index('time_entry_engagement_idx').on(table.engagementId),
+  ],
 );
 
 /** Настраиваемый список тенанта (T-087, GEN-06/ENG-09): audit_opinion и др. lookup'ы. */

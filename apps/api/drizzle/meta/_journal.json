@@ -365,6 +365,13 @@
       "when": 1784393274999,
       "tag": "0051_config-list",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1784394886832,
+      "tag": "0052_time-entry",
+      "breakpoints": true
     }
   ]
 }

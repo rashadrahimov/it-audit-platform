@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-CONFIG закрыт (T-086/087). Следующая — декомпозиция EP-TIME (тайм-трекинг: time entry по аудиту/фазе + бюджет vs факт).
-- **Следующий шаг:** Распишу EP-TIME на атомы T-088+ (time_entry + бюджет/факт-агрегат) и сделаю. Дальше — EP-WPAPERS / EP-SCHED.
+- **Текущая задача:** EP-TIME — T-088 (time entries) закрыта. Следующая — T-089 (budget vs actual, UNI-07), закроет EP-TIME.
+- **Следующий шаг:** T-089 (engagement.budgeted_hours + time-summary агрегат факт/бюджет) закроет EP-TIME. Дальше — EP-WPAPERS / EP-SCHED.
 - **Последнее готово:** **Марафон-4 18.07.2026: весь M2 (T-060…073) + весь M3 (EP-PRIV/MISC/FWK/TRUST/QA, T-074…083) + RFP EP-AUDITTYPES (T-084/085) + EP-CONFIG (T-086/087) — 28 задач.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -327,7 +327,14 @@ Per-tenant кастомизация без кода: неограниченны�
 
 - [x] **EP-CONFIG** — конфигурируемость: per-tenant терминология/названия полей/списков (GEN-06), неограниченные custom fields без кода (GEN-07), audit opinions из настраиваемых списков (ENG-09). **Расписан на T-086–T-087. Закрыт: custom_field_def с валидацией payload (GEN-07) + config_list настраиваемых списков с дефолтами вкл. audit_opinion (GEN-06/ENG-09).**
 - **EP-WPAPERS** — электронные working papers: WP как контейнер fieldwork (WP-02), audit programs + roll-forward год→год (ENG-04/05), rich-редактор (WP-01), cross-reference/гиперссылки (WP-05), sign-off preparer≠reviewer с 'edited since review' (WP-07/08 — частично есть в audit trail).
-- **EP-TIME** — тайм-трекинг: Time Entry по аудиту/фазе/программе + непродуктивное время, бюджет vs факт, ставки/расходы (TIME-01/03, UNI-07, SCH-07).
+### Эпик: Тайм-трекинг (EP-TIME, RFP TIME-01/03, UNI-07, SCH-07) — расписан на атомы 18.07.2026 (марафон-4)
+
+Учёт времени по аудиту/фазе/категории + бюджет vs факт. Модель — data-model §7 (time_entry). Непродуктивное время — через category (training/leave/admin).
+
+- [x] **T-088** — Time entries: `time_entry` (membership_id, date, hours numeric, engagement_id NULL, phase planning/fieldwork/reporting, category audit/training/leave/admin, billable_rate NULL, note); CRUD + список (по engagement/member). _Deps: T-020._ DoD: тайм-запись создаётся (по аудиту/фазе/категории), список отдаётся, невалидная фаза/категория/часы→400. **Готово: миграция 0052 — time_entry (FORCE RLS; membership/engagement-линки, date, hours numeric(6,2), phase, category, billable_rate numeric(10,2), note). create (membership из actor, hours/rate → numeric-строки), list (?engagementId фильтр, hours→Number). API engagement.view (аудиторы логируют своё время). audit_log time_entry.created. E2e: fieldwork 6.5ч, 3 записи всего / 2 по engagement, невалидная фаза→400, невалидная категория→400, часы>24→400, часы 0→400.**
+- [ ] **T-089** — Budget vs actual (UNI-07): `engagement.budgeted_hours`; `GET /engagements/:id/time-summary` — агрегат факт-часов по фазе и категории + сравнение с бюджетом (budgeted/actual/variance). _Deps: T-088._ DoD: агрегат факт-часов по фазе/категории считается, variance = budgeted−actual, engagement без записей→actual 0. **EP-TIME закрыт этими двумя.**
+
+- [ ] **EP-TIME** — тайм-трекинг: Time Entry по аудиту/фазе/программе + непродуктивное время, бюджет vs факт, ставки/расходы (TIME-01/03, UNI-07, SCH-07). **Расписан на T-088–T-089.**
 
 Отделяемые модули — фаза 2/3:
 - **EP-SCHED** — scheduling: Gantt с drag-drop (SCH-01), аллокация ресурсов и утилизация (SCH-02/03), конфликты (SCH-04), пауза аудита (SCH-06).
