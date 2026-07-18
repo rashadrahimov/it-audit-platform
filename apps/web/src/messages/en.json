@@ -43,7 +43,8 @@
     "riskHeatmap": "Risk Heat Map",
     "plans": "Audit Plans",
     "chartDashboards": "Chart Dashboards",
-    "trustCenter": "Trust Center"
+    "trustCenter": "Trust Center",
+    "glossary": "Glossary"
   },
   "engagements": {
     "title": "Engagements",
@@ -277,5 +278,13 @@
     "draft": "Draft",
     "accessRequests": "access requests",
     "slug": "Public URL"
+  },
+  "glossary": {
+    "title": "Glossary",
+    "toAccount": "Account",
+    "empty": "No terms yet",
+    "search": "Search terms",
+    "global": "Standard",
+    "custom": "Custom"
   }
 }

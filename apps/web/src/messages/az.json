@@ -43,7 +43,8 @@
     "riskHeatmap": "Risk İstilik Xəritəsi",
     "plans": "Audit Planları",
     "chartDashboards": "Qrafik Panelləri",
-    "trustCenter": "Etibar Mərkəzi"
+    "trustCenter": "Etibar Mərkəzi",
+    "glossary": "Lüğət"
   },
   "engagements": {
     "title": "Auditlər",
@@ -277,5 +278,13 @@
     "draft": "Qaralama",
     "accessRequests": "giriş sorğusu",
     "slug": "Açıq URL"
+  },
+  "glossary": {
+    "title": "Lüğət",
+    "toAccount": "Hesab",
+    "empty": "Hələ termin yoxdur",
+    "search": "Termin axtar",
+    "global": "Standart",
+    "custom": "Fərdi"
   }
 }

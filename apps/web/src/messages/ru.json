@@ -43,7 +43,8 @@
     "riskHeatmap": "Тепловая карта рисков",
     "plans": "Планы аудита",
     "chartDashboards": "Чарт-дашборды",
-    "trustCenter": "Центр доверия"
+    "trustCenter": "Центр доверия",
+    "glossary": "Глоссарий"
   },
   "engagements": {
     "title": "Аудиты",
@@ -277,5 +278,13 @@
     "draft": "Черновик",
     "accessRequests": "запросов доступа",
     "slug": "Публичный URL"
+  },
+  "glossary": {
+    "title": "Глоссарий",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет терминов",
+    "search": "Поиск терминов",
+    "global": "Стандартный",
+    "custom": "Кастомный"
   }
 }
