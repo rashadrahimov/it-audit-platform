@@ -351,6 +351,13 @@
       "when": 1784392325979,
       "tag": "0049_audit-type-template",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1784392889413,
+      "tag": "0050_custom-field-def",
+      "breakpoints": true
     }
   ]
 }

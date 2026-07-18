@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-AUDITTYPES закрыт (T-084/085). EP-UNIVERSE — ядро уже в EP-ASSET (T-065/066/067), остаток → EP-PLAN. Следующая — декомпозиция EP-CONFIG (конфигурируемость: custom fields, терминология, audit opinions).
-- **Следующий шаг:** Распишу EP-CONFIG на атомы T-086+ (custom field definitions без кода GEN-07 + audit opinions из настраиваемых списков) и сделаю. Дальше — EP-WPAPERS / EP-TIME.
+- **Текущая задача:** EP-CONFIG — T-086 (custom field definitions GEN-07) закрыта. Следующая — T-087 (настраиваемые списки + audit opinions), закроет EP-CONFIG.
+- **Следующий шаг:** T-087 (config_list + audit_opinion сид + валидация) закроет EP-CONFIG. Дальше — EP-WPAPERS / EP-TIME.
 - **Последнее готово:** **Марафон-4 18.07.2026: весь M2 (T-060…073) + M3 EP-PRIV (T-074/075) + EP-MISC (T-076/077) + EP-FWK (T-078/079) + EP-TRUST (T-080/081) — 22 задачи.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -318,7 +318,14 @@ GDPR-приватность: ROPA (Records of Processing Activities, Art. 30 —
 
 - [x] **EP-AUDITTYPES** — все типы аудита (операционный/финансовый/IT/комплаенс/качество/расследования) как атрибут engagement/плана + типо-специфичные шаблоны (UNI-06). **Расписан на T-084–T-085. Закрыт: справочник типов (global+кастомные, 7 сид-типов вкл. investigations), фильтр engagements, типо-специфичные шаблоны чеклиста с засевом.**
 - **EP-UNIVERSE** — Audit Universe: дерево auditable entities неограниченной глубины (locations/processes/systems/activities), permanent files на узел, связь с рисками/планом (UNI-01/02, RSK-06). **Ядро закрыто в EP-ASSET (T-065 дерево неограниченной глубины + permanent files через document_link, T-066 risk_entity, T-067 process-проекция). Остаток — связь с планом (plan_item) → EP-PLAN.**
-- **EP-CONFIG** — конфигурируемость: per-tenant терминология/названия полей/списков (GEN-06), неограниченные custom fields без кода (GEN-07), audit opinions из настраиваемых списков (ENG-09).
+### Эпик: Конфигурируемость (EP-CONFIG, RFP GEN-06/07, ENG-09) — расписан на атомы 18.07.2026 (марафон-4)
+
+Per-tenant кастомизация без кода: неограниченные custom fields (GEN-07 — доменные таблицы уже имеют `custom jsonb`), настраиваемые списки/терминология (GEN-06), audit opinions из настраиваемых списков (ENG-09).
+
+- [x] **T-086** — Custom field definitions (GEN-07): `custom_field_def` (tenant, entity_type, key, label_i18n, field_type text/number/date/select/boolean, options jsonb, required); тенант определяет поля per entity_type; валидация payload значений по определениям (тип + required + select-опции). _Deps: T-020._ DoD: тенант определяет custom field, валидное значение проходит, неверный тип/пропущенное required/чужая опция→400. **Готово: миграция 0050 — custom_field_def (FORCE RLS; entity_type, key, label_i18n, field_type, options jsonb, required, UNIQUE tenant+entity_type+key). define (дубликат key→400), listFor, validate (payload по типам text/number/boolean/date/select + required + чужая select-опция + неизвестный ключ→400). API settings.edit(define)/settings.view(list/validate). audit_log custom_field_def.created. E2e: 2 поля (number required + select), дубликат→400, валидный payload→true, неверный тип→400, пропущено required→400, чужая опция→400, неизвестный ключ→400, Collaborator→403.**
+- [ ] **T-087** — Настраиваемые списки + audit opinions (GEN-06/ENG-09): `config_list` (tenant, list_key UNIQUE, items jsonb — [{code, label_i18n}]); сид `audit_opinion` (satisfactory/needs_improvement/unsatisfactory) как дефолт; get/set списка (settings.edit); валидация значения по списку. _Deps: T-020._ DoD: настраиваемый список редактируется, значение из списка проходит, значение вне списка→400, дефолтный audit_opinion сидится.
+
+- [ ] **EP-CONFIG** — конфигурируемость: per-tenant терминология/названия полей/списков (GEN-06), неограниченные custom fields без кода (GEN-07), audit opinions из настраиваемых списков (ENG-09). **Расписан на T-086–T-087.**
 - **EP-WPAPERS** — электронные working papers: WP как контейнер fieldwork (WP-02), audit programs + roll-forward год→год (ENG-04/05), rich-редактор (WP-01), cross-reference/гиперссылки (WP-05), sign-off preparer≠reviewer с 'edited since review' (WP-07/08 — частично есть в audit trail).
 - **EP-TIME** — тайм-трекинг: Time Entry по аудиту/фазе/программе + непродуктивное время, бюджет vs факт, ставки/расходы (TIME-01/03, UNI-07, SCH-07).
 

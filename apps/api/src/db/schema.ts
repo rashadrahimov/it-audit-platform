@@ -1193,6 +1193,26 @@ export const privacyAssessment = pgTable(
   (table) => [index('privacy_assessment_tenant_idx').on(table.tenantId)],
 );
 
+/** Определение custom-поля (T-086, GEN-07): тенант описывает доп. поля per entity_type без кода. */
+export const customFieldDef = pgTable(
+  'custom_field_def',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    entityType: text('entity_type').notNull(),
+    key: text('key').notNull(),
+    labelI18n: jsonb('label_i18n').$type<I18nText>().notNull(),
+    fieldType: text('field_type').notNull(),
+    options: jsonb('options').notNull().default([]),
+    required: boolean('required').notNull().default(false),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('custom_field_def_key_idx').on(table.tenantId, table.entityType, table.key)],
+);
+
 /** Типо-специфичный шаблон пункта чеклиста (T-085, UNI-06): заготовка per audit_type. */
 export const auditTypeTemplateItem = pgTable(
   'audit_type_template_item',

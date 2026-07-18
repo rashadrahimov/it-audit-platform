@@ -11,6 +11,7 @@ import { CommentsModule } from './comments/comments.module';
 import { CommitmentsModule } from './commitments/commitments.module';
 import { ConnectorsModule } from './connectors/connectors.module';
 import { ControlsModule } from './controls/controls.module';
+import { CustomFieldsModule } from './custom-fields/custom-fields.module';
 import { DashboardsModule } from './dashboards/dashboards.module';
 import { DbModule } from './db/db.module';
 import { DevicesModule } from './devices/devices.module';
@@ -60,6 +61,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     CommitmentsModule,
     ConnectorsModule,
     ControlsModule,
+    CustomFieldsModule,
     DashboardsModule,
     DbModule,
     DevicesModule,
