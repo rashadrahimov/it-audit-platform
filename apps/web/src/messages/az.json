@@ -50,7 +50,8 @@
     "personnel": "Personal",
     "vendors": "Təchizatçı Riski",
     "workingPapers": "İş Sənədləri",
-    "vulnerabilities": "Zəifliklər"
+    "vulnerabilities": "Zəifliklər",
+    "securityAlerts": "Təhlükəsizlik Bildirişləri"
   },
   "engagements": {
     "title": "Auditlər",
@@ -381,6 +382,24 @@
       "ok": "OK",
       "due_soon": "Vaxtı yaxınlaşır",
       "overdue": "Gecikib"
+    }
+  },
+  "securityAlerts": {
+    "title": "Təhlükəsizlik Bildirişləri",
+    "toAccount": "Hesab",
+    "empty": "Hələ bildiriş yoxdur",
+    "source": "Mənbə",
+    "severity": "Ciddilik",
+    "sev": {
+      "low": "Aşağı",
+      "medium": "Orta",
+      "high": "Yüksək",
+      "critical": "Kritik"
+    },
+    "st": {
+      "new": "Yeni",
+      "triaged": "Təsnif",
+      "closed": "Bağlı"
     }
   }
 }

@@ -50,7 +50,8 @@
     "personnel": "Personnel",
     "vendors": "Vendor Risk",
     "workingPapers": "Working Papers",
-    "vulnerabilities": "Vulnerabilities"
+    "vulnerabilities": "Vulnerabilities",
+    "securityAlerts": "Security Alerts"
   },
   "engagements": {
     "title": "Engagements",
@@ -381,6 +382,24 @@
       "ok": "OK",
       "due_soon": "Due soon",
       "overdue": "Overdue"
+    }
+  },
+  "securityAlerts": {
+    "title": "Security Alerts",
+    "toAccount": "Account",
+    "empty": "No alerts yet",
+    "source": "Source",
+    "severity": "Severity",
+    "sev": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "st": {
+      "new": "New",
+      "triaged": "Triaged",
+      "closed": "Closed"
     }
   }
 }

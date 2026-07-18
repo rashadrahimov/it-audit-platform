@@ -50,7 +50,8 @@
     "personnel": "Персонал",
     "vendors": "Риск вендоров",
     "workingPapers": "Рабочие документы",
-    "vulnerabilities": "Уязвимости"
+    "vulnerabilities": "Уязвимости",
+    "securityAlerts": "Оповещения ИБ"
   },
   "engagements": {
     "title": "Аудиты",
@@ -381,6 +382,24 @@
       "ok": "OK",
       "due_soon": "Скоро срок",
       "overdue": "Просрочено"
+    }
+  },
+  "securityAlerts": {
+    "title": "Оповещения ИБ",
+    "toAccount": "Аккаунт",
+    "empty": "Пока нет оповещений",
+    "source": "Источник",
+    "severity": "Критичность",
+    "sev": {
+      "low": "Низкая",
+      "medium": "Средняя",
+      "high": "Высокая",
+      "critical": "Критическая"
+    },
+    "st": {
+      "new": "Новое",
+      "triaged": "Триаж",
+      "closed": "Закрыто"
     }
   }
 }
