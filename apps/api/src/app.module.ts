@@ -28,6 +28,7 @@ import { ReportsModule } from './reports/reports.module';
 import { RisksModule } from './risks/risks.module';
 import { TestsModule } from './tests/tests.module';
 import { UsersModule } from './users/users.module';
+import { VendorsModule } from './vendors/vendors.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { UsersModule } from './users/users.module';
     RisksModule,
     TestsModule,
     UsersModule,
+    VendorsModule,
   ],
   controllers: [HealthController, InfraHealthController],
   providers: [InfraHealthService],

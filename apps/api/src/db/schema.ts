@@ -895,6 +895,49 @@ export const riskAssessment = pgTable(
   (table) => [index('risk_assessment_tenant_idx').on(table.tenantId)],
 );
 
+/** Vendor — поставщик (T-060, B5): риск-класс, lifecycle procurement→active→archived. */
+export const vendor = pgTable(
+  'vendor',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    subsidiaryId: uuid('subsidiary_id').references(() => subsidiary.id),
+    name: text('name').notNull(),
+    category: text('category'),
+    url: text('url'),
+    inherentRisk: text('inherent_risk'),
+    residualRisk: text('residual_risk'),
+    securityOwnerMembershipId: uuid('security_owner_membership_id').references(() => membership.id),
+    status: text('status').notNull().default('procurement'),
+    intake: jsonb('intake').notNull().default({}),
+    custom: jsonb('custom').notNull().default({}),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('vendor_tenant_idx').on(table.tenantId)],
+);
+
+/** Vendor assessment (T-061): оценка вендора — тип, состояние, evidence. */
+export const vendorAssessment = pgTable(
+  'vendor_assessment',
+  {
+    id: id(),
+    vendorId: uuid('vendor_id')
+      .notNull()
+      .references(() => vendor.id, { onDelete: 'cascade' }),
+    type: text('type'),
+    state: text('state').notNull().default('requested'),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    recommendation: text('recommendation'),
+    evidenceStatus: text('evidence_status').notNull().default('pending'),
+    ...timestamps,
+  },
+  (table) => [index('vendor_assessment_vendor_idx').on(table.vendorId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
