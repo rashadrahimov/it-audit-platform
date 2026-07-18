@@ -421,6 +421,13 @@
       "when": 1784398124407,
       "tag": "0059_satisfaction-survey",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1784399743357,
+      "tag": "0060_annual-plan",
+      "breakpoints": true
     }
   ]
 }

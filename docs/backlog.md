@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-REPWIZ закрыт (T-098/099). Следующая — декомпозиция EP-PLAN (risk-based планирование с capacity, наша добавка).
-- **Следующий шаг:** Распишу EP-PLAN на атомы T-100+ (annual_plan + plan_item с priority-скорингом + capacity человеко-часов) и сделаю. Дальше — EP-SCHED / EP-GROUP.
-- **Последнее готово:** **Марафон-4 18.07.2026: M2 (T-060…073) + M3 (T-074…083) + RFP EP-AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP (T-084…095) — 36 задач, миграции до 0057.** GitHub+CI зелёный.
+- **Текущая задача:** EP-PLAN закрыт (T-100/101). Следующая — декомпозиция EP-I18N (полная мультиязычность контента, наша добавка) ИЛИ EP-SCHED (scheduling). См. остаток эпиков ниже.
+- **Следующий шаг:** Взять следующий незакрытый эпик по порядку (EP-SCHED backend / EP-GROUP углубление / EP-I18N). Фаза-3 (EP-ANNOT/OFFLINE/HARDEN/LOWCODE/HA) и EP-AI/ONPREM — инфра/AI/деплой, кандидаты на [!] (внешние решения/ADR-0002 offline-форк).
+- **Последнее готово:** **Марафон-4 18.07.2026 — 41 задача (T-060…101): весь M2, весь M3, RFP EP-AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP/MSG/REPWIZ + добавка EP-PLAN. Миграции до 0060.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -398,6 +398,13 @@ OpenAPI-спека уже отдаётся (SwaggerModule /docs + /docs-json, ma
 
 - **EP-AI** — AI-генерация checklists и findings из бизнес-профиля + документов (ADR-0004).
 - **EP-GROUP** — Групповая консолидация и кросс-дочерние роли (заложено в M0, углубляем).
-- **EP-PLAN** — Risk-based audit planning с capacity (человеко-часы, число аудиторов, годовой план). **+ несколько планов на любые горизонты (UNI-03), recurring-аудиты с интервалом и внеплановые (UNI-05), live-прогресс против плана + дашборд ревизий плана (UNI-08).**
+### Эпик: Risk-based планирование (EP-PLAN, наша добавка + UNI-03/04/08) — расписан на атомы 18.07.2026 (марафон-4)
+
+Годовой план аудитов с приоритизацией по риску (risk-based) + capacity (человеко-часы). Модель — data-model §4 (plan/plan_item). Замыкает EP-UNIVERSE (связь узел↔план).
+
+- [x] **T-100** — Annual plan + plan items с risk-based приоритетом (UNI-04): `annual_plan` (tenant, name, year, capacity_hours, status) + `plan_item` (plan_id, auditable_entity_id, priority_score computed, score_breakdown jsonb, planned_hours, planned_quarter); addItem вычисляет priority_score из макс. risk_class рисков узла (risk_entity→risk); список items сортируется по приоритету. _Deps: T-065, T-066._ DoD: план создаётся, item добавляется с priority_score из риска узла, score_breakdown фиксирует расчёт, список сортируется по убыванию приоритета. **Готово: миграция 0060 — annual_plan (FORCE RLS; name, year, capacity_hours, status) + plan_item (RLS через annual_plan EXISTS; priority_score computed, score_breakdown jsonb, planned_hours, recurrence). addItem: CLASS_WEIGHT (critical=100/high=60/medium=30/low=10), макс класс рисков узла (risk_entity→risk.riskClass) → priority_score, score_breakdown {risks, topClass, weight}; get сортирует items по priorityScore desc. API engagement.edit/view. audit_log annual_plan.created/plan_item.added. E2e: узел с critical-риском→priority=100 (critical), узел без риска→0 (none), сортировка 100>0, битый узел→400, Collaborator→403.**
+- [x] **T-101** — Capacity planning (наша добавка): `GET /plans/:id/capacity` — sum(planned_hours) vs capacity_hours → {capacity, planned, remaining, overallocated bool}; recurring-флаг plan_item (UNI-05, recurrence jsonb). _Deps: T-100._ DoD: capacity считается, перегрузка (planned>capacity)→overallocated=true, recurring-item помечается. **Готово (вместе с T-100): `GET /plans/:id/capacity` — sum(planned_hours) vs capacity_hours, {capacity, planned, remaining, overallocated}; plan_item.recurrence jsonb → recurring-флаг в get. E2e: capacity 100/план 90→remaining=10 overallocated=false, +20ч→110>100 overallocated=true, recurring-item помечен (recurrence set). **EP-PLAN (ядро) закрыт целиком.****
+
+- [x] **EP-PLAN** — Risk-based audit planning с capacity (человеко-часы, число аудиторов, годовой план). **+ несколько планов на любые горизонты (UNI-03), recurring-аудиты с интервалом и внеплановые (UNI-05), live-прогресс против плана + дашборд ревизий плана (UNI-08).** **Расписан на T-100–T-101. Ядро закрыто: risk-based приоритизация плана (priority из макс. risk_class узла) + capacity (план vs ёмкость, overallocated) + recurring-флаг. Замыкает EP-UNIVERSE (узел↔план). Live-прогресс/дашборд ревизий — UI-атомом.**
 - **EP-ONPREM** — On-prem поставка (ADR-0002): один артефакт, offline-режим без AI. **+ бэкап-инструментарий в поставке (pgBackRest/WAL-PITR конфигурация, BCK-02/03), интеграция с центральной backup-системой клиента (BCK-05), hardened базовые образы (INF-07).**
 - **EP-I18N** — Полная мультиязычность UI+контента EN/AZ/RU (заложено в T-022, доводим).

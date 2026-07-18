@@ -1021,6 +1021,43 @@ export const questionnaireAnswer = pgTable(
   (table) => [index('questionnaire_answer_q_idx').on(table.questionnaireId)],
 );
 
+/** Годовой план аудитов (T-100, EP-PLAN, UNI-03): risk-based приоритизация + capacity. */
+export const annualPlan = pgTable(
+  'annual_plan',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    name: text('name').notNull(),
+    year: integer('year'),
+    capacityHours: numeric('capacity_hours', { precision: 10, scale: 2 }),
+    status: text('status').notNull().default('draft'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('annual_plan_tenant_idx').on(table.tenantId)],
+);
+
+/** Строка плана (T-100): узел universe с priority_score по риску + planned_hours. */
+export const planItem = pgTable(
+  'plan_item',
+  {
+    id: id(),
+    planId: uuid('plan_id')
+      .notNull()
+      .references(() => annualPlan.id, { onDelete: 'cascade' }),
+    auditableEntityId: uuid('auditable_entity_id').references(() => auditableEntity.id),
+    priorityScore: numeric('priority_score', { precision: 6, scale: 2 }).notNull().default('0'),
+    scoreBreakdown: jsonb('score_breakdown').notNull().default({}),
+    plannedHours: numeric('planned_hours', { precision: 8, scale: 2 }),
+    plannedQuarter: text('planned_quarter'),
+    recurrence: jsonb('recurrence'),
+    ...timestamps,
+  },
+  (table) => [index('plan_item_plan_idx').on(table.planId)],
+);
+
 /** Satisfaction survey (T-097, ISS-06): оценка удовлетворённости аудитом 1-5. */
 export const satisfactionSurvey = pgTable(
   'satisfaction_survey',
