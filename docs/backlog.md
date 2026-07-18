@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** **EP-POL закрыт целиком** (T-051 core + T-052 workflow + T-053 attestation). Следующий эпик M2 не выбран — при следующем прогоне выбрать по deps (EP-IAM access review на LDAP / EP-RISK / EP-ASSET / EP-PERS) и расписать на атомы.
-- **Следующий шаг:** декомпозировать следующий эпик M2. Кандидат: EP-IAM (access review — данные аккаунтов уже тянутся LDAP-коннектором из EP-INT). Остаток T-001 (Excel-шаблоны, регулятор, оплата) гейтит часть фич.
-- **Последнее готово:** **Марафон-3 18.07.2026: EP-INT целиком (T-048/049/050), EP-POL целиком (T-051/052/053).** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
+- **Текущая задача:** EP-IAM расписан (T-054–T-056), T-054 (Account core: импорт из коннектора + ручное) закрыта. Следующая — T-055 (Access Review / UAR: кампания ревью аккаунтов, reviewer certify/revoke).
+- **Следующий шаг:** T-055 → T-056 (access requests + deprovisioning). Остаток T-001 (Excel-шаблоны, регулятор, оплата) гейтит часть фич.
+- **Последнее готово:** **Марафон-3 18.07.2026: EP-INT целиком (T-048/049/050), EP-POL целиком (T-051/052/053), EP-IAM начат (T-054).** До того M1 (марафон-2: 7), марафон-1: 12. GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -188,7 +188,15 @@ _Правило промта: не пересказывать контекст �
 
 - [x] **EP-INT** — Integrations-framework (B2): абстракция Connector с capability-scope; первые коннекторы (AD/Entra→персонал, облако→активы, тикеты→задачи). **Первый срез закрыт (T-048 core + T-049 LDAP-провайдер + T-050 автотесты, continuous-loop замкнут). Облачные (Entra/AWS) и тикет-коннекторы — новыми атомами при декомпозиции следующих эпиков (EP-ASSET авто-обнаружение активов, EP-PERS персонал) по мере надобности.**
 - **EP-ASSET** — Asset/Process Universe (B3) + авто-обнаружение через коннекторы.
-- **EP-IAM** — Access Review / IAM (B11): аккаунты, UAR, access requests, deprovisioning.
+### Эпик: Access Review / IAM (EP-IAM, ADR-0012, B11) — расписан на атомы 18.07.2026 (марафон-3)
+
+IAM встроен в Control→Test→Finding (ADR-0012): аккаунты — из коннекторов (EP-INT, LDAP уже тянет), UAR порождает findings, аккаунты без owner/MFA → failing entities автотестов. Модель — data-model §6.
+
+- [x] **T-054** — Account core: сущность `account` (identifier, display_name, owner, groups, type human/service, mfa_enabled, status, connector_id/source); импорт из LDAP-коннектора (personnel-records → accounts, upsert по identifier) + ручное заведение; CRUD/список; RLS. _Deps: T-049._ DoD: аккаунты импортируются коннектором и видны в списке; ручной аккаунт создаётся. **Готово: миграция 0024 — `account` (FORCE RLS; connector_id-источник, identifier, owner/groups/type/mfa_enabled/status, created/deactivated_in_source; UNIQUE tenant+connector+identifier для upsert). `AccountsService.importFromConnector` — collectRecords из коннектора (переиспользует T-049) → upsert account; ручное createManual; list с fromConnector-флагом; deactivate. API под settings.edit/view: POST /accounts/import, POST /accounts, GET, POST /:id/deactivate. audit_log account.imported/created/deactivated. E2e: импорт из демо-LDAP→ldap-user, повторный upsert без дублей, ручной service-аккаунт, деактивация, RBAC 403. UI /accounts — с T-055.**
+- [ ] **T-055** — Access Review (UAR): `access_review` (кампания) + `access_review_item` (account, reviewer, decision certify/revoke/modify); reviewer выносит решение, revoke может порождать finding/deprovisioning. _Deps: T-054, T-038._ DoD: UAR-кампания создаётся по scope, reviewer сертифицирует/отзывает аккаунт, решения фиксируются.
+- [ ] **T-056** — Access requests + deprovisioning: `access_request` (запрос доступа, approver-workflow) + `deprovisioning_task` (отзыв уволенных, due_date/sla_status — на SLA-джобе T-043). _Deps: T-054, T-043._ DoD: запрос доступа проходит approve/reject; deprovisioning-задача создаётся и закрывается, SLA считается.
+
+- [x] **EP-IAM** — Access Review / IAM (B11): аккаунты, UAR, access requests, deprovisioning. **Расписан на T-054–T-056.**
 ### Эпик: Политики (EP-POL, B4) — расписан на атомы 18.07.2026 (марафон-3, мандат на декомпозицию)
 
 Самодостаточный эпик (без коннекторов): policy → версии-документы → approver-workflow → attestation сотрудников. Модель — data-model §6 (policy/policy_version/policy_attestation).

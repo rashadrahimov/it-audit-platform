@@ -692,6 +692,37 @@ export const policyAttestation = pgTable(
   (table) => [uniqueIndex('policy_attestation_idx').on(table.policyVersionId, table.membershipId)],
 );
 
+/**
+ * Account — идентичность в целевой системе (T-054, ADR-0012): AD-запись, AWS IAM…
+ * Импортируется коннектором (EP-INT) или заводится вручную. Аккаунты без owner/MFA —
+ * кандидаты в failing entities автотестов.
+ */
+export const account = pgTable(
+  'account',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    subsidiaryId: uuid('subsidiary_id').references(() => subsidiary.id),
+    connectorId: uuid('connector_id'),
+    identifier: text('identifier').notNull(),
+    displayName: text('display_name'),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    groups: jsonb('groups').$type<string[]>().notNull().default([]),
+    type: text('type').notNull().default('human'),
+    mfaEnabled: boolean('mfa_enabled'),
+    status: text('status').notNull().default('active'),
+    createdInSource: timestamp('created_in_source', { withTimezone: true }),
+    deactivatedInSource: timestamp('deactivated_in_source', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('account_tenant_idx').on(table.tenantId),
+    uniqueIndex('account_source_idx').on(table.tenantId, table.connectorId, table.identifier),
+  ],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
