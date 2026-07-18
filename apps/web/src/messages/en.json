@@ -282,7 +282,12 @@
       "draft": "Draft",
       "approved": "Approved",
       "active": "Active"
-    }
+    },
+    "namePh": "Plan name",
+    "add": "Create plan",
+    "priority": "Priority",
+    "pickEntity": "Pick auditable entity",
+    "addItem": "Add"
   },
   "chartDashboards": {
     "title": "Chart Dashboards",

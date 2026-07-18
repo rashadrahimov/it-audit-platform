@@ -282,7 +282,12 @@
       "draft": "Qaralama",
       "approved": "Təsdiqlənib",
       "active": "Aktiv"
-    }
+    },
+    "namePh": "Plan adı",
+    "add": "Plan yarat",
+    "priority": "Prioritet",
+    "pickEntity": "Audit obyektini seçin",
+    "addItem": "Əlavə et"
   },
   "chartDashboards": {
     "title": "Qrafik Panelləri",
