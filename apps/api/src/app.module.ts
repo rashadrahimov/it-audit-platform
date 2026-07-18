@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { CommentsModule } from './comments/comments.module';
+import { ConnectorsModule } from './connectors/connectors.module';
 import { ControlsModule } from './controls/controls.module';
 import { DbModule } from './db/db.module';
 import { DocumentsModule } from './documents/documents.module';
@@ -28,6 +29,7 @@ import { UsersModule } from './users/users.module';
     AuditModule,
     AuthModule,
     CommentsModule,
+    ConnectorsModule,
     ControlsModule,
     DbModule,
     DocumentsModule,

@@ -141,6 +141,13 @@
       "when": 1784371239524,
       "tag": "0019_department",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1784377556641,
+      "tag": "0020_connector",
+      "breakpoints": true
     }
   ]
 }

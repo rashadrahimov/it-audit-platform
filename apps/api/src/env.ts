@@ -49,4 +49,6 @@ export const env = {
   ldapSearchFilter: process.env.LDAP_SEARCH_FILTER ?? '(|(uid={{username}})(mail={{username}}))',
   /** T-043: за сколько дней до due_date статус становится due_soon. */
   slaDueSoonDays: Number(process.env.SLA_DUE_SOON_DAYS ?? 7),
+  /** T-048: ключ шифрования конфигов коннекторов (AES-256-GCM). В проде — обязателен свой. */
+  encryptionKey: process.env.ENCRYPTION_KEY ?? 'dev-only-connector-encryption-key-change-me',
 };

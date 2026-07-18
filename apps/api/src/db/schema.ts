@@ -590,6 +590,47 @@ export const finding = pgTable(
   ],
 );
 
+/**
+ * Connector — интеграция с внешней/локальной системой (T-048, ADR-0011).
+ * capabilities: access/inventory/personnel/evidence/vulns/tasks. config_encrypted —
+ * креды AES-256-GCM (в API наружу не отдаётся). Провайдеры за абстракцией (EP-INT).
+ */
+export const connector = pgTable(
+  'connector',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    provider: text('provider').notNull(),
+    capabilities: jsonb('capabilities').$type<string[]>().notNull().default([]),
+    configEncrypted: text('config_encrypted'),
+    status: text('status').notNull().default('active'),
+    lastSyncAt: timestamp('last_sync_at', { withTimezone: true }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('connector_tenant_idx').on(table.tenantId)],
+);
+
+/** Прогон синхронизации коннектора (ADR-0011): история, метрики, ошибки. */
+export const syncRun = pgTable(
+  'sync_run',
+  {
+    id: id(),
+    connectorId: uuid('connector_id')
+      .notNull()
+      .references(() => connector.id, { onDelete: 'cascade' }),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    outcome: text('outcome').notNull().default('running'),
+    stats: jsonb('stats').notNull().default({}),
+    error: text('error'),
+    ...timestamps,
+  },
+  (table) => [index('sync_run_connector_idx').on(table.connectorId, table.startedAt)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
