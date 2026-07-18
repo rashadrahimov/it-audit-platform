@@ -81,6 +81,19 @@
       "partially_compliant": "Qismən uyğundur",
       "non_compliant": "Uyğun deyil",
       "not_applicable": "Tətbiq olunmur"
+    },
+    "findings": "Findings",
+    "findingsEmpty": "Hələ finding yoxdur",
+    "findingTitle": "Finding",
+    "findingRating": "Risk",
+    "findingOwner": "Sahib",
+    "findingDue": "Son tarix",
+    "ratings": {
+      "critical": "Kritik",
+      "high": "Yüksək",
+      "medium": "Orta",
+      "low": "Aşağı",
+      "not_applicable": "T/e"
     }
   },
   "engagementStates": {

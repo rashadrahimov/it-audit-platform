@@ -527,6 +527,48 @@ export const testResult = pgTable(
   (table) => [index('test_result_test_idx').on(table.testId, table.runAt)],
 );
 
+/**
+ * Finding — «третья колонка» чеклиста клиента (T-038, data-model §5): gap как риск.
+ * Standalone допустим (все привязки NULL). Поля retest/resolution двигает
+ * lifecycle T-039; sla_status статичен до T-043; risk_id придёт с EP-RISK.
+ */
+export const finding = pgTable(
+  'finding',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    engagementId: uuid('engagement_id').references(() => engagement.id),
+    checklistItemId: uuid('checklist_item_id').references(() => checklistItem.id),
+    responseId: uuid('response_id').references(() => response.id),
+    controlId: uuid('control_id').references(() => control.id),
+    titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
+    descriptionI18n: jsonb('description_i18n').$type<I18nText>(),
+    riskRating: text('risk_rating').notNull(),
+    recommendationI18n: jsonb('recommendation_i18n').$type<I18nText>(),
+    /** Auditee-side владелец действия (колонка Owner клиента). */
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    /** Audit-side владелец finding'а. */
+    auditorMembershipId: uuid('auditor_membership_id').references(() => membership.id),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    slaStatus: text('sla_status').notNull().default('ok'),
+    status: text('status').notNull().default('identified'),
+    remediatedAt: timestamp('remediated_at', { withTimezone: true }),
+    retestResult: text('retest_result'),
+    retestedBy: uuid('retested_by').references(() => membership.id),
+    resolutionDate: timestamp('resolution_date', { withTimezone: true }),
+    managementResponse: text('management_response'),
+    custom: jsonb('custom').notNull().default({}),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('finding_tenant_idx').on(table.tenantId),
+    index('finding_engagement_idx').on(table.engagementId),
+  ],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',

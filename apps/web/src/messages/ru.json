@@ -81,6 +81,19 @@
       "partially_compliant": "Частично соответствует",
       "non_compliant": "Не соответствует",
       "not_applicable": "Неприменимо"
+    },
+    "findings": "Findings",
+    "findingsEmpty": "Findings пока нет",
+    "findingTitle": "Finding",
+    "findingRating": "Риск",
+    "findingOwner": "Владелец",
+    "findingDue": "Дедлайн",
+    "ratings": {
+      "critical": "Критический",
+      "high": "Высокий",
+      "medium": "Средний",
+      "low": "Низкий",
+      "not_applicable": "Н/п"
     }
   },
   "engagementStates": {

@@ -81,6 +81,19 @@
       "partially_compliant": "Partially compliant",
       "non_compliant": "Non-compliant",
       "not_applicable": "Not applicable"
+    },
+    "findings": "Findings",
+    "findingsEmpty": "No findings yet",
+    "findingTitle": "Finding",
+    "findingRating": "Risk",
+    "findingOwner": "Owner",
+    "findingDue": "Deadline",
+    "ratings": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "not_applicable": "N/A"
     }
   },
   "engagementStates": {

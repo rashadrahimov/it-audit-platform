@@ -11,6 +11,7 @@ import { InfraHealthService } from './infra-health.service';
 import { EmailModule } from './email/email.module';
 import { EngagementsModule } from './engagements/engagements.module';
 import { FilesModule } from './files/files.module';
+import { FindingsModule } from './findings/findings.module';
 import { FrameworksModule } from './frameworks/frameworks.module';
 import { InvitesModule } from './invites/invites.module';
 import { JobsModule } from './jobs/jobs.module';
@@ -31,6 +32,7 @@ import { UsersModule } from './users/users.module';
     EmailModule,
     EngagementsModule,
     FilesModule,
+    FindingsModule,
     FrameworksModule,
     InvitesModule,
     JobsModule,

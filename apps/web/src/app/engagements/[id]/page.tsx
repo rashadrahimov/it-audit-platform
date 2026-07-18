@@ -42,6 +42,16 @@ interface LibraryControl {
   objective: string;
 }
 
+interface FindingRow {
+  id: string;
+  title: string;
+  riskRating: string;
+  status: string;
+  dueDate: string | null;
+  owner: string | null;
+  auditor: string | null;
+}
+
 /** Карточка engagement'а (T-035): состояние, переходы, вехи план/факт (ENG-03). */
 export default async function EngagementDetailPage({
   params,
@@ -71,6 +81,11 @@ export default async function EngagementDetailPage({
   const library: LibraryControl[] = libRes.ok ? await libRes.json() : [];
   const inChecklist = new Set(eng.checklist.map((i) => i.controlId).filter(Boolean));
   const addable = library.filter((c) => !inChecklist.has(c.id));
+
+  const fRes = await apiFetch(`/findings?engagementId=${id}&locale=${locale}`, {
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  const findings: FindingRow[] = fRes.ok ? await fRes.json() : [];
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const fmt = (iso: string | null): string => (iso ? dateFmt.format(new Date(iso)) : '—');
@@ -264,6 +279,49 @@ export default async function EngagementDetailPage({
               </button>
             </form>
           </details>
+        )}
+      </section>
+
+      <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-primary">{t('findings')}</h2>
+        {findings.length === 0 ? (
+          <p className="text-sm text-secondary">{t('findingsEmpty')}</p>
+        ) : (
+          <table className="w-full text-left text-sm" data-testid="engagement-findings">
+            <thead>
+              <tr className="border-b border-border text-secondary">
+                <th className="py-2 pr-4 font-medium">{t('findingTitle')}</th>
+                <th className="py-2 pr-4 font-medium">{t('findingRating')}</th>
+                <th className="py-2 pr-4 font-medium">{t('findingOwner')}</th>
+                <th className="py-2 font-medium">{t('findingDue')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {findings.map((f) => (
+                <tr key={f.id} className="border-b border-border align-top last:border-0">
+                  <td className="py-2 pr-4 text-foreground">{f.title}</td>
+                  <td className="py-2 pr-4">
+                    <span
+                      className={
+                        'rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ' +
+                        (f.riskRating === 'critical' || f.riskRating === 'high'
+                          ? 'bg-red-100 text-red-800'
+                          : f.riskRating === 'medium'
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-muted text-secondary')
+                      }
+                    >
+                      {t(`ratings.${f.riskRating}`)}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-4 text-secondary">{f.owner ?? '—'}</td>
+                  <td className="py-2 whitespace-nowrap text-secondary">
+                    {f.dueDate ? fmt(f.dueDate) : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </section>
 

@@ -12,3 +12,8 @@ export const complianceStatusSchema = z.enum([
 ]);
 
 export type ComplianceStatus = z.infer<typeof complianceStatusSchema>;
+
+/** Risk Rating — фиксированные значения чеклиста клиента (Critical…N/A). */
+export const riskRatingSchema = z.enum(['critical', 'high', 'medium', 'low', 'not_applicable']);
+
+export type RiskRating = z.infer<typeof riskRatingSchema>;
