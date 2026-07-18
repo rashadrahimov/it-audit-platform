@@ -1009,6 +1009,28 @@ export const processingActivity = pgTable(
   (table) => [index('processing_activity_tenant_idx').on(table.tenantId)],
 );
 
+/** DPIA — оценка влияния на защиту данных (T-075, EP-PRIV): workflow + документы через document_link. */
+export const privacyAssessment = pgTable(
+  'privacy_assessment',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    processingActivityId: uuid('processing_activity_id')
+      .notNull()
+      .references(() => processingActivity.id),
+    title: text('title').notNull(),
+    riskLevel: text('risk_level').notNull().default('medium'),
+    necessityNote: text('necessity_note'),
+    mitigations: jsonb('mitigations').notNull().default([]),
+    status: text('status').notNull().default('draft'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('privacy_assessment_tenant_idx').on(table.tenantId)],
+);
+
 /** Настраиваемый чарт-дашборд (T-072, B9): widgets jsonb — список {metric, chartType, title}. */
 export const dashboard = pgTable(
   'dashboard',

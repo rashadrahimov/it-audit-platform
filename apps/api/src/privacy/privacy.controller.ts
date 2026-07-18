@@ -16,7 +16,16 @@ import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
+import { PrivacyAssessmentsService } from './privacy-assessments.service';
 import { ProcessingActivitiesService } from './processing-activities.service';
+
+const dpiaCreateSchema = z.object({
+  processingActivityId: z.uuid(),
+  title: z.string().min(1),
+  riskLevel: z.enum(['low', 'medium', 'high']).optional(),
+  necessityNote: z.string().optional(),
+  mitigations: z.array(z.unknown()).optional(),
+});
 
 const createSchema = z.object({
   nameI18n: i18nTextSchema,
@@ -43,7 +52,51 @@ const createSchema = z.object({
 @ApiBearerAuth()
 @ApiHeader({ name: 'X-Tenant-Slug', required: true })
 export class PrivacyController {
-  constructor(private readonly service: ProcessingActivitiesService) {}
+  constructor(
+    private readonly service: ProcessingActivitiesService,
+    private readonly dpia: PrivacyAssessmentsService,
+  ) {}
+
+  @Post('dpia')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Создать DPIA для операции обработки (T-075)' })
+  @ApiCreatedResponse({ description: '{id, status, riskLevel}' })
+  createDpia(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = dpiaCreateSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.dpia.create(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data,
+    );
+  }
+
+  @Post('dpia/:id/transition')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'DPIA workflow: draft→in_progress→completed' })
+  transitionDpia(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = z.object({ to: z.enum(['in_progress', 'completed']) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.dpia.transition(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.to,
+    );
+  }
+
+  @Get('dpia')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Список DPIA тенанта' })
+  listDpia(@Req() req: TenantRequest) {
+    return this.dpia.list(req.tenantId);
+  }
+
+  @Get('dpia/:id')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Карточка DPIA + документы' })
+  getDpia(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.dpia.get(req.tenantId, id);
+  }
 
   @Post()
   @RequirePermission('control', 'edit', 'edit')
