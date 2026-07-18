@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-PLAN закрыт (T-100/101). Следующая — декомпозиция EP-I18N (полная мультиязычность контента, наша добавка) ИЛИ EP-SCHED (scheduling). См. остаток эпиков ниже.
-- **Следующий шаг:** Взять следующий незакрытый эпик по порядку (EP-SCHED backend / EP-GROUP углубление / EP-I18N). Фаза-3 (EP-ANNOT/OFFLINE/HARDEN/LOWCODE/HA) и EP-AI/ONPREM — инфра/AI/деплой, кандидаты на [!] (внешние решения/ADR-0002 offline-форк).
+- **Текущая задача:** EP-SCHED (ядро) закрыт (T-102). Следующая — EP-GROUP (консолидация группы, углубление M0) — последний чисто-backend эпик; затем разметка остатка [!].
+- **Следующий шаг:** T-103 (консолидированный rollup findings/risks по дочкам) закроет EP-GROUP. Затем пометить [!] инфра/AI/offline-эпики (EP-AI/ONPREM/OFFLINE/HA/ANNOT/LOWCODE/HARDEN/MIGRATE/I18N) с причинами — стоп-условие марафона.
 - **Последнее готово:** **Марафон-4 18.07.2026 — 41 задача (T-060…101): весь M2, весь M3, RFP EP-AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP/MSG/REPWIZ + добавка EP-PLAN. Миграции до 0060.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -344,7 +344,13 @@ WP как контейнер fieldwork + audit programs с roll-forward + sign-o
 - [x] **EP-TIME** — тайм-трекинг: Time Entry по аудиту/фазе/программе + непродуктивное время, бюджет vs факт, ставки/расходы (TIME-01/03, UNI-07, SCH-07). **Расписан на T-088–T-089. Закрыт: time_entry по аудиту/фазе/категории (непродуктивное — training/leave/admin, ставки billable_rate) + budget vs actual агрегат (UNI-07). Тайм-трекинг по программе/шагу (program_step_id) — задел при появлении audit programs (EP-WPAPERS).**
 
 Отделяемые модули — фаза 2/3:
-- **EP-SCHED** — scheduling: Gantt с drag-drop (SCH-01), аллокация ресурсов и утилизация (SCH-02/03), конфликты (SCH-04), пауза аудита (SCH-06).
+### Эпик: Scheduling (EP-SCHED, RFP SCH) — расписан на атомы 18.07.2026 (марафон-4)
+
+Аллокация ресурсов + утилизация + конфликты. Gantt drag-drop (SCH-01) — UI-атомом; пауза аудита (SCH-06) — уже есть (engagement.paused_from_state).
+
+- [x] **T-102** — Resource allocation + утилизация (SCH-02/03/04): `resource_allocation` (engagement_id, membership_id, allocated_hours, period); создать аллокацию; `GET /allocations/utilization?membershipId=&capacity=` — sum(allocated) по члену vs capacity → {allocated, capacity, utilizationPct, overallocated}. _Deps: T-035._ DoD: аллокация создаётся, утилизация члена считается (sum vs capacity), перегрузка (allocated>capacity)→overallocated=true. **Готово: миграция 0061 — resource_allocation (FORCE RLS; engagement/membership-линки, allocated_hours numeric, period). create (битый engagement→400, часы>0), utilization (sum по всем engagement члена vs capacity → utilizationPct, overallocated). API engagement.edit/view. audit_log resource_allocation.created. E2e: 2 аллокации 50+30=80/capacity 160→pct=50 over=false, capacity 60→pct=133 over=true, битый engagement→400, часы 0→400, capacity не-число→400, Collaborator→403. **EP-SCHED (ядро SCH-02/03/04) закрыт.**
+
+- [x] **EP-SCHED** — scheduling: Gantt с drag-drop (SCH-01), аллокация ресурсов и утилизация (SCH-02/03), конфликты (SCH-04), пауза аудита (SCH-06). **Расписан на T-102. Ядро закрыто: resource_allocation + кросс-engagement утилизация с overallocation-флагом (SCH-02/03/04). Gantt SCH-01 — UI-атомом; пауза SCH-06 — engagement.paused_from_state (есть).**
 ### Эпик: Глобальный поиск (EP-SEARCH, RFP GEN-05) — расписан на атомы 18.07.2026 (марафон-4)
 
 Кросс-сущностный поиск по ключевому слову. Полнотекст внутри Office/PDF (DAT-04) — фаза 2 (нужен pipeline извлечения текста), пока метаданные.

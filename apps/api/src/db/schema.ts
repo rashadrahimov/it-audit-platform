@@ -1021,6 +1021,28 @@ export const questionnaireAnswer = pgTable(
   (table) => [index('questionnaire_answer_q_idx').on(table.questionnaireId)],
 );
 
+/** Аллокация ресурса на аудит (T-102, EP-SCHED, SCH-02): часы члена на engagement. */
+export const resourceAllocation = pgTable(
+  'resource_allocation',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    engagementId: uuid('engagement_id')
+      .notNull()
+      .references(() => engagement.id, { onDelete: 'cascade' }),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id),
+    allocatedHours: numeric('allocated_hours', { precision: 8, scale: 2 }).notNull(),
+    period: text('period'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('resource_allocation_member_idx').on(table.membershipId)],
+);
+
 /** Годовой план аудитов (T-100, EP-PLAN, UNI-03): risk-based приоритизация + capacity. */
 export const annualPlan = pgTable(
   'annual_plan',
