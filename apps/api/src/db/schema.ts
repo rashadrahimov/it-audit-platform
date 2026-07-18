@@ -1065,6 +1065,38 @@ export const personnelProfile = pgTable(
   ],
 );
 
+/**
+ * Endpoint-устройство сотрудника (T-070, B12): MDM-проверки пароль/шифрование/антивирус/блокировка.
+ * compliance_status вычисляется из проверок; non_compliant → failing entity автотеста (T-071).
+ */
+export const device = pgTable(
+  'device',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    ownerPersonnelId: uuid('owner_personnel_id').references(() => personnelProfile.id),
+    name: text('name').notNull(),
+    os: text('os'),
+    serial: text('serial'),
+    diskEncryption: boolean('disk_encryption').notNull().default(false),
+    screenLock: boolean('screen_lock').notNull().default(false),
+    antivirus: boolean('antivirus').notNull().default(false),
+    passwordPolicy: boolean('password_policy').notNull().default(false),
+    complianceStatus: text('compliance_status').notNull().default('non_compliant'),
+    source: text('source').notNull().default('manual'),
+    connectorId: uuid('connector_id').references(() => connector.id),
+    externalId: text('external_id'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('device_tenant_idx').on(table.tenantId),
+    uniqueIndex('device_connector_external_idx').on(table.connectorId, table.externalId),
+  ],
+);
+
 /** ИТ-актив (T-066): проецируется в universe (kind=system, ref_id=asset.id). connector_id — авто-обнаружение B3. */
 export const asset = pgTable(
   'asset',

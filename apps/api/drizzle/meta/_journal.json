@@ -267,6 +267,13 @@
       "when": 1784386075847,
       "tag": "0037_personnel-profile",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1784386644949,
+      "tag": "0038_device",
+      "breakpoints": true
     }
   ]
 }
