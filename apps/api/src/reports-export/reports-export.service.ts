@@ -4,23 +4,12 @@ import { resolveLocalized } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
 import { control, finding, reportSnapshot, risk } from '../db/schema';
 import { diffMetrics, type MetricGroups } from './diff-metrics';
+import { csvCell, xmlEscape } from './serialize';
 
 export const EXPORT_ENTITIES = ['findings', 'risks', 'controls'] as const;
 export type ExportEntity = (typeof EXPORT_ENTITIES)[number];
 export const EXPORT_FORMATS = ['csv', 'xml'] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
-
-function csvCell(v: unknown): string {
-  const s = v === null || v === undefined ? '' : String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-function xmlEscape(v: unknown): string {
-  return String(v ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 @Injectable()
 export class ReportsExportService {
