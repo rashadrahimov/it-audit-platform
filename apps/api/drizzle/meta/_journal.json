@@ -281,6 +281,13 @@
       "when": 1784387314896,
       "tag": "0039_dashboard",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1784387549610,
+      "tag": "0040_report-snapshot",
+      "breakpoints": true
     }
   ]
 }

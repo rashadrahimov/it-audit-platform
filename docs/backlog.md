@@ -6,9 +6,9 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-REP — T-072 (metrics + чарт-дашборды B9) закрыта. Следующая — T-073 (snapshots B10), закроет EP-REP и M2 целиком.
-- **Следующий шаг:** T-073 (report_snapshot — заморозка метрик на дату) → M2 закрыт целиком → M3 (EP-TRUST / EP-PRIV / EP-QA / EP-FWK) либо RFP-эпики.
-- **Последнее готово:** **Марафон-4 18.07.2026: EP-VEND (T-060/061) + EP-VULN (T-062/063/064) + EP-ASSET (T-065…068) + EP-PERS (T-069…071) — четыре эпика M2 целиком.** До того марафон-3 (EP-INT/POL/IAM/RISK, 12 задач), M1 (7), марафон-1 (12). GitHub+CI зелёный.
+- **Текущая задача:** **M2 ЗАКРЫТ ЦЕЛИКОМ** (EP-REP закрыт T-072/073). Следующая — декомпозиция M3: EP-PRIV (Privacy/ROPA + DPIA).
+- **Следующий шаг:** Распишу EP-PRIV на атомы T-074+ (processing_activity ROPA + privacy_assessment DPIA-workflow) и сделаю. Дальше — EP-FWK / EP-MISC / EP-TRUST.
+- **Последнее готово:** **Марафон-4 18.07.2026: EP-VEND + EP-VULN + EP-ASSET + EP-PERS + EP-REP — ПЯТЬ эпиков, весь M2 (T-060…073, 14 задач).** До того марафон-3 (EP-INT/POL/IAM/RISK, 12), M1 (7), марафон-1 (12). GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
 
@@ -255,9 +255,9 @@ IAM встроен в Control→Test→Finding (ADR-0012): аккаунты — 
 Настраиваемые чарт-дашборды (B9: переиспользуемые наборы виджетов поверх живых метрик — findings/tests/vendors/risks/devices) + snapshots (B10: заморозка состояния метрик на дату, доказуемость «как было на дату аудита»). Поверх существующего engagement-PDF (M1). Метрики — агрегаты по status/severity/class уже существующих таблиц.
 
 - [x] **T-072** — Metrics service + dashboard config (B9): `dashboard` (name, widgets jsonb — список {metric, chartType, title}); MetricsService считает именованные метрики (findings_by_status/by_severity, tests_by_status, vendors_by_risk, risks_by_class, devices_compliance, controls_total) из живых данных; `GET /dashboards/:id/data` возвращает посчитанные виджеты. CRUD дашборда. _Deps: T-038, T-060, T-057, T-070._ DoD: дашборд создаётся из набора виджетов, данные каждого виджета считаются из живых данных, неизвестная метрика→400. **Готово: миграция 0039 — dashboard (FORCE RLS; name, widgets jsonb). MetricsService — 7 именованных метрик (агрегаты count/groupBy по finding.status/riskRating, test.status, vendor.inherentRisk, risk.riskClass, device.complianceStatus, control total); isKnown-валидация; computeAll (для снапшотов T-073). DashboardsService: create (валидация метрик виджетов→400), list, data (каждый виджет → посчитанный breakdown). API report.export (edit/view; Collaborator→403). `GET /dashboards/metrics` — каталог. audit_log dashboard.created. E2e: 7 метрик в каталоге, дашборд из 3 виджетов→данные из живых (findings_by_status {closed,identified}, devices_compliance, controls_total 32), неизвестная метрика→400, мусорный chartType→400, Collaborator→403.**
-- [ ] **T-073** — Snapshots (B10): `report_snapshot` (label, captured_at, metrics jsonb — заморозка текущих значений всех метрик); создание фиксирует срез на дату, список + карточка отдают историческое состояние неизменным. _Deps: T-072._ DoD: снапшот фиксирует метрики на дату; после изменения живых данных исторический снапшот остаётся прежним.
+- [x] **T-073** — Snapshots (B10): `report_snapshot` (label, captured_at, metrics jsonb — заморозка текущих значений всех метрик); создание фиксирует срез на дату, список + карточка отдают историческое состояние неизменным. _Deps: T-072._ DoD: снапшот фиксирует метрики на дату; после изменения живых данных исторический снапшот остаётся прежним. **Готово: миграция 0040 — report_snapshot (FORCE RLS; label, metrics jsonb, captured_at). SnapshotsService.create — MetricsService.computeAll замораживает все 7 метрик в jsonb; list (по captured_at), get (замороженные метрики). API report.export (edit/view; Collaborator→403). audit_log report_snapshot.created. **Неизменность доказана вживую**: базлайн devices_compliance {compliant:3}→мутация (завёл non_compliant устройство, живой дашборд {compliant:3, non_compliant:1})→тот же снапшот остаётся {compliant:3}; новый снапшот отражает мутацию. E2e: неизменность OK, новый отличается, список=2, Collaborator→403. **EP-REP закрыт целиком** (T-072 дашборды + T-073 snapshots). **M2 ЗАКРЫТ ЦЕЛИКОМ.****
 
-- [ ] **EP-REP** — Reports как настраиваемые чарт-дашборды (B9) + snapshots (B10). **Расписан на T-072–T-073.**
+- [x] **EP-REP** — Reports как настраиваемые чарт-дашборды (B9) + snapshots (B10). **Расписан на T-072–T-073. Закрыт: 7 живых метрик, конфигурируемые чарт-дашборды, snapshots с доказуемой неизменностью «как было на дату».**
 
 ## M3. Полный паритет (эпики)
 

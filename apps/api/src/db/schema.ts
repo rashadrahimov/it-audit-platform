@@ -1000,6 +1000,22 @@ export const dashboard = pgTable(
   (table) => [index('dashboard_tenant_idx').on(table.tenantId)],
 );
 
+/** Снапшот метрик на дату (T-073, B10): заморозка состояния для доказуемости «как было». */
+export const reportSnapshot = pgTable(
+  'report_snapshot',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    label: text('label').notNull(),
+    metrics: jsonb('metrics').notNull().default({}),
+    capturedAt: timestamp('captured_at', { withTimezone: true }).notNull().defaultNow(),
+    ...timestamps,
+  },
+  (table) => [index('report_snapshot_tenant_idx').on(table.tenantId)],
+);
+
 /** Security alert (T-064): сигнал из коннектора/сканера → triage → закрытие. */
 export const securityAlert = pgTable(
   'security_alert',
