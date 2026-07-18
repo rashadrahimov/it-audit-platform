@@ -316,6 +316,13 @@
       "when": 1784388847442,
       "tag": "0044_commitment",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1784391002302,
+      "tag": "0045_trust-center",
+      "breakpoints": true
     }
   ]
 }

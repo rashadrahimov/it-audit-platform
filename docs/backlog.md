@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** EP-FWK закрыт целиком (T-078/079). Следующая — декомпозиция EP-TRUST (Trust Center, B7).
-- **Следующий шаг:** Распишу EP-TRUST на атомы T-080+ (публичный trust-portal + access requests + published-контроли) и сделаю. Дальше — EP-QA / RFP-эпики.
+- **Текущая задача:** EP-TRUST — T-080 (публичный Trust Center + posture items) закрыта. Следующая — T-081 (access requests), закроет EP-TRUST.
+- **Следующий шаг:** T-081 (публичный POST access-request + админ approve/deny) закроет EP-TRUST. Дальше — EP-QA / RFP-эпики.
 - **Последнее готово:** **Марафон-4 18.07.2026: весь M2 (T-060…073, 14 задач) + M3 EP-PRIV (T-074/075) + EP-MISC Tags/Commitments (T-076/077).** До того марафон-3 (12), M1 (7), марафон-1 (12). GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
@@ -261,7 +261,14 @@ IAM встроен в Control→Test→Finding (ADR-0012): аккаунты — 
 
 ## M3. Полный паритет (эпики)
 
-- **EP-TRUST** — Trust Center (B7): публичный portal, access requests, activity log, knowledge base.
+### Эпик: Trust Center (EP-TRUST, B7) — расписан на атомы 18.07.2026 (марафон-4)
+
+Публичный портал доверия: компания публикует security-постуру (фреймворки/контроли/документы), посетители запрашивают доступ к деталям. Первый эпик с ПУБЛИЧНЫМИ (без auth) роутами — guard не глобальный, публичный контроллер без `@UseGuards`; тенант резолвится по публичному slug → withTenant (сервер сам ставит контекст, наружу только опубликованное).
+
+- [x] **T-080** — Trust Center config + публичная страница: `trust_center` (tenant, slug UNIQUE публичный, title, intro, is_public) + `trust_center_item` (label, category framework/control/document, published bool); админ настраивает (settings.edit) + добавляет items; публичный `GET /trust/:slug` (без auth) отдаёт {title, intro, items[published]} только если is_public, иначе 404; приватная не отдаётся. _Deps: T-020._ DoD: тенант настраивает публичную страницу, публичный доступ по slug без логина возвращает опубликованное, is_public=false→404, неопубликованные items скрыты. **Готово: миграция 0045 — trust_center (FORCE RLS tenant_isolation + доп. политика `trust_center_public_read` FOR SELECT USING is_public — публичный анонимный доступ без контекста) + trust_center_item (RLS через trust_center EXISTS). Публичный резолв slug через dbService.db (public-read RLS), затем items под withTenant(владелец). Два контроллера: TrustAdminController (settings.edit/view, configure upsert по тенанту + addItem + adminGet) и **TrustPublicController без @UseGuards** (GET /trust/:slug анонимно). audit_log trust_center.configured. E2e: приватный→публичный 404, публикация→анонимный GET отдаёт title+published items, черновик-item скрыт (public 1 / admin 2), несуществующий slug→404, невалидный slug (заглавные)→400, Collaborator→403.**
+- [ ] **T-081** — Trust Center access requests: `trust_access_request` (email, company, message, status pending→approved→denied); публичный `POST /trust/:slug/access-requests` (без auth) — посетитель запрашивает доступ; админ (settings.view) список + approve/deny. _Deps: T-080._ DoD: посетитель публично запрашивает доступ, запись создаётся pending, админ одобряет/отклоняет, недопустимый переход→400. **EP-TRUST закрыт этими двумя.**
+
+- [ ] **EP-TRUST** — Trust Center (B7): публичный portal, access requests, activity log, knowledge base. **Расписан на T-080–T-081 (ядро: публичная постура + access requests); activity log / knowledge base — атомами при надобности.**
 ### Эпик: Privacy/ROPA + DPIA (EP-PRIV, раздел C) — расписан на атомы 18.07.2026 (марафон-4, первый M3-эпик)
 
 GDPR-приватность: ROPA (Records of Processing Activities, Art. 30 — реестр операций обработки ПДн) + DPIA (Data Protection Impact Assessment — оценка влияния на защиту данных). Самодостаточно, паттерн register+assessment+workflow+документы (как EP-RISK/EP-VEND). Модель — data-model §12 (processing_activity/privacy_assessment).

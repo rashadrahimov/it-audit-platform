@@ -984,6 +984,43 @@ export const codeChange = pgTable(
   (table) => [index('code_change_tenant_idx').on(table.tenantId)],
 );
 
+/** Trust Center (T-080, B7): публичная страница постуры тенанта по slug. */
+export const trustCenter = pgTable(
+  'trust_center',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    slug: text('slug').notNull(),
+    title: text('title').notNull(),
+    intro: text('intro'),
+    isPublic: boolean('is_public').notNull().default(false),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('trust_center_slug_idx').on(table.slug),
+    index('trust_center_tenant_idx').on(table.tenantId),
+  ],
+);
+
+/** Опубликованный элемент постуры (T-080): фреймворк/контроль/документ. */
+export const trustCenterItem = pgTable(
+  'trust_center_item',
+  {
+    id: id(),
+    trustCenterId: uuid('trust_center_id')
+      .notNull()
+      .references(() => trustCenter.id, { onDelete: 'cascade' }),
+    label: text('label').notNull(),
+    category: text('category').notNull(),
+    published: boolean('published').notNull().default(true),
+    ...timestamps,
+  },
+  (table) => [index('trust_center_item_tc_idx').on(table.trustCenterId)],
+);
+
 /** Контрактное обязательство (T-077, EP-MISC): реестр commitments + SLA на due_date. */
 export const commitment = pgTable(
   'commitment',
