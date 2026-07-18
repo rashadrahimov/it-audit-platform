@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** Марафон Трека A (UI-глубина). Готово: T-A01 `/risks`, T-A02 `/privacy`, T-A03 `/iam`, T-A04 `/code-changes`, T-A05 `/config`, T-A06 `/reports` (выгрузка CSV/XML + сравнение снапшотов). До того: 15 экранов + T-U16…U19.
-- **Следующий шаг:** По приоритету A1: api-keys/notifications → KPI/time → knowledge base/questionnaires. Каждый — server actions по эталону, зелёный чекпоинт.
+- **Текущая задача:** Марафон Трека A (UI-глубина). Готово: T-A01…A06 + T-A07 `/api-keys` (генерация plaintext-один-раз через useActionState + отзыв). До того: 15 экранов + T-U16…U19.
+- **Следующий шаг:** По приоритету A1: notifications → KPI/time → knowledge base/questionnaires. Каждый — server actions по эталону, зелёный чекпоинт.
 - **Последнее готово:** **Марафон-4 18.07.2026 — 43 задачи (T-060…103): весь M2 + весь M3 + RFP-эпики (AUDITTYPES/CONFIG/TIME/API/WPAPERS/SEARCH/HELP/MSG/REPWIZ/SCHED) + Добавки (PLAN/GROUP), EP-I18N backend-ядро. Миграции до 0061. Стоп-условие достигнуто.** GitHub+CI зелёный.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._

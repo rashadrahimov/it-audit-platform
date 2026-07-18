@@ -59,7 +59,8 @@
     "iam": "IAM — Accounts",
     "codeChanges": "Change Management",
     "config": "Settings",
-    "reports": "Reports"
+    "reports": "Reports",
+    "apiKeys": "API keys"
   },
   "engagements": {
     "title": "Engagements",
@@ -607,5 +608,21 @@
       "findings_by_severity": "Findings by severity",
       "findings_open": "Open findings"
     }
+  },
+  "apiKeys": {
+    "title": "API keys",
+    "toAccount": "To account",
+    "namePh": "Key name",
+    "add": "Generate",
+    "once": "Copy now — the key is shown only once",
+    "error": "Failed to create key",
+    "empty": "No keys yet",
+    "name": "Name",
+    "prefix": "Prefix",
+    "lastUsed": "Last used",
+    "status": "Status",
+    "active": "Active",
+    "revoked": "Revoked",
+    "revoke": "Revoke"
   }
 }

@@ -59,7 +59,8 @@
     "iam": "IAM — Hesablar",
     "codeChanges": "Dəyişiklik İdarəetməsi",
     "config": "Tənzimləmələr",
-    "reports": "Hesabatlar"
+    "reports": "Hesabatlar",
+    "apiKeys": "API açarları"
   },
   "engagements": {
     "title": "Auditlər",
@@ -607,5 +608,21 @@
       "findings_by_severity": "Tapıntılar (kritiklik üzrə)",
       "findings_open": "Açıq tapıntılar"
     }
+  },
+  "apiKeys": {
+    "title": "API açarları",
+    "toAccount": "Hesaba",
+    "namePh": "Açar adı",
+    "add": "Yarat",
+    "once": "İndi kopyalayın — açar yalnız bir dəfə göstərilir",
+    "error": "Açar yaradıla bilmədi",
+    "empty": "Hələ açar yoxdur",
+    "name": "Ad",
+    "prefix": "Prefiks",
+    "lastUsed": "Son istifadə",
+    "status": "Status",
+    "active": "Aktiv",
+    "revoked": "Ləğv edilib",
+    "revoke": "Ləğv et"
   }
 }
