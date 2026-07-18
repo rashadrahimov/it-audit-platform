@@ -133,6 +133,8 @@ export const membership = pgTable(
     isAuditSeat: boolean('is_audit_seat').notNull().default(false),
     invitedBy: uuid('invited_by'),
     status: text('status').notNull().default('active'),
+    /** T-012: NULL = вся группа; массив subsidiary_id = member видит только эти дочки. */
+    subsidiaryScope: jsonb('subsidiary_scope').$type<string[] | null>(),
     ...timestamps,
   },
   (table) => [uniqueIndex('membership_user_tenant_idx').on(table.userId, table.tenantId)],
