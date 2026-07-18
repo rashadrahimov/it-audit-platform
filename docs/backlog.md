@@ -6,8 +6,8 @@
 
 ## ▶ СЕЙЧАС (обновлять в конце каждой сессии — 1 строка)
 
-- **Текущая задача:** Трек I деплой (T-I01…I04) + **T-I05:** job `docker` в CI — сборка обоих прод-образов (api/web) + валидация `docker-compose.prod.yml config`, параллельно основному `ci`. Локально команды job'а проходят; финальный verify — реальный прогон GitHub Actions через `gh`.
-- **Следующий шаг:** Опц. prod-bootstrap-скрипт (админ+CBAR без демо-данных) для prod-compose. Затем buildable-подмножества [!]-эпиков (gap-analysis). Остаток строго [!]: EP-ONPREM инфра, T-001 бизнес.
+- **Текущая задача:** T-I05 CI-job `docker` + **T-I06 ПОЧИНКА КРАСНОГО CI** (был красный ~25 коммитов!): (1) eslint-glob `scripts/**/*.mjs` не матчил `apps/web/scripts/` → Lint падал на check-i18n.mjs (с T-A17); (2) `format:check` дрейф 79 файлов не был виден, т.к. CI умирал на Lint раньше. Оба починены: `**/scripts/**/*.mjs` + `prettier --write`. Локально build/lint/typecheck/format/test зелёные (66 тестов). Урок: гонять ПОЛНЫЙ `pnpm lint`+`pnpm format:check`, не только per-dir `next lint`.
+- **Следующий шаг:** Дождаться зелёного GitHub Actions (gh). Затем опц. prod-bootstrap (админ+CBAR без демо) для prod-compose; buildable-подмножества [!]-эпиков. Остаток строго [!]: EP-ONPREM инфра, T-001 бизнес.
 - **Последнее готово:** **Марафон-5 (Трек A UI-глубина) 18.07.2026 — T-A01…A22 (22 задачи): 15 экранов интерактива (risks/privacy/iam/code-changes/config/reports/api-keys/notifications/time/kpi/audit-programs/kb/questionnaires/satisfaction/plans/trends) + навигационный хаб (7 категорий) + i18n-гвард (610 ключей ×3) + 5 вынесенных unit-модулей (api 20→51 тест).** Все 17 экранов 200, verify зелёный, GitHub каждый коммит запушен.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
