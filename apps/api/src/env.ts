@@ -27,4 +27,14 @@ export const env = {
   oidcClientId: process.env.OIDC_CLIENT_ID ?? 'it-audit-app',
   oidcClientSecret: process.env.OIDC_CLIENT_SECRET ?? 'it-audit-dev-secret',
   oidcRedirectUrl: process.env.OIDC_REDIRECT_URL ?? 'http://localhost:3001/auth/oidc/callback',
+  /**
+   * SAML SSO (T-024). Метадата IdP вместо ручного конфига: cert подписи Keycloak
+   * генерирует при импорте realm'а. У ADFS — /FederationMetadata/2007-06/FederationMetadata.xml.
+   */
+  samlIdpMetadataUrl:
+    process.env.SAML_IDP_METADATA_URL ??
+    'http://localhost:8081/realms/it-audit/protocol/saml/descriptor',
+  /** EntityID нашего SP = clientId SAML-клиента в Keycloak / identifier в ADFS. */
+  samlSpIssuer: process.env.SAML_SP_ISSUER ?? 'it-audit-saml',
+  samlCallbackUrl: process.env.SAML_CALLBACK_URL ?? 'http://localhost:3001/auth/saml/callback',
 };

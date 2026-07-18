@@ -8,6 +8,9 @@ import { MfaService } from './mfa.service';
 import { OidcController } from './oidc.controller';
 import { OidcService } from './oidc.service';
 import { PasswordService } from './password.service';
+import { SamlController } from './saml.controller';
+import { SamlService } from './saml.service';
+import { SsoUserService } from './sso-user.service';
 
 @Module({
   imports: [
@@ -16,8 +19,16 @@ import { PasswordService } from './password.service';
       signOptions: { expiresIn: env.jwtTtlSeconds },
     }),
   ],
-  controllers: [AuthController, OidcController],
-  providers: [AuthService, MfaService, OidcService, PasswordService, JwtAuthGuard],
+  controllers: [AuthController, OidcController, SamlController],
+  providers: [
+    AuthService,
+    MfaService,
+    OidcService,
+    SamlService,
+    SsoUserService,
+    PasswordService,
+    JwtAuthGuard,
+  ],
   exports: [JwtAuthGuard, JwtModule, PasswordService],
 })
 export class AuthModule {}
