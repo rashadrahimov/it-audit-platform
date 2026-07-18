@@ -4,6 +4,7 @@ import { AccessReviewsModule } from './access-reviews/access-reviews.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
+import { ChangesModule } from './changes/changes.module';
 import { CommentsModule } from './comments/comments.module';
 import { ConnectorsModule } from './connectors/connectors.module';
 import { ControlsModule } from './controls/controls.module';
@@ -38,6 +39,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     AccountsModule,
     AuditModule,
     AuthModule,
+    ChangesModule,
     CommentsModule,
     ConnectorsModule,
     ControlsModule,

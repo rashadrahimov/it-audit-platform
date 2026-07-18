@@ -962,6 +962,28 @@ export const vulnerability = pgTable(
   (table) => [index('vulnerability_tenant_idx').on(table.tenantId)],
 );
 
+/** Change management (T-063, B13): изменение с approval-workflow requested→approved→deployed. */
+export const codeChange = pgTable(
+  'code_change',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    title: text('title').notNull(),
+    type: text('type'),
+    risk: text('risk'),
+    status: text('status').notNull().default('requested'),
+    requesterMembershipId: uuid('requester_membership_id').references(() => membership.id),
+    approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    deployedAt: timestamp('deployed_at', { withTimezone: true }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('code_change_tenant_idx').on(table.tenantId)],
+);
+
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */
 export const subsidiary = pgTable(
   'subsidiary',
