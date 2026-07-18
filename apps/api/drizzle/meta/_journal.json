@@ -64,6 +64,13 @@
       "when": 1784327958296,
       "tag": "0008_mfa-recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784358664542,
+      "tag": "0009_framework",
+      "breakpoints": true
     }
   ]
 }

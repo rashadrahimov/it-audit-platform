@@ -23,6 +23,23 @@
   "account": {
     "title": "Hesab",
     "name": "Ad",
-    "signOut": "Çıxış"
+    "signOut": "Çıxış",
+    "frameworks": "Standartlar kitabxanası"
+  },
+  "frameworks": {
+    "title": "Standartlar",
+    "toAccount": "Hesab",
+    "name": "Ad",
+    "version": "Versiya",
+    "status": "Status",
+    "origin": "Mənbə",
+    "global": "Qlobal kitabxana",
+    "tenant": "Tenant",
+    "empty": "Hələ standart yoxdur",
+    "statuses": {
+      "published": "Dərc edilib",
+      "draft": "Qaralama",
+      "deprecated": "Köhnəlib"
+    }
   }
 }

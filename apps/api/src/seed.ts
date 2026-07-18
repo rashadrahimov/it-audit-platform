@@ -14,9 +14,11 @@ import {
 import { Client } from 'pg';
 import { Redis } from 'ioredis';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import { env } from './env';
 import {
+  framework,
+  frameworkRequirement,
   license,
   membership,
   permission,
@@ -107,6 +109,7 @@ async function seedPostgres(): Promise<void> {
     });
     console.log('✓ Роль «Демо-аудиторы» с матрицей (edit: engagement/finding, view: остальное)');
     await seedPresetRoles(catalog);
+    await seedGlobalFrameworks();
     await seedDemoUsers(db, demoTenant.id);
   } finally {
     await client.end().catch(() => {});
@@ -187,6 +190,124 @@ async function seedPresetRoles(catalog: (typeof permission.$inferSelect)[]): Pro
 }
 
 /** Демо-логины (T-020): admin@demo.io / Demo-Admin-2026 и collaborator@demo.io / Demo-Collab-2026. */
+/** Приоритетные стандарты из ответов клиента (T-001); местный (CBAR) — когда клиент назовёт. */
+const GLOBAL_FRAMEWORKS = [
+  {
+    name: { en: 'ISO/IEC 27001' },
+    version: '2022',
+    requirements: [
+      {
+        ref: 'A.5.1',
+        title: {
+          en: 'Policies for information security',
+          az: 'İnformasiya təhlükəsizliyi siyasətləri',
+          ru: 'Политики информационной безопасности',
+        },
+      },
+      {
+        ref: 'A.5.2',
+        title: {
+          en: 'Information security roles and responsibilities',
+          az: 'İnformasiya təhlükəsizliyi üzrə rollar və məsuliyyətlər',
+          ru: 'Роли и обязанности в области информационной безопасности',
+        },
+      },
+      {
+        ref: 'A.8.1',
+        title: {
+          en: 'User endpoint devices',
+          az: 'İstifadəçi son nöqtə cihazları',
+          ru: 'Конечные устройства пользователей',
+        },
+      },
+    ],
+  },
+  {
+    name: { en: 'COBIT' },
+    version: '2019',
+    requirements: [
+      {
+        ref: 'EDM01',
+        title: {
+          en: 'Ensured governance framework setting and maintenance',
+          az: 'İdarəetmə çərçivəsinin qurulması və saxlanması',
+          ru: 'Формирование и поддержка системы корпоративного управления ИТ',
+        },
+      },
+      {
+        ref: 'APO01',
+        title: {
+          en: 'Managed I&T management framework',
+          az: 'İdarə olunan İT idarəetmə çərçivəsi',
+          ru: 'Управление системой менеджмента ИТ',
+        },
+      },
+    ],
+  },
+  {
+    name: { en: 'NIST CSF' },
+    version: '2.0',
+    requirements: [
+      {
+        ref: 'GV.OC',
+        title: {
+          en: 'Organizational context',
+          az: 'Təşkilati kontekst',
+          ru: 'Организационный контекст',
+        },
+      },
+      {
+        ref: 'ID.AM',
+        title: {
+          en: 'Asset management',
+          az: 'Aktivlərin idarə edilməsi',
+          ru: 'Управление активами',
+        },
+      },
+    ],
+  },
+];
+
+/** Глобальная библиотека (ADR-0016) — под owner: RLS-политика записи не пускает app к tenant_id NULL. */
+async function seedGlobalFrameworks(): Promise<void> {
+  const owner = new Client({
+    connectionString: env.databaseUrlOwner,
+    connectionTimeoutMillis: 5000,
+  });
+  try {
+    await owner.connect();
+    const db = drizzle(owner);
+    for (const fw of GLOBAL_FRAMEWORKS) {
+      const [existing] = await db
+        .select()
+        .from(framework)
+        .where(
+          and(
+            isNull(framework.tenantId),
+            sql`${framework.nameI18n}->>'en' = ${fw.name.en}`,
+            eq(framework.version, fw.version),
+          ),
+        );
+      if (existing) continue;
+      const [created] = await db
+        .insert(framework)
+        .values({ tenantId: null, nameI18n: fw.name, version: fw.version })
+        .returning();
+      if (!created) throw new Error(`Фреймворк «${fw.name.en}» не создался`);
+      await db.insert(frameworkRequirement).values(
+        fw.requirements.map((r) => ({
+          frameworkId: created.id,
+          ref: r.ref,
+          titleI18n: r.title,
+        })),
+      );
+    }
+    console.log(`✓ Глобальная библиотека фреймворков: ${GLOBAL_FRAMEWORKS.length} (idempotent)`);
+  } finally {
+    await owner.end().catch(() => {});
+  }
+}
+
 async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void> {
   const passwordService = new PasswordService();
   const demoUsers = [

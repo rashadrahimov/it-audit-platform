@@ -23,6 +23,23 @@
   "account": {
     "title": "Account",
     "name": "Name",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "frameworks": "Frameworks library"
+  },
+  "frameworks": {
+    "title": "Frameworks",
+    "toAccount": "Account",
+    "name": "Name",
+    "version": "Version",
+    "status": "Status",
+    "origin": "Origin",
+    "global": "Global library",
+    "tenant": "Tenant",
+    "empty": "No frameworks yet",
+    "statuses": {
+      "published": "Published",
+      "draft": "Draft",
+      "deprecated": "Deprecated"
+    }
   }
 }

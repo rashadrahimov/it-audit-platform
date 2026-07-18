@@ -8,6 +8,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 import { v7 as uuidv7 } from 'uuid';
 import type { I18nText } from '@it-audit/shared';
@@ -214,6 +215,47 @@ export const comment = pgTable(
     ...timestamps,
   },
   (table) => [index('comment_entity_idx').on(table.tenantId, table.entityType, table.entityId)],
+);
+
+/**
+ * Framework — стандарт (T-030, ADR-0016): tenant_id NULL = глобальная библиотека
+ * (курируем мы), тенантская адаптация ссылается на оригинал через source_framework_id.
+ * Обновление версии стандарта = новая строка (tracked changes — EP-FWK).
+ */
+export const framework = pgTable(
+  'framework',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id').references(() => tenant.id),
+    nameI18n: jsonb('name_i18n').$type<I18nText>().notNull(),
+    /** Версия издания стандарта: «2022», «2019», «2.0». */
+    version: text('version').notNull(),
+    status: text('status').notNull().default('published'),
+    sourceFrameworkId: uuid('source_framework_id').references((): AnyPgColumn => framework.id),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('framework_tenant_idx').on(table.tenantId)],
+);
+
+/**
+ * Пункт стандарта (A.5.1, EDM01…): единственный источник ссылок на стандарты
+ * (ADR-0004); иерархия пунктов через parent_id (data-model §11.2).
+ */
+export const frameworkRequirement = pgTable(
+  'framework_requirement',
+  {
+    id: id(),
+    frameworkId: uuid('framework_id')
+      .notNull()
+      .references(() => framework.id, { onDelete: 'cascade' }),
+    ref: text('ref').notNull(),
+    titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
+    textI18n: jsonb('text_i18n').$type<I18nText>(),
+    parentId: uuid('parent_id').references((): AnyPgColumn => frameworkRequirement.id),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('framework_requirement_fw_ref_idx').on(table.frameworkId, table.ref)],
 );
 
 /** Дочка группы. Доменная таблица: tenant_id NOT NULL — паттерн для всех последующих. */

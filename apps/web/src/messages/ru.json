@@ -23,6 +23,23 @@
   "account": {
     "title": "Аккаунт",
     "name": "Имя",
-    "signOut": "Выйти"
+    "signOut": "Выйти",
+    "frameworks": "Библиотека стандартов"
+  },
+  "frameworks": {
+    "title": "Стандарты",
+    "toAccount": "Аккаунт",
+    "name": "Название",
+    "version": "Версия",
+    "status": "Статус",
+    "origin": "Источник",
+    "global": "Глобальная библиотека",
+    "tenant": "Тенант",
+    "empty": "Стандартов пока нет",
+    "statuses": {
+      "published": "Опубликован",
+      "draft": "Черновик",
+      "deprecated": "Устарел"
+    }
   }
 }
