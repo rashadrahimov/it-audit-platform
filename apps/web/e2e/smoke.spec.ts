@@ -52,9 +52,13 @@ test('тур: кнопка «?» открывает шаги, Далее раб�
   await expect(page.getByTestId('guide-page')).toBeVisible();
   await expect(page.getByTestId('guide-start-tour')).toBeVisible();
 
-  // тур из топ-бара
-  await page.goto('/account');
+  // «?» открывает контекстный справочник (T-H35)
+  await page.goto('/engagements');
   await page.getByTestId('topbar-help').click();
+  await expect(page.getByTestId('help-panel')).toBeVisible();
+
+  // из справочника запускается тур
+  await page.getByTestId('help-start-tour').click();
   await expect(page.getByTestId('tour-overlay')).toBeVisible();
   await expect(page.getByTestId('tour-tooltip')).toBeVisible();
   await page.getByTestId('tour-next').click(); // шаг 2

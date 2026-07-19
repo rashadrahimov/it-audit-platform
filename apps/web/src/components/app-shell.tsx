@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/app/login/actions';
 import { ProductTour, type TourLabels, type TourStep } from '@/components/product-tour';
+import { HelpPanel, type HelpEntry, type HelpLabels } from '@/components/help-panel';
 
 interface NavItem {
   href: string;
@@ -73,17 +74,23 @@ export function AppShell({
   user,
   labels,
   tour,
+  help,
   children,
 }: {
   groups: NavGroup[];
   user: { name: string; email: string };
   labels: Labels;
   tour: { steps: TourStep[]; labels: TourLabels };
+  help: { entries: Record<string, HelpEntry>; labels: HelpLabels };
   children: ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [tourSignal, setTourSignal] = useState(0);
+  const [helpOpen, setHelpOpen] = useState(false);
+  // справочник: запись по текущему разделу (первый сегмент пути; '' → account)
+  const helpSlug = pathname.split('/')[1] || 'account';
+  const helpEntry = help.entries[helpSlug] ?? help.entries.account!;
   const initials =
     user.name
       .split(' ')
@@ -353,7 +360,7 @@ export function AppShell({
             type="button"
             data-testid="topbar-help"
             aria-label="Tour"
-            onClick={() => setTourSignal((s) => s + 1)}
+            onClick={() => setHelpOpen(true)}
             className="ml-auto flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-secondary transition-colors duration-150 hover:bg-muted hover:text-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <svg
@@ -378,6 +385,18 @@ export function AppShell({
         </header>
         <div className="min-w-0 flex-1">{children}</div>
       </div>
+
+      {/* Контекстный справочник (T-H35) */}
+      <HelpPanel
+        entry={helpEntry}
+        labels={help.labels}
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        onStartTour={() => {
+          setHelpOpen(false);
+          setTourSignal((s) => s + 1);
+        }}
+      />
 
       {/* Интерактивный тур (T-H34) */}
       <Suspense fallback={null}>

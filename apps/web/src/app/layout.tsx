@@ -20,9 +20,11 @@ export const metadata: Metadata = {
 async function Shell({ children }: { children: ReactNode }) {
   const user = await getSessionUser();
   if (!user) return <>{children}</>;
-  const [t, tTour, tenantSlug] = await Promise.all([
+  const [t, tTour, tGuide, tHelp, tenantSlug] = await Promise.all([
     getTranslations('account'),
     getTranslations('tour'),
+    getTranslations('guide'),
+    getTranslations('help'),
     getActiveTenantSlug(),
   ]);
   const groups = NAV_GROUPS.map((g) => ({
@@ -45,6 +47,25 @@ async function Shell({ children }: { children: ReactNode }) {
     title: tTour(`steps.${key}.t`),
     text: tTour(`steps.${key}.d`),
   }));
+
+  // Контекстный справочник (T-H35): slug → {title, summary, steps} по каждому разделу
+  const helpEntries: Record<string, { title: string; summary: string; steps: string[] }> = {
+    account: {
+      title: t('home'),
+      summary: tGuide('sections.account'),
+      steps: tGuide.raw('details.account') as string[],
+    },
+  };
+  for (const g of NAV_GROUPS) {
+    for (const it of g.items) {
+      const slug = it.href.slice(1);
+      helpEntries[slug] = {
+        title: t(it.label),
+        summary: tGuide(`sections.${slug}`),
+        steps: tGuide.raw(`details.${slug}`) as string[],
+      };
+    }
+  }
 
   return (
     <AppShell
@@ -70,6 +91,17 @@ async function Shell({ children }: { children: ReactNode }) {
           done: tTour('done'),
           stepOf: tTour('stepOf', { i: '{i}', n: '{n}' }),
           openGuide: tTour('openGuide'),
+        },
+      }}
+      help={{
+        entries: helpEntries,
+        labels: {
+          title: tHelp('title'),
+          howTo: tHelp('howTo'),
+          current: tHelp('current'),
+          startTour: tHelp('startTour'),
+          openGuide: tHelp('openGuide'),
+          close: tHelp('close'),
         },
       }}
     >

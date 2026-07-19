@@ -936,7 +936,212 @@
       "migration": "Müştərinin Excel çeklistlərindən nəzarətlərin idxalı.",
       "ai-settings": "AI provayderi: Claude, GPT, Kimi və ya lokal model.",
       "glossary": "GRC terminlər lüğəti.",
-      "guide": "Bu bələdçi: bütün bölmələr və tur."
+      "guide": "Bu bələdçi: bütün bölmələr və tur.",
+      "account": "Əsas ekran: metriklər, onboarding və sürətli giriş."
+    },
+    "details": {
+      "account": [
+        "Metriklərə və onboarding irəliləyişinə baxın",
+        "Əsas bölmələrə sürətli girişdən istifadə edin",
+        "Tam naviqasiya sol paneldədir"
+      ],
+      "dashboard": [
+        "Bölməni açın — metriklər avtomatik hesablanır",
+        "Törəmələri müqayisə edin",
+        "Problemli sahəyə keçidlə daxil olun"
+      ],
+      "dashboards": [
+        "Panel yaradın",
+        "Vidcet əlavə edin: qrafik növü və metrik",
+        "Data avtomatik yenilənir"
+      ],
+      "reports": [
+        "Audit seçin",
+        "Format seçin: PDF, Word və ya Excel",
+        "Yükləyin və rəhbərliyə göndərin"
+      ],
+      "snapshots": [
+        "Anlıq görüntü yaradın",
+        "Dəyişikliklərdən sonra təkrarlayın",
+        "İki görüntünü müqayisə edin"
+      ],
+      "trends": [
+        "Metrik qrupunu seçin",
+        "Trendin istiqamətinə baxın",
+        "Pisləşmələrə reaksiya verin"
+      ],
+      "kpi": [
+        "Nəzarətə KPI təyin edin: hədəf və istiqamət",
+        "Ölçmələri daxil edin",
+        "On-track statusunu izləyin"
+      ],
+      "frameworks": [
+        "Qlobal kitabxananı nəzərdən keçirin",
+        "Lazım olduqda öz standartınızı əlavə edin",
+        "Nəzarətləri standartlarla əlaqələndirin"
+      ],
+      "controls": [
+        "Qlobal kitabxanadan nəzarət götürün",
+        "Formulunu törəməyə uyğunlaşdırın",
+        "Nəzarətləri audit çeklistlərinə əlavə edin"
+      ],
+      "policies": [
+        "Siyasəti yükləyin",
+        "Yeni versiyaları dərc edin",
+        "İşçilərin tanış olmasını izləyin"
+      ],
+      "commitments": [
+        "Müqavilə öhdəliyini qeyd edin",
+        "Statusu dəyişin: met / at risk / breached",
+        "SLA sütununu izləyin"
+      ],
+      "universe": [
+        "Audit obyektlərini qeyd edin",
+        "Onları auditlərlə əlaqələndirin",
+        "Əhatə boşluqlarını bağlayın"
+      ],
+      "engagements": [
+        "Audit yaradın və çeklisti qurun",
+        "Respondentlər cavab verir — findings qeyd edin",
+        "Workflow-nu hesabata qədər aparın"
+      ],
+      "audit-programs": [
+        "Nəzarətlər dəstindən proqram qurun",
+        "Yeni auditlərə tətbiq edin",
+        "Təkmilləşdirin"
+      ],
+      "working-papers": [
+        "Audit üzrə sənəd yaradın",
+        "Baxışa göndərin",
+        "İmzalayın; annotasiyalar daxildədir"
+      ],
+      "plans": ["İllik plan tərtib edin", "Auditləri dövrlərə bölün", "İcranı izləyin"],
+      "allocations": [
+        "Auditoru auditə təyin edin",
+        "Plan saatlarını göstərin",
+        "İnsanlar üzrə yüklənməyə baxın"
+      ],
+      "time": [
+        "Audit üzrə saatları qeyd edin",
+        "Faktı büdcə ilə müqayisə edin",
+        "Datanı hesabatda istifadə edin"
+      ],
+      "satisfaction": [
+        "Audit bağlandıqdan sonra sorğu göndərin",
+        "Qiymətləndirmələri toplayın",
+        "Prosesi təkmilləşdirin"
+      ],
+      "risks": ["Risk qeyd edin", "Ehtimal və təsiri qiymətləndirin", "Sahib və plan təyin edin"],
+      "risk-heatmap": [
+        "5×5 xəritəni açın",
+        "Qırmızı zona prioritetdir",
+        "Riskləri xanalardan açın"
+      ],
+      "privacy": [
+        "Hüquqi əsasla emal əməliyyatı qeyd edin",
+        "Risklilər üçün DPIA yaradın",
+        "DPIA workflow-nu tamamlayın"
+      ],
+      "iam": [
+        "Sistemlərdən hesabları idxal edin",
+        "Sahibləri, MFA və imtiyazları yoxlayın",
+        "İmtiyazlıları qeyd edin"
+      ],
+      "access-reviews": [
+        "Baxış kampaniyası başladın",
+        "Rəyçilər qərar verir: saxla və ya ləğv et",
+        "Kampaniyanı nəticələrlə bağlayın"
+      ],
+      "devices": [
+        "Cihaz statuslarına baxın",
+        "Uyğunsuzluğu aradan qaldırmağa göndərin",
+        "Audit sübutu kimi istifadə edin"
+      ],
+      "security-alerts": [
+        "Daxil olan bildirişlərə baxın",
+        "Kritikliyə görə triaj edin",
+        "Qərarla bağlayın"
+      ],
+      "vulnerabilities": [
+        "Zəifliyi və mənbəyi qeyd edin",
+        "Aradan qaldırma SLA-sını izləyin",
+        "Yoxlama ilə bağlayın"
+      ],
+      "code-changes": [
+        "Kod və konfiqurasiya dəyişikliklərini qeyd edin",
+        "Təsdiqlərlə əlaqələndirin",
+        "Auditə sübut kimi göstərin"
+      ],
+      "vendors": [
+        "Təchizatçı qeyd edin",
+        "Qiymətləndirmə sorğusu göndərin",
+        "Riski və statusu qeyd edin"
+      ],
+      "trust-center": [
+        "Nəyi göstərəcəyinizi seçin",
+        "Səhifəni dərc edin",
+        "Linki müştərilərlə paylaşın"
+      ],
+      "questionnaires": [
+        "Daxil olan sorğunu qeyd edin",
+        "Bilik bazasından cavablarla cavablayın",
+        "Göndərin və tarixçəni saxlayın"
+      ],
+      "knowledge-base": [
+        "Q&A bazasını genişləndirin",
+        "Cavabları sorğularda təkrar istifadə edin",
+        "Köhnəlmişləri yeniləyin"
+      ],
+      "personnel": [
+        "İşçini qeyd edin",
+        "Onboarding çeklistini keçin",
+        "Ayrılanda — offboarding və girişlərin ləğvi"
+      ],
+      "connectors": [
+        "Konnektoru qoşun — kredensiallar şifrələnir",
+        "Sinxronizasiyanı yoxlayın",
+        "Data avtomatik yoxlamalara gedir"
+      ],
+      "config": [
+        "Tənzimləmələri özünüzə uyğunlaşdırın",
+        "Versiya tarixçəsi avtomatik saxlanılır",
+        "Konfiqurasiya ixrac/idxalından istifadə edin"
+      ],
+      "field-permissions": [
+        "Tenant rolunu seçin",
+        "Obyekt, sahə və səviyyə təyin edin",
+        "Rol adından davranışı yoxlayın"
+      ],
+      "api-keys": [
+        "Açar yaradın — bir dəfə göstərilir",
+        "X-Api-Key başlığı ilə API çağırın",
+        "İstifadə olunmayanları ləğv edin"
+      ],
+      "notifications": [
+        "Bildiriş qaydalarını qurun",
+        "Göndərmə jurnalına baxın",
+        "Artıqları söndürün"
+      ],
+      "migration": [
+        "Çeklist .xlsx faylını yükləyin",
+        "Önizləməni yoxlayın",
+        "İdxal edin — nəzarətlər kitabxanada yaranır"
+      ],
+      "ai-settings": [
+        "Provayder seçin: Claude, GPT, Kimi və ya lokal",
+        "Açarı daxil edin — şifrəli saxlanılır",
+        "AI-siz deterministik rejim işləyir"
+      ],
+      "glossary": [
+        "Termin axtarın",
+        "Öz terminlərinizi əlavə edin",
+        "Komandada vahid dil saxlayın"
+      ],
+      "guide": [
+        "Bölmə təsvirlərini oxuyun",
+        "İnteraktiv tura başlayın",
+        "«?» düyməsi — istənilən bölmədə kömək"
+      ]
     }
   },
   "tour": {
@@ -992,5 +1197,13 @@
         "d": "Hesabınız və çıxış düyməsi panelin aşağısındadır."
       }
     }
+  },
+  "help": {
+    "title": "Soraqça",
+    "howTo": "Necə istifadə etməli",
+    "current": "Cari bölmə",
+    "startTour": "Tura başla",
+    "openGuide": "Tam bələdçi",
+    "close": "Bağla"
   }
 }

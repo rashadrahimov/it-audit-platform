@@ -936,7 +936,204 @@
       "migration": "Import controls from client Excel checklists.",
       "ai-settings": "Choose the AI provider: Claude, GPT, Kimi or a local model.",
       "glossary": "GRC glossary.",
-      "guide": "This guide: all sections explained plus the tour."
+      "guide": "This guide: all sections explained plus the tour.",
+      "account": "Home screen: metrics, onboarding and quick access."
+    },
+    "details": {
+      "account": [
+        "Check metrics and onboarding progress",
+        "Use quick access to key sections",
+        "Full navigation lives in the left panel"
+      ],
+      "dashboard": [
+        "Open the section — metrics compute automatically",
+        "Compare subsidiaries",
+        "Drill into problem areas via links"
+      ],
+      "dashboards": [
+        "Create a dashboard",
+        "Add a widget: chart type and metric",
+        "Data refreshes automatically"
+      ],
+      "reports": [
+        "Pick an engagement",
+        "Choose the format: PDF, Word or Excel",
+        "Download and share with management"
+      ],
+      "snapshots": [
+        "Create a snapshot",
+        "Repeat after changes",
+        "Compare two snapshots before/after"
+      ],
+      "trends": ["Pick a metric group", "Watch the trend direction", "React to degradations"],
+      "kpi": [
+        "Set a KPI on a control: target and direction",
+        "Record measurements",
+        "Watch the on-track status"
+      ],
+      "frameworks": [
+        "Browse the global library",
+        "Add your own framework if needed",
+        "Map controls to standards"
+      ],
+      "controls": [
+        "Take a control from the global library",
+        "Adapt the wording per subsidiary",
+        "Add controls to audit checklists"
+      ],
+      "policies": ["Upload a policy", "Publish new versions", "Track employee acknowledgement"],
+      "commitments": [
+        "Register a contractual commitment",
+        "Update status: met / at risk / breached",
+        "Watch the SLA column"
+      ],
+      "universe": [
+        "Register auditable entities (systems, processes)",
+        "Link them to engagements",
+        "Close coverage gaps"
+      ],
+      "engagements": [
+        "Create an audit and build the checklist from controls",
+        "Respondents answer — record findings",
+        "Drive the workflow to report and archive"
+      ],
+      "audit-programs": [
+        "Build a program from a set of controls",
+        "Apply it to new audits",
+        "Refine it as you mature"
+      ],
+      "working-papers": [
+        "Create a working paper for an audit",
+        "Send it for review",
+        "Sign off; annotations and exceptions inside"
+      ],
+      "plans": ["Draft the annual plan", "Spread audits across periods", "Track plan execution"],
+      "allocations": [
+        "Assign an auditor to an engagement",
+        "Set planned hours",
+        "Watch workload per person"
+      ],
+      "time": [
+        "Log hours per engagement",
+        "Compare actuals vs budget",
+        "Use the data in reporting"
+      ],
+      "satisfaction": [
+        "Send a survey after closing an audit",
+        "Collect scores",
+        "Improve the process from feedback"
+      ],
+      "risks": [
+        "Register a risk",
+        "Score likelihood and impact",
+        "Assign an owner and treatment plan"
+      ],
+      "risk-heatmap": [
+        "Open the 5×5 map",
+        "Red zone is the priority",
+        "Open risks right from the cells"
+      ],
+      "privacy": [
+        "Register a processing activity with a legal basis",
+        "Create a DPIA for risky ones",
+        "Drive the DPIA workflow to completion"
+      ],
+      "iam": [
+        "Import accounts from your systems",
+        "Review owners, MFA and privileges",
+        "Flag privileged accounts"
+      ],
+      "access-reviews": [
+        "Launch a review campaign",
+        "Reviewers decide: keep or revoke",
+        "Close the campaign with outcomes"
+      ],
+      "devices": [
+        "Watch device statuses",
+        "Send non-compliance for remediation",
+        "Use as audit evidence"
+      ],
+      "security-alerts": [
+        "Review incoming alerts",
+        "Triage by severity",
+        "Close with a resolution"
+      ],
+      "vulnerabilities": [
+        "Register the vulnerability and source",
+        "Watch the remediation SLA",
+        "Close with verification"
+      ],
+      "code-changes": [
+        "Record code and config changes",
+        "Link them to approvals",
+        "Show the auditor as evidence"
+      ],
+      "vendors": [
+        "Register a vendor",
+        "Send an assessment questionnaire",
+        "Record the risk and status"
+      ],
+      "trust-center": [
+        "Choose what to show publicly",
+        "Publish the page",
+        "Share the link with customers"
+      ],
+      "questionnaires": [
+        "Register an inbound questionnaire",
+        "Answer with knowledge-base reuse",
+        "Send and keep the history"
+      ],
+      "knowledge-base": [
+        "Grow the Q&A base",
+        "Reuse answers in questionnaires",
+        "Refresh outdated entries"
+      ],
+      "personnel": [
+        "Register an employee",
+        "Run the onboarding checklist",
+        "On exit — offboarding with access revocation"
+      ],
+      "connectors": [
+        "Connect a source — credentials are encrypted",
+        "Verify the sync",
+        "Data feeds automated checks"
+      ],
+      "config": [
+        "Tailor reference lists to your needs",
+        "Version history is kept automatically",
+        "Use config export/import"
+      ],
+      "field-permissions": [
+        "Pick a tenant role",
+        "Set entity, field and level",
+        "Verify behaviour as that role"
+      ],
+      "api-keys": [
+        "Create a key — shown only once",
+        "Call the API with the X-Api-Key header",
+        "Revoke unused keys"
+      ],
+      "notifications": [
+        "Configure notification rules",
+        "Browse the delivery log",
+        "Disable the noise"
+      ],
+      "migration": [
+        "Upload the checklist .xlsx",
+        "Check the parse preview",
+        "Import — controls are created in the library"
+      ],
+      "ai-settings": [
+        "Pick a provider: Claude, GPT, Kimi or local",
+        "Paste the key — stored encrypted",
+        "Without AI the deterministic mode works"
+      ],
+      "glossary": ["Search for a term", "Add your own terms", "Keep a shared language in the team"],
+      "guide": [
+        "Read the section descriptions",
+        "Start the interactive tour",
+        "The “?” button gives help in any section"
+      ]
     }
   },
   "tour": {
@@ -992,5 +1189,13 @@
         "d": "Your account and the sign-out button live at the bottom of the panel."
       }
     }
+  },
+  "help": {
+    "title": "Reference",
+    "howTo": "How to use",
+    "current": "Current section",
+    "startTour": "Start tour",
+    "openGuide": "Full guide",
+    "close": "Close"
   }
 }

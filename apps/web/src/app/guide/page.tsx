@@ -10,7 +10,11 @@ export const dynamic = 'force-dynamic';
 export default async function GuidePage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tAccount] = await Promise.all([getTranslations('guide'), getTranslations('account')]);
+  const [t, tAccount, tHelp] = await Promise.all([
+    getTranslations('guide'),
+    getTranslations('account'),
+    getTranslations('help'),
+  ]);
 
   return (
     <main
@@ -55,11 +59,15 @@ export default async function GuidePage() {
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {g.items.map((it) => {
               const slug = it.href.slice(1);
+              const steps = t.raw(`details.${slug}`) as string[];
               return (
-                <li key={it.href}>
+                <li
+                  key={it.href}
+                  className="flex h-full flex-col rounded-xl border border-border bg-surface p-4 shadow-sm transition-all duration-150 hover:border-accent/40 hover:shadow-md"
+                >
                   <Link
                     href={it.href}
-                    className="group flex h-full flex-col gap-1 rounded-xl border border-border bg-surface p-4 shadow-sm transition-all duration-150 hover:border-accent/40 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    className="group flex flex-col gap-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
                     <span className="flex items-center justify-between gap-2">
                       <span className="text-sm font-semibold text-foreground group-hover:text-accent">
@@ -82,6 +90,37 @@ export default async function GuidePage() {
                       {t(`sections.${slug}`)}
                     </span>
                   </Link>
+                  {/* Справочник: как пользоваться (T-H35) */}
+                  <details className="group/d mt-2 border-t border-border pt-2">
+                    <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[11px] font-semibold tracking-wider text-secondary uppercase transition-colors hover:text-accent [&::-webkit-details-marker]:hidden">
+                      <svg
+                        aria-hidden
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-3 w-3 transition-transform group-open/d:rotate-90"
+                      >
+                        <path d="M9 5l7 7-7 7" />
+                      </svg>
+                      {tHelp('howTo')}
+                    </summary>
+                    <ol className="mt-2 flex flex-col gap-1.5">
+                      {steps.map((s, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-foreground">
+                          <span
+                            aria-hidden
+                            className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[10px] font-bold text-accent"
+                          >
+                            {i + 1}
+                          </span>
+                          {s}
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
                 </li>
               );
             })}
