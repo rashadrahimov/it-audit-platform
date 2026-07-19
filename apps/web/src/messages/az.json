@@ -579,7 +579,34 @@
       "transfer": "Ötürmək",
       "accept": "Qəbul",
       "avoid": "Qaçınmaq"
-    }
+    },
+    "back": "Risk Reyestri",
+    "description": "Təsvir",
+    "domain": "Domen",
+    "category": "Kateqoriya",
+    "owner": "Sahib",
+    "noOwner": "Sahib yoxdur",
+    "st": {
+      "open": "Açıq",
+      "in_progress": "İcrada",
+      "closed": "Bağlı"
+    },
+    "rescore": "Yenidən qiymətləndir",
+    "scoreNow": "Cari ballar — xas {ii}×{il}, qalıq {ri}×{rl} (təsir × ehtimal).",
+    "applyRescore": "Yenidən hesabla",
+    "edit": "Riski redaktə et",
+    "save": "Yadda saxla",
+    "linkedControls": "Azaldıcı kontrollar",
+    "linkedEntities": "Audit universe obyektləri",
+    "noLinks": "Hələ heç nə bağlanmayıb",
+    "linkControl": "Kontrol bağla",
+    "linkEntity": "Obyekt bağla",
+    "link": "Bağla",
+    "deleteHint": "Silmə riski reyestrdən çıxarır (tarixçə saxlanılır).",
+    "delete": "Riski sil",
+    "matrix": "Risk matrisi",
+    "saveMatrix": "Matrisi saxla",
+    "matrixHint": "Sinif = təsir × ehtimal və hədlər: Orta həddindən aşağı — Aşağı, sonra Orta / Yüksək / Kritik. Şkalalar maksimum balı təyin edir."
   },
   "privacy": {
     "title": "Məxfilik — ROPA və DPIA",

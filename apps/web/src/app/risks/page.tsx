@@ -1,8 +1,9 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
-import { createRiskAction } from './actions';
+import { createRiskAction, setRiskMatrixAction } from './actions';
 import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -39,8 +40,18 @@ export default async function RisksPage() {
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const res = await apiFetch(`/risks?locale=${locale}`, { headers });
+  const [res, matrixRes] = await Promise.all([
+    apiFetch(`/risks?locale=${locale}`, { headers }),
+    apiFetch('/risks/matrix', { headers }),
+  ]);
   const risks: Risk[] = res.ok ? await res.json() : [];
+  const matrix: {
+    impactScale: number;
+    likelihoodScale: number;
+    thresholds: { medium: number; high: number; critical: number };
+  } = matrixRes.ok
+    ? await matrixRes.json()
+    : { impactScale: 5, likelihoodScale: 5, thresholds: { medium: 6, high: 12, critical: 20 } };
 
   const classBadge = (c: RiskClass | null) =>
     c ? (
@@ -135,19 +146,68 @@ export default async function RisksPage() {
             <tbody>
               {risks.map((r) => (
                 <tr key={r.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3 font-medium text-foreground">{r.title}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/risks/${r.id}`}
+                      className="font-medium text-foreground underline-offset-2 transition-colors duration-150 hover:text-accent hover:underline"
+                    >
+                      {r.title}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3">{classBadge(r.riskClass)}</td>
                   <td className="px-4 py-3">{classBadge(r.residualClass)}</td>
                   <td className="px-4 py-3 text-secondary">
                     {r.treatment ? t(`tr.${r.treatment}`) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-secondary">{r.status}</td>
+                  <td className="px-4 py-3 text-secondary">
+                    {['open', 'in_progress', 'closed'].includes(r.status)
+                      ? t(`st.${r.status}`)
+                      : r.status}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </section>
       )}
+
+      <section
+        className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+        data-testid="risk-matrix-settings"
+      >
+        <h2 className="text-sm font-semibold text-primary">{t('matrix')}</h2>
+        <p className="text-xs text-secondary">{t('matrixHint')}</p>
+        <form action={setRiskMatrixAction} className="flex flex-wrap items-end gap-3">
+          {(
+            [
+              ['impactScale', t('impact'), matrix.impactScale, 3, 10],
+              ['likelihoodScale', t('likelihood'), matrix.likelihoodScale, 3, 10],
+              ['medium', t('cls.medium'), matrix.thresholds.medium, 1, 100],
+              ['high', t('cls.high'), matrix.thresholds.high, 1, 100],
+              ['critical', t('cls.critical'), matrix.thresholds.critical, 1, 100],
+            ] as Array<[string, string, number, number, number]>
+          ).map(([name, label, value, min, max]) => (
+            <label key={name} className="flex flex-col gap-1 text-sm">
+              <span className="font-medium text-secondary">{label}</span>
+              <input
+                type="number"
+                name={name}
+                defaultValue={value}
+                min={min}
+                max={max}
+                className="w-24 rounded-md border border-border px-2 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              />
+            </label>
+          ))}
+          <button
+            type="submit"
+            data-testid="matrix-save"
+            className="rounded-md border border-border px-3 py-2 text-sm font-medium text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t('saveMatrix')}
+          </button>
+        </form>
+      </section>
     </main>
   );
 }

@@ -6,10 +6,12 @@ import { DbService } from '../db/db.service';
 import {
   auditableEntity,
   control,
+  membership,
   risk,
   riskControl,
   riskEntity,
   riskMatrixConfig,
+  user,
 } from '../db/schema';
 import { classifyRisk, DEFAULT_THRESHOLDS } from './classify-risk';
 
@@ -88,6 +90,18 @@ export class RisksService {
         .returning();
       return row;
     });
+  }
+
+  /** Текущая матрица тенанта (T-V12): для формы настройки и шкал rescore. */
+  async getMatrix(tenantId: string) {
+    const [cfg] = await this.dbService.withTenant(tenantId, (tx) =>
+      tx.select().from(riskMatrixConfig).where(eq(riskMatrixConfig.tenantId, tenantId)),
+    );
+    return {
+      impactScale: cfg?.impactScale ?? 5,
+      likelihoodScale: cfg?.likelihoodScale ?? 5,
+      thresholds: cfg?.thresholds ?? DEFAULT_THRESHOLDS,
+    };
   }
 
   async create(actor: Actor, input: CreateRiskInput) {
@@ -173,6 +187,89 @@ export class RisksService {
       after: { riskClass: updated.riskClass, residualClass: updated.residualClass },
     });
     return { riskClass: updated.riskClass, residualClass: updated.residualClass };
+  }
+
+  /** T-V12: частичное редактирование карточки (treatment/статус/owner/атрибуты). */
+  async update(
+    actor: Actor,
+    id: string,
+    input: {
+      titleI18n?: I18nText;
+      descriptionI18n?: I18nText;
+      domain?: string | null;
+      category?: string | null;
+      treatment?: string | null;
+      status?: string;
+      ownerMembershipId?: string | null;
+    },
+  ) {
+    const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select({ id: risk.id })
+        .from(risk)
+        .where(and(eq(risk.id, id), isNull(risk.deletedAt)));
+      if (!row) throw new NotFoundException(`Риск ${id} не найден`);
+      if (input.ownerMembershipId) {
+        // membership над-тенантная (без RLS) — проверяем принадлежность тенанту явно
+        const [m] = await tx
+          .select({ id: membership.id })
+          .from(membership)
+          .where(
+            and(
+              eq(membership.id, input.ownerMembershipId),
+              eq(membership.tenantId, actor.tenantId),
+            ),
+          );
+        if (!m) throw new BadRequestException('ownerMembershipId: участник не найден');
+      }
+      const patch: Record<string, unknown> = {};
+      if (input.titleI18n !== undefined) patch.titleI18n = input.titleI18n;
+      if (input.descriptionI18n !== undefined) patch.descriptionI18n = input.descriptionI18n;
+      if (input.domain !== undefined) patch.domain = input.domain;
+      if (input.category !== undefined) patch.category = input.category;
+      if (input.treatment !== undefined) patch.treatment = input.treatment;
+      if (input.status !== undefined) patch.status = input.status;
+      if (input.ownerMembershipId !== undefined) patch.ownerMembershipId = input.ownerMembershipId;
+      const [res] = await tx.update(risk).set(patch).where(eq(risk.id, id)).returning();
+      return res!;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'risk.updated',
+      entityType: 'risk',
+      entityId: id,
+      after: {
+        treatment: updated.treatment,
+        status: updated.status,
+        ownerMembershipId: updated.ownerMembershipId,
+      },
+    });
+    return { id: updated.id, treatment: updated.treatment, status: updated.status };
+  }
+
+  /** T-V12: soft delete риска (deleted_at; связи rcm/universe остаются в истории). */
+  async remove(actor: Actor, id: string) {
+    const removed = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select({ id: risk.id, titleI18n: risk.titleI18n })
+        .from(risk)
+        .where(and(eq(risk.id, id), isNull(risk.deletedAt)));
+      if (!row) throw new NotFoundException(`Риск ${id} не найден`);
+      await tx.update(risk).set({ deletedAt: new Date() }).where(eq(risk.id, id));
+      return row;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'risk.deleted',
+      entityType: 'risk',
+      entityId: id,
+      before: { title: removed.titleI18n.en },
+    });
+    return { deleted: true };
   }
 
   /** RCM (T-058): привязать митигирующие контроли к риску (M:N). */
@@ -312,13 +409,16 @@ export class RisksService {
   }
 
   async detail(tenantId: string, id: string, locale: Locale) {
-    const [r] = await this.dbService.withTenant(tenantId, (tx) =>
+    const [row] = await this.dbService.withTenant(tenantId, (tx) =>
       tx
-        .select()
+        .select({ risk: risk, ownerName: user.fullName })
         .from(risk)
+        .leftJoin(membership, eq(risk.ownerMembershipId, membership.id))
+        .leftJoin(user, eq(membership.userId, user.id))
         .where(and(eq(risk.id, id), isNull(risk.deletedAt))),
     );
-    if (!r) throw new NotFoundException(`Риск ${id} не найден`);
+    if (!row) throw new NotFoundException(`Риск ${id} не найден`);
+    const r = row.risk;
     return {
       id: r.id,
       title: resolveLocalized(r.titleI18n, locale),
@@ -333,6 +433,8 @@ export class RisksService {
       residualClass: r.residualClass,
       treatment: r.treatment,
       status: r.status,
+      ownerMembershipId: r.ownerMembershipId,
+      owner: row.ownerName,
     };
   }
 }

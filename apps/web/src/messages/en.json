@@ -579,7 +579,34 @@
       "transfer": "Transfer",
       "accept": "Accept",
       "avoid": "Avoid"
-    }
+    },
+    "back": "Risk Register",
+    "description": "Description",
+    "domain": "Domain",
+    "category": "Category",
+    "owner": "Owner",
+    "noOwner": "No owner",
+    "st": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "closed": "Closed"
+    },
+    "rescore": "Rescore",
+    "scoreNow": "Current scores — inherent {ii}×{il}, residual {ri}×{rl} (impact × likelihood).",
+    "applyRescore": "Recalculate",
+    "edit": "Edit risk",
+    "save": "Save",
+    "linkedControls": "Mitigating controls",
+    "linkedEntities": "Audit universe entities",
+    "noLinks": "Nothing linked yet",
+    "linkControl": "Link control",
+    "linkEntity": "Link entity",
+    "link": "Link",
+    "deleteHint": "Deleting removes the risk from the register (history is kept).",
+    "delete": "Delete risk",
+    "matrix": "Risk matrix",
+    "saveMatrix": "Save matrix",
+    "matrixHint": "Class = impact × likelihood versus thresholds: below Medium — Low, then Medium / High / Critical. Scales set the maximum score."
   },
   "privacy": {
     "title": "Privacy — ROPA & DPIA",

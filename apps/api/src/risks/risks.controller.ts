@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -41,6 +43,17 @@ const createRiskSchema = z.object({
   treatment: z.enum(['mitigate', 'transfer', 'accept', 'avoid']).optional(),
   ownerMembershipId: z.uuid().optional(),
   subsidiaryId: z.uuid().optional(),
+});
+
+// T-V12: частичное редактирование карточки риска (скоринг — отдельным rescore)
+const updateRiskSchema = z.object({
+  titleI18n: i18nTextSchema.optional(),
+  descriptionI18n: i18nTextSchema.optional(),
+  domain: z.string().nullable().optional(),
+  category: z.string().nullable().optional(),
+  treatment: z.enum(['mitigate', 'transfer', 'accept', 'avoid']).nullable().optional(),
+  status: z.enum(['open', 'in_progress', 'closed']).optional(),
+  ownerMembershipId: z.uuid().nullable().optional(),
 });
 
 const matrixSchema = z.object({
@@ -166,6 +179,37 @@ export class RisksController {
   @ApiOkResponse({ description: '{total, inherent:{low,medium,high,critical}, residual:{…}}' })
   heatmap(@Req() req: TenantRequest) {
     return this.service.heatmap(req.tenantId);
+  }
+
+  @Get('matrix')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Текущая матрица рисков (T-V12): шкалы и пороги классов' })
+  @ApiOkResponse({ description: '{impactScale, likelihoodScale, thresholds}' })
+  getMatrix(@Req() req: TenantRequest) {
+    return this.service.getMatrix(req.tenantId);
+  }
+
+  @Patch(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Редактировать риск (T-V12): treatment/статус/owner/атрибуты' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateRiskSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    if (Object.keys(parsed.data).length === 0) {
+      throw new BadRequestException('Нужно хотя бы одно поле');
+    }
+    return this.service.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Delete(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Удалить риск (T-V12): soft delete' })
+  remove(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.remove({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id);
   }
 
   @Get(':id/controls')
