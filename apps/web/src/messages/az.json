@@ -18,7 +18,13 @@
     "mfaCode": "Birdəfəlik kod",
     "verify": "Təsdiqlə",
     "verifying": "Yoxlanılır…",
-    "badCode": "Kod yanlışdır və ya vaxtı keçib"
+    "badCode": "Kod yanlışdır və ya vaxtı keçib",
+    "heroTitle": "Audit, uyğunluq və risklər — bütün qrup üçün vahid məkanda",
+    "points": {
+      "p1": "Hazır standartlar, nəzarətlər və çeklistlər",
+      "p2": "Dəyişməz audit izi və sahə səviyyəli hüquqlar",
+      "p3": "Hər törəmə şirkət üzrə hesabat, panel və KPI-lar"
+    }
   },
   "account": {
     "title": "Hesab",
@@ -480,7 +486,9 @@
     "titlePh": "Ad",
     "sourcePh": "Mənbə (istəyə görə)",
     "add": "Əlavə et",
-    "change": "Statusu dəyiş"
+    "change": "Statusu dəyiş",
+    "slaHead": "SLA",
+    "statusHead": "Status"
   },
   "accessReviews": {
     "title": "Giriş Baxışları",

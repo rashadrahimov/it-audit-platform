@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
@@ -52,9 +51,6 @@ export default async function DashboardPage() {
       <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
         <p className="text-sm text-secondary">{t('noAccess')}</p>
-        <Link href="/account" className="text-sm text-accent hover:underline">
-          {t('toAccount')}
-        </Link>
       </main>
     );
   }
@@ -76,9 +72,6 @@ export default async function DashboardPage() {
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
-        <Link href="/account" className="text-sm text-accent underline-offset-2 hover:underline">
-          {t('toAccount')}
-        </Link>
       </div>
 
       {/* Уровень 1: KPI группы */}

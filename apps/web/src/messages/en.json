@@ -18,7 +18,13 @@
     "mfaCode": "One-time code",
     "verify": "Verify",
     "verifying": "Verifying…",
-    "badCode": "Invalid or expired code"
+    "badCode": "Invalid or expired code",
+    "heroTitle": "Audit, compliance and risk — in one workspace for your group",
+    "points": {
+      "p1": "Frameworks, controls and checklists out of the box",
+      "p2": "Tamper-evident audit trail and field-level access",
+      "p3": "Reports, dashboards and KPIs for every subsidiary"
+    }
   },
   "account": {
     "title": "Account",
@@ -480,7 +486,9 @@
     "titlePh": "Title",
     "sourcePh": "Source (optional)",
     "add": "Add",
-    "change": "Change status"
+    "change": "Change status",
+    "slaHead": "SLA",
+    "statusHead": "Status"
   },
   "accessReviews": {
     "title": "Access Reviews",

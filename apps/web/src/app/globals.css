@@ -51,6 +51,27 @@
   h3 {
     letter-spacing: -0.01em;
   }
+  /* Мягкое появление страниц — сглаживает переходы между разделами */
+  main {
+    animation: page-in 240ms ease-out both;
+  }
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  /* Hover строк во всех таблицах — живость без правки страниц */
+  tbody tr {
+    transition: background-color 150ms ease;
+  }
+  tbody tr:hover {
+    background-color: color-mix(in srgb, var(--color-muted) 55%, transparent);
+  }
   /* Тонкий премиальный скроллбар */
   * {
     scrollbar-width: thin;

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
@@ -52,12 +51,6 @@ export default async function NotificationsPage() {
             </span>
           )}
         </h1>
-        <Link
-          href="/account"
-          className="text-sm text-accent underline-offset-2 transition-colors duration-150 hover:underline"
-        >
-          {t('toAccount')}
-        </Link>
       </div>
 
       {data.items.length === 0 ? (

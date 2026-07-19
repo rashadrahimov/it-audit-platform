@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
@@ -49,12 +48,6 @@ export default async function CodeChangesPage() {
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
-        <Link
-          href="/account"
-          className="text-sm text-accent underline-offset-2 transition-colors duration-150 hover:underline"
-        >
-          {t('toAccount')}
-        </Link>
       </div>
 
       <form
