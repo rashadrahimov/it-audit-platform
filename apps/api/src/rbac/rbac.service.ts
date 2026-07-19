@@ -2,8 +2,16 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import type { PermissionDto, PermissionLevel, RoleWithMatrix } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { membership, permission, role, rolePermission, tenant } from '../db/schema';
+import {
+  fieldPermission,
+  membership,
+  permission,
+  role,
+  rolePermission,
+  tenant,
+} from '../db/schema';
 import type { RequiredPermission } from './require-permission.decorator';
+import type { FieldLevel, FieldLevels } from './field-policy';
 
 export interface AccessResolution {
   allowed: boolean;
@@ -61,6 +69,41 @@ export class RbacService {
     const allowed =
       required.level === 'view' ? level === 'view' || level === 'edit' : level === 'edit';
     return { allowed, level, tenantId: foundTenant.id };
+  }
+
+  /**
+   * Field-level уровни роли пользователя для сущности (SEC-04, ADR-0020).
+   * Пусто = нет оверлея (поля наследуют entity-level право).
+   */
+  async fieldLevels(userId: string, tenantSlug: string, entityType: string): Promise<FieldLevels> {
+    const [foundTenant] = await this.dbService.db
+      .select({ id: tenant.id })
+      .from(tenant)
+      .where(eq(tenant.slug, tenantSlug));
+    if (!foundTenant) return {};
+    const [member] = await this.dbService.db
+      .select({ roleId: membership.roleId })
+      .from(membership)
+      .where(
+        and(
+          eq(membership.userId, userId),
+          eq(membership.tenantId, foundTenant.id),
+          eq(membership.status, 'active'),
+        ),
+      );
+    if (!member) return {};
+    const rows = await this.dbService.withTenant(foundTenant.id, (tx) =>
+      tx
+        .select({ field: fieldPermission.field, level: fieldPermission.level })
+        .from(fieldPermission)
+        .where(
+          and(
+            eq(fieldPermission.roleId, member.roleId),
+            eq(fieldPermission.entityType, entityType),
+          ),
+        ),
+    );
+    return Object.fromEntries(rows.map((r) => [r.field, r.level as FieldLevel]));
   }
 
   async permissions(): Promise<PermissionDto[]> {

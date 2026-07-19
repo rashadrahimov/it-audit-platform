@@ -113,6 +113,31 @@ export const rolePermission = pgTable(
 );
 
 /**
+ * Field-level права (SEC-04, T-H03, ADR-0020): оверлей поверх матрицы.
+ * level ∈ hidden|view|edit. Отсутствие строки = наследование entity-level права.
+ */
+export const fieldPermission = pgTable(
+  'field_permission',
+  {
+    id: id(),
+    roleId: uuid('role_id')
+      .notNull()
+      .references(() => role.id, { onDelete: 'cascade' }),
+    entityType: text('entity_type').notNull(),
+    field: text('field').notNull(),
+    level: text('level').notNull().default('view'),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('field_permission_role_entity_field_idx').on(
+      table.roleId,
+      table.entityType,
+      table.field,
+    ),
+  ],
+);
+
+/**
  * Membership — User↔Tenant↔Role (ADR-0015). Единственная над-тенантная связь
  * модели (MTE-04); без RLS — читается при логине до установления контекста.
  * department/unit/scope-поля придут со своими задачами (T-012, оргструктура).
