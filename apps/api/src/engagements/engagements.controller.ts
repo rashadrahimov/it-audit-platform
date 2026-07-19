@@ -173,6 +173,16 @@ export class EngagementsController {
     return this.engagementsService.exportEngagement(req.tenantId, id);
   }
 
+  @Post(':id/duplicate')
+  @RequirePermission('engagement', 'create', 'edit')
+  @ApiOperation({ summary: 'Восстановить/дублировать аудит с новыми ID (T-H16, BCK-04)' })
+  duplicate(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.engagementsService.duplicateEngagement(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
+  }
+
   @Get(':id/finding-suggestions')
   @RequirePermission('finding', 'view')
   @ApiOperation({ summary: 'Assist: черновики findings по несоответствиям без finding (T-H15)' })

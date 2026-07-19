@@ -484,4 +484,93 @@ export class EngagementsService {
       return { suggestions: suggestFindings(input) };
     });
   }
+
+  /**
+   * Гранулярное восстановление/дублирование одного аудита (BCK-04 restore, T-H16):
+   * копия engagement + checklist + responses + findings с новыми ID (ремап FK).
+   * Внутри-процессно (без JSON round-trip) → даты/jsonb сохраняются. Тот же тенант.
+   */
+  async duplicateEngagement(actor: Actor, id: string) {
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [eng] = await tx
+        .select()
+        .from(engagement)
+        .where(and(eq(engagement.id, id), isNull(engagement.deletedAt)));
+      if (!eng) throw new NotFoundException(`Engagement ${id} не найден`);
+
+      const { id: _eid, createdAt: _ec, updatedAt: _eu, ...engRest } = eng;
+      const srcTitle = eng.titleI18n as I18nText;
+      const [newEng] = await tx
+        .insert(engagement)
+        .values({
+          ...engRest,
+          titleI18n: { ...srcTitle, en: `${srcTitle.en} (restored)` },
+          archivedAt: null,
+          deletedAt: null,
+        })
+        .returning({ id: engagement.id });
+      const newEngId = newEng!.id;
+
+      const items = await tx.select().from(checklistItem).where(eq(checklistItem.engagementId, id));
+      const itemMap = new Map<string, string>();
+      for (const it of items) {
+        const { id: oldId, createdAt: _c, updatedAt: _u, ...rest } = it;
+        const [ni] = await tx
+          .insert(checklistItem)
+          .values({ ...rest, engagementId: newEngId })
+          .returning({ id: checklistItem.id });
+        itemMap.set(oldId, ni!.id);
+      }
+
+      const respMap = new Map<string, string>();
+      if (items.length > 0) {
+        const responses = await tx
+          .select()
+          .from(response)
+          .where(
+            inArray(
+              response.checklistItemId,
+              items.map((i) => i.id),
+            ),
+          );
+        for (const r of responses) {
+          const { id: oldId, createdAt: _c, updatedAt: _u, ...rest } = r;
+          const [nr] = await tx
+            .insert(response)
+            .values({
+              ...rest,
+              checklistItemId: itemMap.get(r.checklistItemId) ?? rest.checklistItemId,
+            })
+            .returning({ id: response.id });
+          respMap.set(oldId, nr!.id);
+        }
+      }
+
+      const findings = await tx
+        .select()
+        .from(finding)
+        .where(and(eq(finding.engagementId, id), isNull(finding.deletedAt)));
+      for (const f of findings) {
+        const { id: _fid, createdAt: _c, updatedAt: _u, ...rest } = f;
+        await tx.insert(finding).values({
+          ...rest,
+          engagementId: newEngId,
+          checklistItemId: f.checklistItemId ? (itemMap.get(f.checklistItemId) ?? null) : null,
+          responseId: f.responseId ? (respMap.get(f.responseId) ?? null) : null,
+        });
+      }
+
+      return { id: newEngId, checklist: items.length, findings: findings.length };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'engagement.duplicated',
+      entityType: 'engagement',
+      entityId: created.id,
+      after: { source: id, ...created },
+    });
+    return created;
+  }
 }
