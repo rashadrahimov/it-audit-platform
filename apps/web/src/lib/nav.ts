@@ -60,6 +60,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/iam', testid: 'go-iam', label: 'iam' },
       { href: '/access-reviews', testid: 'go-access-reviews', label: 'accessReviews' },
+      { href: '/assets', testid: 'go-assets', label: 'assetsNav' },
       { href: '/devices', testid: 'go-devices', label: 'devices' },
       { href: '/security-alerts', testid: 'go-security-alerts', label: 'securityAlerts' },
       { href: '/vulnerabilities', testid: 'go-vulnerabilities', label: 'vulnerabilities' },

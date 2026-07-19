@@ -107,7 +107,8 @@
     "searchPh": "Axtarış…",
     "rolesNav": "Rollar",
     "membersNav": "İştirakçılar",
-    "myWorkNav": "Mənim işim"
+    "myWorkNav": "Mənim işim",
+    "assetsNav": "Aktivlər"
   },
   "engagements": {
     "title": "Auditlər",
@@ -1073,7 +1074,8 @@
       "documents": "Sübut sənədləri: yükləmə, nəzarətlərə/auditlərə bağlama, endirmə.",
       "tests": "Nəzarətlərin davamlı yoxlanışı: reyestr, icra tarixçəsi, diqqət sayğacları.",
       "roles": "Rol şablonları və icazə matrisi; tenantın xüsusi rolları.",
-      "members": "Tenant iştirakçıları: kateqoriyalar və rol təyini."
+      "members": "Tenant iştirakçıları: kateqoriyalar və rol təyini.",
+      "assets": "İT aktivləri inventarı: sistemlər, verilənlər bazaları, bulud xidmətləri — sahiblər və mənbələrlə."
     },
     "details": {
       "account": [
@@ -1303,7 +1305,12 @@
         "Xüsusi rol yaradın",
         "Onun üçün matris xanasını təyin edin"
       ],
-      "members": ["İştirakçı kateqoriyalarını yoxlayın", "Rolu sətirdəki seçimlə dəyişin"]
+      "members": ["İştirakçı kateqoriyalarını yoxlayın", "Rolu sətirdəki seçimlə dəyişin"],
+      "assets": [
+        "Aktivi əl ilə əlavə edin və ya Konnektorlar səhifəsindən idxal edin.",
+        "Bir neçə aktivi seçib ümumi teq tətbiq edin.",
+        "İnventarı auditə vermək üçün CSV ixracından istifadə edin."
+      ]
     },
     "long": {
       "account": "Girişdən sonrakı əsas ekran. Canlı metrikləri (auditlər, nəzarətlər, standartlar), 6 addımlıq onboarding irəliləyişini və əsas bölmələrə sürətli girişi göstərir. Yeni istifadəçiyə buradan interaktiv tur təklif olunur. Tam naviqasiya həmişə soldadır.",
@@ -1353,7 +1360,8 @@
       "documents": "Sənədlər — əl ilə toplanan sübutlardır. Faylı yükləyin, nəzarətə və ya auditə bağlayın, yenilənmə tarixi qoyun, sahibini dəyişin. Endirmə avtorizə olunub.",
       "tests": "Testlər nəzarətləri davamlı yoxlayır. Reyestrdə status, SLA və sahib; kartda — uğursuz obyektlər və sübutlarla icra tarixçəsi. Avtotestlər düymə ilə işə düşür; köhnəlmiş testlər deaktiv edilir.",
       "roles": "Rollar resurs×əməliyyat icazə matrisini müəyyən edir. Sistem şablonları yalnız oxunur; xüsusi rollar yaradın və xanaları təyin edin.",
-      "members": "Bütün iştirakçıların siyahısı: email, kateqoriya (auditor / istifadəçi / MSP) və rol. Rol sətirdə dəyişilir — dəyişiklik jurnala düşür."
+      "members": "Bütün iştirakçıların siyahısı: email, kateqoriya (auditor / istifadəçi / MSP) və rol. Rol sətirdə dəyişilir — dəyişiklik jurnala düşür.",
+      "assets": "Aktiv inventarı əhatə dairəsindəki bütün İT aktivlərini göstərir — ERP sistemləri, verilənlər bazaları, şəbəkə qurğuları, tətbiqlər, bulud xidmətləri və son nöqtələr. Hər aktivin sahibi və mənbəyi görünür: əl ilə yaradılıb və ya konnektor vasitəsilə avtomatik aşkarlanıb. Aktivləri toplu şəkildə teqləmək (məs. PCI və ya SOX əhatəsini işarələmək) və bütün inventarı auditorlar üçün CSV-yə ixrac etmək olar. Aktivlər Audit Universe-ə proyeksiya olunur və risklərlə əlaqələndirilə bilər."
     }
   },
   "tour": {
@@ -1604,5 +1612,33 @@
     "reqSystem": "Sistem",
     "reqJustification": "Əsaslandırma",
     "reqSubmit": "Giriş sorğusu"
+  },
+  "assets": {
+    "title": "Aktiv İnventarı",
+    "empty": "Hələ aktiv yoxdur",
+    "create": "Yeni aktiv",
+    "namePh": "Aktiv adı",
+    "add": "Əlavə et",
+    "name": "Ad",
+    "type": "Növ",
+    "owner": "Sahib",
+    "source": "Mənbə",
+    "tags": "Teqlər",
+    "ty": {
+      "erp": "ERP",
+      "db": "Verilənlər bazası",
+      "network": "Şəbəkə",
+      "app": "Tətbiq",
+      "cloud": "Bulud",
+      "endpoint": "Son nöqtə",
+      "other": "Digər"
+    },
+    "manual": "Əl ilə",
+    "connector": "Konnektor",
+    "bulkTag": "Seçilənləri teqlə",
+    "tagPh": "məs. pci-scope",
+    "applyTag": "Teqi tətbiq et",
+    "bulkHint": "Cədvəldə aktivləri seçin, teq adını daxil edin, tətbiq edin.",
+    "exportCsv": "CSV ixrac et"
   }
 }

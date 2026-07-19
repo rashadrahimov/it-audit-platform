@@ -107,7 +107,8 @@
     "searchPh": "Search…",
     "rolesNav": "Roles",
     "membersNav": "Members",
-    "myWorkNav": "My work"
+    "myWorkNav": "My work",
+    "assetsNav": "Assets"
   },
   "engagements": {
     "title": "Engagements",
@@ -1073,7 +1074,8 @@
       "documents": "Evidence documents: upload, link to controls or audits, download.",
       "tests": "Continuous checks of controls: registry, run history, attention counters.",
       "roles": "Role presets and the permission matrix; custom tenant roles.",
-      "members": "Tenant members with categories and role assignment."
+      "members": "Tenant members with categories and role assignment.",
+      "assets": "IT asset inventory: systems, databases, cloud services with owners and sources."
     },
     "details": {
       "account": [
@@ -1295,7 +1297,12 @@
         "Create a custom role",
         "Set a matrix cell for it"
       ],
-      "members": ["Review member categories", "Change a role via the inline select"]
+      "members": ["Review member categories", "Change a role via the inline select"],
+      "assets": [
+        "Add an asset manually or import from a connector on the Connectors page.",
+        "Select several assets with checkboxes and apply a shared tag.",
+        "Use Export CSV to hand the inventory to an auditor."
+      ]
     },
     "long": {
       "account": "The main screen after sign-in. Shows live metrics (engagements, controls, frameworks), the 6-step onboarding progress and quick access to key sections. New users are offered the interactive tour from here. Full navigation is always on the left.",
@@ -1345,7 +1352,8 @@
       "documents": "Documents are manual evidence. Upload a file, link it to a control or engagement, set a renew-by date and reassign the owner. Downloads are authorized and byte-exact.",
       "tests": "Tests verify controls continuously. The registry shows status, SLA and owner; the card holds run history with failing entities and evidence. Automated tests can be run on demand; stale tests can be deactivated.",
       "roles": "Roles define the resource×action permission matrix. System presets are read-only; create custom tenant roles and set matrix cells to none/view/edit.",
-      "members": "Members lists everyone in the tenant with email, category (auditor / end user / MSP) and role. Change a member’s role inline — the change is journaled."
+      "members": "Members lists everyone in the tenant with email, category (auditor / end user / MSP) and role. Change a member’s role inline — the change is journaled.",
+      "assets": "The asset inventory lists every IT asset in scope — ERP systems, databases, network devices, applications, cloud services and endpoints. Each asset shows its owner and where it came from: created manually or discovered automatically through a connector. Assets can be tagged in bulk (e.g. to mark PCI or SOX scope) and the whole inventory exports to CSV for auditors. Assets are projected into the Audit Universe, so risks can be linked to them."
     }
   },
   "tour": {
@@ -1596,5 +1604,33 @@
     "reqSystem": "System",
     "reqJustification": "Justification",
     "reqSubmit": "Request access"
+  },
+  "assets": {
+    "title": "Asset Inventory",
+    "empty": "No assets yet",
+    "create": "New asset",
+    "namePh": "Asset name",
+    "add": "Add",
+    "name": "Name",
+    "type": "Type",
+    "owner": "Owner",
+    "source": "Source",
+    "tags": "Tags",
+    "ty": {
+      "erp": "ERP",
+      "db": "Database",
+      "network": "Network",
+      "app": "Application",
+      "cloud": "Cloud",
+      "endpoint": "Endpoint",
+      "other": "Other"
+    },
+    "manual": "Manual",
+    "connector": "Connector",
+    "bulkTag": "Tag selected",
+    "tagPh": "e.g. pci-scope",
+    "applyTag": "Apply tag",
+    "bulkHint": "Check assets in the table, enter a tag name, apply.",
+    "exportCsv": "Export CSV"
   }
 }
