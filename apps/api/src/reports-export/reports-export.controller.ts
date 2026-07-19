@@ -42,4 +42,12 @@ export class ReportsExportController {
     if (!a || !b) throw new BadRequestException('Нужны параметры a и b (id снапшотов)');
     return this.service.compare(req.tenantId, a, b);
   }
+
+  @Get('trend')
+  @RequirePermission('report', 'export', 'view')
+  @ApiOperation({ summary: 'Тренд метрики по всем снапшотам (T-H13, RSK-08)' })
+  @ApiQuery({ name: 'group', required: false, description: 'по умолчанию risks_by_class' })
+  trend(@Req() req: TenantRequest, @Query('group') group?: string) {
+    return this.service.metricTrend(req.tenantId, group || 'risks_by_class');
+  }
 }

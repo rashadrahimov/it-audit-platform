@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import { resolveLocalized } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
 import { control, finding, reportSnapshot, risk } from '../db/schema';
 import { diffMetrics, type MetricGroups } from './diff-metrics';
 import { csvCell, xmlEscape } from './serialize';
+import { computeGroupTrends } from './trend';
 
 export const EXPORT_ENTITIES = ['findings', 'risks', 'controls'] as const;
 export type ExportEntity = (typeof EXPORT_ENTITIES)[number];
@@ -45,6 +46,23 @@ export class ReportsExportService {
     if (!b) throw new NotFoundException(`Снапшот ${bId} не найден`);
     const diff = diffMetrics(a.metrics as MetricGroups, b.metrics as MetricGroups);
     return { a: { id: a.id, label: a.label }, b: { id: b.id, label: b.label }, diff };
+  }
+
+  /**
+   * Тренд метрик по всем снапшотам во времени (RSK-08, T-H13): для группы (по умолчанию
+   * risks_by_class) — траектория каждого ключа (first/last/delta/direction).
+   */
+  async metricTrend(tenantId: string, group = 'risks_by_class') {
+    const snaps = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ metrics: reportSnapshot.metrics, capturedAt: reportSnapshot.capturedAt })
+        .from(reportSnapshot)
+        .orderBy(asc(reportSnapshot.capturedAt)),
+    );
+    const rows = snaps.map(
+      (s) => (s.metrics as MetricGroups)[group] ?? ({} as Record<string, number>),
+    );
+    return { group, snapshots: snaps.length, trends: computeGroupTrends(rows) };
   }
 
   private async rows(tenantId: string, entity: ExportEntity): Promise<Record<string, string>[]> {
