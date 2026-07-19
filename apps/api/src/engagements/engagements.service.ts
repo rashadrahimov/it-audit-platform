@@ -17,6 +17,7 @@ import {
   user,
 } from '../db/schema';
 import type { ComplianceStatus } from '@it-audit/shared';
+import { suggestFindings } from './finding-suggest';
 import {
   allowedTransitions,
   canTransition,
@@ -440,6 +441,47 @@ export class EngagementsService {
         responses,
         findings,
       };
+    });
+  }
+
+  /**
+   * Детерминированный assist findings (EP-AI срез, T-H15): гэп-детект по несоответствующим
+   * пунктам чеклиста без finding → черновики-предложения (без LLM).
+   */
+  async findingSuggestions(tenantId: string, id: string, locale: Locale) {
+    return this.dbService.withTenant(tenantId, async (tx) => {
+      const items = await tx
+        .select({
+          id: checklistItem.id,
+          ref: checklistItem.ref,
+          questionI18n: checklistItem.questionI18n,
+        })
+        .from(checklistItem)
+        .where(eq(checklistItem.engagementId, id))
+        .orderBy(asc(checklistItem.order));
+      if (items.length === 0) return { suggestions: [] };
+      const itemIds = items.map((i) => i.id);
+      const responses = await tx
+        .select({
+          checklistItemId: response.checklistItemId,
+          complianceStatus: response.complianceStatus,
+        })
+        .from(response)
+        .where(inArray(response.checklistItemId, itemIds));
+      const findings = await tx
+        .select({ checklistItemId: finding.checklistItemId })
+        .from(finding)
+        .where(and(inArray(finding.checklistItemId, itemIds), isNull(finding.deletedAt)));
+      const complianceBy = new Map(responses.map((r) => [r.checklistItemId, r.complianceStatus]));
+      const withFinding = new Set(findings.map((f) => f.checklistItemId));
+      const input = items.map((i) => ({
+        checklistItemId: i.id,
+        ref: i.ref,
+        question: resolveLocalized(i.questionI18n, locale),
+        complianceStatus: complianceBy.get(i.id) ?? null,
+        hasFinding: withFinding.has(i.id),
+      }));
+      return { suggestions: suggestFindings(input) };
     });
   }
 }

@@ -172,4 +172,15 @@ export class EngagementsController {
   exportEngagement(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
     return this.engagementsService.exportEngagement(req.tenantId, id);
   }
+
+  @Get(':id/finding-suggestions')
+  @RequirePermission('finding', 'view')
+  @ApiOperation({ summary: 'Assist: черновики findings по несоответствиям без finding (T-H15)' })
+  findingSuggestions(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    return this.engagementsService.findingSuggestions(req.tenantId, id, parseLocale(localeQuery));
+  }
 }
