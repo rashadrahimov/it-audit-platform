@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { AiService } from '../src/ai/ai.service';
+import type { DbService } from '../src/db/db.service';
 
 /**
  * DoD EP-AI (T-H21): каркас LLM ВЫКЛЮЧЕН по умолчанию (AI_PROVIDER не задан в тестовом env).
  * Инвариант: on-prem/дефолт остаётся без ИИ (ADR-0002), детерминированный fallback работает.
+ * Env-уровневые методы не трогают БД — DbService-заглушки достаточно.
  */
 describe('AiService — off by default', () => {
-  const svc = new AiService();
+  const svc = new AiService({} as unknown as DbService);
 
   it('enabled()=false и status() без модели, когда провайдер не сконфигурирован', () => {
     expect(svc.enabled()).toBe(false);

@@ -463,6 +463,13 @@
       "when": 1784448786032,
       "tag": "0065_wp-annotation",
       "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1784452681485,
+      "tag": "0066_tenant-ai-config",
+      "breakpoints": true
     }
   ]
 }

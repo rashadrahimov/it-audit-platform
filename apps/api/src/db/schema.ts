@@ -1441,6 +1441,27 @@ export const wpAnnotation = pgTable(
   (table) => [index('wp_annotation_wp_idx').on(table.workingPaperId)],
 );
 
+/**
+ * Per-tenant выбор LLM-провайдера (EP-AI, T-H23): клиент сам выбирает ИИ (Claude/GPT/Kimi/
+ * локальная) вместо деплой-дефолта из env. Одна строка на тенант. Ключ провайдера —
+ * зашифрован (AES-256-GCM, connectors/config-crypto), никогда не отдаётся наружу.
+ */
+export const tenantAiConfig = pgTable('tenant_ai_config', {
+  id: id(),
+  tenantId: uuid('tenant_id')
+    .notNull()
+    .unique()
+    .references(() => tenant.id, { onDelete: 'cascade' }),
+  /** none | anthropic | openai_compat. */
+  provider: text('provider').notNull().default('none'),
+  /** openai_compat: endpoint с /v1; anthropic: опц. прокси. */
+  baseUrl: text('base_url'),
+  model: text('model'),
+  /** {apiKey} зашифрованный (encryptConfig); null = ключ не задан. */
+  apiKeyEncrypted: text('api_key_encrypted'),
+  ...timestamps,
+});
+
 /** Атрибутируемая подпись WP (T-092, WP-07): кто и в какой роли подписал. */
 export const signOff = pgTable(
   'sign_off',

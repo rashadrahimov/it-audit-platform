@@ -80,7 +80,8 @@
     "trends": "Trendlər",
     "allocations": "Resurs bölgüsü",
     "fieldPermissions": "Sahə səviyyəli hüquqlar",
-    "migration": "Çeklist idxalı"
+    "migration": "Çeklist idxalı",
+    "aiSettings": "AI provayderi"
   },
   "engagements": {
     "title": "Auditlər",
@@ -844,5 +845,28 @@
     "skipped": "ötürüldü",
     "errorFile": ".xlsx faylı seçin",
     "errorApi": "İdxal alınmadı"
+  },
+  "aiSettings": {
+    "title": "AI provayderi",
+    "toAccount": "Hesaba",
+    "intro": "Təşkilatınızın assist funksiyalarını hansı AI modelinin işlədəcəyini seçin. Defolt olaraq söndürülüb — deterministik assist provayder olmadan işləyir.",
+    "deployDefault": "Deploy defoltu",
+    "deployOff": "AI söndürülüb",
+    "provider": "Provayder",
+    "providers": {
+      "none": "Söndürülüb",
+      "anthropic": "Anthropic Claude",
+      "openai_compat": "OpenAI-uyğun (GPT / Kimi / DeepSeek / Ollama / vLLM)"
+    },
+    "baseUrl": "Base URL",
+    "baseUrlHint": "/v1 ilə OpenAI-uyğun endpoint (məs. https://api.moonshot.cn/v1 və ya http://ollama:11434/v1). Anthropic buludu üçün boş buraxın.",
+    "model": "Model",
+    "modelHint": "anthropic: claude-*; OpenAI-uyğun: gpt-4o, kimi-k2, deepseek-chat, …",
+    "apiKey": "API açarı",
+    "apiKeySet": "•••••••• (açar var — boş = saxla)",
+    "apiKeyEmpty": "Provayder API açarı",
+    "apiKeyHint": "Şifrələnmiş saxlanılır (AES-256-GCM); bir daha göstərilmir.",
+    "save": "Saxla",
+    "residencyNote": "Data (boşluqlar, cavablar, siyasətlər) seçilmiş provayderə göndərilir. Bank üçün — lokal model (şəbəkənizdə Ollama/vLLM) və ya DPA + Zero-Data-Retention olan bulud."
   }
 }

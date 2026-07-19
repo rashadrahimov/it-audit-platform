@@ -80,7 +80,8 @@
     "trends": "Тренды",
     "allocations": "Аллокации ресурсов",
     "fieldPermissions": "Field-level права",
-    "migration": "Импорт чеклиста"
+    "migration": "Импорт чеклиста",
+    "aiSettings": "Провайдер ИИ"
   },
   "engagements": {
     "title": "Аудиты",
@@ -844,5 +845,28 @@
     "skipped": "пропущено",
     "errorFile": "Выберите .xlsx файл",
     "errorApi": "Импорт не удался"
+  },
+  "aiSettings": {
+    "title": "Провайдер ИИ",
+    "toAccount": "В аккаунт",
+    "intro": "Выберите, какая ИИ-модель питает ассист-функции вашей организации. По умолчанию выключено — детерминированный assist работает без провайдера.",
+    "deployDefault": "Дефолт деплоя",
+    "deployOff": "ИИ выключен",
+    "provider": "Провайдер",
+    "providers": {
+      "none": "Выключено",
+      "anthropic": "Anthropic Claude",
+      "openai_compat": "OpenAI-совместимый (GPT / Kimi / DeepSeek / Ollama / vLLM)"
+    },
+    "baseUrl": "Base URL",
+    "baseUrlHint": "OpenAI-совместимый endpoint с /v1 (напр. https://api.moonshot.cn/v1 или http://ollama:11434/v1). Для облака Anthropic — пусто.",
+    "model": "Модель",
+    "modelHint": "anthropic: claude-*; OpenAI-совместимые: gpt-4o, kimi-k2, deepseek-chat, …",
+    "apiKey": "API-ключ",
+    "apiKeySet": "•••••••• (ключ задан — пусто = сохранить)",
+    "apiKeyEmpty": "API-ключ провайдера",
+    "apiKeyHint": "Хранится зашифрованным (AES-256-GCM); больше не показывается.",
+    "save": "Сохранить",
+    "residencyNote": "Данные (гэпы, ответы, политики) уходят выбранному провайдеру. Для банка — локальная модель (Ollama/vLLM в вашем контуре) или облако с DPA + Zero-Data-Retention."
   }
 }
