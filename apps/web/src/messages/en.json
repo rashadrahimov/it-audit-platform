@@ -11,7 +11,8 @@
     "f2t": "Controls & frameworks",
     "f2d": "ISO 27001, COBIT, NIST and local regulations — adapted per subsidiary.",
     "f3t": "Reports & analytics",
-    "f3d": "PDF, Word and Excel reports, dashboards, KPIs and risk heat maps."
+    "f3d": "PDF, Word and Excel reports, dashboards, KPIs and risk heat maps.",
+    "tagline": "Trust, measured."
   },
   "auth": {
     "subtitle": "Sign in to your workspace",

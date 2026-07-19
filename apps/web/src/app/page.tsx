@@ -54,7 +54,12 @@ export default async function HomePage() {
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur">
             <LogoMark className="h-5 w-5" />
           </span>
-          <span className="text-base font-bold tracking-[0.1em]">{t('title')}</span>
+          <span className="flex flex-col">
+            <span className="text-base leading-tight font-bold tracking-[0.1em]">{t('title')}</span>
+            <span className="text-[10px] font-medium tracking-wide text-white/55">
+              {t('tagline')}
+            </span>
+          </span>
         </span>
         <span className="[&_a]:text-white/70 [&_a:hover]:text-white">
           <LocaleSwitcher current={locale} />
@@ -117,7 +122,7 @@ export default async function HomePage() {
       </section>
 
       <footer className="relative px-6 py-5 text-center text-xs text-white/40">
-        © {new Date().getFullYear()} {t('title')}
+        © {new Date().getFullYear()} {t('title')} — {t('tagline')}
       </footer>
     </main>
   );

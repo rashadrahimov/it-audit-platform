@@ -26,7 +26,11 @@ const POINTS = [
 
 export default async function LoginPage() {
   if (await getSessionUser()) redirect('/account');
-  const [t, locale] = await Promise.all([getTranslations('auth'), getCurrentLocale()]);
+  const [t, tBrand, locale] = await Promise.all([
+    getTranslations('auth'),
+    getTranslations('home'),
+    getCurrentLocale(),
+  ]);
 
   return (
     <main className="flex min-h-screen">
@@ -45,7 +49,12 @@ export default async function LoginPage() {
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 backdrop-blur">
             <LogoMark className="h-6 w-6" />
           </span>
-          <span className="text-lg font-bold tracking-[0.1em]">STATERA</span>
+          <span className="flex flex-col">
+            <span className="text-lg leading-tight font-bold tracking-[0.1em]">STATERA</span>
+            <span className="text-[11px] font-medium tracking-wide text-white/60">
+              {tBrand('tagline')}
+            </span>
+          </span>
         </div>
 
         <div className="relative flex flex-col gap-7">
