@@ -1,21 +1,75 @@
 @import 'tailwindcss';
 
 /*
- * Дизайн-токены (design-system/it-audit-platform/MASTER.md, T-047):
- * стиль Trust & Authority — навигационный navy + синий CTA, WCAG AAA.
- * Tailwind 4: @theme делает из токенов утилиты (bg-primary, text-accent…).
+ * Дизайн-система (T-H30 «premium polish»): стиль Trust & Authority — navy + синий CTA.
+ * Tailwind 4: @theme делает из токенов утилиты (bg-primary, text-accent, shadow-sm…).
+ * Refined-тени и мягкие границы «лифтят» все существующие карточки без правки страниц.
  */
 @theme {
   --color-primary: #0f172a;
   --color-on-primary: #ffffff;
-  --color-secondary: #334155;
+  --color-secondary: #475569;
   --color-accent: #0369a1;
-  --color-background: #f8fafc;
-  --color-foreground: #020617;
-  --color-muted: #e8ecf1;
-  --color-border: #e2e8f0;
+  --color-accent-soft: #e0f2fe;
+  --color-background: #f6f8fb;
+  --color-foreground: #0b1220;
+  --color-surface: #ffffff;
+  --color-muted: #eef2f7;
+  --color-border: #e5e9f0;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
   --color-destructive: #dc2626;
-  --color-ring: #0f172a;
+  --color-ring: #0369a1;
+
+  /* Мягкие слоистые тени — премиальный вид карточек (переопределяют дефолт Tailwind) */
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+  --shadow-md: 0 2px 4px -1px rgb(15 23 42 / 0.05), 0 6px 16px -3px rgb(15 23 42 / 0.08);
+  --shadow-lg: 0 8px 24px -6px rgb(15 23 42 / 0.1), 0 16px 40px -8px rgb(15 23 42 / 0.08);
+
+  --radius-xl: 0.875rem;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+  body {
+    background:
+      radial-gradient(1200px 600px at 100% -10%, rgb(3 105 161 / 0.05), transparent 60%),
+      var(--color-background);
+    background-attachment: fixed;
+  }
+  ::selection {
+    background: rgb(3 105 161 / 0.18);
+  }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.01em;
+  }
+  /* Тонкий премиальный скроллбар */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--color-secondary) 28%, transparent);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--color-secondary) 45%, transparent);
+    background-clip: content-box;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -24,5 +78,6 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

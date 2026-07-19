@@ -152,9 +152,9 @@ export function AppShell({
                         data-testid={it.testid}
                         onClick={() => setOpen(false)}
                         aria-current={active ? 'page' : undefined}
-                        className={`group flex items-center gap-2.5 rounded-md py-1.5 pr-2 pl-3 text-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                        className={`group relative flex items-center gap-2.5 rounded-lg py-1.5 pr-2 pl-3.5 text-sm transition-all duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                           active
-                            ? 'bg-primary/10 font-semibold text-primary'
+                            ? 'bg-accent-soft font-semibold text-accent before:absolute before:top-1.5 before:bottom-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-accent'
                             : 'text-secondary hover:bg-muted hover:text-foreground'
                         }`}
                       >
@@ -183,7 +183,7 @@ export function AppShell({
       onClick={() => setOpen(false)}
       className="flex items-center gap-2.5 border-b border-border px-4 py-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-on-primary shadow-sm">
         <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
           <path
             d="M12 3l7 3v5c0 4.25-2.9 7.7-7 8.75C7.9 18.7 5 15.25 5 11V6l7-3z"
