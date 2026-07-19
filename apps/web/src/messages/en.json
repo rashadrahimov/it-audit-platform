@@ -79,7 +79,8 @@
     },
     "trends": "Trends",
     "allocations": "Resource allocations",
-    "fieldPermissions": "Field-level permissions"
+    "fieldPermissions": "Field-level permissions",
+    "migration": "Import checklist"
   },
   "engagements": {
     "title": "Engagements",
@@ -824,5 +825,24 @@
       "view": "View only",
       "edit": "Editable"
     }
+  },
+  "migration": {
+    "title": "Import checklist",
+    "toAccount": "To account",
+    "intro": "Upload the client IT-audit checklist template (.xlsx). Preview parses the controls; Import creates them in the tenant control library.",
+    "file": "Template (.xlsx)",
+    "preview": "Preview",
+    "import": "Import",
+    "parsed": "Parsed controls",
+    "ref": "Ref",
+    "domain": "Domain",
+    "compliance": "Compliance",
+    "risk": "Risk",
+    "imported": "Imported",
+    "domains": "domains",
+    "controls": "controls",
+    "skipped": "skipped",
+    "errorFile": "Choose an .xlsx file",
+    "errorApi": "Import failed"
   }
 }

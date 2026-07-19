@@ -87,6 +87,7 @@ const NAV_GROUPS: Array<{
       { href: '/field-permissions', testid: 'go-field-permissions', label: 'fieldPermissions' },
       { href: '/api-keys', testid: 'go-api-keys', label: 'apiKeys' },
       { href: '/notifications', testid: 'go-notifications', label: 'notifications' },
+      { href: '/migration', testid: 'go-migration', label: 'migration' },
       { href: '/glossary', testid: 'go-glossary', label: 'glossary' },
     ],
   },

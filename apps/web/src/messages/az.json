@@ -79,7 +79,8 @@
     },
     "trends": "Trendlər",
     "allocations": "Resurs bölgüsü",
-    "fieldPermissions": "Sahə səviyyəli hüquqlar"
+    "fieldPermissions": "Sahə səviyyəli hüquqlar",
+    "migration": "Çeklist idxalı"
   },
   "engagements": {
     "title": "Auditlər",
@@ -824,5 +825,24 @@
       "view": "Yalnız oxu",
       "edit": "Redaktə edilə bilər"
     }
+  },
+  "migration": {
+    "title": "Çeklist idxalı",
+    "toAccount": "Hesaba",
+    "intro": "Müştəri IT-audit çeklist şablonunu (.xlsx) yükləyin. Önizləmə kontrolları parse edir; İdxal onları tenant kitabxanasında yaradır.",
+    "file": "Şablon (.xlsx)",
+    "preview": "Önizləmə",
+    "import": "İdxal",
+    "parsed": "Parse edilmiş kontrollar",
+    "ref": "Ref",
+    "domain": "Domen",
+    "compliance": "Uyğunluq",
+    "risk": "Risk",
+    "imported": "İdxal edildi",
+    "domains": "domen",
+    "controls": "kontrol",
+    "skipped": "ötürüldü",
+    "errorFile": ".xlsx faylı seçin",
+    "errorApi": "İdxal alınmadı"
   }
 }

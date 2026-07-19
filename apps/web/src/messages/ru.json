@@ -79,7 +79,8 @@
     },
     "trends": "Тренды",
     "allocations": "Аллокации ресурсов",
-    "fieldPermissions": "Field-level права"
+    "fieldPermissions": "Field-level права",
+    "migration": "Импорт чеклиста"
   },
   "engagements": {
     "title": "Аудиты",
@@ -824,5 +825,24 @@
       "view": "Только чтение",
       "edit": "Редактируемо"
     }
+  },
+  "migration": {
+    "title": "Импорт чеклиста",
+    "toAccount": "В аккаунт",
+    "intro": "Загрузите клиентский шаблон IT-аудит чеклиста (.xlsx). Превью разбирает контроли; Импорт создаёт их в тенант-библиотеке.",
+    "file": "Шаблон (.xlsx)",
+    "preview": "Превью",
+    "import": "Импорт",
+    "parsed": "Разобрано контролей",
+    "ref": "Ref",
+    "domain": "Домен",
+    "compliance": "Комплаенс",
+    "risk": "Риск",
+    "imported": "Импортировано",
+    "domains": "доменов",
+    "controls": "контролей",
+    "skipped": "пропущено",
+    "errorFile": "Выберите .xlsx файл",
+    "errorApi": "Импорт не удался"
   }
 }
