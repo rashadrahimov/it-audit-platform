@@ -100,7 +100,8 @@
     "aiSettings": "Провайдер ИИ",
     "home": "Главная",
     "findings": "Замечания",
-    "documents": "Документы"
+    "documents": "Документы",
+    "tests": "Тесты"
   },
   "engagements": {
     "title": "Аудиты",
@@ -967,5 +968,47 @@
     "colUploaded": "Загружен",
     "ownerSave": "ОК",
     "empty": "Документов пока нет"
+  },
+  "tests": {
+    "title": "Тесты",
+    "colTitle": "Название",
+    "colControl": "Контроль",
+    "colKind": "Тип",
+    "colStatus": "Статус",
+    "colSla": "SLA",
+    "colOwner": "Владелец",
+    "colDue": "Срок",
+    "empty": "Тестов пока нет",
+    "back": "К списку тестов",
+    "attnOverdue": "Просрочено",
+    "attnDueSoon": "Скоро срок",
+    "attnFailing": "Провалено",
+    "kinds": {
+      "manual": "Ручной",
+      "automated": "Автоматический"
+    },
+    "statuses": {
+      "ok": "ОК",
+      "failing": "Провален",
+      "needs_attention": "Требует внимания",
+      "deactivated": "Деактивирован"
+    },
+    "slas": {
+      "ok": "ОК",
+      "due_soon": "Скоро срок",
+      "overdue": "Просрочено"
+    },
+    "frequency": "Периодичность",
+    "runAuto": "Прогнать сейчас",
+    "deactivate": "Деактивировать",
+    "editTitle": "Правка теста",
+    "editSave": "Сохранить",
+    "history": "История прогонов",
+    "historyEmpty": "Прогонов пока нет",
+    "outcome": "Результат",
+    "failingEntities": "Провалившие сущности",
+    "evidence": "Доказательство",
+    "runAt": "Время прогона",
+    "ownerNone": "— не менять —"
   }
 }

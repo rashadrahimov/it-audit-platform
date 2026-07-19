@@ -100,7 +100,8 @@
     "aiSettings": "AI provider",
     "home": "Home",
     "findings": "Findings",
-    "documents": "Documents"
+    "documents": "Documents",
+    "tests": "Tests"
   },
   "engagements": {
     "title": "Engagements",
@@ -967,5 +968,47 @@
     "colUploaded": "Uploaded",
     "ownerSave": "OK",
     "empty": "No documents yet"
+  },
+  "tests": {
+    "title": "Tests",
+    "colTitle": "Name",
+    "colControl": "Control",
+    "colKind": "Type",
+    "colStatus": "Status",
+    "colSla": "SLA",
+    "colOwner": "Owner",
+    "colDue": "Due",
+    "empty": "No tests yet",
+    "back": "Back to tests",
+    "attnOverdue": "Overdue",
+    "attnDueSoon": "Due soon",
+    "attnFailing": "Failing",
+    "kinds": {
+      "manual": "Manual",
+      "automated": "Automated"
+    },
+    "statuses": {
+      "ok": "OK",
+      "failing": "Failing",
+      "needs_attention": "Needs attention",
+      "deactivated": "Deactivated"
+    },
+    "slas": {
+      "ok": "OK",
+      "due_soon": "Due soon",
+      "overdue": "Overdue"
+    },
+    "frequency": "Frequency",
+    "runAuto": "Run now",
+    "deactivate": "Deactivate",
+    "editTitle": "Edit test",
+    "editSave": "Save",
+    "history": "Run history",
+    "historyEmpty": "No runs yet",
+    "outcome": "Outcome",
+    "failingEntities": "Failing entities",
+    "evidence": "Evidence",
+    "runAt": "Run at",
+    "ownerNone": "— keep —"
   }
 }

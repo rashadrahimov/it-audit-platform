@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull, ne } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
@@ -198,28 +198,147 @@ export class TestsService {
         .from(test)
         .where(and(eq(test.id, id), isNull(test.deletedAt)));
       if (!row) throw new NotFoundException(`Тест ${id} не найден`);
+      const [ctrl] = await tx
+        .select({ ref: control.ref })
+        .from(control)
+        .where(eq(control.id, row.controlId));
+      let owner: string | null = null;
+      if (row.ownerMembershipId) {
+        const [m] = await tx
+          .select({ fullName: user.fullName })
+          .from(membership)
+          .innerJoin(user, eq(membership.userId, user.id))
+          .where(eq(membership.id, row.ownerMembershipId));
+        owner = m?.fullName ?? null;
+      }
       const results = await tx
         .select()
         .from(testResult)
         .where(eq(testResult.testId, id))
         .orderBy(desc(testResult.runAt))
         .limit(20);
-      return { row, results };
+      return { row, ctrl, owner, results };
     });
     return {
       id: data.row.id,
       title: resolveLocalized(data.row.titleI18n, locale),
       kind: data.row.kind,
+      frequency: data.row.frequency,
       status: data.row.status,
       slaStatus: data.row.slaStatus,
       dueDate: data.row.dueDate?.toISOString() ?? null,
       controlId: data.row.controlId,
+      controlRef: data.ctrl?.ref ?? null,
+      connectorId: data.row.connectorId,
+      ownerMembershipId: data.row.ownerMembershipId,
+      owner: data.owner,
       results: data.results.map((r) => ({
         runAt: r.runAt.toISOString(),
         outcome: r.outcome,
         failingEntities: r.failingEntities,
         evidenceDocumentId: r.evidenceDocumentId,
       })),
+    };
+  }
+
+  /** T-V06: правка теста (title/frequency/due/owner) из UI. */
+  async update(
+    actor: Actor,
+    id: string,
+    input: {
+      titleI18n?: I18nText;
+      frequency?: string | null;
+      dueDate?: string | null;
+      ownerMembershipId?: string | null;
+    },
+  ) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(test)
+        .where(and(eq(test.id, id), isNull(test.deletedAt)));
+      if (!row) throw new NotFoundException(`Тест ${id} не найден`);
+      const patch: Partial<typeof test.$inferInsert> = {};
+      if (input.titleI18n !== undefined) patch.titleI18n = input.titleI18n;
+      if (input.frequency !== undefined) patch.frequency = input.frequency;
+      if (input.dueDate !== undefined) {
+        patch.dueDate = input.dueDate ? new Date(input.dueDate) : null;
+      }
+      if (input.ownerMembershipId !== undefined) {
+        patch.ownerMembershipId = input.ownerMembershipId;
+      }
+      if (Object.keys(patch).length === 0) {
+        throw new BadRequestException('Нечего обновлять');
+      }
+      const [updated] = await tx.update(test).set(patch).where(eq(test.id, id)).returning();
+      return { before: row, updated };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'test.updated',
+      entityType: 'test',
+      entityId: id,
+      before: { dueDate: result.before.dueDate, frequency: result.before.frequency },
+      after: input,
+    });
+    return { id, status: result.updated?.status };
+  }
+
+  /** T-V06: деактивация — тест выпадает из мониторинга (прогоны отбиваются гардом). */
+  async deactivate(actor: Actor, id: string) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(test)
+        .where(and(eq(test.id, id), isNull(test.deletedAt)));
+      if (!row) throw new NotFoundException(`Тест ${id} не найден`);
+      if (row.status === 'deactivated') {
+        throw new BadRequestException('Тест уже деактивирован');
+      }
+      await tx.update(test).set({ status: 'deactivated' }).where(eq(test.id, id));
+      return { before: row.status };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'test.deactivated',
+      entityType: 'test',
+      entityId: id,
+      before: { status: result.before },
+      after: { status: 'deactivated' },
+    });
+    return { id, status: 'deactivated' };
+  }
+
+  /** T-V06: блок «tests that need attention» — счётчики + краткие списки. */
+  async attention(tenantId: string, locale: Locale) {
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          id: test.id,
+          titleI18n: test.titleI18n,
+          status: test.status,
+          slaStatus: test.slaStatus,
+        })
+        .from(test)
+        .where(and(isNull(test.deletedAt), ne(test.status, 'deactivated'))),
+    );
+    const pick = (pred: (r: (typeof rows)[number]) => boolean) =>
+      rows
+        .filter(pred)
+        .slice(0, 10)
+        .map((r) => ({ id: r.id, title: resolveLocalized(r.titleI18n, locale) }));
+    const overdue = rows.filter((r) => r.slaStatus === 'overdue').length;
+    const dueSoon = rows.filter((r) => r.slaStatus === 'due_soon').length;
+    const failing = rows.filter((r) => r.status === 'failing').length;
+    return {
+      counts: { overdue, dueSoon, failing },
+      overdue: pick((r) => r.slaStatus === 'overdue'),
+      dueSoon: pick((r) => r.slaStatus === 'due_soon'),
+      failing: pick((r) => r.status === 'failing'),
     };
   }
 }

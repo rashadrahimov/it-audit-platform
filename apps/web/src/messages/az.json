@@ -100,7 +100,8 @@
     "aiSettings": "AI provayderi",
     "home": "Əsas",
     "findings": "Findinqlər",
-    "documents": "Sənədlər"
+    "documents": "Sənədlər",
+    "tests": "Testlər"
   },
   "engagements": {
     "title": "Auditlər",
@@ -967,5 +968,47 @@
     "colUploaded": "Yüklənib",
     "ownerSave": "OK",
     "empty": "Hələ sənəd yoxdur"
+  },
+  "tests": {
+    "title": "Testlər",
+    "colTitle": "Ad",
+    "colControl": "Nəzarət",
+    "colKind": "Növ",
+    "colStatus": "Status",
+    "colSla": "SLA",
+    "colOwner": "Sahib",
+    "colDue": "Son tarix",
+    "empty": "Hələ test yoxdur",
+    "back": "Test siyahısına",
+    "attnOverdue": "Gecikib",
+    "attnDueSoon": "Vaxt yaxınlaşır",
+    "attnFailing": "Uğursuz",
+    "kinds": {
+      "manual": "Əl ilə",
+      "automated": "Avtomatik"
+    },
+    "statuses": {
+      "ok": "OK",
+      "failing": "Uğursuz",
+      "needs_attention": "Diqqət tələb edir",
+      "deactivated": "Deaktiv"
+    },
+    "slas": {
+      "ok": "OK",
+      "due_soon": "Vaxt yaxınlaşır",
+      "overdue": "Gecikib"
+    },
+    "frequency": "Dövrilik",
+    "runAuto": "İndi işə sal",
+    "deactivate": "Deaktiv et",
+    "editTitle": "Testi redaktə et",
+    "editSave": "Yadda saxla",
+    "history": "İcra tarixçəsi",
+    "historyEmpty": "Hələ icra yoxdur",
+    "outcome": "Nəticə",
+    "failingEntities": "Uğursuz obyektlər",
+    "evidence": "Sübut",
+    "runAt": "İcra vaxtı",
+    "ownerNone": "— dəyişmə —"
   }
 }

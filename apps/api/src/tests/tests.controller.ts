@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -45,6 +46,15 @@ const recordResultSchema = z.object({
   evidenceDocumentId: z.uuid().optional(),
   details: z.record(z.string(), z.unknown()).optional(),
 });
+
+const updateTestSchema = z
+  .object({
+    titleI18n: i18nTextSchema.optional(),
+    frequency: z.string().nullable().optional(),
+    dueDate: z.iso.datetime().nullable().optional(),
+    ownerMembershipId: z.uuid().nullable().optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'Нечего обновлять');
 
 function parseLocale(localeQuery?: string): Locale {
   if (localeQuery === undefined) return DEFAULT_LOCALE;
@@ -107,6 +117,40 @@ export class TestsController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data,
+    );
+  }
+
+  @Get('attention')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'T-V06: блок «need attention» — счётчики overdue/due soon/failing' })
+  @ApiOkResponse({
+    description: '{counts:{overdue,dueSoon,failing}, overdue[], dueSoon[], failing[]}',
+  })
+  attention(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
+    return this.testsService.attention(req.tenantId, parseLocale(localeQuery));
+  }
+
+  @Patch(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-V06: правка теста (title/frequency/dueDate/owner)' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateTestSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.testsService.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Post(':id/deactivate')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-V06: деактивировать тест (прогоны отбиваются)' })
+  deactivate(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.testsService.deactivate(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
     );
   }
 
