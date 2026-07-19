@@ -1,15 +1,21 @@
 import {
   BadRequestException,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Query,
+  Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
+import { RequirePermission } from '../rbac/require-permission.decorator';
 import { FrameworksService, type FrameworkListItem } from './frameworks.service';
 
 function parseLocale(localeQuery?: string): Locale {
@@ -52,5 +58,53 @@ export class FrameworksController {
   @ApiOkResponse({ description: '{frameworkId, total, covered, percent, uncovered:[ref]}' })
   coverage(@Param('id', ParseUUIDPipe) id: string) {
     return this.frameworksService.coverage(id);
+  }
+
+  @Post(':id/activate')
+  @HttpCode(200)
+  @UseGuards(PermissionGuard)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiHeader({ name: 'X-Tenant-Slug', required: true })
+  @ApiOperation({ summary: 'Активировать фреймворк для тенанта (T-V25, «Add framework»)' })
+  activate(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.frameworksService.activate(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
+  }
+
+  @Delete(':id/activate')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiHeader({ name: 'X-Tenant-Slug', required: true })
+  @ApiOperation({ summary: 'Деактивировать фреймворк тенанта (T-V25)' })
+  deactivate(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.frameworksService.deactivate(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
+  }
+
+  @Get(':id/evidence')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('control', 'view')
+  @ApiHeader({ name: 'X-Tenant-Slug', required: true })
+  @ApiOperation({ summary: 'Evidence completeness (T-V25): % требований с документами' })
+  @ApiOkResponse({ description: '{frameworkId, total, withEvidence, percent, missing:[ref]}' })
+  evidence(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.frameworksService.evidence(req.tenantId, id);
+  }
+
+  @Get(':id/audits')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('engagement', 'view')
+  @ApiHeader({ name: 'X-Tenant-Slug', required: true })
+  @ApiOperation({ summary: 'Audit-ends (T-V25): engagements с чеклистом по контролам фреймворка' })
+  audits(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    return this.frameworksService.audits(req.tenantId, id, parseLocale(localeQuery));
   }
 }

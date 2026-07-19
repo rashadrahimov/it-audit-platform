@@ -221,6 +221,7 @@ const GLOBAL_FRAMEWORKS = [
   {
     name: { en: 'ISO/IEC 27001' },
     version: '2022',
+    domain: 'security',
     requirements: [
       {
         ref: 'A.5.1',
@@ -251,6 +252,7 @@ const GLOBAL_FRAMEWORKS = [
   {
     name: { en: 'COBIT' },
     version: '2019',
+    domain: 'security',
     requirements: [
       {
         ref: 'EDM01',
@@ -273,6 +275,7 @@ const GLOBAL_FRAMEWORKS = [
   {
     name: { en: 'NIST CSF' },
     version: '2.0',
+    domain: 'security',
     requirements: [
       {
         ref: 'GV.OC',
@@ -296,6 +299,7 @@ const GLOBAL_FRAMEWORKS = [
   {
     name: { en: 'SOC 2' },
     version: '2017 (rev. 2022)',
+    domain: 'security',
     requirements: [
       {
         ref: 'CC1.1',
@@ -327,6 +331,7 @@ const GLOBAL_FRAMEWORKS = [
   {
     name: { en: 'PCI DSS' },
     version: '4.0',
+    domain: 'industry',
     requirements: [
       {
         ref: 'Req.1',
@@ -351,6 +356,7 @@ const GLOBAL_FRAMEWORKS = [
   {
     name: { en: 'GDPR' },
     version: '2016/679',
+    domain: 'privacy',
     requirements: [
       {
         ref: 'Art.30',
@@ -366,6 +372,7 @@ const GLOBAL_FRAMEWORKS = [
   {
     name: { en: 'HIPAA' },
     version: 'Security Rule',
+    domain: 'industry',
     requirements: [
       {
         ref: '164.308',
@@ -380,6 +387,7 @@ const GLOBAL_FRAMEWORKS = [
   {
     name: { en: 'CBAR IT Audit', az: 'MB İT Audit', ru: 'ЦБА ИТ-аудит' },
     version: 'v1.0',
+    domain: 'industry',
     requirements: [
       { ref: 'GOV', title: { en: 'IT governance', az: 'İT idarəetməsi', ru: 'ИТ-управление' } },
       {
@@ -556,10 +564,19 @@ export async function seedGlobalFrameworks(): Promise<void> {
             eq(framework.version, fw.version),
           ),
         );
-      if (existing) continue;
+      if (existing) {
+        // T-V25: обновляем домен каталога у ранее посеянных фреймворков
+        if (existing.domain !== fw.domain) {
+          await db
+            .update(framework)
+            .set({ domain: fw.domain })
+            .where(eq(framework.id, existing.id));
+        }
+        continue;
+      }
       const [created] = await db
         .insert(framework)
-        .values({ tenantId: null, nameI18n: fw.name, version: fw.version })
+        .values({ tenantId: null, nameI18n: fw.name, version: fw.version, domain: fw.domain })
         .returning();
       if (!created) throw new Error(`Фреймворк «${fw.name.en}» не создался`);
       await db.insert(frameworkRequirement).values(

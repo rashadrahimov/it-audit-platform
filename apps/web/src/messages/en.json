@@ -242,7 +242,27 @@
       "published": "Published",
       "draft": "Draft",
       "deprecated": "Deprecated"
-    }
+    },
+    "domain": "Domain",
+    "dom": {
+      "security": "Security",
+      "privacy": "Privacy",
+      "industry": "Industry",
+      "custom": "Custom"
+    },
+    "active": "Active",
+    "available": "Available",
+    "noActive": "No active frameworks — add one from the catalog below",
+    "addFramework": "Add framework",
+    "remove": "Remove",
+    "coverage": "Control coverage",
+    "coverageSub": "{covered} of {total} requirements mapped",
+    "evidenceCompleteness": "Evidence completeness",
+    "evidenceSub": "{n} of {total} requirements with evidence",
+    "audits": "Audits",
+    "noAudits": "No engagements touch this framework yet",
+    "checklistItems": "{n} checklist items",
+    "requirements": "Requirements"
   },
   "dashboard": {
     "title": "Dashboards",

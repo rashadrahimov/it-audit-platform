@@ -242,7 +242,27 @@
       "published": "Опубликован",
       "draft": "Черновик",
       "deprecated": "Устарел"
-    }
+    },
+    "domain": "Домен",
+    "dom": {
+      "security": "Безопасность",
+      "privacy": "Приватность",
+      "industry": "Отраслевой",
+      "custom": "Кастомный"
+    },
+    "active": "Активные",
+    "available": "Доступные",
+    "noActive": "Нет активных фреймворков — добавьте из каталога ниже",
+    "addFramework": "Добавить фреймворк",
+    "remove": "Убрать",
+    "coverage": "Покрытие контролями",
+    "coverageSub": "{covered} из {total} требований замаплено",
+    "evidenceCompleteness": "Полнота evidence",
+    "evidenceSub": "{n} из {total} требований с evidence",
+    "audits": "Аудиты",
+    "noAudits": "Аудитов по этому фреймворку пока нет",
+    "checklistItems": "{n} пунктов чеклиста",
+    "requirements": "Требования"
   },
   "dashboard": {
     "title": "Дашборды",

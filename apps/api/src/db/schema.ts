@@ -276,11 +276,29 @@ export const framework = pgTable(
     /** Версия издания стандарта: «2022», «2019», «2.0». */
     version: text('version').notNull(),
     status: text('status').notNull().default('published'),
+    /** T-V25: домен каталога — security | privacy | industry | custom. */
+    domain: text('domain'),
     sourceFrameworkId: uuid('source_framework_id').references((): AnyPgColumn => framework.id),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
   (table) => [index('framework_tenant_idx').on(table.tenantId)],
+);
+
+/** T-V25: активация фреймворка тенантом (Active/Available в каталоге). */
+export const frameworkActivation = pgTable(
+  'framework_activation',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    frameworkId: uuid('framework_id')
+      .notNull()
+      .references(() => framework.id, { onDelete: 'cascade' }),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('framework_activation_pair_idx').on(table.tenantId, table.frameworkId)],
 );
 
 /**

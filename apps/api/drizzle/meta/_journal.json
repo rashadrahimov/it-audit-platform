@@ -477,6 +477,13 @@
       "when": 1784485004219,
       "tag": "0067_policy-renewal-reminder",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1784503173919,
+      "tag": "0068_framework-activation",
+      "breakpoints": true
     }
   ]
 }

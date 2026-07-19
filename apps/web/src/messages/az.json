@@ -242,7 +242,27 @@
       "published": "Dərc edilib",
       "draft": "Qaralama",
       "deprecated": "Köhnəlib"
-    }
+    },
+    "domain": "Domen",
+    "dom": {
+      "security": "Təhlükəsizlik",
+      "privacy": "Məxfilik",
+      "industry": "Sahə",
+      "custom": "Fərdi"
+    },
+    "active": "Aktiv",
+    "available": "Mövcud",
+    "noActive": "Aktiv freymvork yoxdur — aşağıdakı kataloqdan əlavə edin",
+    "addFramework": "Freymvork əlavə et",
+    "remove": "Çıxar",
+    "coverage": "Kontrol əhatəsi",
+    "coverageSub": "{total} tələbdən {covered} maplanıb",
+    "evidenceCompleteness": "Sübut tamlığı",
+    "evidenceSub": "{total} tələbdən {n} sübutlu",
+    "audits": "Auditlər",
+    "noAudits": "Bu freymvorka toxunan audit hələ yoxdur",
+    "checklistItems": "{n} çeklist bəndi",
+    "requirements": "Tələblər"
   },
   "dashboard": {
     "title": "İdarə panelləri",
