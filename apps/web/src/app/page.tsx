@@ -5,6 +5,7 @@ import { fetchApiHealth } from '@/lib/api';
 import { getCurrentLocale } from '@/lib/locale';
 import { getSessionUser } from '@/lib/session';
 import { LocaleSwitcher } from './locale-switcher';
+import { LogoMark } from '@/components/logo';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,23 +52,9 @@ export default async function HomePage() {
       <header className="relative flex items-center justify-between gap-4 px-6 py-5 md:px-10">
         <span className="flex items-center gap-2.5">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur">
-            <svg viewBox="0 0 24 24" fill="none" className="h-5.5 w-5.5">
-              <path
-                d="M12 3l7 3v5c0 4.25-2.9 7.7-7 8.75C7.9 18.7 5 15.25 5 11V6l7-3z"
-                stroke="currentColor"
-                strokeWidth={1.7}
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9.5 12l1.8 1.8L15 10"
-                stroke="currentColor"
-                strokeWidth={1.7}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <LogoMark className="h-5 w-5" />
           </span>
-          <span className="text-base font-bold tracking-tight">{t('title')}</span>
+          <span className="text-base font-bold tracking-[0.1em]">{t('title')}</span>
         </span>
         <span className="[&_a]:text-white/70 [&_a:hover]:text-white">
           <LocaleSwitcher current={locale} />

@@ -12,8 +12,8 @@ import './globals.css';
 const font = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'IT Audit Platform',
-  description: 'Multi-tenant платформа IT-аудита для групп компаний',
+  title: 'STATERA — IT Audit & GRC Platform',
+  description: 'STATERA: multi-tenant платформа IT-аудита и GRC для групп компаний',
 };
 
 /** App-shell (T-H28): авторизованные страницы получают постоянный сайдбар; /login — без. */
@@ -77,7 +77,7 @@ async function Shell({ children }: { children: ReactNode }) {
       groups={groups}
       user={{ name: user.fullName, email: user.email }}
       labels={{
-        brand: 'IT Audit',
+        brand: 'STATERA',
         brandSub: tenantSlug ?? 'GRC',
         signOut: t('signOut'),
         menu: t('menu'),

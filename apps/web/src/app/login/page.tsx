@@ -4,6 +4,7 @@ import { getSessionUser } from '@/lib/session';
 import { LocaleSwitcher } from '../locale-switcher';
 import { getCurrentLocale } from '@/lib/locale';
 import { LoginForm } from './login-form';
+import { LogoMark } from '@/components/logo';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,23 +43,9 @@ export default async function LoginPage() {
 
         <div className="relative flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 backdrop-blur">
-            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
-              <path
-                d="M12 3l7 3v5c0 4.25-2.9 7.7-7 8.75C7.9 18.7 5 15.25 5 11V6l7-3z"
-                stroke="currentColor"
-                strokeWidth={1.7}
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9.5 12l1.8 1.8L15 10"
-                stroke="currentColor"
-                strokeWidth={1.7}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <LogoMark className="h-6 w-6" />
           </span>
-          <span className="text-lg font-bold tracking-tight">IT Audit Platform</span>
+          <span className="text-lg font-bold tracking-[0.1em]">STATERA</span>
         </div>
 
         <div className="relative flex flex-col gap-7">
@@ -88,9 +75,7 @@ export default async function LoginPage() {
           </ul>
         </div>
 
-        <p className="relative text-xs text-white/50">
-          © {new Date().getFullYear()} IT Audit Platform
-        </p>
+        <p className="relative text-xs text-white/50">© {new Date().getFullYear()} STATERA</p>
       </aside>
 
       {/* Форма */}
@@ -99,21 +84,7 @@ export default async function LoginPage() {
           {/* Мобильный бренд */}
           <div className="flex flex-col items-center gap-2 text-center lg:items-start lg:text-left">
             <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-on-primary shadow-sm lg:hidden">
-              <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
-                <path
-                  d="M12 3l7 3v5c0 4.25-2.9 7.7-7 8.75C7.9 18.7 5 15.25 5 11V6l7-3z"
-                  stroke="currentColor"
-                  strokeWidth={1.7}
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M9.5 12l1.8 1.8L15 10"
-                  stroke="currentColor"
-                  strokeWidth={1.7}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <LogoMark className="h-6 w-6" />
             </span>
             <h1 className="text-2xl font-bold tracking-tight text-primary">{t('signIn')}</h1>
             <p className="text-sm text-secondary">{t('subtitle')}</p>

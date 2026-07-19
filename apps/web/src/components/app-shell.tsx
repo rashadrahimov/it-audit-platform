@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/app/login/actions';
 import { ProductTour, type TourLabels, type TourStep } from '@/components/product-tour';
 import { HelpPanel, type HelpEntry, type HelpLabels } from '@/components/help-panel';
+import { LogoMark } from '@/components/logo';
 
 interface NavItem {
   href: string;
@@ -204,24 +205,12 @@ export function AppShell({
       className="flex items-center gap-2.5 border-b border-border px-4 py-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-on-primary shadow-sm">
-        <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-          <path
-            d="M12 3l7 3v5c0 4.25-2.9 7.7-7 8.75C7.9 18.7 5 15.25 5 11V6l7-3z"
-            stroke="currentColor"
-            strokeWidth={1.7}
-            strokeLinejoin="round"
-          />
-          <path
-            d="M9.5 12l1.8 1.8L15 10"
-            stroke="currentColor"
-            strokeWidth={1.7}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <LogoMark className="h-5 w-5" />
       </span>
       <span className="flex min-w-0 flex-col">
-        <span className="truncate text-sm font-bold text-foreground">{labels.brand}</span>
+        <span className="truncate text-sm font-bold tracking-[0.08em] text-foreground">
+          {labels.brand}
+        </span>
         <span className="truncate text-xs text-secondary">{labels.brandSub}</span>
       </span>
     </Link>
@@ -311,7 +300,9 @@ export function AppShell({
               <path d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
             </svg>
           </button>
-          <span className="text-sm font-bold text-foreground md:hidden">{labels.brand}</span>
+          <span className="text-sm font-bold tracking-[0.08em] text-foreground md:hidden">
+            {labels.brand}
+          </span>
 
           {/* Хлебные крошки (desktop) */}
           <nav
