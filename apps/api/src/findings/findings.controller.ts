@@ -139,20 +139,27 @@ export class FindingsController {
   @ApiQuery({ name: 'ownerMembershipId', required: false })
   @ApiQuery({ name: 'locale', required: false })
   @ApiOkResponse({ description: '[{id, title, riskRating, status, owner, auditor, dueDate}]' })
-  list(
+  async list(
     @Req() req: TenantRequest,
     @Query('engagementId') engagementId?: string,
     @Query('status') status?: string,
     @Query('riskRating') riskRating?: string,
     @Query('slaStatus') slaStatus?: string,
     @Query('ownerMembershipId') ownerMembershipId?: string,
+    @Query('mine') mine?: string,
     @Query('locale') localeQuery?: string,
   ) {
+    // T-V17: ?mine=true — очередь «Owned by me» (owner = membership текущего юзера)
+    let owner = uuidFilterParam(ownerMembershipId, 'ownerMembershipId');
+    if (mine === 'true') {
+      owner = (await this.findingsService.membershipOf(req.user.sub, req.tenantId)) ?? owner;
+      if (!owner) return [];
+    }
     return this.findingsService.list(req.tenantId, parseLocale(localeQuery), engagementId, {
       status: filterParam(status, 'status'),
       riskRating: filterParam(riskRating, 'riskRating'),
       slaStatus: filterParam(slaStatus, 'slaStatus'),
-      ownerMembershipId: uuidFilterParam(ownerMembershipId, 'ownerMembershipId'),
+      ownerMembershipId: owner,
     });
   }
 

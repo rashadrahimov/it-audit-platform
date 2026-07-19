@@ -926,7 +926,10 @@
     "all": "All",
     "status": "Status",
     "state": "Stage",
-    "risk": "Inherent risk"
+    "risk": "Inherent risk",
+    "scope": "Scope",
+    "ownedByMe": "Owned by me",
+    "needsMyApproval": "Needs my approval"
   },
   "findings": {
     "title": "Findings",

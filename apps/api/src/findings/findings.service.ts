@@ -322,6 +322,15 @@ export class FindingsService {
     return result.updated;
   }
 
+  /** T-V17: membership текущего юзера в тенанте (для очереди «моё»). */
+  async membershipOf(userId: string, tenantId: string): Promise<string | undefined> {
+    const [m] = await this.dbService.db
+      .select({ id: membership.id })
+      .from(membership)
+      .where(and(eq(membership.userId, userId), eq(membership.tenantId, tenantId)));
+    return m?.id;
+  }
+
   async list(
     tenantId: string,
     locale: Locale,

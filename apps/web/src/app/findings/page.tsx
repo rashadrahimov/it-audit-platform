@@ -48,7 +48,12 @@ const SLA_TONE: Record<string, string> = {
 export default async function FindingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; riskRating?: string; slaStatus?: string }>;
+  searchParams: Promise<{
+    status?: string;
+    riskRating?: string;
+    slaStatus?: string;
+    mine?: string;
+  }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
@@ -63,7 +68,7 @@ export default async function FindingsPage({
   let findings: FindingRow[] = [];
   if (tenantSlug) {
     const res = await apiFetch(
-      `/findings?locale=${locale}${filterQuery(sp, ['status', 'riskRating', 'slaStatus'])}`,
+      `/findings?locale=${locale}${filterQuery(sp, ['status', 'riskRating', 'slaStatus', 'mine'])}`,
       { headers: { 'X-Tenant-Slug': tenantSlug } },
     );
     findings = res.ok ? await res.json() : [];
@@ -80,6 +85,11 @@ export default async function FindingsPage({
         sp={sp}
         allLabel={tFilters('all')}
         groups={[
+          {
+            param: 'mine',
+            label: tFilters('scope'),
+            options: [{ value: 'true', label: tFilters('ownedByMe') }],
+          },
           {
             param: 'status',
             label: tFilters('status'),

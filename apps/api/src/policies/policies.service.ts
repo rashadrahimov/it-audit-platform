@@ -189,6 +189,15 @@ export class PoliciesService {
     return table[current]?.[action] ?? null;
   }
 
+  /** T-V17: membership текущего юзера в тенанте (для очереди approver'а). */
+  async membershipOf(userId: string, tenantId: string): Promise<string | undefined> {
+    const [m] = await this.dbService.db
+      .select({ id: membership.id })
+      .from(membership)
+      .where(and(eq(membership.userId, userId), eq(membership.tenantId, tenantId)));
+    return m?.id;
+  }
+
   async list(
     tenantId: string,
     locale: Locale,

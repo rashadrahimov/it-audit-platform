@@ -178,15 +178,24 @@ export class PoliciesController {
   @ApiQuery({ name: 'approverMembershipId', required: false })
   @ApiQuery({ name: 'locale', required: false })
   @ApiOkResponse({ description: '[{id, title, status, owner, renewBy}]' })
-  list(
+  async list(
     @Req() req: TenantRequest,
     @Query('status') status?: string,
     @Query('approverMembershipId') approverMembershipId?: string,
+    @Query('needsMyApproval') needsMyApproval?: string,
     @Query('locale') localeQuery?: string,
   ) {
+    // T-V17: ?needsMyApproval=true — очередь approver'а (я согласующий, статус in_review)
+    let approver = uuidFilterParam(approverMembershipId, 'approverMembershipId');
+    let statusFilter = filterParam(status, 'status');
+    if (needsMyApproval === 'true') {
+      approver = (await this.policiesService.membershipOf(req.user.sub, req.tenantId)) ?? approver;
+      if (!approver) return [];
+      statusFilter = 'in_review';
+    }
     return this.policiesService.list(req.tenantId, parseLocale(localeQuery), {
-      status: filterParam(status, 'status'),
-      approverMembershipId: uuidFilterParam(approverMembershipId, 'approverMembershipId'),
+      status: statusFilter,
+      approverMembershipId: approver,
     });
   }
 

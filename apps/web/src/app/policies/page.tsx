@@ -30,7 +30,7 @@ const STATUS_CLASS: Record<string, string> = {
 export default async function PoliciesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; needsMyApproval?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
@@ -44,9 +44,12 @@ export default async function PoliciesPage({
 
   let policies: Policy[] = [];
   if (tenantSlug) {
-    const res = await apiFetch(`/policies?locale=${locale}${filterQuery(sp, ['status'])}`, {
-      headers: { 'X-Tenant-Slug': tenantSlug },
-    });
+    const res = await apiFetch(
+      `/policies?locale=${locale}${filterQuery(sp, ['status', 'needsMyApproval'])}`,
+      {
+        headers: { 'X-Tenant-Slug': tenantSlug },
+      },
+    );
     policies = res.ok ? await res.json() : [];
   }
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
@@ -61,6 +64,11 @@ export default async function PoliciesPage({
         sp={sp}
         allLabel={tFilters('all')}
         groups={[
+          {
+            param: 'needsMyApproval',
+            label: tFilters('scope'),
+            options: [{ value: 'true', label: tFilters('needsMyApproval') }],
+          },
           {
             param: 'status',
             label: tFilters('status'),
