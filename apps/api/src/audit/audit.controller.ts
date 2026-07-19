@@ -1,5 +1,5 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { Controller, Get, Header, Query, Req, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
@@ -18,5 +18,15 @@ export class AuditController {
   @ApiOkResponse({ description: '{valid, checked, brokenAt?, reason?}' })
   verifyChain(@Req() req: TenantRequest) {
     return this.auditLogService.verifyChain(req.tenantId);
+  }
+
+  @Get('syslog')
+  @RequirePermission('settings', 'view')
+  @Header('Content-Type', 'text/plain; charset=utf-8')
+  @ApiOperation({ summary: 'Экспорт security-логов в RFC 5424 syslog (T-H09, LOG-06)' })
+  @ApiQuery({ name: 'limit', required: false })
+  syslog(@Req() req: TenantRequest, @Query('limit') limit?: string) {
+    const n = Number(limit);
+    return this.auditLogService.syslogExport(req.tenantId, Number.isFinite(n) && n > 0 ? n : 200);
   }
 }

@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { and, asc, desc, eq, isNotNull, sql } from 'drizzle-orm';
 import { DbService } from '../db/db.service';
 import { auditLog, authEvent } from '../db/schema';
+import { toSyslogLines } from './syslog';
 
 /** Каноничная строка записи для hash-chain (T-104, LOG-01). Порядок полей фиксирован. */
 function canonical(row: {
@@ -143,6 +144,30 @@ export class AuditLogService {
       prevHash = r.hash;
     }
     return { valid: true, checked: rows.length };
+  }
+
+  /**
+   * Экспорт последних security-событий тенанта в RFC 5424 syslog (LOG-06, T-H09).
+   * Форвардинг в внешний syslog-приёмник и retention — инфра [!]; здесь строки.
+   */
+  async syslogExport(tenantId: string, limit = 200): Promise<string> {
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          action: auditLog.action,
+          at: auditLog.at,
+          tenantId: auditLog.tenantId,
+          actorUserId: auditLog.actorUserId,
+          actorIp: auditLog.actorIp,
+          entityType: auditLog.entityType,
+          entityId: auditLog.entityId,
+        })
+        .from(auditLog)
+        .where(eq(auditLog.tenantId, tenantId))
+        .orderBy(desc(auditLog.at))
+        .limit(Math.min(Math.max(limit, 1), 1000)),
+    );
+    return toSyslogLines(rows);
   }
 
   async recordAuthEvent(entry: AuthEventRecord): Promise<void> {
