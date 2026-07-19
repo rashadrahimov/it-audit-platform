@@ -61,6 +61,15 @@ export class AnnotationsController {
     return this.service.list(req.tenantId, workingPaperId);
   }
 
+  @Get('exception-report')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({ summary: 'Отчёт по exception-аннотациям engagement (WP-09, T-H20)' })
+  @ApiQuery({ name: 'engagementId', required: true })
+  exceptionReport(@Req() req: TenantRequest, @Query('engagementId') engagementId?: string) {
+    if (!engagementId) throw new BadRequestException('Нужен engagementId');
+    return this.service.exceptionReport(req.tenantId, engagementId);
+  }
+
   @Post(':id/resolve')
   @HttpCode(200)
   @RequirePermission('engagement', 'edit', 'edit')

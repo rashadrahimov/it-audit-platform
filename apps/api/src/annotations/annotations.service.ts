@@ -77,6 +77,32 @@ export class AnnotationsService {
     );
   }
 
+  /** Отчёт по exception'ам engagement (WP-09, T-H20): все exception-аннотации его WP. */
+  async exceptionReport(tenantId: string, engagementId: string) {
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          id: wpAnnotation.id,
+          workingPaperId: wpAnnotation.workingPaperId,
+          workingPaperTitle: workingPaper.title,
+          anchor: wpAnnotation.anchor,
+          body: wpAnnotation.body,
+          resolvedAt: wpAnnotation.resolvedAt,
+          createdAt: wpAnnotation.createdAt,
+        })
+        .from(wpAnnotation)
+        .innerJoin(workingPaper, eq(wpAnnotation.workingPaperId, workingPaper.id))
+        .where(and(eq(workingPaper.engagementId, engagementId), eq(wpAnnotation.kind, 'exception')))
+        .orderBy(desc(wpAnnotation.createdAt)),
+    );
+    return {
+      engagementId,
+      total: rows.length,
+      open: rows.filter((r) => r.resolvedAt === null).length,
+      exceptions: rows,
+    };
+  }
+
   async resolve(actor: Actor, id: string) {
     await this.dbService.withTenant(actor.tenantId, (tx) =>
       tx
