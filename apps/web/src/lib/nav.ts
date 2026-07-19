@@ -35,6 +35,7 @@ export const NAV_GROUPS: NavGroup[] = [
     group: 'engagements',
     items: [
       { href: '/engagements', testid: 'go-engagements', label: 'engagements' },
+      { href: '/findings', testid: 'go-findings', label: 'findings' },
       { href: '/audit-programs', testid: 'go-audit-programs', label: 'auditPrograms' },
       { href: '/working-papers', testid: 'go-working-papers', label: 'workingPapers' },
       { href: '/plans', testid: 'go-plans', label: 'plans' },

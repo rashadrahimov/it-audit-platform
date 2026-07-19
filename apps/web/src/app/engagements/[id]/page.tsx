@@ -6,6 +6,7 @@ import { getCurrentLocale } from '@/lib/locale';
 import { complianceStatusSchema } from '@it-audit/shared';
 import {
   addChecklistItemsAction,
+  createFindingFromSuggestionAction,
   duplicateEngagementAction,
   saveResponseAction,
   transitionAction,
@@ -161,14 +162,34 @@ export default async function EngagementDetailPage({
                 className="flex items-center justify-between gap-2 text-sm"
               >
                 <span className="text-foreground">{s.suggestedTitle}</span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                    s.suggestedRisk === 'high'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-amber-100 text-amber-700'
-                  }`}
-                >
-                  {t(`risk.${s.suggestedRisk}`)}
+                <span className="flex items-center gap-2">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      s.suggestedRisk === 'high'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-amber-100 text-amber-700'
+                    }`}
+                  >
+                    {t(`risk.${s.suggestedRisk}`)}
+                  </span>
+                  <form
+                    action={createFindingFromSuggestionAction.bind(
+                      null,
+                      id,
+                      s.checklistItemId,
+                      s.suggestedTitle,
+                      s.suggestedRisk,
+                      s.ref ? `Gap at ${s.ref}` : '',
+                    )}
+                  >
+                    <button
+                      type="submit"
+                      data-testid="suggestion-create-finding"
+                      className="rounded-md border border-amber-300 px-2 py-0.5 text-xs font-medium text-amber-800 transition-colors duration-150 hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {t('suggestionCreate')}
+                    </button>
+                  </form>
                 </span>
               </li>
             ))}

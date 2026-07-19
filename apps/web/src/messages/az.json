@@ -98,7 +98,8 @@
     "fieldPermissions": "Sahə səviyyəli hüquqlar",
     "migration": "Çeklist idxalı",
     "aiSettings": "AI provayderi",
-    "home": "Əsas"
+    "home": "Əsas",
+    "findings": "Findinqlər"
   },
   "engagements": {
     "title": "Auditlər",
@@ -166,7 +167,8 @@
     "risk": {
       "high": "Yüksək",
       "medium": "Orta"
-    }
+    },
+    "suggestionCreate": "Findinq yarat"
   },
   "engagementStates": {
     "draft": "Qaralama",
@@ -895,5 +897,56 @@
     "status": "Status",
     "state": "Mərhələ",
     "risk": "Xas risk"
+  },
+  "findings": {
+    "title": "Findinqlər",
+    "colTitle": "Ad",
+    "colRating": "Risk",
+    "colStatus": "Status",
+    "colSla": "SLA",
+    "colOwner": "Sahib",
+    "colDue": "Son tarix",
+    "empty": "Hələ finding yoxdur",
+    "back": "Findinq siyahısına",
+    "description": "Təsvir",
+    "recommendation": "Tövsiyə",
+    "managementResponse": "Rəhbərliyin cavabı",
+    "engagement": "Audit",
+    "auditor": "Auditor",
+    "resolution": "Həll tarixi",
+    "remediatedAt": "Aradan qaldırılıb",
+    "retestResult": "Təkrar yoxlama nəticəsi",
+    "actions": "Əməliyyatlar",
+    "advance": "«{status}» statusuna keçir",
+    "retestPassed": "Təkrar yoxlama uğurlu",
+    "retestFailed": "Təkrar yoxlama uğursuz",
+    "assignTitle": "Sahib təyin et",
+    "assignBtn": "Təyin et",
+    "history": "Tarixçə",
+    "historyEmpty": "Tarixçə yoxdur",
+    "comments": "Şərhlər",
+    "commentsEmpty": "Hələ şərh yoxdur",
+    "commentPh": "Şərh yazın…",
+    "commentAdd": "Əlavə et",
+    "statuses": {
+      "identified": "Aşkarlanıb",
+      "assigned": "Təyin olunub",
+      "in_progress": "İcradadır",
+      "remediated": "Aradan qaldırılıb",
+      "pending_retest": "Təkrar yoxlama gözlənilir",
+      "closed": "Bağlanıb"
+    },
+    "ratings": {
+      "critical": "Kritik",
+      "high": "Yüksək",
+      "medium": "Orta",
+      "low": "Aşağı",
+      "not_applicable": "Tətbiq olunmur"
+    },
+    "slas": {
+      "ok": "OK",
+      "due_soon": "Vaxt yaxınlaşır",
+      "overdue": "Gecikib"
+    }
   }
 }

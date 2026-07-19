@@ -19,7 +19,9 @@ import { EmailService } from '../email/email.service';
 import { RbacService } from '../rbac/rbac.service';
 import { maskFields, rejectedWriteFields } from '../rbac/field-policy';
 import {
+  auditLog,
   checklistItem,
+  comment,
   control,
   engagement,
   finding,
@@ -380,13 +382,46 @@ export class FindingsService {
   }
 
   async detail(tenantId: string, userId: string, id: string, locale: Locale) {
-    const [row] = await this.dbService.withTenant(tenantId, (tx) =>
-      tx
+    const data = await this.dbService.withTenant(tenantId, async (tx) => {
+      const [row] = await tx
         .select()
         .from(finding)
-        .where(and(eq(finding.id, id), isNull(finding.deletedAt))),
-    );
-    if (!row) throw new NotFoundException(`Finding ${id} не найден`);
+        .where(and(eq(finding.id, id), isNull(finding.deletedAt)));
+      if (!row) return null;
+      // T-V03: карточка одним ответом (паттерн T-032) — имена сторон, история, комментарии
+      const names = new Map<string, string>();
+      for (const mid of [row.ownerMembershipId, row.auditorMembershipId]) {
+        if (!mid) continue;
+        const [m] = await tx
+          .select({ fullName: user.fullName })
+          .from(membership)
+          .innerJoin(user, eq(membership.userId, user.id))
+          .where(eq(membership.id, mid));
+        if (m) names.set(mid, m.fullName);
+      }
+      const history = await tx
+        .select({ action: auditLog.action, at: auditLog.at, actor: user.fullName })
+        .from(auditLog)
+        .leftJoin(user, eq(auditLog.actorUserId, user.id))
+        .where(and(eq(auditLog.entityType, 'finding'), eq(auditLog.entityId, id)))
+        .orderBy(desc(auditLog.at));
+      const comments = await tx
+        .select({ body: comment.body, at: comment.createdAt, author: user.fullName })
+        .from(comment)
+        .innerJoin(user, eq(comment.authorUserId, user.id))
+        .where(
+          and(
+            eq(comment.entityType, 'finding'),
+            eq(comment.entityId, id),
+            isNull(comment.deletedAt),
+          ),
+        )
+        .orderBy(desc(comment.createdAt));
+      return { row, names, history, comments };
+    });
+    if (!data) throw new NotFoundException(`Finding ${id} не найден`);
+    const { row, names, history, comments } = data;
+    const nextIdx = flowIndex(row.status);
     const dto = {
       id: row.id,
       title: resolveLocalized(row.titleI18n, locale),
@@ -404,10 +439,16 @@ export class FindingsService {
       controlId: row.controlId,
       ownerMembershipId: row.ownerMembershipId,
       auditorMembershipId: row.auditorMembershipId,
+      owner: row.ownerMembershipId ? (names.get(row.ownerMembershipId) ?? null) : null,
+      auditor: row.auditorMembershipId ? (names.get(row.auditorMembershipId) ?? null) : null,
       managementResponse: row.managementResponse,
       remediatedAt: row.remediatedAt?.toISOString() ?? null,
       retestResult: row.retestResult,
       resolutionDate: row.resolutionDate?.toISOString() ?? null,
+      // T-V03: следующий шаг lifecycle для кнопок UI (сервер всё равно enforce'ит)
+      allowedNext: nextIdx >= 0 ? (FINDING_FLOW[nextIdx + 1] ?? null) : null,
+      history: history.map((h) => ({ action: h.action, actor: h.actor, at: h.at.toISOString() })),
+      comments: comments.map((c) => ({ author: c.author, body: c.body, at: c.at.toISOString() })),
     };
     // SEC-04 (ADR-0020): field-level маскирование по роли (эталон: recommendation)
     const levels = await this.rbacService.fieldLevels(userId, tenantId, 'finding');

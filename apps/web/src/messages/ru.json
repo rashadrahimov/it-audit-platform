@@ -98,7 +98,8 @@
     "fieldPermissions": "Field-level права",
     "migration": "Импорт чеклиста",
     "aiSettings": "Провайдер ИИ",
-    "home": "Главная"
+    "home": "Главная",
+    "findings": "Замечания"
   },
   "engagements": {
     "title": "Аудиты",
@@ -166,7 +167,8 @@
     "risk": {
       "high": "Высокий",
       "medium": "Средний"
-    }
+    },
+    "suggestionCreate": "Создать замечание"
   },
   "engagementStates": {
     "draft": "Черновик",
@@ -895,5 +897,56 @@
     "status": "Статус",
     "state": "Стадия",
     "risk": "Присущий риск"
+  },
+  "findings": {
+    "title": "Замечания",
+    "colTitle": "Название",
+    "colRating": "Риск",
+    "colStatus": "Статус",
+    "colSla": "SLA",
+    "colOwner": "Владелец",
+    "colDue": "Срок",
+    "empty": "Замечаний пока нет",
+    "back": "К списку замечаний",
+    "description": "Описание",
+    "recommendation": "Рекомендация",
+    "managementResponse": "Ответ руководства",
+    "engagement": "Аудит",
+    "auditor": "Аудитор",
+    "resolution": "Дата решения",
+    "remediatedAt": "Устранено",
+    "retestResult": "Результат ре-теста",
+    "actions": "Действия",
+    "advance": "Перевести в «{status}»",
+    "retestPassed": "Ре-тест пройден",
+    "retestFailed": "Ре-тест не пройден",
+    "assignTitle": "Назначить владельца",
+    "assignBtn": "Назначить",
+    "history": "История",
+    "historyEmpty": "Истории нет",
+    "comments": "Комментарии",
+    "commentsEmpty": "Комментариев пока нет",
+    "commentPh": "Написать комментарий…",
+    "commentAdd": "Добавить",
+    "statuses": {
+      "identified": "Выявлено",
+      "assigned": "Назначено",
+      "in_progress": "В работе",
+      "remediated": "Устранено",
+      "pending_retest": "Ожидает ре-теста",
+      "closed": "Закрыто"
+    },
+    "ratings": {
+      "critical": "Критический",
+      "high": "Высокий",
+      "medium": "Средний",
+      "low": "Низкий",
+      "not_applicable": "Н/п"
+    },
+    "slas": {
+      "ok": "ОК",
+      "due_soon": "Скоро срок",
+      "overdue": "Просрочено"
+    }
   }
 }
