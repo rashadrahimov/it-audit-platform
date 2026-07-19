@@ -91,6 +91,8 @@
     "auditType": "Audit növü",
     "mode": "Rejim",
     "state": "Vəziyyət",
+    "viewActive": "Aktiv",
+    "viewArchived": "Arxiv",
     "empty": "Hələ audit yoxdur",
     "modes": {
       "formal": "Formal",

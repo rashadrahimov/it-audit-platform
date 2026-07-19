@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
@@ -279,9 +279,13 @@ export class EngagementsService {
     return saved.row;
   }
 
-  async list(tenantId: string, locale: Locale, auditTypeCode?: string) {
+  /** ENG-08: активный список исключает архивные (archivedAt); archived=true — только архивные. */
+  async list(tenantId: string, locale: Locale, auditTypeCode?: string, archived = false) {
     const rows = await this.dbService.withTenant(tenantId, (tx) => {
-      const conds = [isNull(engagement.deletedAt)];
+      const conds = [
+        isNull(engagement.deletedAt),
+        archived ? isNotNull(engagement.archivedAt) : isNull(engagement.archivedAt),
+      ];
       if (auditTypeCode) conds.push(eq(auditType.code, auditTypeCode));
       return tx
         .select({

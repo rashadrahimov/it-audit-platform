@@ -91,6 +91,8 @@
     "auditType": "Audit type",
     "mode": "Mode",
     "state": "State",
+    "viewActive": "Active",
+    "viewArchived": "Archived",
     "empty": "No engagements yet",
     "modes": {
       "formal": "Formal",

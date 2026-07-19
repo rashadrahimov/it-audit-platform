@@ -91,6 +91,8 @@
     "auditType": "Тип аудита",
     "mode": "Режим",
     "state": "Состояние",
+    "viewActive": "Активные",
+    "viewArchived": "Архив",
     "empty": "Аудитов пока нет",
     "modes": {
       "formal": "Формальный",

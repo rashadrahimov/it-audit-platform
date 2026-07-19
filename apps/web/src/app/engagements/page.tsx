@@ -15,24 +15,35 @@ interface EngagementRow {
   auditType: string | null;
 }
 
-/** Список engagement'ов (T-035). */
-export default async function EngagementsPage() {
+/** Список engagement'ов (T-035; ENG-08: переключатель Активные/Архив). */
+export default async function EngagementsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ archived?: string }>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tStates, locale, tenantSlug] = await Promise.all([
+  const [t, tStates, locale, tenantSlug, sp] = await Promise.all([
     getTranslations('engagements'),
     getTranslations('engagementStates'),
     getCurrentLocale(),
     getActiveTenantSlug(),
+    searchParams,
   ]);
+  const archived = sp.archived === 'true';
 
   let engagements: EngagementRow[] = [];
   if (tenantSlug) {
-    const res = await apiFetch(`/engagements?locale=${locale}`, {
+    const res = await apiFetch(`/engagements?locale=${locale}${archived ? '&archived=true' : ''}`, {
       headers: { 'X-Tenant-Slug': tenantSlug },
     });
     engagements = res.ok ? await res.json() : [];
   }
+
+  const tabCls = (on: boolean) =>
+    `rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+      on ? 'bg-accent text-on-primary' : 'text-secondary hover:bg-muted'
+    }`;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 pt-12">
@@ -45,6 +56,14 @@ export default async function EngagementsPage() {
           {t('toAccount')}
         </Link>
       </div>
+      <nav data-testid="engagements-view-toggle" className="flex gap-1">
+        <Link href="/engagements" className={tabCls(!archived)}>
+          {t('viewActive')}
+        </Link>
+        <Link href="/engagements?archived=true" className={tabCls(archived)}>
+          {t('viewArchived')}
+        </Link>
+      </nav>
       <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
         <table className="w-full text-left text-sm" data-testid="engagements-table">
           <thead>
