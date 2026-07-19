@@ -111,4 +111,4 @@ jobs:
         run: docker build -f apps/web/Dockerfile -t it-audit-web:ci .
 
       - name: Validate prod compose
-        run: JWT_SECRET=ci-validate docker compose -f docker-compose.prod.yml config >/dev/null
+        run: JWT_SECRET=ci-validate ENCRYPTION_KEY=ci-validate docker compose -f docker-compose.prod.yml config >/dev/null
