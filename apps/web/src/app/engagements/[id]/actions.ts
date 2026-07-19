@@ -1,7 +1,23 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { apiFetch, getActiveTenantSlug } from '@/lib/session';
+
+/** Восстановить/дублировать аудит (T-H16): создаёт копию, переходит на неё. */
+export async function duplicateEngagementAction(engagementId: string): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const res = await apiFetch(`/engagements/${engagementId}/duplicate`, {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  if (res.ok) {
+    const created = (await res.json()) as { id: string };
+    redirect(`/engagements/${created.id}`);
+  }
+  revalidatePath(`/engagements/${engagementId}`);
+}
 
 /** Чеклист (T-036): добавить выбранные контроли снапшотами. */
 export async function addChecklistItemsAction(

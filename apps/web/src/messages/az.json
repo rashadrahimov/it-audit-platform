@@ -139,7 +139,13 @@
       "low": "Aşağı",
       "not_applicable": "T/e"
     },
-    "export": "İxrac"
+    "export": "İxrac",
+    "duplicate": "Dublikat / bərpa",
+    "suggestions": "Təklif olunan tapıntılar (gaplar)",
+    "risk": {
+      "high": "Yüksək",
+      "medium": "Orta"
+    }
   },
   "engagementStates": {
     "draft": "Qaralama",

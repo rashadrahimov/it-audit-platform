@@ -139,7 +139,13 @@
       "low": "Low",
       "not_applicable": "N/A"
     },
-    "export": "Export"
+    "export": "Export",
+    "duplicate": "Duplicate / restore",
+    "suggestions": "Suggested findings (gaps)",
+    "risk": {
+      "high": "High",
+      "medium": "Medium"
+    }
   },
   "engagementStates": {
     "draft": "Draft",

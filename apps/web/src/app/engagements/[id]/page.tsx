@@ -4,7 +4,12 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { complianceStatusSchema } from '@it-audit/shared';
-import { addChecklistItemsAction, saveResponseAction, transitionAction } from './actions';
+import {
+  addChecklistItemsAction,
+  duplicateEngagementAction,
+  saveResponseAction,
+  transitionAction,
+} from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +92,17 @@ export default async function EngagementDetailPage({
   });
   const findings: FindingRow[] = fRes.ok ? await fRes.json() : [];
 
+  // SEC/EP-AI (T-H15): детерминированные предложения findings по гэпам
+  const sRes = await apiFetch(`/engagements/${id}/finding-suggestions?locale=${locale}`, {
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  const suggestions: Array<{
+    checklistItemId: string;
+    ref: string | null;
+    suggestedTitle: string;
+    suggestedRisk: string;
+  }> = sRes.ok ? (await sRes.json()).suggestions : [];
+
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const fmt = (iso: string | null): string => (iso ? dateFmt.format(new Date(iso)) : '—');
 
@@ -119,7 +135,46 @@ export default async function EngagementDetailPage({
             {fmt.toUpperCase()}
           </a>
         ))}
+        <form action={duplicateEngagementAction.bind(null, eng.id)} className="ml-auto">
+          <button
+            type="submit"
+            data-testid="engagement-duplicate"
+            className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {t('duplicate')}
+          </button>
+        </form>
       </section>
+
+      {suggestions.length > 0 && (
+        <section
+          className="rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm"
+          data-testid="finding-suggestions"
+        >
+          <h2 className="mb-2 text-sm font-semibold text-amber-800">
+            {t('suggestions')} ({suggestions.length})
+          </h2>
+          <ul className="flex flex-col gap-1.5">
+            {suggestions.map((s) => (
+              <li
+                key={s.checklistItemId}
+                className="flex items-center justify-between gap-2 text-sm"
+              >
+                <span className="text-foreground">{s.suggestedTitle}</span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    s.suggestedRisk === 'high'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}
+                >
+                  {t(`risk.${s.suggestedRisk}`)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section
         className="rounded-xl border border-border bg-white p-6 shadow-sm"

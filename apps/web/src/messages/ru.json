@@ -139,7 +139,13 @@
       "low": "Низкий",
       "not_applicable": "Н/п"
     },
-    "export": "Экспорт"
+    "export": "Экспорт",
+    "duplicate": "Дублировать / восстановить",
+    "suggestions": "Предлагаемые findings (гэпы)",
+    "risk": {
+      "high": "Высокий",
+      "medium": "Средний"
+    }
   },
   "engagementStates": {
     "draft": "Черновик",
