@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -35,6 +36,17 @@ const createVendorSchema = z.object({
   inherentRisk: riskClass.optional(),
   residualRisk: riskClass.optional(),
   securityOwnerMembershipId: z.uuid().optional(),
+  intake: z.record(z.string(), z.unknown()).optional(),
+});
+
+// T-V13: частичное редактирование карточки вендора (статус — отдельным transition)
+const updateVendorSchema = z.object({
+  name: z.string().min(1).optional(),
+  category: z.string().nullable().optional(),
+  url: z.string().nullable().optional(),
+  inherentRisk: riskClass.nullable().optional(),
+  residualRisk: riskClass.nullable().optional(),
+  securityOwnerMembershipId: z.uuid().nullable().optional(),
   intake: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -129,6 +141,29 @@ export class VendorsController {
       id,
       parsed.data.to,
     );
+  }
+
+  @Patch(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Редактировать вендора (T-V13): атрибуты/риски/owner/intake' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateVendorSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    if (Object.keys(parsed.data).length === 0) {
+      throw new BadRequestException('Нужно хотя бы одно поле');
+    }
+    return this.service.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Get('analytics')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Аналитика вендоров (T-V13): счётчики по категориям/рискам/статусам' })
+  analytics(@Req() req: TenantRequest) {
+    return this.service.analytics(req.tenantId);
   }
 
   @Get()

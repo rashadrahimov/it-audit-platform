@@ -449,7 +449,50 @@
     "residual": "Остаточный риск",
     "assessments": "Оценки",
     "noAssessments": "Пока нет оценок",
-    "statusLabel": "Статус"
+    "statusLabel": "Статус",
+    "securityOwner": "Security owner",
+    "edit": "Редактировать вендора",
+    "save": "Сохранить",
+    "analytics": "По категориям",
+    "uncategorized": "Без категории",
+    "intake": "Intake-анкета",
+    "intakeHint": "Анкета закупки: что делает вендор и каких данных касается.",
+    "saveIntake": "Сохранить анкету",
+    "in": {
+      "businessPurpose": "Бизнес-цель",
+      "dataTypes": "Типы данных",
+      "dataClassification": "Классификация данных",
+      "authMethod": "Аутентификация",
+      "notes": "Заметки"
+    },
+    "dc": {
+      "public": "Публичные",
+      "internal": "Внутренние",
+      "confidential": "Конфиденциальные",
+      "restricted": "Ограниченного доступа"
+    },
+    "am": {
+      "sso": "SSO",
+      "password": "Пароль",
+      "api_key": "API-ключ"
+    },
+    "assessmentType": "Тип",
+    "assessmentTypePh": "напр. обзор SOC 2",
+    "due": "Срок",
+    "addAssessment": "Запросить оценку",
+    "ast": {
+      "requested": "Запрошена",
+      "in_progress": "В работе",
+      "completed": "Завершена"
+    },
+    "startAssessment": "Начать",
+    "completeAssessment": "Завершить",
+    "recommendation": "Рекомендация",
+    "recommendationPh": "Вывод / рекомендация",
+    "evidence": "Evidence",
+    "evProvided": "Предоставлен",
+    "attachDoc": "Прикрепить документ",
+    "attach": "Прикрепить"
   },
   "workingPapers": {
     "title": "Рабочие документы",

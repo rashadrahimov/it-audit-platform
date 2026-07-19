@@ -23,6 +23,15 @@ export const DEFAULT_LISTS: Record<string, ListItem[]> = {
     { code: 'needs_improvement', labelI18n: { en: 'Needs improvement', ru: 'Требует улучшения' } },
     { code: 'unsatisfactory', labelI18n: { en: 'Unsatisfactory', ru: 'Неудовлетворительно' } },
   ],
+  // T-V13: справочник категорий вендоров (переопределяется тенантом через PUT)
+  vendor_categories: [
+    { code: 'cloud', labelI18n: { en: 'Cloud / Hosting', ru: 'Облако / Хостинг' } },
+    { code: 'saas', labelI18n: { en: 'SaaS', ru: 'SaaS' } },
+    { code: 'infrastructure', labelI18n: { en: 'Infrastructure', ru: 'Инфраструктура' } },
+    { code: 'data_processor', labelI18n: { en: 'Data processor', ru: 'Обработчик данных' } },
+    { code: 'consulting', labelI18n: { en: 'Consulting', ru: 'Консалтинг' } },
+    { code: 'other', labelI18n: { en: 'Other', ru: 'Прочее' } },
+  ],
 };
 
 @Injectable()

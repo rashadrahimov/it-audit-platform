@@ -449,7 +449,50 @@
     "residual": "Residual risk",
     "assessments": "Assessments",
     "noAssessments": "No assessments yet",
-    "statusLabel": "Status"
+    "statusLabel": "Status",
+    "securityOwner": "Security owner",
+    "edit": "Edit vendor",
+    "save": "Save",
+    "analytics": "By category",
+    "uncategorized": "Uncategorized",
+    "intake": "Intake",
+    "intakeHint": "Procurement questionnaire: what the vendor does and what data it touches.",
+    "saveIntake": "Save intake",
+    "in": {
+      "businessPurpose": "Business purpose",
+      "dataTypes": "Data types",
+      "dataClassification": "Data classification",
+      "authMethod": "Authentication",
+      "notes": "Notes"
+    },
+    "dc": {
+      "public": "Public",
+      "internal": "Internal",
+      "confidential": "Confidential",
+      "restricted": "Restricted"
+    },
+    "am": {
+      "sso": "SSO",
+      "password": "Password",
+      "api_key": "API key"
+    },
+    "assessmentType": "Type",
+    "assessmentTypePh": "e.g. SOC 2 review",
+    "due": "Due",
+    "addAssessment": "Request assessment",
+    "ast": {
+      "requested": "Requested",
+      "in_progress": "In progress",
+      "completed": "Completed"
+    },
+    "startAssessment": "Start",
+    "completeAssessment": "Complete",
+    "recommendation": "Recommendation",
+    "recommendationPh": "Conclusion / recommendation",
+    "evidence": "Evidence",
+    "evProvided": "Provided",
+    "attachDoc": "Attach document",
+    "attach": "Attach"
   },
   "workingPapers": {
     "title": "Working Papers",

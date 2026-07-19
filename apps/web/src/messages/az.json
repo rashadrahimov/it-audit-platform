@@ -449,7 +449,50 @@
     "residual": "Qalıq risk",
     "assessments": "Qiymətləndirmələr",
     "noAssessments": "Hələ qiymətləndirmə yoxdur",
-    "statusLabel": "Status"
+    "statusLabel": "Status",
+    "securityOwner": "Təhlükəsizlik sahibi",
+    "edit": "Vendoru redaktə et",
+    "save": "Yadda saxla",
+    "analytics": "Kateqoriya üzrə",
+    "uncategorized": "Kateqoriyasız",
+    "intake": "Sorğu anketi",
+    "intakeHint": "Satınalma anketi: vendor nə edir və hansı dataya toxunur.",
+    "saveIntake": "Anketi saxla",
+    "in": {
+      "businessPurpose": "Biznes məqsədi",
+      "dataTypes": "Data növləri",
+      "dataClassification": "Data təsnifatı",
+      "authMethod": "Autentifikasiya",
+      "notes": "Qeydlər"
+    },
+    "dc": {
+      "public": "Açıq",
+      "internal": "Daxili",
+      "confidential": "Konfidensial",
+      "restricted": "Məhdud"
+    },
+    "am": {
+      "sso": "SSO",
+      "password": "Parol",
+      "api_key": "API açarı"
+    },
+    "assessmentType": "Növ",
+    "assessmentTypePh": "məs. SOC 2 icmalı",
+    "due": "Son tarix",
+    "addAssessment": "Qiymətləndirmə istə",
+    "ast": {
+      "requested": "İstənilib",
+      "in_progress": "İcrada",
+      "completed": "Tamamlanıb"
+    },
+    "startAssessment": "Başla",
+    "completeAssessment": "Tamamla",
+    "recommendation": "Tövsiyə",
+    "recommendationPh": "Nəticə / tövsiyə",
+    "evidence": "Sübut",
+    "evProvided": "Təqdim edilib",
+    "attachDoc": "Sənəd əlavə et",
+    "attach": "Əlavə et"
   },
   "workingPapers": {
     "title": "İş Sənədləri",
