@@ -51,6 +51,7 @@ const ROUTES = [
   '/migration',
   '/ai-settings',
   '/glossary',
+  '/guide',
 ];
 
 interface Finding {

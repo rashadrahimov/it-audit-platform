@@ -98,7 +98,8 @@
     "fieldPermissions": "Sahə səviyyəli hüquqlar",
     "migration": "Çeklist idxalı",
     "aiSettings": "AI provayderi",
-    "home": "Əsas"
+    "home": "Əsas",
+    "guide": "Bələdçi"
   },
   "engagements": {
     "title": "Auditlər",
@@ -889,5 +890,107 @@
     "apiKeyHint": "Şifrələnmiş saxlanılır (AES-256-GCM); bir daha göstərilmir.",
     "save": "Saxla",
     "residencyNote": "Data (boşluqlar, cavablar, siyasətlər) seçilmiş provayderə göndərilir. Bank üçün — lokal model (şəbəkənizdə Ollama/vLLM) və ya DPA + Zero-Data-Retention olan bulud."
+  },
+  "guide": {
+    "title": "Platforma bələdçisi",
+    "intro": "Hər bölmənin nə etdiyi və haradan başlamaq. İnteraktiv tura çıxın və ya bölmələrə baxın.",
+    "startTour": "Tura başla",
+    "sections": {
+      "dashboard": "Findings və auditlər üzrə icmal: bütün qrup və hər törəmə.",
+      "dashboards": "Audit datası üzrə qrafik konstruktoru (bar/line/pie).",
+      "reports": "PDF, Word və Excel formatında audit hesabatları.",
+      "snapshots": "Tarixə görə uyğunluq anlıq görüntüləri və müqayisə.",
+      "trends": "Anlıq görüntülər arasında metrik dinamikası.",
+      "kpi": "Nəzarət KPI-ları: hədəflər, ölçmələr, on-track statusu.",
+      "frameworks": "Standartlar: ISO 27001, COBIT, NIST, CBAR + öz standartlarınız.",
+      "controls": "Hər törəməyə uyğunlaşdırıla bilən nəzarətlər kitabxanası.",
+      "policies": "Siyasətlər: versiyalar, dərc, işçilərin tanış olması.",
+      "commitments": "Müqavilə öhdəlikləri və SLA nəzarəti.",
+      "universe": "Audit kainatı: audit obyektləri və əhatə.",
+      "engagements": "Auditlər: çeklistlər, cavablar, findings, workflow.",
+      "audit-programs": "Təkrar istifadə üçün audit proqramı şablonları.",
+      "working-papers": "İş sənədləri: baxış, imza, annotasiyalar.",
+      "plans": "Törəmələr üzrə illik audit planları.",
+      "allocations": "Auditorların bölgüsü və yüklənməsi.",
+      "time": "Audit üzrə vaxt uçotu.",
+      "satisfaction": "Auditdən sonra məmnunluq sorğuları.",
+      "risks": "Ehtimal və təsir qiymətləndirməli risk reyestri.",
+      "risk-heatmap": "5×5 risk istilik xəritəsi.",
+      "privacy": "GDPR: emal reyestri (ROPA) və DPIA qiymətləndirmələri.",
+      "iam": "Sistem hesabları: sahiblər, MFA, imtiyazlar.",
+      "access-reviews": "Keep/revoke qərarlı giriş baxış kampaniyaları.",
+      "devices": "Cihaz uyğunluğu: şifrələmə, antivirus, kilid.",
+      "security-alerts": "Təhlükəsizlik bildirişləri və triaj.",
+      "vulnerabilities": "Zəifliklər: mənbələr, SLA, aradan qaldırma statusu.",
+      "code-changes": "Kod və konfiqurasiya dəyişiklikləri.",
+      "vendors": "Təchizatçı riski: sorğular, qiymətləndirmələr.",
+      "trust-center": "Müştərilər üçün ictimai uyğunluq vitrini.",
+      "questionnaires": "Daxil olan təhlükəsizlik sorğuları və cavablar.",
+      "knowledge-base": "Cavabların təkrar istifadəsi üçün bilik bazası.",
+      "personnel": "Personal: onboarding/offboarding çeklistləri.",
+      "connectors": "Avtomatik yoxlamalar üçün konnektorlar.",
+      "config": "Tenant tənzimləmələri və dəyişiklik tarixçəsi.",
+      "field-permissions": "Rollar üçün sahə səviyyəli hüquqlar.",
+      "api-keys": "Proqram girişi üçün API açarları.",
+      "notifications": "Bildiriş qaydaları və jurnalı.",
+      "migration": "Müştərinin Excel çeklistlərindən nəzarətlərin idxalı.",
+      "ai-settings": "AI provayderi: Claude, GPT, Kimi və ya lokal model.",
+      "glossary": "GRC terminlər lüğəti.",
+      "guide": "Bu bələdçi: bütün bölmələr və tur."
+    }
+  },
+  "tour": {
+    "offerTitle": "İlk dəfəsiniz?",
+    "offerText": "Platforma üzrə qısa tura çıxın — 2 dəqiqə.",
+    "start": "Tura başla",
+    "later": "Sonra",
+    "next": "İrəli",
+    "back": "Geri",
+    "skip": "Ötür",
+    "done": "Hazır",
+    "stepOf": "{i} / {n}",
+    "openGuide": "Bələdçini aç",
+    "steps": {
+      "sidebar": {
+        "t": "Naviqasiya",
+        "d": "Bütün platforma sol paneldədir. Qruplar yığılır — olduğunuz qrup açıq qalır."
+      },
+      "overview": {
+        "t": "İcmal",
+        "d": "Panellər, hesabatlar, anlıq görüntülər, trendlər və KPI-lar."
+      },
+      "compliance": {
+        "t": "Uyğunluq və nəzarətlər",
+        "d": "Standartlar (ISO/COBIT/NIST), nəzarətlər kitabxanası, siyasətlər."
+      },
+      "engagements": {
+        "t": "Auditlər",
+        "d": "Platformanın ürəyi: çeklistli auditlər, iş sənədləri, planlar."
+      },
+      "risk": {
+        "t": "Risk və məxfilik",
+        "d": "Risk reyestri, istilik xəritəsi və GDPR (ROPA/DPIA)."
+      },
+      "security": {
+        "t": "Təhlükəsizlik",
+        "d": "Hesablar, giriş baxışları, cihazlar, zəifliklər."
+      },
+      "thirdParty": {
+        "t": "Üçüncü tərəflər",
+        "d": "Təchizatçı riski, Trust Center, sorğular, bilik bazası."
+      },
+      "org": {
+        "t": "Təşkilat",
+        "d": "İşçilər, inteqrasiyalar, hüquqlar, Excel idxalı və AI provayderi."
+      },
+      "breadcrumbs": {
+        "t": "Naviqasiya zənciri",
+        "d": "Harada olduğunuz həmişə görünür. Ev ikonası əsas ekrana qaytarır."
+      },
+      "profile": {
+        "t": "Profil",
+        "d": "Hesabınız və çıxış düyməsi panelin aşağısındadır."
+      }
+    }
   }
 }

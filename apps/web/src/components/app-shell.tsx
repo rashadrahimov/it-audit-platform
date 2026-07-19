@@ -1,9 +1,10 @@
 'use client';
 
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/app/login/actions';
+import { ProductTour, type TourLabels, type TourStep } from '@/components/product-tour';
 
 interface NavItem {
   href: string;
@@ -71,15 +72,18 @@ export function AppShell({
   groups,
   user,
   labels,
+  tour,
   children,
 }: {
   groups: NavGroup[];
   user: { name: string; email: string };
   labels: Labels;
+  tour: { steps: TourStep[]; labels: TourLabels };
   children: ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [tourSignal, setTourSignal] = useState(0);
   const initials =
     user.name
       .split(' ')
@@ -344,14 +348,41 @@ export function AppShell({
             )}
           </nav>
 
+          {/* Помощь: запуск тура */}
+          <button
+            type="button"
+            data-testid="topbar-help"
+            aria-label="Tour"
+            onClick={() => setTourSignal((s) => s + 1)}
+            className="ml-auto flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-secondary transition-colors duration-150 hover:bg-muted hover:text-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <path d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+            </svg>
+          </button>
+
           {/* Тенант-бейдж справа */}
-          <span className="ml-auto hidden items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium text-secondary md:flex">
+          <span className="hidden items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium text-secondary md:flex">
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-success" />
             {labels.brandSub}
           </span>
         </header>
         <div className="min-w-0 flex-1">{children}</div>
       </div>
+
+      {/* Интерактивный тур (T-H34) */}
+      <Suspense fallback={null}>
+        <ProductTour steps={tour.steps} labels={tour.labels} startSignal={tourSignal} />
+      </Suspense>
     </div>
   );
 }

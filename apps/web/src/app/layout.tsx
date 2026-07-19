@@ -20,12 +20,32 @@ export const metadata: Metadata = {
 async function Shell({ children }: { children: ReactNode }) {
   const user = await getSessionUser();
   if (!user) return <>{children}</>;
-  const [t, tenantSlug] = await Promise.all([getTranslations('account'), getActiveTenantSlug()]);
+  const [t, tTour, tenantSlug] = await Promise.all([
+    getTranslations('account'),
+    getTranslations('tour'),
+    getActiveTenantSlug(),
+  ]);
   const groups = NAV_GROUPS.map((g) => ({
     group: g.group,
     label: t(`nav.${g.group}`),
     items: g.items.map((it) => ({ ...it, label: t(it.label) })),
   }));
+
+  // Шаги интерактивного тура (T-H34): сайдбар → 7 групп → крошки → профиль
+  const tourSteps = [
+    { selector: '[data-testid="app-sidebar"]', key: 'sidebar' },
+    ...NAV_GROUPS.map((g) => ({
+      selector: `[data-testid="nav-group-${g.group}"]`,
+      key: g.group === 'thirdParty' ? 'thirdParty' : g.group,
+    })),
+    { selector: '[data-testid="topbar-breadcrumbs"]', key: 'breadcrumbs' },
+    { selector: '[data-testid="logout"]', key: 'profile' },
+  ].map(({ selector, key }) => ({
+    selector,
+    title: tTour(`steps.${key}.t`),
+    text: tTour(`steps.${key}.d`),
+  }));
+
   return (
     <AppShell
       groups={groups}
@@ -36,6 +56,21 @@ async function Shell({ children }: { children: ReactNode }) {
         signOut: t('signOut'),
         menu: t('menu'),
         home: t('home'),
+      }}
+      tour={{
+        steps: tourSteps,
+        labels: {
+          offerTitle: tTour('offerTitle'),
+          offerText: tTour('offerText'),
+          start: tTour('start'),
+          later: tTour('later'),
+          next: tTour('next'),
+          back: tTour('back'),
+          skip: tTour('skip'),
+          done: tTour('done'),
+          stepOf: tTour('stepOf', { i: '{i}', n: '{n}' }),
+          openGuide: tTour('openGuide'),
+        },
       }}
     >
       {children}

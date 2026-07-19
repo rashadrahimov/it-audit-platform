@@ -98,7 +98,8 @@
     "fieldPermissions": "Field-level permissions",
     "migration": "Import checklist",
     "aiSettings": "AI provider",
-    "home": "Home"
+    "home": "Home",
+    "guide": "Guide"
   },
   "engagements": {
     "title": "Engagements",
@@ -889,5 +890,107 @@
     "apiKeyHint": "Stored encrypted (AES-256-GCM); never shown again.",
     "save": "Save",
     "residencyNote": "Data (gaps, answers, policies) is sent to the chosen provider. For a bank, use a local model (Ollama/vLLM inside your network) or a cloud provider with a data-processing agreement + zero data retention."
+  },
+  "guide": {
+    "title": "Platform guide",
+    "intro": "What every section does and where to start. Take the interactive tour or browse the sections below.",
+    "startTour": "Start the tour",
+    "sections": {
+      "dashboard": "Findings and engagement summary: whole group and each subsidiary.",
+      "dashboards": "Chart builder (bar/line/pie) over audit data.",
+      "reports": "Generate audit reports as PDF, Word and Excel.",
+      "snapshots": "Point-in-time compliance snapshots and comparison.",
+      "trends": "Risk and finding metrics dynamics between snapshots.",
+      "kpi": "Control KPIs: targets, measurements, on-track status.",
+      "frameworks": "Standards library: ISO 27001, COBIT, NIST, CBAR + custom.",
+      "controls": "Controls library with per-subsidiary adaptation.",
+      "policies": "Policies: versions, publishing, employee acknowledgement.",
+      "commitments": "Contractual commitments and their SLA tracking.",
+      "universe": "Audit universe: auditable entities and coverage.",
+      "engagements": "Audits: checklists, respondent answers, findings, workflow.",
+      "audit-programs": "Reusable audit program templates.",
+      "working-papers": "Working papers: review, sign-off, annotations.",
+      "plans": "Annual audit plans per subsidiary.",
+      "allocations": "Auditor allocation and workload.",
+      "time": "Time tracking per engagement.",
+      "satisfaction": "Post-audit satisfaction surveys.",
+      "risks": "Risk register with likelihood and impact scoring.",
+      "risk-heatmap": "5×5 risk heat map.",
+      "privacy": "GDPR: processing register (ROPA) and DPIA assessments.",
+      "iam": "System accounts: owners, MFA, privileges.",
+      "access-reviews": "Access review campaigns with keep/revoke decisions.",
+      "devices": "Device compliance: encryption, antivirus, screen lock.",
+      "security-alerts": "Security alerts and their triage.",
+      "vulnerabilities": "Vulnerabilities: sources, SLA, remediation status.",
+      "code-changes": "Code and configuration changes (change management).",
+      "vendors": "Vendor risk: questionnaires, assessments, statuses.",
+      "trust-center": "Public compliance storefront for customers.",
+      "questionnaires": "Inbound security questionnaires and answers.",
+      "knowledge-base": "Q&A knowledge base for answer reuse.",
+      "personnel": "Personnel: onboarding and offboarding checklists.",
+      "connectors": "Integration connectors for automated tests.",
+      "config": "Tenant reference data and settings with change history.",
+      "field-permissions": "Field-level permissions for roles.",
+      "api-keys": "API keys for programmatic access.",
+      "notifications": "Notification rules and log.",
+      "migration": "Import controls from client Excel checklists.",
+      "ai-settings": "Choose the AI provider: Claude, GPT, Kimi or a local model.",
+      "glossary": "GRC glossary.",
+      "guide": "This guide: all sections explained plus the tour."
+    }
+  },
+  "tour": {
+    "offerTitle": "First time here?",
+    "offerText": "Take a short tour of the platform — 2 minutes.",
+    "start": "Start tour",
+    "later": "Later",
+    "next": "Next",
+    "back": "Back",
+    "skip": "Skip",
+    "done": "Done",
+    "stepOf": "{i} of {n}",
+    "openGuide": "Open the guide",
+    "steps": {
+      "sidebar": {
+        "t": "Navigation",
+        "d": "The whole platform lives in the left panel. Groups collapse — the one you are in stays open."
+      },
+      "overview": {
+        "t": "Overview",
+        "d": "Dashboards, reports, snapshots, trends and KPIs — the whole-group picture."
+      },
+      "compliance": {
+        "t": "Compliance & controls",
+        "d": "Frameworks (ISO/COBIT/NIST), the controls library, policies and commitments."
+      },
+      "engagements": {
+        "t": "Engagements",
+        "d": "The heart of the platform: audits with checklists, working papers, plans and time tracking."
+      },
+      "risk": {
+        "t": "Risk & privacy",
+        "d": "Risk register, heat map and GDPR (ROPA/DPIA)."
+      },
+      "security": {
+        "t": "Security & access",
+        "d": "Accounts, access reviews, devices, vulnerabilities and changes."
+      },
+      "thirdParty": {
+        "t": "Third parties",
+        "d": "Vendor risk, Trust Center, questionnaires and the knowledge base."
+      },
+      "org": {
+        "t": "Organization & settings",
+        "d": "People, integrations, permissions, Excel import and the AI provider."
+      },
+      "breadcrumbs": {
+        "t": "Breadcrumbs",
+        "d": "Always know where you are. The home icon returns to the main screen."
+      },
+      "profile": {
+        "t": "Profile",
+        "d": "Your account and the sign-out button live at the bottom of the panel."
+      }
+    }
   }
 }
