@@ -1414,6 +1414,33 @@ export const workingPaper = pgTable(
   (table) => [index('working_paper_engagement_idx').on(table.engagementId)],
 );
 
+/**
+ * Аннотации рабочего документа (EP-ANNOT buildable-срез, T-H19, WP-06/WP-09): комментарии,
+ * tick-marks и exception'ы как ДАННЫЕ с текстовым якорем (section/paragraph). In-app
+ * Office/PDF-рендерер, позиционирующий их визуально, — остаётся [!] (ADR-0017).
+ */
+export const wpAnnotation = pgTable(
+  'wp_annotation',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    workingPaperId: uuid('working_paper_id')
+      .notNull()
+      .references(() => workingPaper.id, { onDelete: 'cascade' }),
+    /** comment | tick_mark | exception (WP-09). */
+    kind: text('kind').notNull().default('comment'),
+    /** Текстовый якорь: секция/абзац/цитата, к чему относится (не пиксельная позиция). */
+    anchor: text('anchor'),
+    body: text('body').notNull(),
+    authorMembershipId: uuid('author_membership_id').references(() => membership.id),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('wp_annotation_wp_idx').on(table.workingPaperId)],
+);
+
 /** Атрибутируемая подпись WP (T-092, WP-07): кто и в какой роли подписал. */
 export const signOff = pgTable(
   'sign_off',

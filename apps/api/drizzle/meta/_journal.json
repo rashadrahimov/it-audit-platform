@@ -456,6 +456,13 @@
       "when": 1784440315869,
       "tag": "0064_field-permission",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1784448786032,
+      "tag": "0065_wp-annotation",
+      "breakpoints": true
     }
   ]
 }

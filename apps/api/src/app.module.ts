@@ -3,6 +3,7 @@ import { AccessRequestsModule } from './access-requests/access-requests.module';
 import { AccessReviewsModule } from './access-reviews/access-reviews.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { AllocationsModule } from './allocations/allocations.module';
+import { AnnotationsModule } from './annotations/annotations.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { ApiV1Module } from './api-v1/api-v1.module';
 import { AssetsModule } from './assets/assets.module';
@@ -71,6 +72,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     AccessReviewsModule,
     AccountsModule,
     AllocationsModule,
+    AnnotationsModule,
     ApiKeysModule,
     ApiV1Module,
     AssetsModule,
