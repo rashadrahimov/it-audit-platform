@@ -28,6 +28,7 @@ import { InfraHealthController } from './infra-health.controller';
 import { InfraHealthService } from './infra-health.service';
 import { EmailModule } from './email/email.module';
 import { EngagementsModule } from './engagements/engagements.module';
+import { FieldPermissionsModule } from './field-permissions/field-permissions.module';
 import { FilesModule } from './files/files.module';
 import { FindingsModule } from './findings/findings.module';
 import { FrameworksModule } from './frameworks/frameworks.module';
@@ -91,6 +92,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     DocumentsModule,
     EmailModule,
     EngagementsModule,
+    FieldPermissionsModule,
     FilesModule,
     FindingsModule,
     FrameworksModule,
