@@ -73,26 +73,21 @@ export class RbacService {
 
   /**
    * Field-level уровни роли пользователя для сущности (SEC-04, ADR-0020).
-   * Пусто = нет оверлея (поля наследуют entity-level право).
+   * Пусто = нет оверлея (поля наследуют entity-level право). tenantId — из guard'а.
    */
-  async fieldLevels(userId: string, tenantSlug: string, entityType: string): Promise<FieldLevels> {
-    const [foundTenant] = await this.dbService.db
-      .select({ id: tenant.id })
-      .from(tenant)
-      .where(eq(tenant.slug, tenantSlug));
-    if (!foundTenant) return {};
+  async fieldLevels(userId: string, tenantId: string, entityType: string): Promise<FieldLevels> {
     const [member] = await this.dbService.db
       .select({ roleId: membership.roleId })
       .from(membership)
       .where(
         and(
           eq(membership.userId, userId),
-          eq(membership.tenantId, foundTenant.id),
+          eq(membership.tenantId, tenantId),
           eq(membership.status, 'active'),
         ),
       );
     if (!member) return {};
-    const rows = await this.dbService.withTenant(foundTenant.id, (tx) =>
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({ field: fieldPermission.field, level: fieldPermission.level })
         .from(fieldPermission)

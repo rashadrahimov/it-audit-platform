@@ -147,6 +147,6 @@ export class FindingsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('locale') localeQuery?: string,
   ) {
-    return this.findingsService.detail(req.tenantId, id, parseLocale(localeQuery));
+    return this.findingsService.detail(req.tenantId, req.user.sub, id, parseLocale(localeQuery));
   }
 }

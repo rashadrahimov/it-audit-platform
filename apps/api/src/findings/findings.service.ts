@@ -11,6 +11,8 @@ import { alias } from 'drizzle-orm/pg-core';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { EmailService } from '../email/email.service';
+import { RbacService } from '../rbac/rbac.service';
+import { maskFields } from '../rbac/field-policy';
 import {
   checklistItem,
   control,
@@ -63,6 +65,7 @@ export class FindingsService {
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
     private readonly emailService: EmailService,
+    private readonly rbacService: RbacService,
   ) {}
 
   async create(actor: Actor, input: CreateFindingInput) {
@@ -330,7 +333,7 @@ export class FindingsService {
     }));
   }
 
-  async detail(tenantId: string, id: string, locale: Locale) {
+  async detail(tenantId: string, userId: string, id: string, locale: Locale) {
     const [row] = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select()
@@ -338,7 +341,7 @@ export class FindingsService {
         .where(and(eq(finding.id, id), isNull(finding.deletedAt))),
     );
     if (!row) throw new NotFoundException(`Finding ${id} не найден`);
-    return {
+    const dto = {
       id: row.id,
       title: resolveLocalized(row.titleI18n, locale),
       description: row.descriptionI18n ? resolveLocalized(row.descriptionI18n, locale) : null,
@@ -360,5 +363,8 @@ export class FindingsService {
       retestResult: row.retestResult,
       resolutionDate: row.resolutionDate?.toISOString() ?? null,
     };
+    // SEC-04 (ADR-0020): field-level маскирование по роли (эталон: recommendation)
+    const levels = await this.rbacService.fieldLevels(userId, tenantId, 'finding');
+    return maskFields(dto, levels);
   }
 }

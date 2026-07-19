@@ -26,6 +26,7 @@ import {
   controlDomain,
   controlMapping,
   department,
+  fieldPermission,
   framework,
   frameworkRequirement,
   license,
@@ -126,6 +127,7 @@ async function seedPostgres(): Promise<void> {
     });
     console.log('✓ Роль «Демо-аудиторы» с матрицей (edit: engagement/finding, view: остальное)');
     await seedPresetRoles(catalog);
+    await seedDemoFieldPermissions();
     await seedGlobalFrameworks();
     await seedGlobalControls();
     await seedAuditTypes();
@@ -487,6 +489,45 @@ const GLOBAL_FRAMEWORKS = [
     ],
   },
 ];
+
+/**
+ * Демо field-level права (SEC-04, T-H04, ADR-0020): роль Collaborator не видит
+ * recommendation у finding. Под owner (глобальная роль tenant_id NULL). Идемпотентно.
+ */
+async function seedDemoFieldPermissions(): Promise<void> {
+  const owner = new Client({
+    connectionString: env.databaseUrlOwner,
+    connectionTimeoutMillis: 5000,
+  });
+  try {
+    await owner.connect();
+    const db = drizzle(owner);
+    const roles = await db.select().from(role).where(eq(role.isSystem, true));
+    const collab = roles.find((r) => r.nameI18n.en === 'Collaborator');
+    if (!collab) return;
+    const [existing] = await db
+      .select()
+      .from(fieldPermission)
+      .where(
+        and(
+          eq(fieldPermission.roleId, collab.id),
+          eq(fieldPermission.entityType, 'finding'),
+          eq(fieldPermission.field, 'recommendation'),
+        ),
+      );
+    if (!existing) {
+      await db.insert(fieldPermission).values({
+        roleId: collab.id,
+        entityType: 'finding',
+        field: 'recommendation',
+        level: 'hidden',
+      });
+    }
+    console.log('✓ Демо field-level: Collaborator скрыт finding.recommendation (idempotent)');
+  } finally {
+    await owner.end().catch(() => {});
+  }
+}
 
 /** Глобальная библиотека (ADR-0016) — под owner: RLS-политика записи не пускает app к tenant_id NULL. */
 export async function seedGlobalFrameworks(): Promise<void> {
