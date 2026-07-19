@@ -721,7 +721,14 @@
       "info": "Info",
       "warning": "Warning",
       "action": "Action"
-    }
+    },
+    "settingsTitle": "Notification settings",
+    "settingsEmail": "Email notifications",
+    "settingsSchedule": "Delivery schedule",
+    "schedAnytime": "Anytime",
+    "schedWorkHours": "Work hours (9–18)",
+    "settingsTimezone": "Timezone",
+    "settingsSave": "Save"
   },
   "time": {
     "title": "Time tracking",

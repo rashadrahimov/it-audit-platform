@@ -721,7 +721,14 @@
       "info": "Məlumat",
       "warning": "Xəbərdarlıq",
       "action": "Fəaliyyət"
-    }
+    },
+    "settingsTitle": "Bildiriş parametrləri",
+    "settingsEmail": "Email bildirişləri",
+    "settingsSchedule": "Çatdırılma cədvəli",
+    "schedAnytime": "İstənilən vaxt",
+    "schedWorkHours": "İş saatları (9–18)",
+    "settingsTimezone": "Saat qurşağı",
+    "settingsSave": "Yadda saxla"
   },
   "time": {
     "title": "Vaxt uçotu",

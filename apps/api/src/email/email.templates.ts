@@ -83,6 +83,40 @@ export const emailTemplates = {
       text: `Приближается дедлайн по finding ${findingTitle}: ${dueDate}.`,
     }),
   },
+  'test-failing': {
+    en: ({ testTitle }) => ({
+      subject: `Test failing: ${testTitle}`,
+      html: wrap(`<p>The test <b>${testTitle}</b> you own is failing. Please review it.</p>`),
+      text: `The test ${testTitle} is failing.`,
+    }),
+    az: ({ testTitle }) => ({
+      subject: `Test uğursuzdur: ${testTitle}`,
+      html: wrap(`<p>Sahibi olduğunuz <b>${testTitle}</b> testi uğursuzdur. Nəzərdən keçirin.</p>`),
+      text: `${testTitle} testi uğursuzdur.`,
+    }),
+    ru: ({ testTitle }) => ({
+      subject: `Тест провален: ${testTitle}`,
+      html: wrap(`<p>Ваш тест <b>${testTitle}</b> провален. Посмотрите, что случилось.</p>`),
+      text: `Тест ${testTitle} провален.`,
+    }),
+  },
+  'policy-review-request': {
+    en: ({ policyTitle }) => ({
+      subject: `Approval requested: ${policyTitle}`,
+      html: wrap(`<p>The policy <b>${policyTitle}</b> awaits your approval.</p>`),
+      text: `The policy ${policyTitle} awaits your approval.`,
+    }),
+    az: ({ policyTitle }) => ({
+      subject: `Təsdiq tələb olunur: ${policyTitle}`,
+      html: wrap(`<p><b>${policyTitle}</b> siyasəti təsdiqinizi gözləyir.</p>`),
+      text: `${policyTitle} siyasəti təsdiqinizi gözləyir.`,
+    }),
+    ru: ({ policyTitle }) => ({
+      subject: `Требуется согласование: ${policyTitle}`,
+      html: wrap(`<p>Политика <b>${policyTitle}</b> ждёт вашего решения.</p>`),
+      text: `Политика ${policyTitle} ждёт вашего решения.`,
+    }),
+  },
   'policy-renewal': {
     en: ({ policyTitle, renewBy }) => ({
       subject: `Policy renewal due: ${policyTitle}`,

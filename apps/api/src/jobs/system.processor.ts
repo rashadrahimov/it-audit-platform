@@ -3,6 +3,7 @@ import { Job } from 'bullmq';
 import { env } from '../env';
 import { UsersService } from '../users/users.service';
 import { AutoTestService } from '../tests/auto-test.service';
+import { EmailService } from '../email/email.service';
 import { FindingRemindersService } from './finding-reminders.service';
 import { PolicyRenewalRemindersService } from './policy-renewal-reminders.service';
 import { JobsService } from './jobs.service';
@@ -12,6 +13,7 @@ import {
   JOB_DEACTIVATE_INACTIVE,
   JOB_DEMO_DELAYED,
   JOB_FINDING_REMINDERS,
+  JOB_NOTIFICATION_EMAIL,
   JOB_POLICY_RENEWAL_REMINDERS,
   JOB_HEARTBEAT,
   JOB_SLA_RECALC,
@@ -28,6 +30,7 @@ export class SystemProcessor extends WorkerHost {
     private readonly findingRemindersService: FindingRemindersService,
     private readonly policyRenewalRemindersService: PolicyRenewalRemindersService,
     private readonly autoTestService: AutoTestService,
+    private readonly emailService: EmailService,
   ) {
     super();
   }
@@ -50,6 +53,16 @@ export class SystemProcessor extends WorkerHost {
       case JOB_FINDING_REMINDERS: {
         const result = await this.findingRemindersService.send();
         return `напоминаний отправлено: ${result.sent}`;
+      }
+      case JOB_NOTIFICATION_EMAIL: {
+        const d = job.data as {
+          template: import('../email/email.templates').EmailTemplateId;
+          locale: 'en' | 'az' | 'ru';
+          to: string;
+          params: Record<string, string>;
+        };
+        await this.emailService.sendTemplate(d.template, d.locale, d.to, d.params);
+        return `отложенное письмо отправлено: ${d.template}`;
       }
       case JOB_POLICY_RENEWAL_REMINDERS: {
         const result = await this.policyRenewalRemindersService.send();

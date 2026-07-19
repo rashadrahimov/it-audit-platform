@@ -8,6 +8,7 @@ import { and, asc, desc, eq, inArray, isNull, max, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
+import { NotificationDispatchService } from '../notifications/notification-dispatch.service';
 import { DbService } from '../db/db.service';
 import { document, framework, membership, policy, policyVersion, user } from '../db/schema';
 
@@ -31,6 +32,7 @@ export class PoliciesService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly notificationDispatch: NotificationDispatchService,
   ) {}
 
   async create(actor: Actor, input: CreatePolicyInput) {
@@ -165,7 +167,7 @@ export class PoliciesService {
             .where(eq(policyVersion.id, latest[0].id));
         }
       }
-      return { before: row.status, after: nextStatus };
+      return { before: row.status, after: nextStatus, row };
     });
     await this.auditLogService.record({
       tenantId: actor.tenantId,
@@ -177,7 +179,20 @@ export class PoliciesService {
       before: { status: result.before },
       after: { status: result.after, action },
     });
-    return result;
+    // T-V19: политика ушла на согласование → уведомить approver'а
+    if (action === 'submit' && result.row.approverMembershipId) {
+      await this.notificationDispatch.notify({
+        tenantId: actor.tenantId,
+        recipientMembershipId: result.row.approverMembershipId,
+        type: 'action',
+        title: `Approval requested: ${result.row.titleI18n.en}`,
+        email: {
+          template: 'policy-review-request',
+          params: { policyTitle: result.row.titleI18n.en },
+        },
+      });
+    }
+    return { before: result.before, after: result.after };
   }
 
   private nextStatus(current: string, action: string): string | null {

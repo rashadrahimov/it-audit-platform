@@ -721,7 +721,14 @@
       "info": "Инфо",
       "warning": "Внимание",
       "action": "Действие"
-    }
+    },
+    "settingsTitle": "Настройки уведомлений",
+    "settingsEmail": "Email-уведомления",
+    "settingsSchedule": "Расписание доставки",
+    "schedAnytime": "В любое время",
+    "schedWorkHours": "Рабочие часы (9–18)",
+    "settingsTimezone": "Таймзона",
+    "settingsSave": "Сохранить"
   },
   "time": {
     "title": "Учёт времени",

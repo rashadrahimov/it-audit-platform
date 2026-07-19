@@ -33,3 +33,5 @@ export const JOB_AUTO_TEST_RUN = 'auto-test-run';
 
 /** Автотесты через коннекторы (T-050, continuous compliance): раз в час. */
 export const AUTO_TEST_RUN_EVERY_MS = 60 * 60 * 1000;
+
+export const JOB_NOTIFICATION_EMAIL = 'notification-email';

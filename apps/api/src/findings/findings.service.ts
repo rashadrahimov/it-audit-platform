@@ -14,6 +14,7 @@ import {
 } from '@it-audit/shared';
 import { alias } from 'drizzle-orm/pg-core';
 import { AuditLogService } from '../audit/audit-log.service';
+import { NotificationDispatchService } from '../notifications/notification-dispatch.service';
 import { DbService } from '../db/db.service';
 import { EmailService } from '../email/email.service';
 import { RbacService } from '../rbac/rbac.service';
@@ -73,6 +74,7 @@ export class FindingsService {
     private readonly auditLogService: AuditLogService,
     private readonly emailService: EmailService,
     private readonly rbacService: RbacService,
+    private readonly notificationDispatch: NotificationDispatchService,
   ) {}
 
   /**
@@ -203,6 +205,13 @@ export class FindingsService {
       .innerJoin(user, eq(membership.userId, user.id))
       .where(and(eq(membership.id, ownerMembershipId), eq(membership.tenantId, actor.tenantId)));
     if (!owner) throw new BadRequestException('ownerMembershipId: membership не найден в тенанте');
+    // T-V19: in-app уведомление владельцу (email ниже шлётся напрямую, как в T-039)
+    await this.notificationDispatch.notify({
+      tenantId: actor.tenantId,
+      recipientMembershipId: ownerMembershipId,
+      type: 'action',
+      title: `Finding assigned: ${result.row.titleI18n.en}`,
+    });
     const parsedLocale = localeSchema.safeParse(owner.locale);
     await this.emailService.sendTemplate(
       'finding-assigned',

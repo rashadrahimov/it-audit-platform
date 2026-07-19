@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { and, desc, eq, isNull, ne } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
+import { NotificationDispatchService } from '../notifications/notification-dispatch.service';
 import { DbService } from '../db/db.service';
 import { control, document, membership, test, testResult, user } from '../db/schema';
 
@@ -44,6 +45,7 @@ export class TestsService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly notificationDispatch: NotificationDispatchService,
   ) {}
 
   async create(actor: Actor, input: CreateTestInput) {
@@ -127,7 +129,7 @@ export class TestsService {
         .set({ status: STATUS_BY_OUTCOME[input.outcome] })
         .where(eq(test.id, testId))
         .returning();
-      return { result, before: row.status, after: updated?.status };
+      return { result, before: row.status, after: updated?.status, row };
     });
     await this.auditLogService.record({
       tenantId: actor.tenantId,
@@ -139,6 +141,16 @@ export class TestsService {
       before: { status: saved.before },
       after: { status: saved.after, outcome: input.outcome },
     });
+    // T-V19: провал теста → уведомление owner'у (in-app + email по расписанию тенанта)
+    if (input.outcome === 'fail' && saved.row.ownerMembershipId) {
+      await this.notificationDispatch.notify({
+        tenantId: actor.tenantId,
+        recipientMembershipId: saved.row.ownerMembershipId,
+        type: 'warning',
+        title: `Test failing: ${saved.row.titleI18n.en}`,
+        email: { template: 'test-failing', params: { testTitle: saved.row.titleI18n.en } },
+      });
+    }
     return saved.result;
   }
 
