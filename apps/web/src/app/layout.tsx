@@ -49,10 +49,14 @@ async function Shell({ children }: { children: ReactNode }) {
   }));
 
   // Контекстный справочник (T-H35): slug → {title, summary, steps} по каждому разделу
-  const helpEntries: Record<string, { title: string; summary: string; steps: string[] }> = {
+  const helpEntries: Record<
+    string,
+    { title: string; summary: string; detail: string; steps: string[] }
+  > = {
     account: {
       title: t('home'),
       summary: tGuide('sections.account'),
+      detail: tGuide('long.account'),
       steps: tGuide.raw('details.account') as string[],
     },
   };
@@ -62,6 +66,7 @@ async function Shell({ children }: { children: ReactNode }) {
       helpEntries[slug] = {
         title: t(it.label),
         summary: tGuide(`sections.${slug}`),
+        detail: tGuide(`long.${slug}`),
         steps: tGuide.raw(`details.${slug}`) as string[],
       };
     }

@@ -107,6 +107,9 @@ export default async function GuidePage() {
                       </svg>
                       {tHelp('howTo')}
                     </summary>
+                    <p className="mt-2 text-xs leading-relaxed text-secondary">
+                      {t(`long.${slug}`)}
+                    </p>
                     <ol className="mt-2 flex flex-col gap-1.5">
                       {steps.map((s, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-foreground">

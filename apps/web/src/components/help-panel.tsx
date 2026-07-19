@@ -5,6 +5,7 @@ import Link from 'next/link';
 export interface HelpEntry {
   title: string;
   summary: string;
+  detail: string;
   steps: string[];
 }
 export interface HelpLabels {
@@ -75,7 +76,8 @@ export function HelpPanel({
         <div className="flex flex-col gap-2">
           <p className="text-[11px] font-medium text-secondary">{labels.current}</p>
           <h2 className="text-xl font-bold tracking-tight text-foreground">{entry.title}</h2>
-          <p className="text-sm leading-relaxed text-secondary">{entry.summary}</p>
+          <p className="text-sm font-medium text-foreground">{entry.summary}</p>
+          <p className="text-sm leading-relaxed text-secondary">{entry.detail}</p>
         </div>
 
         {/* как пользоваться */}
