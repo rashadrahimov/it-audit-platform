@@ -78,7 +78,8 @@
       "org": "Organization & settings"
     },
     "trends": "Trends",
-    "allocations": "Resource allocations"
+    "allocations": "Resource allocations",
+    "fieldPermissions": "Field-level permissions"
   },
   "engagements": {
     "title": "Engagements",
@@ -798,5 +799,24 @@
     "empty": "No team members yet",
     "h": "h",
     "overallocated": "overallocated"
+  },
+  "fieldPermissions": {
+    "title": "Field-level permissions",
+    "toAccount": "To account",
+    "intro": "Hide or restrict individual fields per tenant role (overlay on the permission matrix). Global preset roles are managed via seed.",
+    "noRoles": "No tenant roles yet",
+    "role": "Role",
+    "show": "Show",
+    "entity": "Entity",
+    "field": "Field",
+    "level": "Level",
+    "add": "Add rule",
+    "empty": "No field rules for this role",
+    "remove": "Remove",
+    "levels": {
+      "hidden": "Hidden",
+      "view": "View only",
+      "edit": "Editable"
+    }
   }
 }

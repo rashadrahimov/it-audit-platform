@@ -84,6 +84,7 @@ const NAV_GROUPS: Array<{
       { href: '/personnel', testid: 'go-personnel', label: 'personnel' },
       { href: '/connectors', testid: 'go-connectors', label: 'connectors' },
       { href: '/config', testid: 'go-config', label: 'config' },
+      { href: '/field-permissions', testid: 'go-field-permissions', label: 'fieldPermissions' },
       { href: '/api-keys', testid: 'go-api-keys', label: 'apiKeys' },
       { href: '/notifications', testid: 'go-notifications', label: 'notifications' },
       { href: '/glossary', testid: 'go-glossary', label: 'glossary' },

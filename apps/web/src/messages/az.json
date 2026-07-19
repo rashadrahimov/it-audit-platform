@@ -78,7 +78,8 @@
       "org": "Təşkilat və tənzimləmələr"
     },
     "trends": "Trendlər",
-    "allocations": "Resurs bölgüsü"
+    "allocations": "Resurs bölgüsü",
+    "fieldPermissions": "Sahə səviyyəli hüquqlar"
   },
   "engagements": {
     "title": "Auditlər",
@@ -798,5 +799,24 @@
     "empty": "Hələ komanda üzvü yoxdur",
     "h": "saat",
     "overallocated": "həddindən artıq yük"
+  },
+  "fieldPermissions": {
+    "title": "Sahə səviyyəli hüquqlar",
+    "toAccount": "Hesaba",
+    "intro": "Tenant rolu üçün ayrı sahələri gizlədin və ya məhdudlaşdırın (hüquq matrisi üzərində örtük). Qlobal preset rollar seed vasitəsilə idarə olunur.",
+    "noRoles": "Tenantın hələ öz rolu yoxdur",
+    "role": "Rol",
+    "show": "Göstər",
+    "entity": "Varlıq",
+    "field": "Sahə",
+    "level": "Səviyyə",
+    "add": "Qayda əlavə et",
+    "empty": "Bu rol üçün sahə qaydası yoxdur",
+    "remove": "Sil",
+    "levels": {
+      "hidden": "Gizli",
+      "view": "Yalnız oxu",
+      "edit": "Redaktə edilə bilər"
+    }
   }
 }
