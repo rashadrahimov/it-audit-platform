@@ -20,6 +20,7 @@ import {
 import type { DemoJobEnqueued, DemoJobStatus, HeartbeatStatus } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FindingRemindersService } from './finding-reminders.service';
+import { PolicyRenewalRemindersService } from './policy-renewal-reminders.service';
 import { JobsService } from './jobs.service';
 import { SlaService, type SlaRecalcResult } from './sla.service';
 
@@ -29,6 +30,7 @@ export class JobsController {
     private readonly jobsService: JobsService,
     private readonly slaService: SlaService,
     private readonly findingRemindersService: FindingRemindersService,
+    private readonly policyRenewalRemindersService: PolicyRenewalRemindersService,
   ) {}
 
   @Post('finding-reminders')
@@ -40,6 +42,17 @@ export class JobsController {
   @ApiCreatedResponse({ description: '{sent} — сколько писем отправлено' })
   findingReminders(): Promise<{ sent: number }> {
     return this.findingRemindersService.send();
+  }
+
+  @Post('policy-renewal-reminders')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Напоминания о продлении политик вручную (T-V04); планово — раз в сутки',
+  })
+  @ApiCreatedResponse({ description: '{sent}' })
+  policyRenewalReminders(): Promise<{ sent: number }> {
+    return this.policyRenewalRemindersService.send();
   }
 
   @Post('sla-recalc')

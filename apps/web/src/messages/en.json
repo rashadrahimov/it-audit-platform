@@ -280,6 +280,31 @@
       "in_review": "In review",
       "approved": "Approved",
       "archived": "Archived"
+    },
+    "approver": "Approver",
+    "expired": "Expired",
+    "back": "Back to policies",
+    "frameworks": "Frameworks",
+    "workflow": "Workflow",
+    "wfSubmit": "Submit for review",
+    "wfApprove": "Approve",
+    "wfReject": "Reject",
+    "wfArchive": "Archive",
+    "versions": "Versions",
+    "versionsEmpty": "No versions yet",
+    "changelog": "Changelog",
+    "document": "Document",
+    "download": "Download",
+    "approvedAt": "Approved",
+    "addVersion": "Add version",
+    "attestations": "Attestation",
+    "attestationsEmpty": "No attestation campaign yet",
+    "campaignPick": "Send to",
+    "campaignStart": "Start campaign",
+    "attestSelf": "Attest",
+    "attStatuses": {
+      "pending": "Pending",
+      "attested": "Attested"
     }
   },
   "universe": {

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import Link from 'next/link';
 import { EmptyState } from '@/components/empty-state';
 import { FilterBar } from '@/components/filter-bar';
 import { filterQuery } from '@/lib/filters';
@@ -13,7 +14,9 @@ interface Policy {
   title: string;
   status: string;
   owner: string | null;
+  approver: string | null;
   renewBy: string | null;
+  expired: boolean;
 }
 
 const STATUS_CLASS: Record<string, string> = {
@@ -74,6 +77,7 @@ export default async function PoliciesPage({
             <tr className="border-b border-border text-secondary">
               <th className="px-4 py-3 font-medium">{t('name')}</th>
               <th className="px-4 py-3 font-medium">{t('owner')}</th>
+              <th className="px-4 py-3 font-medium">{t('approver')}</th>
               <th className="px-4 py-3 font-medium">{t('renewBy')}</th>
               <th className="px-4 py-3 font-medium">{t('status')}</th>
             </tr>
@@ -81,10 +85,23 @@ export default async function PoliciesPage({
           <tbody>
             {policies.map((p) => (
               <tr key={p.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3 font-medium text-foreground">{p.title}</td>
+                <td className="px-4 py-3 font-medium">
+                  <Link
+                    href={`/policies/${p.id}`}
+                    className="text-accent underline-offset-2 transition-colors duration-150 hover:underline"
+                  >
+                    {p.title}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-secondary">{p.owner ?? '—'}</td>
+                <td className="px-4 py-3 text-secondary">{p.approver ?? '—'}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-secondary">
                   {p.renewBy ? dateFmt.format(new Date(p.renewBy)) : '—'}
+                  {p.expired && (
+                    <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                      {t('expired')}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <span
@@ -100,7 +117,7 @@ export default async function PoliciesPage({
             ))}
             {policies.length === 0 && (
               <tr>
-                <td colSpan={4} className="p-0">
+                <td colSpan={5} className="p-0">
                   <EmptyState size="sm" text={t('empty')} />
                 </td>
               </tr>

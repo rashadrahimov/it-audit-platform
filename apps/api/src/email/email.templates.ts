@@ -83,6 +83,29 @@ export const emailTemplates = {
       text: `Приближается дедлайн по finding ${findingTitle}: ${dueDate}.`,
     }),
   },
+  'policy-renewal': {
+    en: ({ policyTitle, renewBy }) => ({
+      subject: `Policy renewal due: ${policyTitle}`,
+      html: wrap(
+        `<p>The policy <b>${policyTitle}</b> is due for renewal by ${renewBy}. Please review and update it.</p>`,
+      ),
+      text: `The policy ${policyTitle} is due for renewal by ${renewBy}.`,
+    }),
+    az: ({ policyTitle, renewBy }) => ({
+      subject: `Siyasətin yenilənmə vaxtıdır: ${policyTitle}`,
+      html: wrap(
+        `<p><b>${policyTitle}</b> siyasətinin yenilənmə tarixi: ${renewBy}. Zəhmət olmasa nəzərdən keçirin.</p>`,
+      ),
+      text: `${policyTitle} siyasətinin yenilənmə tarixi: ${renewBy}.`,
+    }),
+    ru: ({ policyTitle, renewBy }) => ({
+      subject: `Пора продлить политику: ${policyTitle}`,
+      html: wrap(
+        `<p>Политике <b>${policyTitle}</b> требуется продление к ${renewBy}. Пожалуйста, пересмотрите её.</p>`,
+      ),
+      text: `Политике ${policyTitle} требуется продление к ${renewBy}.`,
+    }),
+  },
   'policy-attestation': {
     en: ({ policyTitle }) => ({
       subject: `Please attest: ${policyTitle}`,

@@ -676,6 +676,8 @@ export const policy = pgTable(
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
     approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
     renewBy: timestamp('renew_by', { withTimezone: true }),
+    /** T-V04: дедуп напоминания о продлении (одно письмо на срок, как finding.reminder_sent_at). */
+    renewalReminderSentAt: timestamp('renewal_reminder_sent_at', { withTimezone: true }),
     status: text('status').notNull().default('draft'),
     frameworkIds: jsonb('framework_ids').$type<string[]>().notNull().default([]),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),

@@ -4,11 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, max, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, max, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { document, membership, policy, policyVersion, user } from '../db/schema';
+import { document, framework, membership, policy, policyVersion, user } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -193,12 +194,13 @@ export class PoliciesService {
     locale: Locale,
     filters?: { status?: string; approverMembershipId?: string },
   ) {
-    const ownerUser = user;
     const conds = [isNull(policy.deletedAt)];
     if (filters?.status) conds.push(eq(policy.status, filters.status));
     if (filters?.approverMembershipId) {
       conds.push(eq(policy.approverMembershipId, filters.approverMembershipId));
     }
+    const approverMembership = alias(membership, 'approver_membership');
+    const approverUser = alias(user, 'approver_user');
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
@@ -206,20 +208,27 @@ export class PoliciesService {
           titleI18n: policy.titleI18n,
           status: policy.status,
           renewBy: policy.renewBy,
-          owner: ownerUser.fullName,
+          owner: user.fullName,
+          approver: approverUser.fullName,
         })
         .from(policy)
         .leftJoin(membership, eq(policy.ownerMembershipId, membership.id))
-        .leftJoin(ownerUser, eq(membership.userId, ownerUser.id))
+        .leftJoin(user, eq(membership.userId, user.id))
+        .leftJoin(approverMembership, eq(policy.approverMembershipId, approverMembership.id))
+        .leftJoin(approverUser, eq(approverMembership.userId, approverUser.id))
         .where(and(...conds))
         .orderBy(desc(policy.createdAt)),
     );
+    const now = Date.now();
     return rows.map((row) => ({
       id: row.id,
       title: resolveLocalized(row.titleI18n, locale),
       status: row.status,
       renewBy: row.renewBy?.toISOString() ?? null,
       owner: row.owner,
+      approver: row.approver,
+      // T-V04: вычисляемая просрочка продления (архивные не считаем)
+      expired: row.renewBy !== null && row.status !== 'archived' && row.renewBy.getTime() < now,
     }));
   }
 
@@ -235,16 +244,45 @@ export class PoliciesService {
         .from(policyVersion)
         .where(eq(policyVersion.policyId, id))
         .orderBy(asc(policyVersion.version));
-      return { row, versions };
+      // T-V04: имена сторон + резолв фреймворков в названия
+      const names = new Map<string, string>();
+      for (const mid of [row.ownerMembershipId, row.approverMembershipId]) {
+        if (!mid) continue;
+        const [m] = await tx
+          .select({ fullName: user.fullName })
+          .from(membership)
+          .innerJoin(user, eq(membership.userId, user.id))
+          .where(eq(membership.id, mid));
+        if (m) names.set(mid, m.fullName);
+      }
+      const frameworks =
+        row.frameworkIds.length > 0
+          ? await tx
+              .select({ id: framework.id, nameI18n: framework.nameI18n })
+              .from(framework)
+              .where(inArray(framework.id, row.frameworkIds))
+          : [];
+      return { row, versions, names, frameworks };
     });
     return {
       id: data.row.id,
       title: resolveLocalized(data.row.titleI18n, locale),
       status: data.row.status,
       renewBy: data.row.renewBy?.toISOString() ?? null,
+      expired:
+        data.row.renewBy !== null &&
+        data.row.status !== 'archived' &&
+        data.row.renewBy.getTime() < Date.now(),
       ownerMembershipId: data.row.ownerMembershipId,
       approverMembershipId: data.row.approverMembershipId,
+      owner: data.row.ownerMembershipId
+        ? (data.names.get(data.row.ownerMembershipId) ?? null)
+        : null,
+      approver: data.row.approverMembershipId
+        ? (data.names.get(data.row.approverMembershipId) ?? null)
+        : null,
       frameworkIds: data.row.frameworkIds,
+      frameworks: data.frameworks.map((f) => resolveLocalized(f.nameI18n, locale)),
       versions: data.versions.map((v) => ({
         version: v.version,
         documentId: v.documentId,

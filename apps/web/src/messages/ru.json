@@ -280,6 +280,31 @@
       "in_review": "На ревью",
       "approved": "Утверждена",
       "archived": "Архив"
+    },
+    "approver": "Согласующий",
+    "expired": "Просрочена",
+    "back": "К списку политик",
+    "frameworks": "Фреймворки",
+    "workflow": "Согласование",
+    "wfSubmit": "Отправить на ревью",
+    "wfApprove": "Утвердить",
+    "wfReject": "Отклонить",
+    "wfArchive": "В архив",
+    "versions": "Версии",
+    "versionsEmpty": "Версий пока нет",
+    "changelog": "Изменения",
+    "document": "Документ",
+    "download": "Скачать",
+    "approvedAt": "Утверждена",
+    "addVersion": "Добавить версию",
+    "attestations": "Ознакомление",
+    "attestationsEmpty": "Кампании ознакомления ещё не было",
+    "campaignPick": "Кому разослать",
+    "campaignStart": "Запустить кампанию",
+    "attestSelf": "Подтвердить ознакомление",
+    "attStatuses": {
+      "pending": "Ожидает",
+      "attested": "Подтверждено"
     }
   },
   "universe": {

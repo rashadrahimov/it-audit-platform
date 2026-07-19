@@ -280,6 +280,31 @@
       "in_review": "Baxışda",
       "approved": "Təsdiqlənib",
       "archived": "Arxiv"
+    },
+    "approver": "Təsdiqləyən",
+    "expired": "Vaxtı keçib",
+    "back": "Siyasət siyahısına",
+    "frameworks": "Çərçivələr",
+    "workflow": "Təsdiq axını",
+    "wfSubmit": "Baxışa göndər",
+    "wfApprove": "Təsdiqlə",
+    "wfReject": "Rədd et",
+    "wfArchive": "Arxivə",
+    "versions": "Versiyalar",
+    "versionsEmpty": "Hələ versiya yoxdur",
+    "changelog": "Dəyişikliklər",
+    "document": "Sənəd",
+    "download": "Yüklə",
+    "approvedAt": "Təsdiqlənib",
+    "addVersion": "Versiya əlavə et",
+    "attestations": "Tanışlıq",
+    "attestationsEmpty": "Hələ tanışlıq kampaniyası olmayıb",
+    "campaignPick": "Kimə göndərilsin",
+    "campaignStart": "Kampaniyanı başlat",
+    "attestSelf": "Tanışlığı təsdiqlə",
+    "attStatuses": {
+      "pending": "Gözləyir",
+      "attested": "Təsdiqlənib"
     }
   },
   "universe": {

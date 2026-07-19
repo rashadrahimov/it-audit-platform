@@ -6,6 +6,7 @@ import { env } from '../env';
 import { TestsModule } from '../tests/tests.module';
 import { UsersModule } from '../users/users.module';
 import { FindingRemindersService } from './finding-reminders.service';
+import { PolicyRenewalRemindersService } from './policy-renewal-reminders.service';
 import { SYSTEM_QUEUE } from './jobs.constants';
 import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
@@ -26,6 +27,12 @@ const redisUrl = new URL(env.redisUrl);
     UsersModule,
   ],
   controllers: [JobsController],
-  providers: [FindingRemindersService, JobsService, SlaService, SystemProcessor],
+  providers: [
+    FindingRemindersService,
+    PolicyRenewalRemindersService,
+    JobsService,
+    SlaService,
+    SystemProcessor,
+  ],
 })
 export class JobsModule {}
