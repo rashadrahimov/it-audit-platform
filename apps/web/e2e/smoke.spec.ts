@@ -39,3 +39,30 @@ test('защита: без логина protected-экран уводит на /
   await page.waitForURL(/\/login/, { timeout: 15_000 });
   await expect(page.getByTestId('login-email')).toBeVisible();
 });
+
+test('тур: кнопка «?» открывает шаги, Далее работает, гайд рендерится', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByTestId('login-email').fill(EMAIL);
+  await page.getByTestId('login-password').fill(PASSWORD);
+  await page.locator('button[type="submit"]').click();
+  await page.waitForURL(/\/account/, { timeout: 15_000 });
+
+  // страница гайда (T-H34)
+  await page.goto('/guide');
+  await expect(page.getByTestId('guide-page')).toBeVisible();
+  await expect(page.getByTestId('guide-start-tour')).toBeVisible();
+
+  // «?» открывает контекстный справочник (T-H35)
+  await page.goto('/engagements');
+  await page.getByTestId('topbar-help').click();
+  await expect(page.getByTestId('help-panel')).toBeVisible();
+
+  // из справочника запускается тур
+  await page.getByTestId('help-start-tour').click();
+  await expect(page.getByTestId('tour-overlay')).toBeVisible();
+  await expect(page.getByTestId('tour-tooltip')).toBeVisible();
+  await page.getByTestId('tour-next').click(); // шаг 2
+  await expect(page.getByTestId('tour-tooltip')).toBeVisible();
+  await page.keyboard.press('Escape'); // выход
+  await expect(page.getByTestId('tour-overlay')).toHaveCount(0);
+});

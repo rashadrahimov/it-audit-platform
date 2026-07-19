@@ -1,9 +1,12 @@
 'use client';
 
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/app/login/actions';
+import { ProductTour, type TourLabels, type TourStep } from '@/components/product-tour';
+import { HelpPanel, type HelpEntry, type HelpLabels } from '@/components/help-panel';
+import { LogoMark } from '@/components/logo';
 
 interface NavItem {
   href: string;
@@ -72,15 +75,24 @@ export function AppShell({
   groups,
   user,
   labels,
+  tour,
+  help,
   children,
 }: {
   groups: NavGroup[];
   user: { name: string; email: string };
   labels: Labels;
+  tour: { steps: TourStep[]; labels: TourLabels };
+  help: { entries: Record<string, HelpEntry>; labels: HelpLabels };
   children: ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [tourSignal, setTourSignal] = useState(0);
+  const [helpOpen, setHelpOpen] = useState(false);
+  // справочник: запись по текущему разделу (первый сегмент пути; '' → account)
+  const helpSlug = pathname.split('/')[1] || 'account';
+  const helpEntry = help.entries[helpSlug] ?? help.entries.account!;
   const initials =
     user.name
       .split(' ')
@@ -194,24 +206,12 @@ export function AppShell({
       className="flex items-center gap-2.5 border-b border-border px-4 py-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-on-primary shadow-sm">
-        <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-          <path
-            d="M12 3l7 3v5c0 4.25-2.9 7.7-7 8.75C7.9 18.7 5 15.25 5 11V6l7-3z"
-            stroke="currentColor"
-            strokeWidth={1.7}
-            strokeLinejoin="round"
-          />
-          <path
-            d="M9.5 12l1.8 1.8L15 10"
-            stroke="currentColor"
-            strokeWidth={1.7}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <LogoMark className="h-5 w-5" />
       </span>
       <span className="flex min-w-0 flex-col">
-        <span className="truncate text-sm font-bold text-foreground">{labels.brand}</span>
+        <span className="truncate text-sm font-bold tracking-[0.08em] text-foreground">
+          {labels.brand}
+        </span>
         <span className="truncate text-xs text-secondary">{labels.brandSub}</span>
       </span>
     </Link>
@@ -301,7 +301,9 @@ export function AppShell({
               <path d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
             </svg>
           </button>
-          <span className="text-sm font-bold text-foreground md:hidden">{labels.brand}</span>
+          <span className="text-sm font-bold tracking-[0.08em] text-foreground md:hidden">
+            {labels.brand}
+          </span>
 
           {/* Хлебные крошки (desktop) */}
           <nav
@@ -356,6 +358,28 @@ export function AppShell({
             />
           </form>
 
+          {/* Помощь: запуск тура */}
+          <button
+            type="button"
+            data-testid="topbar-help"
+            aria-label="Tour"
+            onClick={() => setHelpOpen(true)}
+            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-secondary transition-colors duration-150 hover:bg-muted hover:text-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <path d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+            </svg>
+          </button>
+
           {/* Тенант-бейдж справа */}
           <span className="hidden items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium text-secondary md:flex">
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-success" />
@@ -364,6 +388,23 @@ export function AppShell({
         </header>
         <div className="min-w-0 flex-1">{children}</div>
       </div>
+
+      {/* Контекстный справочник (T-H35) */}
+      <HelpPanel
+        entry={helpEntry}
+        labels={help.labels}
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        onStartTour={() => {
+          setHelpOpen(false);
+          setTourSignal((s) => s + 1);
+        }}
+      />
+
+      {/* Интерактивный тур (T-H34) */}
+      <Suspense fallback={null}>
+        <ProductTour steps={tour.steps} labels={tour.labels} startSignal={tourSignal} />
+      </Suspense>
     </div>
   );
 }
