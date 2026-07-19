@@ -9,10 +9,64 @@
 - **Текущая задача:** SEC-04 field-level права (EP-HARDEN, ADR-0020) — полный срез: T-H03 фундамент (`field_permission` миграция 0064 + чистые хелперы `maskFields`/`rejectedWriteFields` + резолвер `RbacService.fieldLevels`) → T-H04 read-эталон (finding.recommendation) → T-H05 write-эталон (403) → **T-H06 2-я сущность** (personnel.email маскируется для Approver). Демо-сид: Collaborator↛finding.recommendation, Approver↛personnel.email. api-suite 76.
 - **⚠️ [!] CI заблокирован БИЛЛИНГОМ GitHub (не код!):** с T-H03 прогоны `failure` за 2-3с — «job not started … account payments/spending limit». T-H03…H06 зелёные ЛОКАЛЬНО (полный build/lint/typecheck/format/test). Действие Рашада: GitHub → Billing & plans. До того verify = локальный прогон.
 - **T-H07 SEC-04 usable:** CRUD-API `/field-permissions` (модуль field-permissions) — админ управляет field-level правилами тенант-ролей (POST upsert / GET ?roleId / DELETE, settings/edit|view). Глобальные пресеты — только seed (RLS+400 гард). Проверено сквозно: POST→GET(1)→DELETE→GET(0), POST глоб.роли→400. api-suite 80 (+4). **SEC-04 = полная фича: модель+резолвер+read+write+2 эталона (finding/personnel)+CRUD.**
-- **Следующий шаг:** SEC-04 закрыт полноценно. Остаток строго [!]: CI-биллинг (Рашад), инфра (S3 WORM/syslog/restore/HA/ONPREM), бизнес/клиент (EP-AI, T-001).
+- **Следующий шаг = ⚙️ Шаблон E** (секция ниже): единый самоподдерживающийся промт для `/goal`. Очередь: добить SEC-04 (UI /field-permissions + др. поля) → EP-HARDEN buildable-остаток → EP-LOWCODE/RSK-08 → EP-MIGRATE парсер → EP-AI assist-слой → тесты/UI-глубина. Стоп — когда весь backlog [x]/[!].
 - **Последнее готово:** **Марафон-5 (Трек A UI-глубина) 18.07.2026 — T-A01…A22 (22 задачи): 15 экранов интерактива (risks/privacy/iam/code-changes/config/reports/api-keys/notifications/time/kpi/audit-programs/kb/questionnaires/satisfaction/plans/trends) + навигационный хаб (7 категорий) + i18n-гвард (610 ключей ×3) + 5 вынесенных unit-модулей (api 20→51 тест).** Все 17 экранов 200, verify зелёный, GitHub каждый коммит запушен.
 
 _Это первое, что читает новая сессия. Всегда держи здесь актуальные 3 строки._
+
+## ⚙️ Шаблон E — автономный марафон (единый промт для `/goal`, не пересоздавать)
+
+> Запускать раз через `/goal` с текстом ниже (или: «Выполни шаблон E из docs/backlog.md»). Промт самоподдерживающийся — покрывает всю оставшуюся работу; новый каждый раз сочинять не нужно.
+
+```
+Автономный марафон IT Audit Platform (шаблон E). Работай до полного исчерпания backlog, не
+останавливайся, не спрашивай подтверждений по обратимым действиям.
+
+СТАРТ каждой сессии: прочитать docs/backlog.md блок «СЕЙЧАС» + `git log -10`. Источник правды —
+файлы, не память. После суммаризации контекста — перечитать их первым делом.
+
+ВЕРИФИКАЦИЯ (обязательно перед каждым «зелёным» коммитом):
+- ПОЛНЫЙ прогон ИЗ КОРНЯ: `pnpm build && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test`.
+  НЕ per-dir `next lint` (из-за этого CI был красным 25 коммитов). Менял i18n → `node apps/web/scripts/check-i18n.mjs`.
+  Экран → рендер (skill verify). Миграция → up→down→up. API → реальный запуск + curl.
+- CI-БИЛЛИНГ: если `gh run list` даёт failure за 2-3с «job not started … account payments/spending limit» —
+  CI мёртв по биллингу GitHub (аккаунт Рашада), НЕ по коду. Не трактовать как красный; verify=локальный
+  прогон; один раз напомнить Рашаду про GitHub→Billing & plans.
+
+GIT: `git add` точечно; `git commit` и `git push` ОТДЕЛЬНЫМИ командами, push голым (`git push`). Сообщения `T-0XX: …` по-русски.
+
+ДЕКОМПОЗИЦИЯ (мандат Рашада): кончились атомы — сам расписывай следующий по зависимостям эпик на атомы
+(T-0XX / T-HXX) по источникам правды (docs/data-model.md, docs/adr/, docs/vanta-research/gap-analysis.md,
+CONTEXT.md). Для каждого [!]-эпика ищи buildable-БЕЗ-клиента срез (как CBAR закрыл регулятора из T-001;
+SEC-07/TEC-03/SEC-04 закрыли куски EP-HARDEN) — делай его; остаток, реально требующий ответа клиента /
+инфры / архитектурного форка — помечай [!] с причиной и бери следующее. Новое арх-решение по ходу — пиши ADR (норма).
+
+[!] ТОЛЬКО на настоящих развилках: (а) равнозначные арх-пути, выбор меняет продукт и не выводится из
+ADR/data-model; (б) нужен ответ клиента/бизнеса; (в) деструктивное/внешнее/инфра-действие вне репо.
+
+ОЧЕРЕДЬ (по приоритету; внутри — декомпозируй сам, вертикальными срезами):
+1. Добить SEC-04 (ADR-0020): UI-экран управления `/field-permissions` (веб-обёртка над CRUD-API);
+   расширить маскирование на др. чувствительные поля (user phone/contacts, vendor) по эталону
+   finding.recommendation / personnel.email.
+2. EP-HARDEN buildable-остаток: syslog-экспорт security-логов (проверяемый локальным приёмником),
+   granular restore/экспорт одного engagement по config-transfer-модели. Инфра (S3 Object Lock WORM,
+   pgBackRest/WAL-PITR, hardened-образы) — [!].
+3. EP-LOWCODE / RSK-08: trend/causal аналитика рисков глубже (поверх snapshots-compare T-099 + trends
+   T-A22) — корреляция класса риска и статуса контролей во времени. no-code конструктор процессов IMP-04 — [!].
+4. EP-MIGRATE: парсер клиентского чеклист-шаблона (docs/client-templates/inbox/2026-07-18/
+   IT_Audit_Checklist_Template.xlsx — уже разобран в checklist-analysis.md) → engagement/control/finding.
+   Реальные исторические файлы клиента — [!].
+5. EP-AI: субстрат готов (business_profile, KB T-082, reuse T-083). Buildable-БЕЗ-LLM: детерминированный
+   «assist»-слой (шаблонные подсказки findings из KB/бизнес-профиля). Выбор AI-хостинга — [!] клиент.
+6. EP-ANNOT / EP-OFFLINE / EP-HA / EP-ONPREM(остаток) — тяжёлые форки/инфра → [!] с причиной; buildable-обвязку
+   (schema аннотаций, модель под sync, healthcheck) делать, только если выводится из data-model без форка.
+7. Backlog весь [x]/[!] → расширять покрытие тестами (чистые функции без тестов), UI-глубину прежних
+   экранов, a11y/responsive, i18n-полноту.
+
+СТОП-УСЛОВИЕ (единственное): не осталось НИ незаблокированных задач, НИ нерасписанных эпиков — весь
+backlog [x] или [!]. Тогда ритуал завершения: обновить «СЕЙЧАС» → commit → и как «промт следующей сессии»
+указать ССЫЛКУ на этот же шаблон E (не сочинять новый).
+```
 
 ## Как этим пользоваться (правила, чтоб не перепрыгнуть и не забыть)
 
