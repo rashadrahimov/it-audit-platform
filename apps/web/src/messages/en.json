@@ -368,7 +368,35 @@
     "title": "Chart Dashboards",
     "toAccount": "Account",
     "empty": "No dashboards yet",
-    "widgets": "widgets"
+    "widgets": "widgets",
+    "create": "New dashboard",
+    "namePh": "Dashboard name",
+    "add": "Create",
+    "slot": "Widget",
+    "metric": "Metric",
+    "chartType": "Chart",
+    "widgetTitle": "Title",
+    "back": "Dashboards",
+    "edit": "Edit dashboard",
+    "save": "Save",
+    "delete": "Delete",
+    "exportPdf": "Export PDF",
+    "m": {
+      "findings_by_status": "Findings by status",
+      "findings_by_severity": "Findings by severity",
+      "tests_by_status": "Tests by status",
+      "vendors_by_risk": "Vendors by risk",
+      "risks_by_class": "Risks by class",
+      "devices_compliance": "Device compliance",
+      "controls_total": "Controls total"
+    },
+    "ct": {
+      "bar": "Bars",
+      "pie": "Pie",
+      "donut": "Donut",
+      "number": "Number",
+      "line": "Line"
+    }
   },
   "trustCenter": {
     "title": "Trust Center",

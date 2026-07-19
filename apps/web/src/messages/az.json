@@ -368,7 +368,35 @@
     "title": "Qrafik Panelləri",
     "toAccount": "Hesab",
     "empty": "Hələ panel yoxdur",
-    "widgets": "vidjet"
+    "widgets": "vidjet",
+    "create": "Yeni dashboard",
+    "namePh": "Dashboard adı",
+    "add": "Yarat",
+    "slot": "Vidcet",
+    "metric": "Metrika",
+    "chartType": "Qrafik",
+    "widgetTitle": "Başlıq",
+    "back": "Dashboardlar",
+    "edit": "Dashboardu redaktə et",
+    "save": "Yadda saxla",
+    "delete": "Sil",
+    "exportPdf": "PDF ixrac et",
+    "m": {
+      "findings_by_status": "Findinqlər status üzrə",
+      "findings_by_severity": "Findinqlər kritiklik üzrə",
+      "tests_by_status": "Testlər status üzrə",
+      "vendors_by_risk": "Vendorlar risk üzrə",
+      "risks_by_class": "Risklər sinif üzrə",
+      "devices_compliance": "Cihaz uyğunluğu",
+      "controls_total": "Kontrolların sayı"
+    },
+    "ct": {
+      "bar": "Barlar",
+      "pie": "Dairəvi",
+      "donut": "Donut",
+      "number": "Rəqəm",
+      "line": "Xətt"
+    }
   },
   "trustCenter": {
     "title": "Etibar Mərkəzi",

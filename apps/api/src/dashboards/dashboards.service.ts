@@ -51,6 +51,62 @@ export class DashboardsService {
     return { id: created.id, name: created.name };
   }
 
+  /** T-V15: правка дашборда (имя и/или полный набор виджетов). */
+  async update(actor: Actor, id: string, input: { name?: string; widgets?: Widget[] }) {
+    if (input.widgets) {
+      for (const w of input.widgets) {
+        if (!this.metricsService.isKnown(w.metric)) {
+          throw new BadRequestException(`Неизвестная метрика виджета: ${w.metric}`);
+        }
+      }
+    }
+    const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select({ id: dashboard.id })
+        .from(dashboard)
+        .where(and(eq(dashboard.id, id), isNull(dashboard.deletedAt)));
+      if (!row) throw new NotFoundException(`Дашборд ${id} не найден`);
+      const patch: Record<string, unknown> = {};
+      if (input.name !== undefined) patch.name = input.name;
+      if (input.widgets !== undefined) patch.widgets = input.widgets;
+      const [res] = await tx.update(dashboard).set(patch).where(eq(dashboard.id, id)).returning();
+      return res!;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'dashboard.updated',
+      entityType: 'dashboard',
+      entityId: id,
+      after: { name: updated.name, widgets: (updated.widgets as Widget[]).length },
+    });
+    return { id: updated.id, name: updated.name };
+  }
+
+  /** T-V15: soft delete дашборда. */
+  async remove(actor: Actor, id: string) {
+    const removed = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select({ id: dashboard.id, name: dashboard.name })
+        .from(dashboard)
+        .where(and(eq(dashboard.id, id), isNull(dashboard.deletedAt)));
+      if (!row) throw new NotFoundException(`Дашборд ${id} не найден`);
+      await tx.update(dashboard).set({ deletedAt: new Date() }).where(eq(dashboard.id, id));
+      return row;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'dashboard.deleted',
+      entityType: 'dashboard',
+      entityId: id,
+      before: { name: removed.name },
+    });
+    return { deleted: true };
+  }
+
   async list(tenantId: string) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx

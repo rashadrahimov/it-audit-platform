@@ -368,7 +368,35 @@
     "title": "Чарт-дашборды",
     "toAccount": "Аккаунт",
     "empty": "Пока нет дашбордов",
-    "widgets": "виджетов"
+    "widgets": "виджетов",
+    "create": "Новый дашборд",
+    "namePh": "Название дашборда",
+    "add": "Создать",
+    "slot": "Виджет",
+    "metric": "Метрика",
+    "chartType": "Диаграмма",
+    "widgetTitle": "Заголовок",
+    "back": "Дашборды",
+    "edit": "Редактировать дашборд",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "exportPdf": "Экспорт PDF",
+    "m": {
+      "findings_by_status": "Findings по статусам",
+      "findings_by_severity": "Findings по критичности",
+      "tests_by_status": "Тесты по статусам",
+      "vendors_by_risk": "Вендоры по риску",
+      "risks_by_class": "Риски по классам",
+      "devices_compliance": "Комплаенс устройств",
+      "controls_total": "Всего контролей"
+    },
+    "ct": {
+      "bar": "Бары",
+      "pie": "Круговая",
+      "donut": "Кольцевая",
+      "number": "Число",
+      "line": "Линия"
+    }
   },
   "trustCenter": {
     "title": "Центр доверия",
