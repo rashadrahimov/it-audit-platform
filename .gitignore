@@ -23,3 +23,7 @@ __pycache__/
 
 # OS/editor
 .DS_Store
+
+# Playwright (T-H26)
+apps/web/playwright-report/
+apps/web/test-results/

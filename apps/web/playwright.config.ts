@@ -1,0 +1,19 @@
+import { defineConfig } from '@playwright/test';
+
+/**
+ * E2E smoke-набор (T-H26): сквозная проверка логин→навигация по ключевым экранам.
+ * Требует поднятых api (:3001) + web (:3000) + сида демо (см. verify SKILL). Запуск:
+ *   pnpm --filter @it-audit/web test:e2e
+ * Юнит-прогон (vitest include src/**) e2e/ не подхватывает.
+ */
+export default defineConfig({
+  testDir: './e2e',
+  timeout: 30_000,
+  expect: { timeout: 10_000 },
+  fullyParallel: false,
+  reporter: 'line',
+  use: {
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
+    headless: true,
+  },
+});

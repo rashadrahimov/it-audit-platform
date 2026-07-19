@@ -77,6 +77,26 @@ jobs:
       - name: Test
         run: pnpm test
 
+      # E2E (T-H26): сквозной smoke через реальный браузер. Инфра (db/redis/minio + seed)
+      # уже поднята выше; поднимаем api+web и гоняем Playwright против них.
+      - name: Install Playwright browser
+        run: pnpm --filter @it-audit/web exec playwright install --with-deps chromium
+
+      - name: Start servers for E2E
+        run: |
+          node apps/api/dist/main.js > /tmp/api.log 2>&1 &
+          pnpm --filter @it-audit/web start > /tmp/web.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3001/health >/dev/null \
+              && curl -sf http://localhost:3000 >/dev/null && break
+            sleep 1
+          done
+          curl -sf http://localhost:3001/health >/dev/null || { echo 'api не поднялся'; cat /tmp/api.log; exit 1; }
+          curl -sf http://localhost:3000 >/dev/null || { echo 'web не поднялся'; cat /tmp/web.log; exit 1; }
+
+      - name: E2E (Playwright smoke)
+        run: pnpm --filter @it-audit/web test:e2e
+
   # Прод-образы (T-I05): проверяем, что оба Dockerfile'а собираются и prod-compose валиден.
   # Отдельный job — параллельно ci, не блокирует тесты.
   docker:
