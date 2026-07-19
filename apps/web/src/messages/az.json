@@ -101,7 +101,8 @@
     "home": "Əsas",
     "findings": "Findinqlər",
     "documents": "Sənədlər",
-    "tests": "Testlər"
+    "tests": "Testlər",
+    "searchPh": "Axtarış…"
   },
   "engagements": {
     "title": "Auditlər",
@@ -1035,5 +1036,23 @@
     "evidence": "Sübut",
     "runAt": "İcra vaxtı",
     "ownerNone": "— dəyişmə —"
+  },
+  "search": {
+    "title": "Axtarış",
+    "hint": "Yuxarıdakı sətirdə sorğu yazın — findinqlər, nəzarətlər, iş sənədləri, bilik bazası və audit proqramları üzrə axtarılır.",
+    "empty": "Heç nə tapılmadı",
+    "types": {
+      "finding": "Findinqlər",
+      "control": "Nəzarətlər",
+      "working_paper": "İş sənədləri",
+      "kb_entry": "Bilik bazası",
+      "audit_program": "Audit proqramları"
+    }
+  },
+  "comments": {
+    "title": "Şərhlər",
+    "empty": "Hələ şərh yoxdur",
+    "placeholder": "Şərh yazın…",
+    "add": "Əlavə et"
   }
 }

@@ -101,7 +101,8 @@
     "home": "Home",
     "findings": "Findings",
     "documents": "Documents",
-    "tests": "Tests"
+    "tests": "Tests",
+    "searchPh": "Search…"
   },
   "engagements": {
     "title": "Engagements",
@@ -1035,5 +1036,23 @@
     "evidence": "Evidence",
     "runAt": "Run at",
     "ownerNone": "— keep —"
+  },
+  "search": {
+    "title": "Search",
+    "hint": "Type a query in the top bar — findings, controls, working papers, knowledge base and audit programs are searched.",
+    "empty": "Nothing found",
+    "types": {
+      "finding": "Findings",
+      "control": "Controls",
+      "working_paper": "Working papers",
+      "kb_entry": "Knowledge base",
+      "audit_program": "Audit programs"
+    }
+  },
+  "comments": {
+    "title": "Comments",
+    "empty": "No comments yet",
+    "placeholder": "Write a comment…",
+    "add": "Add"
   }
 }

@@ -36,6 +36,7 @@ async function Shell({ children }: { children: ReactNode }) {
         signOut: t('signOut'),
         menu: t('menu'),
         home: t('home'),
+        searchPh: t('searchPh'),
       }}
     >
       {children}

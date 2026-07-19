@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import { CommentsSection } from '@/components/comments-section';
 
 export const dynamic = 'force-dynamic';
 
@@ -178,26 +179,13 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
         )}
       </section>
 
-      <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-primary">{t('comments')}</h2>
-        {control.comments.length === 0 ? (
-          <p className="text-sm text-secondary">{t('commentsEmpty')}</p>
-        ) : (
-          <ul className="flex flex-col gap-3" data-testid="control-comments">
-            {control.comments.map((c, i) => (
-              <li key={i} className="flex flex-col gap-1 text-sm">
-                <div className="flex justify-between gap-4">
-                  <span className="font-medium text-foreground">{c.author}</span>
-                  <time className="whitespace-nowrap text-secondary">
-                    {dateFmt.format(new Date(c.at))}
-                  </time>
-                </div>
-                <p className="text-foreground">{c.body}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <CommentsSection
+        entityType="control"
+        entityId={control.id}
+        path={`/controls/${control.id}`}
+        comments={control.comments}
+        testid="control-comments"
+      />
     </main>
   );
 }

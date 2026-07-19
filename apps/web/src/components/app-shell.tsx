@@ -21,6 +21,7 @@ interface Labels {
   signOut: string;
   menu: string;
   home: string;
+  searchPh: string;
 }
 
 /** Иконки групп (Heroicons outline, 18px). SVG, не emoji — по чеклисту ui-ux-pro-max. */
@@ -344,8 +345,19 @@ export function AppShell({
             )}
           </nav>
 
+          {/* Глобальный поиск (T-V09): GET-форма → /search?q= */}
+          <form action="/search" className="ml-auto flex min-w-0 items-center" role="search">
+            <input
+              type="search"
+              name="q"
+              placeholder={labels.searchPh}
+              data-testid="global-search"
+              className="w-32 rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground transition-[width] duration-200 focus:w-56 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:w-44"
+            />
+          </form>
+
           {/* Тенант-бейдж справа */}
-          <span className="ml-auto hidden items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium text-secondary md:flex">
+          <span className="hidden items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium text-secondary md:flex">
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-success" />
             {labels.brandSub}
           </span>

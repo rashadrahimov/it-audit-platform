@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import { CommentsSection } from '@/components/comments-section';
 import { complianceStatusSchema } from '@it-audit/shared';
 import {
   addChecklistItemsAction,
@@ -103,6 +104,14 @@ export default async function EngagementDetailPage({
     suggestedTitle: string;
     suggestedRisk: string;
   }> = sRes.ok ? (await sRes.json()).suggestions : [];
+
+  // T-V10: комментарии аудита (полиморфный API T-023)
+  const cRes = await apiFetch(`/comments?entityType=engagement&entityId=${id}`, {
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  const comments: Array<{ author: string; body: string; at: string }> = cRes.ok
+    ? await cRes.json()
+    : [];
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const fmt = (iso: string | null): string => (iso ? dateFmt.format(new Date(iso)) : '—');
@@ -445,6 +454,13 @@ export default async function EngagementDetailPage({
           </table>
         )}
       </section>
+      <CommentsSection
+        entityType="engagement"
+        entityId={id}
+        path={`/engagements/${id}`}
+        comments={comments}
+        testid="engagement-comments"
+      />
     </main>
   );
 }
