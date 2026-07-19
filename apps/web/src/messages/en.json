@@ -536,7 +536,30 @@
       "in_review": "In review",
       "reviewed": "Reviewed",
       "signed_off": "Signed off"
-    }
+    },
+    "annotations": "Annotations",
+    "noAnnotations": "No annotations yet",
+    "kind": "Kind",
+    "anchor": "Anchor",
+    "body": "Text",
+    "createdAt": "Created",
+    "state": "State",
+    "k": {
+      "comment": "Comment",
+      "tick_mark": "Tick mark",
+      "exception": "Exception"
+    },
+    "anchorPh": "e.g. cell B12",
+    "bodyPh": "Annotation text",
+    "add": "Add",
+    "resolved": "Resolved",
+    "openState": "Open",
+    "resolve": "Resolve",
+    "delete": "Delete",
+    "exceptionReport": "Exception report",
+    "openCount": "{n} open",
+    "totalCount": "{n} total",
+    "noExceptions": "No exceptions — clean audit."
   },
   "vulnerabilities": {
     "title": "Vulnerabilities",

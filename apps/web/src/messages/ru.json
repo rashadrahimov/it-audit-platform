@@ -536,7 +536,30 @@
       "in_review": "На ревью",
       "reviewed": "Отревьюен",
       "signed_off": "Подписан"
-    }
+    },
+    "annotations": "Аннотации",
+    "noAnnotations": "Пока нет аннотаций",
+    "kind": "Тип",
+    "anchor": "Привязка",
+    "body": "Текст",
+    "createdAt": "Создана",
+    "state": "Состояние",
+    "k": {
+      "comment": "Комментарий",
+      "tick_mark": "Отметка",
+      "exception": "Exception"
+    },
+    "anchorPh": "напр. ячейка B12",
+    "bodyPh": "Текст аннотации",
+    "add": "Добавить",
+    "resolved": "Решена",
+    "openState": "Открыта",
+    "resolve": "Решить",
+    "delete": "Удалить",
+    "exceptionReport": "Отчёт по exception",
+    "openCount": "{n} открыто",
+    "totalCount": "всего {n}",
+    "noExceptions": "Exception нет — чистый аудит."
   },
   "vulnerabilities": {
     "title": "Уязвимости",

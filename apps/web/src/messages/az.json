@@ -536,7 +536,30 @@
       "in_review": "Baxışda",
       "reviewed": "Baxılıb",
       "signed_off": "İmzalanıb"
-    }
+    },
+    "annotations": "Annotasiyalar",
+    "noAnnotations": "Hələ annotasiya yoxdur",
+    "kind": "Növ",
+    "anchor": "Bağlantı",
+    "body": "Mətn",
+    "createdAt": "Yaradılıb",
+    "state": "Vəziyyət",
+    "k": {
+      "comment": "Şərh",
+      "tick_mark": "İşarə",
+      "exception": "İstisna"
+    },
+    "anchorPh": "məs. B12 xanası",
+    "bodyPh": "Annotasiya mətni",
+    "add": "Əlavə et",
+    "resolved": "Həll edilib",
+    "openState": "Açıq",
+    "resolve": "Həll et",
+    "delete": "Sil",
+    "exceptionReport": "İstisna hesabatı",
+    "openCount": "{n} açıq",
+    "totalCount": "cəmi {n}",
+    "noExceptions": "İstisna yoxdur — təmiz audit."
   },
   "vulnerabilities": {
     "title": "Zəifliklər",
