@@ -90,7 +90,8 @@
     "allocations": "Resource allocations",
     "fieldPermissions": "Field-level permissions",
     "migration": "Import checklist",
-    "aiSettings": "AI provider"
+    "aiSettings": "AI provider",
+    "home": "Home"
   },
   "engagements": {
     "title": "Engagements",

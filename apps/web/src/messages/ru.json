@@ -90,7 +90,8 @@
     "allocations": "Аллокации ресурсов",
     "fieldPermissions": "Field-level права",
     "migration": "Импорт чеклиста",
-    "aiSettings": "Провайдер ИИ"
+    "aiSettings": "Провайдер ИИ",
+    "home": "Главная"
   },
   "engagements": {
     "title": "Аудиты",

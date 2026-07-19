@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -104,9 +105,9 @@ export default async function ReportsPage({
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-secondary">{t('compare')}</h2>
         {snapshots.length < 2 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
-            {t('needTwo')}
-          </p>
+          <div className="rounded-xl border border-border bg-white shadow-sm">
+            <EmptyState size="sm" text={t('needTwo')} />
+          </div>
         ) : (
           <form
             method="GET"

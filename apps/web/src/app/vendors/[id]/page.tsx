@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,9 +99,9 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
       <section>
         <h2 className="mb-3 text-sm font-semibold text-secondary">{t('assessments')}</h2>
         {assessments.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
-            {t('noAssessments')}
-          </p>
+          <div className="rounded-xl border border-border bg-white shadow-sm">
+            <EmptyState size="sm" text={t('noAssessments')} />
+          </div>
         ) : (
           <ul
             className="overflow-hidden rounded-xl border border-border bg-white shadow-sm"

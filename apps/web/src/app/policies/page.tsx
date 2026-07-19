@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,8 +77,8 @@ export default async function PoliciesPage() {
             ))}
             {policies.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-secondary">
-                  {t('empty')}
+                <td colSpan={4} className="p-0">
+                  <EmptyState size="sm" text={t('empty')} />
                 </td>
               </tr>
             )}

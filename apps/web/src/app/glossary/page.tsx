@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,8 +35,8 @@ export default async function GlossaryPage() {
       </div>
 
       {terms.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
-          {t('empty')}
+        <section className="rounded-xl border border-border bg-white shadow-sm">
+          <EmptyState text={t('empty')} />
         </section>
       ) : (
         <dl className="grid gap-3 sm:grid-cols-2" data-testid="glossary">

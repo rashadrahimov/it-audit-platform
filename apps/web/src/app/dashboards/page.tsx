@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,8 +61,8 @@ export default async function DashboardsPage() {
       </div>
 
       {list.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
-          {t('empty')}
+        <section className="rounded-xl border border-border bg-white shadow-sm">
+          <EmptyState text={t('empty')} />
         </section>
       ) : (
         <div className="flex flex-col gap-8" data-testid="dashboards">

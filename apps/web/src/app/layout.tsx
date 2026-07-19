@@ -35,6 +35,7 @@ async function Shell({ children }: { children: ReactNode }) {
         brandSub: tenantSlug ?? 'GRC',
         signOut: t('signOut'),
         menu: t('menu'),
+        home: t('home'),
       }}
     >
       {children}

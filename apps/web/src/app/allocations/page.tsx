@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { createAllocationAction } from './actions';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -147,9 +148,9 @@ export default async function AllocationsPage({
         </div>
 
         {members.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
-            {t('empty')}
-          </p>
+          <div className="rounded-xl border border-border bg-white shadow-sm">
+            <EmptyState size="sm" text={t('empty')} />
+          </div>
         ) : (
           <ul className="flex flex-col gap-3" data-testid="utilization-list">
             {utils.map(({ member, util }) => {

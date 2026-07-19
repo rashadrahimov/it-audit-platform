@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,8 +61,8 @@ export default async function WorkingPapersPage({
       </div>
 
       {engagements.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
-          {t('noEngagements')}
+        <section className="rounded-xl border border-border bg-white shadow-sm">
+          <EmptyState text={t('noEngagements')} />
         </section>
       ) : (
         <>
@@ -92,7 +93,7 @@ export default async function WorkingPapersPage({
             data-testid="working-papers"
           >
             {papers.length === 0 ? (
-              <p className="px-4 py-8 text-center text-secondary">{t('empty')}</p>
+              <EmptyState size="sm" text={t('empty')} />
             ) : (
               <ul>
                 {papers.map((wp) => (

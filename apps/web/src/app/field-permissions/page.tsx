@@ -4,6 +4,7 @@ import { resolveLocalized, type I18nText } from '@it-audit/shared';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { deleteFieldPermAction, upsertFieldPermAction } from './actions';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,8 +72,8 @@ export default async function FieldPermissionsPage({
       <p className="text-sm text-secondary">{t('intro')}</p>
 
       {roles.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
-          {t('noRoles')}
+        <section className="rounded-xl border border-border bg-white shadow-sm">
+          <EmptyState text={t('noRoles')} />
         </section>
       ) : (
         <>
@@ -134,8 +135,8 @@ export default async function FieldPermissionsPage({
           </form>
 
           {perms.length === 0 ? (
-            <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
-              {t('empty')}
+            <section className="rounded-xl border border-border bg-white shadow-sm">
+              <EmptyState text={t('empty')} />
             </section>
           ) : (
             <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">

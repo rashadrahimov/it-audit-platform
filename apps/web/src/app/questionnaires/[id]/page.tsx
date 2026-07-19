@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { addQuestionAction, answerAction, submitQuestionnaireAction } from './actions';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,8 +109,8 @@ export default async function QuestionnaireDetailPage({
           </li>
         ))}
         {q.answers.length === 0 && (
-          <li className="rounded-xl border border-border bg-white p-6 text-center text-secondary shadow-sm">
-            {t('noQuestions')}
+          <li className="rounded-xl border border-border bg-white shadow-sm">
+            <EmptyState size="sm" text={t('noQuestions')} />
           </li>
         )}
       </ul>

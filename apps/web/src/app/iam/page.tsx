@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { deactivateAccountAction, decideAccessRequestAction } from './actions';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,9 +48,9 @@ export default async function IamPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-secondary">{t('accounts')}</h2>
         {accounts.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
-            {t('empty')}
-          </p>
+          <div className="rounded-xl border border-border bg-white shadow-sm">
+            <EmptyState size="sm" text={t('empty')} />
+          </div>
         ) : (
           <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
             <table className="w-full text-left text-sm" data-testid="accounts-table">
@@ -108,9 +109,9 @@ export default async function IamPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-secondary">{t('requests')}</h2>
         {requests.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
-            {t('empty')}
-          </p>
+          <div className="rounded-xl border border-border bg-white shadow-sm">
+            <EmptyState size="sm" text={t('empty')} />
+          </div>
         ) : (
           <ul
             className="overflow-hidden rounded-xl border border-border bg-white shadow-sm"

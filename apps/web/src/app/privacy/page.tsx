@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import { EmptyState } from '@/components/empty-state';
 import {
   archiveRopaAction,
   createDpiaAction,
@@ -108,9 +109,9 @@ export default async function PrivacyPage() {
           </button>
         </form>
         {ropa.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
-            {t('empty')}
-          </p>
+          <div className="rounded-xl border border-border bg-white shadow-sm">
+            <EmptyState size="sm" text={t('empty')} />
+          </div>
         ) : (
           <ul
             className="overflow-hidden rounded-xl border border-border bg-white shadow-sm"
@@ -191,9 +192,9 @@ export default async function PrivacyPage() {
           </form>
         )}
         {dpia.length === 0 ? (
-          <p className="rounded-xl border border-border bg-white px-4 py-6 text-center text-secondary shadow-sm">
-            {t('empty')}
-          </p>
+          <div className="rounded-xl border border-border bg-white shadow-sm">
+            <EmptyState size="sm" text={t('empty')} />
+          </div>
         ) : (
           <ul
             className="overflow-hidden rounded-xl border border-border bg-white shadow-sm"

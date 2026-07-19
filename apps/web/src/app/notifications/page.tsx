@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { markReadAction } from './actions';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,8 +55,8 @@ export default async function NotificationsPage() {
       </div>
 
       {data.items.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
-          {t('empty')}
+        <section className="rounded-xl border border-border bg-white shadow-sm">
+          <EmptyState text={t('empty')} />
         </section>
       ) : (
         <ul className="flex flex-col gap-2" data-testid="notifications-list">

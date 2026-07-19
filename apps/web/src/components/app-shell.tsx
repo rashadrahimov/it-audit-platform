@@ -20,6 +20,7 @@ interface Labels {
   brandSub: string;
   signOut: string;
   menu: string;
+  home: string;
 }
 
 /** Иконки групп (Heroicons outline, 18px). SVG, не emoji — по чеклисту ui-ux-pro-max. */
@@ -89,6 +90,14 @@ export function AppShell({
       .toUpperCase() || 'U';
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
+
+  // Хлебные крошки: активный пункт навигации → «Группа / Раздел» (на /account — только Home)
+  const crumb = groups
+    .flatMap((g) => g.items.map((it) => ({ g, it })))
+    .find(({ it }) => isActive(it.href));
+  const crumbItem = crumb?.it.label;
+  // не дублировать, когда имя группы совпадает с именем раздела («Engagements / Engagements»)
+  const crumbGroup = crumb && crumb.g.label !== crumb.it.label ? crumb.g.label : undefined;
 
   // Сворачиваемые группы (аккордеон): по умолчанию открыта только активная (или первая).
   const activeGroup = groups.find((g) => g.items.some((it) => isActive(it.href)))?.group;
@@ -272,13 +281,13 @@ export function AppShell({
 
       {/* Content */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Mobile top bar */}
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-white/90 px-4 py-3 backdrop-blur md:hidden">
+        {/* Единый топ-бар: mobile — гамбургер+бренд; desktop — хлебные крошки */}
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-surface/85 px-4 py-3 backdrop-blur md:px-8">
           <button
             type="button"
             aria-label={labels.menu}
             onClick={() => setOpen(true)}
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-border text-secondary hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-border text-secondary hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:hidden"
           >
             <svg
               viewBox="0 0 24 24"
@@ -291,7 +300,55 @@ export function AppShell({
               <path d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
             </svg>
           </button>
-          <span className="text-sm font-bold text-foreground">{labels.brand}</span>
+          <span className="text-sm font-bold text-foreground md:hidden">{labels.brand}</span>
+
+          {/* Хлебные крошки (desktop) */}
+          <nav
+            aria-label="Breadcrumb"
+            className="hidden min-w-0 items-center gap-1.5 text-sm md:flex"
+          >
+            <Link
+              href="/account"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-secondary transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              aria-label={labels.home}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.7}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
+              </svg>
+            </Link>
+            {crumbGroup && (
+              <>
+                <span aria-hidden className="text-border">
+                  /
+                </span>
+                <span className="truncate text-secondary">{crumbGroup}</span>
+              </>
+            )}
+            {crumbItem && (
+              <>
+                <span aria-hidden className="text-border">
+                  /
+                </span>
+                <span className="truncate font-semibold text-foreground" aria-current="page">
+                  {crumbItem}
+                </span>
+              </>
+            )}
+          </nav>
+
+          {/* Тенант-бейдж справа */}
+          <span className="ml-auto hidden items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium text-secondary md:flex">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-success" />
+            {labels.brandSub}
+          </span>
         </header>
         <div className="min-w-0 flex-1">{children}</div>
       </div>

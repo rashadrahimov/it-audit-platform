@@ -4,6 +4,7 @@ import { resolveLocalized, type I18nText } from '@it-audit/shared';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { createProgramAction, rollForwardAction } from './actions';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,8 +80,8 @@ export default async function AuditProgramsPage() {
       </form>
 
       {programs.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
-          {t('empty')}
+        <section className="rounded-xl border border-border bg-white shadow-sm">
+          <EmptyState text={t('empty')} />
         </section>
       ) : (
         <ul className="flex flex-col gap-3" data-testid="programs-list">

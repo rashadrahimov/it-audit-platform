@@ -90,7 +90,8 @@
     "allocations": "Resurs bölgüsü",
     "fieldPermissions": "Sahə səviyyəli hüquqlar",
     "migration": "Çeklist idxalı",
-    "aiSettings": "AI provayderi"
+    "aiSettings": "AI provayderi",
+    "home": "Əsas"
   },
   "engagements": {
     "title": "Auditlər",

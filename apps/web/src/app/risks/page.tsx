@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { createRiskAction } from './actions';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,8 +117,8 @@ export default async function RisksPage() {
       </form>
 
       {risks.length === 0 ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
-          {t('empty')}
+        <section className="rounded-xl border border-border bg-white shadow-sm">
+          <EmptyState text={t('empty')} />
         </section>
       ) : (
         <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">

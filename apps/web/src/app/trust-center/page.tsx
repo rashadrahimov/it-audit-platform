@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,8 +45,8 @@ export default async function TrustCenterPage() {
       </div>
 
       {tc === null ? (
-        <section className="rounded-xl border border-border bg-white p-8 text-center text-secondary shadow-sm">
-          {t('notConfigured')}
+        <section className="rounded-xl border border-border bg-white shadow-sm">
+          <EmptyState text={t('notConfigured')} />
         </section>
       ) : (
         <>

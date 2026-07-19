@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,7 +100,7 @@ export default async function UniversePage() {
 
       <section className="rounded-xl border border-border bg-white p-3 shadow-sm">
         {tree.length === 0 ? (
-          <p className="px-3 py-8 text-center text-secondary">{t('empty')}</p>
+          <EmptyState size="sm" text={t('empty')} />
         ) : (
           <ul data-testid="universe-tree">{tree.map((node) => renderNode(node, 0))}</ul>
         )}
