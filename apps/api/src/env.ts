@@ -57,4 +57,15 @@ export const env = {
    * пока активна другая сессия (в окне JWT_TTL). Окно = jwtTtlSeconds.
    */
   concurrentSessionPolicy: process.env.CONCURRENT_SESSION_POLICY === 'block' ? 'block' : 'detect',
+  /**
+   * EP-AI (T-H21): LLM-провайдер для ассист-фич. По умолчанию 'none' — весь ИИ
+   * ВЫКЛЮЧЕН (детерминированный assist работает как fallback, on-prem остаётся без ИИ
+   * по ADR-0002). Включение: AI_PROVIDER=anthropic + ANTHROPIC_API_KEY. Развилка по
+   * residency (облако vs локально) — конфиг, не код: aiBaseUrl направляет adapter на
+   * локальный Anthropic-совместимый прокси при необходимости.
+   */
+  aiProvider: process.env.AI_PROVIDER === 'anthropic' ? 'anthropic' : 'none',
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
+  aiModel: process.env.AI_MODEL ?? 'claude-opus-4-8',
+  aiBaseUrl: process.env.AI_BASE_URL ?? '',
 };

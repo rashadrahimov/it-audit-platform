@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.112.3",
     "@aws-sdk/client-s3": "^3.1089.0",
     "@it-audit/shared": "workspace:*",
     "@nestjs/bullmq": "^11.0.4",
