@@ -23,6 +23,17 @@ export const DEFAULT_LISTS: Record<string, ListItem[]> = {
     { code: 'needs_improvement', labelI18n: { en: 'Needs improvement', ru: 'Требует улучшения' } },
     { code: 'unsatisfactory', labelI18n: { en: 'Unsatisfactory', ru: 'Неудовлетворительно' } },
   ],
+  // T-V23: справочник категорий рисков (переопределяется тенантом через PUT)
+  risk_categories: [
+    { code: 'access', labelI18n: { en: 'Access', ru: 'Доступ' } },
+    { code: 'data', labelI18n: { en: 'Data', ru: 'Данные' } },
+    { code: 'security', labelI18n: { en: 'Security', ru: 'Безопасность' } },
+    { code: 'availability', labelI18n: { en: 'Availability', ru: 'Доступность' } },
+    { code: 'change', labelI18n: { en: 'Change', ru: 'Изменения' } },
+    { code: 'vendor', labelI18n: { en: 'Vendor', ru: 'Вендоры' } },
+    { code: 'compliance', labelI18n: { en: 'Compliance', ru: 'Комплаенс' } },
+    { code: 'people', labelI18n: { en: 'People', ru: 'Люди' } },
+  ],
   // T-V13: справочник категорий вендоров (переопределяется тенантом через PUT)
   vendor_categories: [
     { code: 'cloud', labelI18n: { en: 'Cloud / Hosting', ru: 'Облако / Хостинг' } },

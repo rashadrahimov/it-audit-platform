@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import { DbService } from '../db/db.service';
 import {
   commitment,
@@ -86,7 +86,7 @@ export class MetricsService {
             await tx
               .select({ k: risk.riskClass, c: sql<number>`count(*)::int` })
               .from(risk)
-              .where(isNull(risk.deletedAt))
+              .where(and(isNotNull(risk.tenantId), isNull(risk.deletedAt)))
               .groupBy(risk.riskClass),
           );
         case 'devices_compliance':
@@ -137,7 +137,7 @@ export class MetricsService {
             await tx
               .select({ k: risk.treatment, c: sql<number>`count(*)::int` })
               .from(risk)
-              .where(isNull(risk.deletedAt))
+              .where(and(isNotNull(risk.tenantId), isNull(risk.deletedAt)))
               .groupBy(risk.treatment),
           );
         // T-V21 trust-домен: запросы доступа Trust Center по статусам

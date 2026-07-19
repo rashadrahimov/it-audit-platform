@@ -728,7 +728,11 @@
     "delete": "Riski sil",
     "matrix": "Risk matrisi",
     "saveMatrix": "Matrisi saxla",
-    "matrixHint": "Sinif = təsir × ehtimal və hədlər: Orta həddindən aşağı — Aşağı, sonra Orta / Yüksək / Kritik. Şkalalar maksimum balı təyin edir."
+    "matrixHint": "Sinif = təsir × ehtimal və hədlər: Orta həddindən aşağı — Aşağı, sonra Orta / Yüksək / Kritik. Şkalalar maksimum balı təyin edir.",
+    "library": "Risk kitabxanası",
+    "libraryHint": "Tipik risk ssenariləri — bir kliklə reyestrə əlavə edin; sinif sizin matrisinizlə hesablanır.",
+    "addToRegister": "Reyestrə əlavə et",
+    "inRegister": "Reyestrdədir"
   },
   "privacy": {
     "title": "Məxfilik — ROPA və DPIA",

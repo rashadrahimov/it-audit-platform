@@ -118,6 +118,17 @@ export async function deleteRiskAction(id: string): Promise<void> {
   redirect('/risks');
 }
 
+/** «Add to register» (T-V23): сценарий из библиотеки → реестр тенанта. */
+export async function addRiskFromLibraryAction(libraryRiskId: string): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch(`/risks/library/${libraryRiskId}/add`, {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  revalidatePath('/risks');
+}
+
 /** Настроить матрицу рисков (T-057 → UI T-V12): шкалы и пороги классов. */
 export async function setRiskMatrixAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();

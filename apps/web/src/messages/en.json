@@ -728,7 +728,11 @@
     "delete": "Delete risk",
     "matrix": "Risk matrix",
     "saveMatrix": "Save matrix",
-    "matrixHint": "Class = impact × likelihood versus thresholds: below Medium — Low, then Medium / High / Critical. Scales set the maximum score."
+    "matrixHint": "Class = impact × likelihood versus thresholds: below Medium — Low, then Medium / High / Critical. Scales set the maximum score.",
+    "library": "Risk library",
+    "libraryHint": "Common risk scenarios — add to your register in one click; the class is computed by your matrix.",
+    "addToRegister": "Add to register",
+    "inRegister": "In register"
   },
   "privacy": {
     "title": "Privacy — ROPA & DPIA",

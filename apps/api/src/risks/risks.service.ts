@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
@@ -104,6 +104,85 @@ export class RisksService {
     };
   }
 
+  /**
+   * T-V23: глобальная библиотека risk-сценариев (tenant_id NULL, ADR-0016).
+   * added — есть ли в реестре тенанта живой риск с source_risk_id на сценарий.
+   */
+  async library(tenantId: string, locale: Locale) {
+    const rows = await this.dbService.db
+      .select()
+      .from(risk)
+      .where(and(isNull(risk.tenantId), isNull(risk.deletedAt)))
+      .orderBy(desc(risk.inherentImpact), desc(risk.inherentLikelihood));
+    const added = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ sourceRiskId: risk.sourceRiskId })
+        .from(risk)
+        .where(and(isNotNull(risk.tenantId), isNull(risk.deletedAt), isNotNull(risk.sourceRiskId))),
+    );
+    const addedIds = new Set(added.map((a) => a.sourceRiskId));
+    return rows.map((r) => ({
+      id: r.id,
+      title: resolveLocalized(r.titleI18n, locale),
+      description: r.descriptionI18n ? resolveLocalized(r.descriptionI18n, locale) : null,
+      category: r.category,
+      inherentImpact: r.inherentImpact,
+      inherentLikelihood: r.inherentLikelihood,
+      added: addedIds.has(r.id),
+    }));
+  }
+
+  /** T-V23: «Add to register» — копия сценария в реестр тенанта, класс по его матрице. */
+  async addFromLibrary(actor: Actor, libraryRiskId: string) {
+    const [item] = await this.dbService.db
+      .select()
+      .from(risk)
+      .where(and(eq(risk.id, libraryRiskId), isNull(risk.tenantId), isNull(risk.deletedAt)));
+    if (!item) throw new NotFoundException(`Сценарий ${libraryRiskId} не найден в библиотеке`);
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      // идемпотентность: живой риск с этим source уже есть — не дублируем
+      const [existing] = await tx
+        .select({ id: risk.id })
+        .from(risk)
+        .where(
+          and(
+            eq(risk.sourceRiskId, libraryRiskId),
+            isNotNull(risk.tenantId),
+            isNull(risk.deletedAt),
+          ),
+        );
+      if (existing) return { row: null, id: existing.id };
+      const thresholds = await this.thresholds(tx, actor.tenantId);
+      const [row] = await tx
+        .insert(risk)
+        .values({
+          tenantId: actor.tenantId,
+          titleI18n: item.titleI18n,
+          descriptionI18n: item.descriptionI18n,
+          category: item.category,
+          inherentImpact: item.inherentImpact,
+          inherentLikelihood: item.inherentLikelihood,
+          riskClass: classifyRisk(item.inherentImpact, item.inherentLikelihood, thresholds),
+          sourceRiskId: libraryRiskId,
+          status: 'open',
+        })
+        .returning();
+      return { row: row!, id: row!.id };
+    });
+    if (created.row) {
+      await this.auditLogService.record({
+        tenantId: actor.tenantId,
+        actorUserId: actor.userId,
+        actorIp: actor.ip,
+        action: 'risk.added_from_library',
+        entityType: 'risk',
+        entityId: created.id,
+        after: { title: item.titleI18n.en, sourceRiskId: libraryRiskId },
+      });
+    }
+    return { id: created.id, added: created.row !== null };
+  }
+
   async create(actor: Actor, input: CreateRiskInput) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const thresholds = await this.thresholds(tx, actor.tenantId);
@@ -156,7 +235,7 @@ export class RisksService {
       const [row] = await tx
         .select()
         .from(risk)
-        .where(and(eq(risk.id, id), isNull(risk.deletedAt)));
+        .where(and(eq(risk.id, id), isNotNull(risk.tenantId), isNull(risk.deletedAt)));
       if (!row) throw new NotFoundException(`Риск ${id} не найден`);
       const thresholds = await this.thresholds(tx, actor.tenantId);
       const inherentImpact = input.inherentImpact ?? row.inherentImpact;
@@ -207,7 +286,7 @@ export class RisksService {
       const [row] = await tx
         .select({ id: risk.id })
         .from(risk)
-        .where(and(eq(risk.id, id), isNull(risk.deletedAt)));
+        .where(and(eq(risk.id, id), isNotNull(risk.tenantId), isNull(risk.deletedAt)));
       if (!row) throw new NotFoundException(`Риск ${id} не найден`);
       if (input.ownerMembershipId) {
         // membership над-тенантная (без RLS) — проверяем принадлежность тенанту явно
@@ -255,7 +334,7 @@ export class RisksService {
       const [row] = await tx
         .select({ id: risk.id, titleI18n: risk.titleI18n })
         .from(risk)
-        .where(and(eq(risk.id, id), isNull(risk.deletedAt)));
+        .where(and(eq(risk.id, id), isNotNull(risk.tenantId), isNull(risk.deletedAt)));
       if (!row) throw new NotFoundException(`Риск ${id} не найден`);
       await tx.update(risk).set({ deletedAt: new Date() }).where(eq(risk.id, id));
       return row;
@@ -279,7 +358,7 @@ export class RisksService {
       const [r] = await tx
         .select({ id: risk.id })
         .from(risk)
-        .where(and(eq(risk.id, riskId), isNull(risk.deletedAt)));
+        .where(and(eq(risk.id, riskId), isNotNull(risk.tenantId), isNull(risk.deletedAt)));
       if (!r) throw new NotFoundException(`Риск ${riskId} не найден`);
       const nodes = await tx
         .select({ id: auditableEntity.id })
@@ -330,7 +409,7 @@ export class RisksService {
       const [r] = await tx
         .select({ id: risk.id })
         .from(risk)
-        .where(and(eq(risk.id, riskId), isNull(risk.deletedAt)));
+        .where(and(eq(risk.id, riskId), isNotNull(risk.tenantId), isNull(risk.deletedAt)));
       if (!r) throw new NotFoundException(`Риск ${riskId} не найден`);
       const controls = await tx
         .select({ id: control.id })
@@ -379,7 +458,7 @@ export class RisksService {
       tx
         .select({ riskClass: risk.riskClass, residualClass: risk.residualClass })
         .from(risk)
-        .where(isNull(risk.deletedAt)),
+        .where(and(isNotNull(risk.tenantId), isNull(risk.deletedAt))),
     );
     const empty = () => ({ low: 0, medium: 0, high: 0, critical: 0 });
     const inherent = empty();
@@ -395,7 +474,11 @@ export class RisksService {
 
   async list(tenantId: string, locale: Locale) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx.select().from(risk).where(isNull(risk.deletedAt)).orderBy(desc(risk.createdAt)),
+      tx
+        .select()
+        .from(risk)
+        .where(and(isNotNull(risk.tenantId), isNull(risk.deletedAt)))
+        .orderBy(desc(risk.createdAt)),
     );
     return rows.map((r) => ({
       id: r.id,
@@ -415,7 +498,7 @@ export class RisksService {
         .from(risk)
         .leftJoin(membership, eq(risk.ownerMembershipId, membership.id))
         .leftJoin(user, eq(membership.userId, user.id))
-        .where(and(eq(risk.id, id), isNull(risk.deletedAt))),
+        .where(and(eq(risk.id, id), isNotNull(risk.tenantId), isNull(risk.deletedAt))),
     );
     if (!row) throw new NotFoundException(`Риск ${id} не найден`);
     const r = row.risk;

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
-import { createRiskAction, setRiskMatrixAction } from './actions';
+import { addRiskFromLibraryAction, createRiskAction, setRiskMatrixAction } from './actions';
 import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -40,11 +40,21 @@ export default async function RisksPage() {
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const [res, matrixRes] = await Promise.all([
+  const [res, matrixRes, libRes] = await Promise.all([
     apiFetch(`/risks?locale=${locale}`, { headers }),
     apiFetch('/risks/matrix', { headers }),
+    apiFetch(`/risks/library?locale=${locale}`, { headers }),
   ]);
   const risks: Risk[] = res.ok ? await res.json() : [];
+  const library: Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    category: string | null;
+    inherentImpact: number | null;
+    inherentLikelihood: number | null;
+    added: boolean;
+  }> = libRes.ok ? await libRes.json() : [];
   const matrix: {
     impactScale: number;
     likelihoodScale: number;
@@ -168,6 +178,58 @@ export default async function RisksPage() {
               ))}
             </tbody>
           </table>
+        </section>
+      )}
+
+      {library.length > 0 && (
+        <section
+          className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+          data-testid="risk-library"
+        >
+          <h2 className="text-sm font-semibold text-primary">{t('library')}</h2>
+          <p className="text-xs text-secondary">{t('libraryHint')}</p>
+          <ul className="flex flex-col gap-2">
+            {library.map((item) => (
+              <li
+                key={item.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-muted/60 px-3 py-2"
+              >
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className="font-medium text-foreground">{item.title}</span>
+                    {item.category && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-secondary">
+                        {item.category}
+                      </span>
+                    )}
+                    {item.inherentImpact && item.inherentLikelihood && (
+                      <span className="text-xs text-secondary tabular-nums">
+                        {item.inherentImpact}×{item.inherentLikelihood}
+                      </span>
+                    )}
+                  </span>
+                  {item.description && (
+                    <span className="text-xs text-secondary">{item.description}</span>
+                  )}
+                </span>
+                {item.added ? (
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                    {t('inRegister')}
+                  </span>
+                ) : (
+                  <form action={addRiskFromLibraryAction.bind(null, item.id)}>
+                    <button
+                      type="submit"
+                      data-testid="library-add"
+                      className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-on-primary transition-colors duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      {t('addToRegister')}
+                    </button>
+                  </form>
+                )}
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

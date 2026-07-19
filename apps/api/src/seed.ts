@@ -32,6 +32,7 @@ import {
   license,
   membership,
   permission,
+  risk,
   role,
   rolePermission,
   subsidiary,
@@ -42,6 +43,7 @@ import {
 import { PasswordService } from './auth/password.service';
 import { CONTROL_DOMAINS, GLOBAL_CONTROLS } from './seed-data/global-controls';
 import { GLOBAL_FRAMEWORKS } from './seed-data/global-frameworks';
+import { RISK_LIBRARY } from './seed-data/risk-library';
 import { encryptConfig } from './connectors/config-crypto';
 
 const DEMO_OBJECT_KEY = 'demo/welcome.txt';
@@ -131,6 +133,7 @@ async function seedPostgres(): Promise<void> {
     await seedDemoFieldPermissions();
     await seedGlobalFrameworks();
     await seedGlobalControls();
+    await seedGlobalRiskLibrary();
     await seedAuditTypes();
     await seedGlossary();
     await seedDemoUsers(db, demoTenant.id);
@@ -324,6 +327,40 @@ export async function seedGlobalFrameworks(): Promise<void> {
       );
     }
     console.log(`✓ Глобальная библиотека фреймворков: ${GLOBAL_FRAMEWORKS.length} (idempotent)`);
+  } finally {
+    await owner.end().catch(() => {});
+  }
+}
+
+/** T-V23: глобальная библиотека risk-сценариев (tenant_id NULL) — под owner, как фреймворки. */
+export async function seedGlobalRiskLibrary(): Promise<void> {
+  const owner = new Client({
+    connectionString: env.databaseUrlOwner,
+    connectionTimeoutMillis: 5000,
+  });
+  try {
+    await owner.connect();
+    const db = drizzle(owner);
+    const existing = await db
+      .select({ titleI18n: risk.titleI18n })
+      .from(risk)
+      .where(isNull(risk.tenantId));
+    const known = new Set(existing.map((r) => r.titleI18n.en));
+    let added = 0;
+    for (const item of RISK_LIBRARY) {
+      if (known.has(item.title.en)) continue;
+      await db.insert(risk).values({
+        tenantId: null,
+        titleI18n: item.title,
+        descriptionI18n: item.description,
+        category: item.category,
+        inherentImpact: item.inherentImpact,
+        inherentLikelihood: item.inherentLikelihood,
+        status: 'library',
+      });
+      added += 1;
+    }
+    console.log(`✓ Библиотека risk-сценариев: ${RISK_LIBRARY.length} (новых ${added})`);
   } finally {
     await owner.end().catch(() => {});
   }

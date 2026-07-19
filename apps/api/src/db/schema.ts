@@ -882,9 +882,8 @@ export const risk = pgTable(
   'risk',
   {
     id: id(),
-    tenantId: uuid('tenant_id')
-      .notNull()
-      .references(() => tenant.id),
+    /** T-V23: NULL — глобальная библиотека risk-сценариев (ADR-0016 global+override). */
+    tenantId: uuid('tenant_id').references(() => tenant.id),
     subsidiaryId: uuid('subsidiary_id').references(() => subsidiary.id),
     domain: text('domain'),
     titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),

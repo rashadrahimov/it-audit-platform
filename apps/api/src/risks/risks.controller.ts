@@ -189,6 +189,25 @@ export class RisksController {
     return this.service.getMatrix(req.tenantId);
   }
 
+  @Get('library')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Библиотека risk-сценариев (T-V23): глобальный каталог + added' })
+  @ApiQuery({ name: 'locale', required: false })
+  library(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
+    return this.service.library(req.tenantId, parseLocale(localeQuery));
+  }
+
+  @Post('library/:id/add')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: '«Add to register» (T-V23): сценарий → реестр тенанта' })
+  addFromLibrary(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.addFromLibrary(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
+  }
+
   @Patch(':id')
   @RequirePermission('control', 'edit', 'edit')
   @ApiOperation({ summary: 'Редактировать риск (T-V12): treatment/статус/owner/атрибуты' })
