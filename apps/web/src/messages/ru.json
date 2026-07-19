@@ -388,7 +388,14 @@
       "vendors_by_risk": "Вендоры по риску",
       "risks_by_class": "Риски по классам",
       "devices_compliance": "Комплаенс устройств",
-      "controls_total": "Всего контролей"
+      "controls_total": "Всего контролей",
+      "tests_passing": "Тесты passing (manual/automated)",
+      "documents_readiness": "Готовность документов",
+      "vendors_by_category": "Вендоры по категориям",
+      "risks_by_treatment": "Риски по обработке",
+      "trust_requests": "Запросы Trust Center",
+      "questionnaires_by_status": "Опросники по статусам",
+      "commitments_by_status": "Обязательства по статусам"
     },
     "ct": {
       "bar": "Бары",

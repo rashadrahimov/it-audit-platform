@@ -388,7 +388,14 @@
       "vendors_by_risk": "Vendorlar risk üzrə",
       "risks_by_class": "Risklər sinif üzrə",
       "devices_compliance": "Cihaz uyğunluğu",
-      "controls_total": "Kontrolların sayı"
+      "controls_total": "Kontrolların sayı",
+      "tests_passing": "Keçən testlər (əl ilə/avtomatik)",
+      "documents_readiness": "Sənədlərin hazırlığı",
+      "vendors_by_category": "Vendorlar kateqoriya üzrə",
+      "risks_by_treatment": "Risklər emal üzrə",
+      "trust_requests": "Trust Center sorğuları",
+      "questionnaires_by_status": "Anketlər status üzrə",
+      "commitments_by_status": "Öhdəliklər status üzrə"
     },
     "ct": {
       "bar": "Barlar",

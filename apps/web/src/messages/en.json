@@ -388,7 +388,14 @@
       "vendors_by_risk": "Vendors by risk",
       "risks_by_class": "Risks by class",
       "devices_compliance": "Device compliance",
-      "controls_total": "Controls total"
+      "controls_total": "Controls total",
+      "tests_passing": "Tests passing (manual/automated)",
+      "documents_readiness": "Documents readiness",
+      "vendors_by_category": "Vendors by category",
+      "risks_by_treatment": "Risks by treatment",
+      "trust_requests": "Trust Center requests",
+      "questionnaires_by_status": "Questionnaires by status",
+      "commitments_by_status": "Commitments by status"
     },
     "ct": {
       "bar": "Bars",

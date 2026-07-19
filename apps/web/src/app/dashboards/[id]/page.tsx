@@ -28,6 +28,13 @@ const METRICS = [
   'risks_by_class',
   'devices_compliance',
   'controls_total',
+  'tests_passing',
+  'documents_readiness',
+  'vendors_by_category',
+  'risks_by_treatment',
+  'trust_requests',
+  'questionnaires_by_status',
+  'commitments_by_status',
 ];
 
 /** Страница отдельного дашборда (T-V15): рендер + правка + PDF + удаление. */

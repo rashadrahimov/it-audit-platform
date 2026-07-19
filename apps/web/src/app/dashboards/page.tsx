@@ -34,6 +34,13 @@ const METRICS = [
   'risks_by_class',
   'devices_compliance',
   'controls_total',
+  'tests_passing',
+  'documents_readiness',
+  'vendors_by_category',
+  'risks_by_treatment',
+  'trust_requests',
+  'questionnaires_by_status',
+  'commitments_by_status',
 ];
 
 /** Чарт-дашборды (T-072 → T-V15): конструктор, честный рендер chartType, PDF. */
