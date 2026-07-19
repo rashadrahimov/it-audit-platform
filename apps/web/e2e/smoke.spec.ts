@@ -17,19 +17,20 @@ test('логин → dashboard → engagements(toggle) → ai-settings → accou
   // submitLogin редиректит на /account — успешный логин увёл с /login
   await page.waitForURL(/\/account/, { timeout: 15_000 });
 
+  // app-shell: постоянный сайдбар (T-H28)
+  await expect(page.getByTestId('app-sidebar')).toBeVisible();
+
   // ENG-08 (T-H25): переключатель Активные/Архив на списке engagement'ов
   await page.goto('/engagements');
   await expect(page.getByTestId('engagements-view-toggle')).toBeVisible();
   await page.goto('/engagements?archived=true');
   await expect(page.getByTestId('engagements-view-toggle')).toBeVisible();
 
-  // EP-AI (T-H23): экран выбора LLM-провайдера
+  // EP-AI (T-H23): экран LLM-провайдера. Группа 'org' активна → авто-развёрнута,
+  // ссылка go-ai-settings видима (проверяет и сворачиваемый сайдбар).
   await page.goto('/ai-settings');
   await expect(page.getByTestId('ai-config-form')).toBeVisible();
   await expect(page.getByTestId('ai-deploy-default')).toBeVisible();
-
-  // хаб аккаунта: ссылка на ai-settings присутствует
-  await page.goto('/account');
   await expect(page.getByTestId('go-ai-settings')).toBeVisible();
 });
 

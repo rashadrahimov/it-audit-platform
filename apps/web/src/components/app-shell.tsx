@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/app/login/actions';
@@ -90,44 +90,90 @@ export function AppShell({
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
+  // Сворачиваемые группы (аккордеон): по умолчанию открыта только активная (или первая).
+  const activeGroup = groups.find((g) => g.items.some((it) => isActive(it.href)))?.group;
+  const [openGroups, setOpenGroups] = useState<Set<string>>(
+    () => new Set(activeGroup ? [activeGroup] : groups[0] ? [groups[0].group] : []),
+  );
+  useEffect(() => {
+    if (activeGroup) setOpenGroups((p) => (p.has(activeGroup) ? p : new Set(p).add(activeGroup)));
+  }, [activeGroup]);
+  const toggleGroup = (g: string) =>
+    setOpenGroups((p) => {
+      const n = new Set(p);
+      if (n.has(g)) n.delete(g);
+      else n.add(g);
+      return n;
+    });
+
   const nav = (
     <nav className="flex-1 overflow-y-auto px-3 py-4">
-      {groups.map((g) => (
-        <div key={g.group} className="mb-5">
-          <div className="mb-1 flex items-center gap-2 px-2 text-secondary">
-            <GroupIcon group={g.group} />
-            <span className="text-[11px] font-semibold tracking-wider uppercase">{g.label}</span>
+      {groups.map((g) => {
+        const groupOpen = openGroups.has(g.group);
+        const groupActive = g.items.some((it) => isActive(it.href));
+        return (
+          <div key={g.group} className="mb-1.5">
+            <button
+              type="button"
+              onClick={() => toggleGroup(g.group)}
+              aria-expanded={groupOpen}
+              data-testid={`nav-group-${g.group}`}
+              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                groupActive ? 'text-primary' : 'text-secondary hover:bg-muted'
+              }`}
+            >
+              <GroupIcon group={g.group} />
+              <span className="flex-1 text-left text-[11px] font-semibold tracking-wider uppercase">
+                {g.label}
+              </span>
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
+                  groupOpen ? 'rotate-180' : ''
+                }`}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            {groupOpen && (
+              <ul className="mt-0.5 mb-2 flex flex-col gap-0.5">
+                {g.items.map((it) => {
+                  const active = isActive(it.href);
+                  return (
+                    <li key={it.href}>
+                      <Link
+                        href={it.href}
+                        data-testid={it.testid}
+                        onClick={() => setOpen(false)}
+                        aria-current={active ? 'page' : undefined}
+                        className={`group flex items-center gap-2.5 rounded-md py-1.5 pr-2 pl-3 text-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                          active
+                            ? 'bg-primary/10 font-semibold text-primary'
+                            : 'text-secondary hover:bg-muted hover:text-foreground'
+                        }`}
+                      >
+                        <span
+                          aria-hidden
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
+                            active ? 'bg-accent' : 'bg-border group-hover:bg-secondary'
+                          }`}
+                        />
+                        <span className="truncate">{it.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
-          <ul className="flex flex-col gap-0.5">
-            {g.items.map((it) => {
-              const active = isActive(it.href);
-              return (
-                <li key={it.href}>
-                  <Link
-                    href={it.href}
-                    data-testid={it.testid}
-                    onClick={() => setOpen(false)}
-                    aria-current={active ? 'page' : undefined}
-                    className={`group flex items-center gap-2.5 rounded-md py-1.5 pr-2 pl-3 text-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
-                      active
-                        ? 'bg-primary/10 font-semibold text-primary'
-                        : 'text-secondary hover:bg-muted hover:text-foreground'
-                    }`}
-                  >
-                    <span
-                      aria-hidden
-                      className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
-                        active ? 'bg-accent' : 'bg-border group-hover:bg-secondary'
-                      }`}
-                    />
-                    <span className="truncate">{it.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+        );
+      })}
     </nav>
   );
 

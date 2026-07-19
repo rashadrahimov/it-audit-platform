@@ -23,7 +23,9 @@ async function setSessionCookie(token: string, maxAgeSeconds: number): Promise<v
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    // Secure по фактическому протоколу деплоя (APP_URL): http → false (иначе браузер
+    // выбрасывает куку и логин зациклен), https → true. Дев (нет APP_URL) → false.
+    secure: (process.env.APP_URL ?? '').startsWith('https:'),
     path: '/',
     maxAge: maxAgeSeconds,
   });
