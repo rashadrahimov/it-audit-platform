@@ -4,6 +4,22 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
+import { FilterBar } from '@/components/filter-bar';
+import { filterQuery } from '@/lib/filters';
+
+const STATES = [
+  'draft',
+  'manager_review',
+  'issued_to_respondents',
+  'responses_in_progress',
+  'findings_drafting',
+  'management_response',
+  'approval',
+  'report_issued',
+  'follow_up',
+  'closed',
+  'paused',
+] as const;
 
 export const dynamic = 'force-dynamic';
 
@@ -20,13 +36,14 @@ interface EngagementRow {
 export default async function EngagementsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ archived?: string }>;
+  searchParams: Promise<{ archived?: string; state?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tStates, locale, tenantSlug, sp] = await Promise.all([
+  const [t, tStates, tFilters, locale, tenantSlug, sp] = await Promise.all([
     getTranslations('engagements'),
     getTranslations('engagementStates'),
+    getTranslations('filters'),
     getCurrentLocale(),
     getActiveTenantSlug(),
     searchParams,
@@ -35,9 +52,10 @@ export default async function EngagementsPage({
 
   let engagements: EngagementRow[] = [];
   if (tenantSlug) {
-    const res = await apiFetch(`/engagements?locale=${locale}${archived ? '&archived=true' : ''}`, {
-      headers: { 'X-Tenant-Slug': tenantSlug },
-    });
+    const res = await apiFetch(
+      `/engagements?locale=${locale}${archived ? '&archived=true' : ''}${filterQuery(sp, ['state'])}`,
+      { headers: { 'X-Tenant-Slug': tenantSlug } },
+    );
     engagements = res.ok ? await res.json() : [];
   }
 
@@ -59,6 +77,19 @@ export default async function EngagementsPage({
           {t('viewArchived')}
         </Link>
       </nav>
+      <FilterBar
+        basePath="/engagements"
+        sp={sp}
+        keep={['archived']}
+        allLabel={tFilters('all')}
+        groups={[
+          {
+            param: 'state',
+            label: tFilters('state'),
+            options: STATES.map((s) => ({ value: s, label: tStates(s) })),
+          },
+        ]}
+      />
       <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
         <table className="w-full text-left text-sm" data-testid="engagements-table">
           <thead>

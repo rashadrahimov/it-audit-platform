@@ -157,12 +157,23 @@ export class PersonnelService {
     return result;
   }
 
-  async list(tenantId: string, userId: string) {
+  async list(
+    tenantId: string,
+    userId: string,
+    filters?: { employmentStatus?: string; departmentId?: string },
+  ) {
+    const conds = [isNull(personnelProfile.deletedAt)];
+    if (filters?.employmentStatus) {
+      conds.push(eq(personnelProfile.employmentStatus, filters.employmentStatus));
+    }
+    if (filters?.departmentId) {
+      conds.push(eq(personnelProfile.departmentId, filters.departmentId));
+    }
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select()
         .from(personnelProfile)
-        .where(isNull(personnelProfile.deletedAt))
+        .where(and(...conds))
         .orderBy(desc(personnelProfile.createdAt)),
     );
     // SEC-04 (ADR-0020): field-level маскирование по роли (эталон: email персонала)

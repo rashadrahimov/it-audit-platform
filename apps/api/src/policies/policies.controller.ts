@@ -22,6 +22,7 @@ import {
 import { z } from 'zod';
 import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam, uuidFilterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { AttestationsService } from './attestations.service';
@@ -172,11 +173,21 @@ export class PoliciesController {
 
   @Get()
   @RequirePermission('settings', 'view')
-  @ApiOperation({ summary: 'Политики тенанта' })
+  @ApiOperation({ summary: 'Политики тенанта; фильтры: ?status=, ?approverMembershipId= (T-V16)' })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'approverMembershipId', required: false })
   @ApiQuery({ name: 'locale', required: false })
   @ApiOkResponse({ description: '[{id, title, status, owner, renewBy}]' })
-  list(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
-    return this.policiesService.list(req.tenantId, parseLocale(localeQuery));
+  list(
+    @Req() req: TenantRequest,
+    @Query('status') status?: string,
+    @Query('approverMembershipId') approverMembershipId?: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    return this.policiesService.list(req.tenantId, parseLocale(localeQuery), {
+      status: filterParam(status, 'status'),
+      approverMembershipId: uuidFilterParam(approverMembershipId, 'approverMembershipId'),
+    });
   }
 
   @Get(':id')

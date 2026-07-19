@@ -889,5 +889,11 @@
     "apiKeyHint": "Stored encrypted (AES-256-GCM); never shown again.",
     "save": "Save",
     "residencyNote": "Data (gaps, answers, policies) is sent to the chosen provider. For a bank, use a local model (Ollama/vLLM inside your network) or a cloud provider with a data-processing agreement + zero data retention."
+  },
+  "filters": {
+    "all": "All",
+    "status": "Status",
+    "state": "Stage",
+    "risk": "Inherent risk"
   }
 }

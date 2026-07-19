@@ -127,12 +127,14 @@ export class QuestionnairesService {
     return { id: questionnaireId, status: 'submitted' };
   }
 
-  async list(tenantId: string) {
+  async list(tenantId: string, filters?: { status?: string }) {
+    const conds = [isNull(questionnaire.deletedAt)];
+    if (filters?.status) conds.push(eq(questionnaire.status, filters.status));
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select()
         .from(questionnaire)
-        .where(isNull(questionnaire.deletedAt))
+        .where(and(...conds))
         .orderBy(desc(questionnaire.createdAt)),
     );
     return rows.map((q) => ({ id: q.id, title: q.title, source: q.source, status: q.status }));

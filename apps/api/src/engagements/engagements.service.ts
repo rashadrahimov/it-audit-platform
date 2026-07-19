@@ -280,13 +280,21 @@ export class EngagementsService {
   }
 
   /** ENG-08: активный список исключает архивные (archivedAt); archived=true — только архивные. */
-  async list(tenantId: string, locale: Locale, auditTypeCode?: string, archived = false) {
+  async list(
+    tenantId: string,
+    locale: Locale,
+    auditTypeCode?: string,
+    archived = false,
+    filters?: { state?: string; subsidiaryId?: string },
+  ) {
     const rows = await this.dbService.withTenant(tenantId, (tx) => {
       const conds = [
         isNull(engagement.deletedAt),
         archived ? isNotNull(engagement.archivedAt) : isNull(engagement.archivedAt),
       ];
       if (auditTypeCode) conds.push(eq(auditType.code, auditTypeCode));
+      if (filters?.state) conds.push(eq(engagement.state, filters.state));
+      if (filters?.subsidiaryId) conds.push(eq(engagement.subsidiaryId, filters.subsidiaryId));
       return tx
         .select({
           id: engagement.id,

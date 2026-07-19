@@ -90,9 +90,20 @@ export class VendorsService {
     return result;
   }
 
-  async list(tenantId: string) {
+  async list(
+    tenantId: string,
+    filters?: { status?: string; category?: string; inherentRisk?: string },
+  ) {
+    const conds = [isNull(vendor.deletedAt)];
+    if (filters?.status) conds.push(eq(vendor.status, filters.status));
+    if (filters?.category) conds.push(eq(vendor.category, filters.category));
+    if (filters?.inherentRisk) conds.push(eq(vendor.inherentRisk, filters.inherentRisk));
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx.select().from(vendor).where(isNull(vendor.deletedAt)).orderBy(desc(vendor.createdAt)),
+      tx
+        .select()
+        .from(vendor)
+        .where(and(...conds))
+        .orderBy(desc(vendor.createdAt)),
     );
     return rows.map((v) => ({
       id: v.id,

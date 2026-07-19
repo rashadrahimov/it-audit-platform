@@ -889,5 +889,11 @@
     "apiKeyHint": "Şifrələnmiş saxlanılır (AES-256-GCM); bir daha göstərilmir.",
     "save": "Saxla",
     "residencyNote": "Data (boşluqlar, cavablar, siyasətlər) seçilmiş provayderə göndərilir. Bank üçün — lokal model (şəbəkənizdə Ollama/vLLM) və ya DPA + Zero-Data-Retention olan bulud."
+  },
+  "filters": {
+    "all": "Hamısı",
+    "status": "Status",
+    "state": "Mərhələ",
+    "risk": "Xas risk"
   }
 }

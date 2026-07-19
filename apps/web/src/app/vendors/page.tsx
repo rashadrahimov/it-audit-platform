@@ -4,6 +4,8 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { createVendorAction, transitionVendorAction } from './actions';
 import { EmptyState } from '@/components/empty-state';
+import { FilterBar } from '@/components/filter-bar';
+import { filterQuery } from '@/lib/filters';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,14 +33,25 @@ const RISK_TONE: Record<RiskClass, string> = {
   critical: 'bg-red-100 text-red-700',
 };
 
-/** Vendor risk (T-060): реестр вендоров с риск-классом и статусом. */
-export default async function VendorsPage() {
+/** Vendor risk (T-060): реестр вендоров с риск-классом и статусом; фильтры T-V16. */
+export default async function VendorsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; inherentRisk?: string }>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug] = await Promise.all([getTranslations('vendors'), getActiveTenantSlug()]);
+  const [t, tFilters, tenantSlug, sp] = await Promise.all([
+    getTranslations('vendors'),
+    getTranslations('filters'),
+    getActiveTenantSlug(),
+    searchParams,
+  ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const res = await apiFetch('/vendors', { headers });
+  const res = await apiFetch(`/vendors?${filterQuery(sp, ['status', 'inherentRisk']).slice(1)}`, {
+    headers,
+  });
   const vendors: Vendor[] = res.ok ? await res.json() : [];
 
   return (
@@ -46,6 +59,26 @@ export default async function VendorsPage() {
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+      <FilterBar
+        basePath="/vendors"
+        sp={sp}
+        allLabel={tFilters('all')}
+        groups={[
+          {
+            param: 'status',
+            label: tFilters('status'),
+            options: (['procurement', 'active', 'archived'] as const).map((s) => ({
+              value: s,
+              label: t(`status.${s}`),
+            })),
+          },
+          {
+            param: 'inherentRisk',
+            label: tFilters('risk'),
+            options: RISK_CLASSES.map((r) => ({ value: r, label: t(`cls.${r}`) })),
+          },
+        ]}
+      />
 
       <form
         action={createVendorAction}

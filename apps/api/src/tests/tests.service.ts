@@ -142,7 +142,20 @@ export class TestsService {
     return saved.result;
   }
 
-  async list(tenantId: string, locale: Locale, controlId?: string) {
+  async list(
+    tenantId: string,
+    locale: Locale,
+    controlId?: string,
+    filters?: { status?: string; kind?: string; slaStatus?: string; ownerMembershipId?: string },
+  ) {
+    const conds = [isNull(test.deletedAt)];
+    if (controlId) conds.push(eq(test.controlId, controlId));
+    if (filters?.status) conds.push(eq(test.status, filters.status));
+    if (filters?.kind) conds.push(eq(test.kind, filters.kind));
+    if (filters?.slaStatus) conds.push(eq(test.slaStatus, filters.slaStatus));
+    if (filters?.ownerMembershipId) {
+      conds.push(eq(test.ownerMembershipId, filters.ownerMembershipId));
+    }
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
@@ -161,11 +174,7 @@ export class TestsService {
         .innerJoin(control, eq(test.controlId, control.id))
         .leftJoin(membership, eq(test.ownerMembershipId, membership.id))
         .leftJoin(user, eq(membership.userId, user.id))
-        .where(
-          controlId
-            ? and(isNull(test.deletedAt), eq(test.controlId, controlId))
-            : isNull(test.deletedAt),
-        )
+        .where(and(...conds))
         .orderBy(desc(test.createdAt)),
     );
     return rows.map((row) => ({

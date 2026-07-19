@@ -149,7 +149,11 @@ export class ControlsService {
     };
   }
 
-  async list(tenantSlug: string | undefined, locale: Locale): Promise<ControlListItem[]> {
+  async list(
+    tenantSlug: string | undefined,
+    locale: Locale,
+    filters?: { domainCode?: string; q?: string },
+  ): Promise<ControlListItem[]> {
     const collect = async (db: Pick<typeof this.dbService.db, 'select'>) => {
       const controls = await db
         .select()
@@ -183,7 +187,7 @@ export class ControlsService {
     }
 
     const domainById = new Map(data.domains.map((d) => [d.id, d]));
-    return data.controls.map((row) => {
+    const items = data.controls.map((row) => {
       const domain = domainById.get(row.domainId);
       return {
         id: row.id,
@@ -202,6 +206,15 @@ export class ControlsService {
         })),
       };
     });
+    // T-V16: библиотека собирается в памяти (global+tenant) — фильтруем здесь же
+    const needle = filters?.q?.toLowerCase();
+    return items.filter(
+      (c) =>
+        (!filters?.domainCode || c.domain?.code === filters.domainCode) &&
+        (!needle ||
+          c.ref.toLowerCase().includes(needle) ||
+          c.objective.toLowerCase().includes(needle)),
+    );
   }
 }
 

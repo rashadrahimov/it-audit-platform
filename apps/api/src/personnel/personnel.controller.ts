@@ -7,12 +7,20 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam, uuidFilterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { PersonnelService } from './personnel.service';
@@ -86,8 +94,19 @@ export class PersonnelController {
 
   @Get()
   @RequirePermission('settings', 'view')
-  @ApiOperation({ summary: 'Профили персонала тенанта' })
-  list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId, req.user.sub);
+  @ApiOperation({
+    summary: 'Профили персонала тенанта; фильтры: ?employmentStatus=, ?departmentId= (T-V16)',
+  })
+  @ApiQuery({ name: 'employmentStatus', required: false })
+  @ApiQuery({ name: 'departmentId', required: false })
+  list(
+    @Req() req: TenantRequest,
+    @Query('employmentStatus') employmentStatus?: string,
+    @Query('departmentId') departmentId?: string,
+  ) {
+    return this.service.list(req.tenantId, req.user.sub, {
+      employmentStatus: filterParam(employmentStatus, 'employmentStatus'),
+      departmentId: uuidFilterParam(departmentId, 'departmentId'),
+    });
   }
 }

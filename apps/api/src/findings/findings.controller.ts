@@ -28,6 +28,7 @@ import {
   type Locale,
 } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam, uuidFilterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { FindingsService } from './findings.service';
@@ -127,16 +128,32 @@ export class FindingsController {
 
   @Get()
   @RequirePermission('finding', 'view')
-  @ApiOperation({ summary: 'Findings тенанта; ?engagementId= — по engagement' })
+  @ApiOperation({
+    summary:
+      'Findings тенанта; фильтры: ?engagementId=, ?status=, ?riskRating=, ?slaStatus=, ?ownerMembershipId= (T-V16)',
+  })
   @ApiQuery({ name: 'engagementId', required: false })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'riskRating', required: false })
+  @ApiQuery({ name: 'slaStatus', required: false })
+  @ApiQuery({ name: 'ownerMembershipId', required: false })
   @ApiQuery({ name: 'locale', required: false })
   @ApiOkResponse({ description: '[{id, title, riskRating, status, owner, auditor, dueDate}]' })
   list(
     @Req() req: TenantRequest,
     @Query('engagementId') engagementId?: string,
+    @Query('status') status?: string,
+    @Query('riskRating') riskRating?: string,
+    @Query('slaStatus') slaStatus?: string,
+    @Query('ownerMembershipId') ownerMembershipId?: string,
     @Query('locale') localeQuery?: string,
   ) {
-    return this.findingsService.list(req.tenantId, parseLocale(localeQuery), engagementId);
+    return this.findingsService.list(req.tenantId, parseLocale(localeQuery), engagementId, {
+      status: filterParam(status, 'status'),
+      riskRating: filterParam(riskRating, 'riskRating'),
+      slaStatus: filterParam(slaStatus, 'slaStatus'),
+      ownerMembershipId: uuidFilterParam(ownerMembershipId, 'ownerMembershipId'),
+    });
   }
 
   @Get(':id')

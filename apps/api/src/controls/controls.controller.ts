@@ -10,6 +10,7 @@ import {
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam } from '../list-filters';
 import { ControlsService, type ControlDetail, type ControlListItem } from './controls.service';
 
 function parseLocale(localeQuery?: string): Locale {
@@ -27,16 +28,24 @@ export class ControlsController {
 
   @Get()
   @ApiOperation({
-    summary: 'Библиотека контролей с маппингом на стандарты (T-031); ?tenantSlug — плюс адаптации',
+    summary:
+      'Библиотека контролей с маппингом на стандарты (T-031); ?tenantSlug — плюс адаптации; фильтры: ?domainCode=, ?q= (T-V16)',
   })
   @ApiQuery({ name: 'tenantSlug', required: false })
+  @ApiQuery({ name: 'domainCode', required: false })
+  @ApiQuery({ name: 'q', required: false, description: 'подстрока в ref/objective' })
   @ApiQuery({ name: 'locale', required: false, description: 'en|az|ru; дефолт en' })
   @ApiOkResponse({ description: '[{ref, domain, objective, question, standards[]}]' })
   list(
     @Query('tenantSlug') tenantSlug?: string,
+    @Query('domainCode') domainCode?: string,
+    @Query('q') q?: string,
     @Query('locale') localeQuery?: string,
   ): Promise<ControlListItem[]> {
-    return this.controlsService.list(tenantSlug, parseLocale(localeQuery));
+    return this.controlsService.list(tenantSlug, parseLocale(localeQuery), {
+      domainCode: filterParam(domainCode, 'domainCode'),
+      q: q && q.length <= 128 ? q : undefined,
+    });
   }
 
   @Get(':id')

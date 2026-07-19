@@ -7,12 +7,20 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { ChangesService } from './changes.service';
@@ -66,8 +74,13 @@ export class ChangesController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Изменения тенанта' })
-  list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId);
+  @ApiOperation({ summary: 'Изменения тенанта; фильтры: ?status=, ?type= (T-V16)' })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'type', required: false })
+  list(@Req() req: TenantRequest, @Query('status') status?: string, @Query('type') type?: string) {
+    return this.service.list(req.tenantId, {
+      status: filterParam(status, 'status'),
+      type: filterParam(type, 'type'),
+    });
   }
 }

@@ -320,11 +320,29 @@ export class FindingsService {
     return result.updated;
   }
 
-  async list(tenantId: string, locale: Locale, engagementId?: string) {
+  async list(
+    tenantId: string,
+    locale: Locale,
+    engagementId?: string,
+    filters?: {
+      status?: string;
+      riskRating?: string;
+      slaStatus?: string;
+      ownerMembershipId?: string;
+    },
+  ) {
     const ownerMembership = alias(membership, 'owner_membership');
     const ownerUser = alias(user, 'owner_user');
     const auditorMembership = alias(membership, 'auditor_membership');
     const auditorUser = alias(user, 'auditor_user');
+    const conds = [isNull(finding.deletedAt)];
+    if (engagementId) conds.push(eq(finding.engagementId, engagementId));
+    if (filters?.status) conds.push(eq(finding.status, filters.status));
+    if (filters?.riskRating) conds.push(eq(finding.riskRating, filters.riskRating));
+    if (filters?.slaStatus) conds.push(eq(finding.slaStatus, filters.slaStatus));
+    if (filters?.ownerMembershipId) {
+      conds.push(eq(finding.ownerMembershipId, filters.ownerMembershipId));
+    }
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
@@ -344,11 +362,7 @@ export class FindingsService {
         .leftJoin(ownerUser, eq(ownerMembership.userId, ownerUser.id))
         .leftJoin(auditorMembership, eq(finding.auditorMembershipId, auditorMembership.id))
         .leftJoin(auditorUser, eq(auditorMembership.userId, auditorUser.id))
-        .where(
-          engagementId
-            ? and(isNull(finding.deletedAt), eq(finding.engagementId, engagementId))
-            : isNull(finding.deletedAt),
-        )
+        .where(and(...conds))
         .orderBy(desc(finding.createdAt)),
     );
     return rows.map((row) => ({

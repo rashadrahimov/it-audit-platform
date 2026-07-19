@@ -106,12 +106,15 @@ export class ChangesService {
     return result;
   }
 
-  async list(tenantId: string) {
+  async list(tenantId: string, filters?: { status?: string; type?: string }) {
+    const conds = [isNull(codeChange.deletedAt)];
+    if (filters?.status) conds.push(eq(codeChange.status, filters.status));
+    if (filters?.type) conds.push(eq(codeChange.type, filters.type));
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select()
         .from(codeChange)
-        .where(isNull(codeChange.deletedAt))
+        .where(and(...conds))
         .orderBy(desc(codeChange.createdAt)),
     );
     return rows.map((c) => ({

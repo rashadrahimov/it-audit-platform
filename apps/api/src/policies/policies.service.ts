@@ -188,8 +188,17 @@ export class PoliciesService {
     return table[current]?.[action] ?? null;
   }
 
-  async list(tenantId: string, locale: Locale) {
+  async list(
+    tenantId: string,
+    locale: Locale,
+    filters?: { status?: string; approverMembershipId?: string },
+  ) {
     const ownerUser = user;
+    const conds = [isNull(policy.deletedAt)];
+    if (filters?.status) conds.push(eq(policy.status, filters.status));
+    if (filters?.approverMembershipId) {
+      conds.push(eq(policy.approverMembershipId, filters.approverMembershipId));
+    }
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
@@ -202,7 +211,7 @@ export class PoliciesService {
         .from(policy)
         .leftJoin(membership, eq(policy.ownerMembershipId, membership.id))
         .leftJoin(ownerUser, eq(membership.userId, ownerUser.id))
-        .where(isNull(policy.deletedAt))
+        .where(and(...conds))
         .orderBy(desc(policy.createdAt)),
     );
     return rows.map((row) => ({

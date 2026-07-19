@@ -7,12 +7,20 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { QuestionnairesService } from './questionnaires.service';
@@ -88,9 +96,10 @@ export class QuestionnairesController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Опросники тенанта' })
-  list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId);
+  @ApiQuery({ name: 'status', required: false })
+  @ApiOperation({ summary: 'Опросники тенанта; фильтр: ?status= (T-V16)' })
+  list(@Req() req: TenantRequest, @Query('status') status?: string) {
+    return this.service.list(req.tenantId, { status: filterParam(status, 'status') });
   }
 
   @Get(':id')

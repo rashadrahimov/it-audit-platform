@@ -7,13 +7,21 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { i18nTextSchema } from '@it-audit/shared';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { PrivacyAssessmentsService } from './privacy-assessments.service';
@@ -118,9 +126,14 @@ export class PrivacyController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Реестр операций обработки (ROPA)' })
-  list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId);
+  @ApiOperation({ summary: 'Реестр операций обработки (ROPA); фильтры: ?role=, ?status= (T-V16)' })
+  @ApiQuery({ name: 'role', required: false })
+  @ApiQuery({ name: 'status', required: false })
+  list(@Req() req: TenantRequest, @Query('role') role?: string, @Query('status') status?: string) {
+    return this.service.list(req.tenantId, {
+      role: filterParam(role, 'role'),
+      status: filterParam(status, 'status'),
+    });
   }
 
   @Get(':id')

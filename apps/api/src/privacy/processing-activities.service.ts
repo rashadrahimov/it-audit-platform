@@ -91,12 +91,15 @@ export class ProcessingActivitiesService {
     return { id, status: 'archived' };
   }
 
-  async list(tenantId: string) {
+  async list(tenantId: string, filters?: { role?: string; status?: string }) {
+    const conds = [isNull(processingActivity.deletedAt)];
+    if (filters?.role) conds.push(eq(processingActivity.role, filters.role));
+    if (filters?.status) conds.push(eq(processingActivity.status, filters.status));
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select()
         .from(processingActivity)
-        .where(isNull(processingActivity.deletedAt))
+        .where(and(...conds))
         .orderBy(desc(processingActivity.createdAt)),
     );
     return rows.map((p) => ({

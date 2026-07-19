@@ -22,6 +22,7 @@ import {
 import { z } from 'zod';
 import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam, uuidFilterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { AutoTestService } from './auto-test.service';
@@ -111,16 +112,32 @@ export class TestsController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Тесты тенанта; ?controlId= — тесты контроля' })
+  @ApiOperation({
+    summary:
+      'Тесты тенанта; фильтры: ?controlId=, ?status=, ?kind=, ?slaStatus=, ?ownerMembershipId= (T-V16)',
+  })
   @ApiQuery({ name: 'controlId', required: false })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'kind', required: false })
+  @ApiQuery({ name: 'slaStatus', required: false })
+  @ApiQuery({ name: 'ownerMembershipId', required: false })
   @ApiQuery({ name: 'locale', required: false })
   @ApiOkResponse({ description: '[{id, title, kind, status, slaStatus, controlRef, owner}]' })
   list(
     @Req() req: TenantRequest,
     @Query('controlId') controlId?: string,
+    @Query('status') status?: string,
+    @Query('kind') kind?: string,
+    @Query('slaStatus') slaStatus?: string,
+    @Query('ownerMembershipId') ownerMembershipId?: string,
     @Query('locale') localeQuery?: string,
   ) {
-    return this.testsService.list(req.tenantId, parseLocale(localeQuery), controlId);
+    return this.testsService.list(req.tenantId, parseLocale(localeQuery), controlId, {
+      status: filterParam(status, 'status'),
+      kind: filterParam(kind, 'kind'),
+      slaStatus: filterParam(slaStatus, 'slaStatus'),
+      ownerMembershipId: uuidFilterParam(ownerMembershipId, 'ownerMembershipId'),
+    });
   }
 
   @Get(':id')
