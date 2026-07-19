@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { document, documentLink, membership } from '../db/schema';
+import { document, documentLink, membership, user } from '../db/schema';
 import { FileStorageService, type StoredObject } from '../files/file-storage.service';
 
 /** Известные цели привязки; целостность полиморфизма — на уровне сервиса (data-model §10.5). */
@@ -117,6 +117,75 @@ export class DocumentsService {
       after: link,
     });
     return { linked: created !== null };
+  }
+
+  /** T-V01: tenant-wide реестр документов — owner-имя, счётчик привязок, фильтры. */
+  async listAll(tenantId: string, filters?: { status?: string; ownerMembershipId?: string }) {
+    const data = await this.dbService.withTenant(tenantId, async (tx) => {
+      const conds = [isNull(document.deletedAt)];
+      if (filters?.status) conds.push(eq(document.status, filters.status));
+      if (filters?.ownerMembershipId) {
+        conds.push(eq(document.ownerMembershipId, filters.ownerMembershipId));
+      }
+      const docs = await tx
+        .select({
+          id: document.id,
+          filename: document.filename,
+          mime: document.mime,
+          size: document.size,
+          version: document.version,
+          renewBy: document.renewBy,
+          status: document.status,
+          createdAt: document.createdAt,
+          owner: user.fullName,
+        })
+        .from(document)
+        .leftJoin(membership, eq(document.ownerMembershipId, membership.id))
+        .leftJoin(user, eq(membership.userId, user.id))
+        .where(and(...conds))
+        .orderBy(desc(document.createdAt));
+      const links = await tx
+        .select({ documentId: documentLink.documentId, count: sql<number>`count(*)::int` })
+        .from(documentLink)
+        .groupBy(documentLink.documentId);
+      return { docs, links };
+    });
+    const linkCount = new Map(data.links.map((l) => [l.documentId, l.count]));
+    return data.docs.map((d) => ({
+      ...d,
+      renewBy: d.renewBy?.toISOString() ?? null,
+      createdAt: d.createdAt.toISOString(),
+      links: linkCount.get(d.id) ?? 0,
+    }));
+  }
+
+  /** T-V01: переназначить owner документа (админ-действие). */
+  async reassignOwner(actor: Actor, documentId: string, ownerMembershipId: string) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [doc] = await tx
+        .select()
+        .from(document)
+        .where(and(eq(document.id, documentId), isNull(document.deletedAt)));
+      if (!doc) throw new NotFoundException(`Документ ${documentId} не найден`);
+      const [m] = await tx
+        .select()
+        .from(membership)
+        .where(and(eq(membership.id, ownerMembershipId), eq(membership.tenantId, actor.tenantId)));
+      if (!m) throw new BadRequestException('ownerMembershipId: membership не найден в тенанте');
+      await tx.update(document).set({ ownerMembershipId }).where(eq(document.id, documentId));
+      return { before: doc.ownerMembershipId, after: ownerMembershipId };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'document.owner_changed',
+      entityType: 'document',
+      entityId: documentId,
+      before: { ownerMembershipId: result.before },
+      after: { ownerMembershipId: result.after },
+    });
+    return result;
   }
 
   /** Документы сущности (через привязки), новые сверху. */

@@ -99,7 +99,8 @@
     "migration": "Import checklist",
     "aiSettings": "AI provider",
     "home": "Home",
-    "findings": "Findings"
+    "findings": "Findings",
+    "documents": "Documents"
   },
   "engagements": {
     "title": "Engagements",
@@ -948,5 +949,23 @@
       "due_soon": "Due soon",
       "overdue": "Overdue"
     }
+  },
+  "documents": {
+    "title": "Documents",
+    "upload": "Upload evidence",
+    "uploadBtn": "Upload",
+    "linkTo": "Link to",
+    "linkNone": "No link",
+    "linkControls": "Controls",
+    "linkEngagements": "Engagements",
+    "renewBy": "Renew by",
+    "colName": "Name",
+    "colSize": "Size",
+    "colOwner": "Owner",
+    "colLinks": "Links",
+    "colRenewBy": "Renew by",
+    "colUploaded": "Uploaded",
+    "ownerSave": "OK",
+    "empty": "No documents yet"
   }
 }

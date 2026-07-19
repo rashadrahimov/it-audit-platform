@@ -99,7 +99,8 @@
     "migration": "Импорт чеклиста",
     "aiSettings": "Провайдер ИИ",
     "home": "Главная",
-    "findings": "Замечания"
+    "findings": "Замечания",
+    "documents": "Документы"
   },
   "engagements": {
     "title": "Аудиты",
@@ -948,5 +949,23 @@
       "due_soon": "Скоро срок",
       "overdue": "Просрочено"
     }
+  },
+  "documents": {
+    "title": "Документы",
+    "upload": "Загрузить доказательство",
+    "uploadBtn": "Загрузить",
+    "linkTo": "Привязать к",
+    "linkNone": "Без привязки",
+    "linkControls": "Контроли",
+    "linkEngagements": "Аудиты",
+    "renewBy": "Обновить к",
+    "colName": "Название",
+    "colSize": "Размер",
+    "colOwner": "Владелец",
+    "colLinks": "Привязки",
+    "colRenewBy": "Обновить к",
+    "colUploaded": "Загружен",
+    "ownerSave": "ОК",
+    "empty": "Документов пока нет"
   }
 }

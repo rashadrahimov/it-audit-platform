@@ -99,7 +99,8 @@
     "migration": "Çeklist idxalı",
     "aiSettings": "AI provayderi",
     "home": "Əsas",
-    "findings": "Findinqlər"
+    "findings": "Findinqlər",
+    "documents": "Sənədlər"
   },
   "engagements": {
     "title": "Auditlər",
@@ -948,5 +949,23 @@
       "due_soon": "Vaxt yaxınlaşır",
       "overdue": "Gecikib"
     }
+  },
+  "documents": {
+    "title": "Sənədlər",
+    "upload": "Sübut yüklə",
+    "uploadBtn": "Yüklə",
+    "linkTo": "Bağla",
+    "linkNone": "Bağlantısız",
+    "linkControls": "Nəzarətlər",
+    "linkEngagements": "Auditlər",
+    "renewBy": "Yenilənmə tarixi",
+    "colName": "Ad",
+    "colSize": "Ölçü",
+    "colOwner": "Sahib",
+    "colLinks": "Bağlantılar",
+    "colRenewBy": "Yenilənmə",
+    "colUploaded": "Yüklənib",
+    "ownerSave": "OK",
+    "empty": "Hələ sənəd yoxdur"
   }
 }

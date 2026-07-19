@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -26,6 +27,7 @@ import {
 import type { Response } from 'express';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam, uuidFilterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { DocumentsService } from './documents.service';
@@ -109,17 +111,45 @@ export class DocumentsController {
 
   @Get()
   @RequirePermission('engagement', 'view')
-  @ApiOperation({ summary: 'Документы сущности (по привязкам)' })
-  @ApiOkResponse({ description: '[{id, filename, relation, sha256, renewBy, status}]' })
+  @ApiOperation({
+    summary:
+      'Документы: с ?entityType&entityId — по привязкам; без — tenant-wide реестр (T-V01; фильтры ?status=, ?ownerMembershipId=)',
+  })
+  @ApiOkResponse({ description: '[{id, filename, owner, links, renewBy, status}]' })
   listFor(
     @Req() req: TenantRequest,
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
+    @Query('status') status?: string,
+    @Query('ownerMembershipId') ownerMembershipId?: string,
   ) {
-    if (!entityType || !entityId) {
-      throw new BadRequestException('Нужны entityType и entityId');
+    if (entityType || entityId) {
+      if (!entityType || !entityId) {
+        throw new BadRequestException('Нужны entityType и entityId вместе');
+      }
+      return this.documentsService.listFor(req.tenantId, entityType, entityId);
     }
-    return this.documentsService.listFor(req.tenantId, entityType, entityId);
+    return this.documentsService.listAll(req.tenantId, {
+      status: filterParam(status, 'status'),
+      ownerMembershipId: uuidFilterParam(ownerMembershipId, 'ownerMembershipId'),
+    });
+  }
+
+  @Patch(':id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-V01: переназначить owner документа' })
+  reassign(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ ownerMembershipId: z.uuid() }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.documentsService.reassignOwner(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.ownerMembershipId,
+    );
   }
 
   @Get(':id/content')
