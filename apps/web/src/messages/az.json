@@ -541,6 +541,18 @@
       "draft": "Qaralama",
       "in_progress": "Davam edir",
       "completed": "Tamamlanıb"
+    },
+    "createTitle": "Yeni kampaniya",
+    "createDue": "Son tarix",
+    "createScope": "Əhatə (boş = bütün aktivlər)",
+    "createBtn": "UAR başlat",
+    "back": "Baxış siyahısına",
+    "itemAccount": "Hesab",
+    "itemDecision": "Qərar",
+    "dec": {
+      "certify": "Təsdiqlə",
+      "revoke": "Ləğv et",
+      "modify": "Dəyiş"
     }
   },
   "risks": {

@@ -541,6 +541,18 @@
       "draft": "Черновик",
       "in_progress": "В процессе",
       "completed": "Завершено"
+    },
+    "createTitle": "Новая кампания",
+    "createDue": "Срок",
+    "createScope": "Охват (пусто = все активные)",
+    "createBtn": "Запустить UAR",
+    "back": "К списку ревью",
+    "itemAccount": "Аккаунт",
+    "itemDecision": "Решение",
+    "dec": {
+      "certify": "Подтвердить",
+      "revoke": "Отозвать",
+      "modify": "Изменить"
     }
   },
   "risks": {

@@ -541,6 +541,18 @@
       "draft": "Draft",
       "in_progress": "In progress",
       "completed": "Completed"
+    },
+    "createTitle": "New campaign",
+    "createDue": "Due",
+    "createScope": "Scope (empty = all active)",
+    "createBtn": "Start UAR",
+    "back": "Back to reviews",
+    "itemAccount": "Account",
+    "itemDecision": "Decision",
+    "dec": {
+      "certify": "Certify",
+      "revoke": "Revoke",
+      "modify": "Modify"
     }
   },
   "risks": {
