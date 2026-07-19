@@ -104,7 +104,8 @@
     "tests": "Tests",
     "searchPh": "Search…",
     "rolesNav": "Roles",
-    "membersNav": "Members"
+    "membersNav": "Members",
+    "myWorkNav": "My work"
   },
   "engagements": {
     "title": "Engagements",
@@ -1087,6 +1088,23 @@
       "auditor": "Auditor",
       "end_user": "End user",
       "msp": "MSP"
+    }
+  },
+  "myWork": {
+    "title": "My work",
+    "allDone": "Nothing assigned to you — all clear.",
+    "pendingCount": "{count} items need your attention",
+    "findings": "My findings",
+    "tests": "My tests",
+    "approvals": "Awaiting my approval",
+    "attestations": "Policies to attest",
+    "attestBtn": "Attest",
+    "accessRequests": "My access requests",
+    "none": "Nothing here",
+    "reqStatuses": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
     }
   }
 }

@@ -104,7 +104,8 @@
     "tests": "Testlər",
     "searchPh": "Axtarış…",
     "rolesNav": "Rollar",
-    "membersNav": "İştirakçılar"
+    "membersNav": "İştirakçılar",
+    "myWorkNav": "Mənim işim"
   },
   "engagements": {
     "title": "Auditlər",
@@ -1087,6 +1088,23 @@
       "auditor": "Auditor",
       "end_user": "İstifadəçi",
       "msp": "MSP"
+    }
+  },
+  "myWork": {
+    "title": "Mənim işim",
+    "allDone": "Sizə heç nə təyin olunmayıb — hər şey qaydasındadır.",
+    "pendingCount": "Diqqət tələb edir: {count}",
+    "findings": "Mənim findinqlərim",
+    "tests": "Mənim testlərim",
+    "approvals": "Təsdiqimi gözləyir",
+    "attestations": "Tanışlıq üçün siyasətlər",
+    "attestBtn": "Təsdiqlə",
+    "accessRequests": "Giriş sorğularım",
+    "none": "Boşdur",
+    "reqStatuses": {
+      "pending": "Gözləyir",
+      "approved": "Təsdiqlənib",
+      "rejected": "Rədd edilib"
     }
   }
 }

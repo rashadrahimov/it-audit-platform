@@ -104,7 +104,8 @@
     "tests": "Тесты",
     "searchPh": "Поиск…",
     "rolesNav": "Роли",
-    "membersNav": "Участники"
+    "membersNav": "Участники",
+    "myWorkNav": "Моя работа"
   },
   "engagements": {
     "title": "Аудиты",
@@ -1087,6 +1088,23 @@
       "auditor": "Аудитор",
       "end_user": "Пользователь",
       "msp": "MSP"
+    }
+  },
+  "myWork": {
+    "title": "Моя работа",
+    "allDone": "На вас ничего не назначено — всё чисто.",
+    "pendingCount": "Требуют внимания: {count}",
+    "findings": "Мои замечания",
+    "tests": "Мои тесты",
+    "approvals": "Ждут моего решения",
+    "attestations": "Политики на ознакомление",
+    "attestBtn": "Подтвердить",
+    "accessRequests": "Мои запросы доступа",
+    "none": "Пусто",
+    "reqStatuses": {
+      "pending": "Ожидает",
+      "approved": "Одобрен",
+      "rejected": "Отклонён"
     }
   }
 }
