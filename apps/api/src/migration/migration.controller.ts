@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Controller,
   Post,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -9,8 +10,9 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { PermissionGuard } from '../rbac/permission.guard';
+import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
+import { parseChecklistWorkbook } from './checklist-workbook';
 import { MigrationService } from './migration.service';
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
@@ -39,5 +41,29 @@ export class MigrationController {
   async previewChecklist(@UploadedFile() file: Express.Multer.File | undefined) {
     if (!file) throw new BadRequestException('Нужен multipart-файл в поле «file» (.xlsx)');
     return this.service.previewChecklist(file.buffer);
+  }
+
+  @Post('checklist/import')
+  @RequirePermission('settings', 'edit', 'edit')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_FILE_SIZE } }))
+  @ApiOperation({ summary: 'Импорт контролей из чеклист-шаблона в тенант-библиотеку (T-H14)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  async importChecklist(
+    @Req() req: TenantRequest,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    if (!file) throw new BadRequestException('Нужен multipart-файл в поле «file» (.xlsx)');
+    const rows = await parseChecklistWorkbook(file.buffer);
+    return this.service.importChecklist(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      rows,
+    );
   }
 }
