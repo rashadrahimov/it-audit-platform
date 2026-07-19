@@ -1069,11 +1069,7 @@
         "Baxışa göndərin",
         "İmzalayın; annotasiyalar daxildədir"
       ],
-      "plans": [
-        "İllik plan tərtib edin",
-        "Auditləri dövrlərə bölün",
-        "İcranı izləyin"
-      ],
+      "plans": ["İllik plan tərtib edin", "Auditləri dövrlərə bölün", "İcranı izləyin"],
       "allocations": [
         "Auditoru auditə təyin edin",
         "Plan saatlarını göstərin",
@@ -1089,11 +1085,7 @@
         "Qiymətləndirmələri toplayın",
         "Prosesi təkmilləşdirin"
       ],
-      "risks": [
-        "Risk qeyd edin",
-        "Ehtimal və təsiri qiymətləndirin",
-        "Sahib və plan təyin edin"
-      ],
+      "risks": ["Risk qeyd edin", "Ehtimal və təsiri qiymətləndirin", "Sahib və plan təyin edin"],
       "risk-heatmap": [
         "5×5 xəritəni açın",
         "Qırmızı zona prioritetdir",
@@ -1229,10 +1221,7 @@
         "Xüsusi rol yaradın",
         "Onun üçün matris xanasını təyin edin"
       ],
-      "members": [
-        "İştirakçı kateqoriyalarını yoxlayın",
-        "Rolu sətirdəki seçimlə dəyişin"
-      ]
+      "members": ["İştirakçı kateqoriyalarını yoxlayın", "Rolu sətirdəki seçimlə dəyişin"]
     },
     "long": {
       "account": "Girişdən sonrakı əsas ekran. Canlı metrikləri (auditlər, nəzarətlər, standartlar), 6 addımlıq onboarding irəliləyişini və əsas bölmələrə sürətli girişi göstərir. Yeni istifadəçiyə buradan interaktiv tur təklif olunur. Tam naviqasiya həmişə soldadır.",
