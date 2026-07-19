@@ -3,6 +3,8 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { ConnectorSyncService } from '../connectors/connector-sync.service';
 import { DbService } from '../db/db.service';
+import { RbacService } from '../rbac/rbac.service';
+import { maskFields } from '../rbac/field-policy';
 import { connector, personnelProfile } from '../db/schema';
 
 interface Actor {
@@ -27,6 +29,7 @@ export class PersonnelService {
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
     private readonly connectorSyncService: ConnectorSyncService,
+    private readonly rbacService: RbacService,
   ) {}
 
   /** Импорт профилей из коннектора (personnel capability): records → personnel_profile (upsert по external_id). */
@@ -154,7 +157,7 @@ export class PersonnelService {
     return result;
   }
 
-  async list(tenantId: string) {
+  async list(tenantId: string, userId: string) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select()
@@ -162,14 +165,21 @@ export class PersonnelService {
         .where(isNull(personnelProfile.deletedAt))
         .orderBy(desc(personnelProfile.createdAt)),
     );
-    return rows.map((p) => ({
-      id: p.id,
-      fullName: p.fullName,
-      email: p.email,
-      unit: p.unit,
-      position: p.position,
-      employmentStatus: p.employmentStatus,
-      fromConnector: p.connectorId !== null,
-    }));
+    // SEC-04 (ADR-0020): field-level маскирование по роли (эталон: email персонала)
+    const levels = await this.rbacService.fieldLevels(userId, tenantId, 'personnel');
+    return rows.map((p) =>
+      maskFields(
+        {
+          id: p.id,
+          fullName: p.fullName,
+          email: p.email,
+          unit: p.unit,
+          position: p.position,
+          employmentStatus: p.employmentStatus,
+          fromConnector: p.connectorId !== null,
+        },
+        levels,
+      ),
+    );
   }
 }

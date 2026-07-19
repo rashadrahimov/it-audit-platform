@@ -88,6 +88,6 @@ export class PersonnelController {
   @RequirePermission('settings', 'view')
   @ApiOperation({ summary: 'Профили персонала тенанта' })
   list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId);
+    return this.service.list(req.tenantId, req.user.sub);
   }
 }

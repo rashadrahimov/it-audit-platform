@@ -491,10 +491,16 @@ const GLOBAL_FRAMEWORKS = [
 ];
 
 /**
- * Демо field-level права (SEC-04, T-H04, ADR-0020): роль Collaborator не видит
- * recommendation у finding. Под owner (глобальная роль tenant_id NULL). Идемпотентно.
+ * Демо field-level права (SEC-04, T-H04/T-H06, ADR-0020). Под owner (глобальные
+ * роли tenant_id NULL). Идемпотентно.
+ * - Collaborator не видит recommendation у finding;
+ * - Approver не видит email у персонала (privacy-контроль).
  */
 async function seedDemoFieldPermissions(): Promise<void> {
+  const DEMO: Array<{ roleEn: string; entityType: string; field: string }> = [
+    { roleEn: 'Collaborator', entityType: 'finding', field: 'recommendation' },
+    { roleEn: 'Approver', entityType: 'personnel', field: 'email' },
+  ];
   const owner = new Client({
     connectionString: env.databaseUrlOwner,
     connectionTimeoutMillis: 5000,
@@ -503,27 +509,28 @@ async function seedDemoFieldPermissions(): Promise<void> {
     await owner.connect();
     const db = drizzle(owner);
     const roles = await db.select().from(role).where(eq(role.isSystem, true));
-    const collab = roles.find((r) => r.nameI18n.en === 'Collaborator');
-    if (!collab) return;
-    const [existing] = await db
-      .select()
-      .from(fieldPermission)
-      .where(
-        and(
-          eq(fieldPermission.roleId, collab.id),
-          eq(fieldPermission.entityType, 'finding'),
-          eq(fieldPermission.field, 'recommendation'),
-        ),
-      );
-    if (!existing) {
-      await db.insert(fieldPermission).values({
-        roleId: collab.id,
-        entityType: 'finding',
-        field: 'recommendation',
-        level: 'hidden',
-      });
+    for (const d of DEMO) {
+      const r = roles.find((x) => x.nameI18n.en === d.roleEn);
+      if (!r) continue;
+      const [existing] = await db
+        .select()
+        .from(fieldPermission)
+        .where(
+          and(
+            eq(fieldPermission.roleId, r.id),
+            eq(fieldPermission.entityType, d.entityType),
+            eq(fieldPermission.field, d.field),
+          ),
+        );
+      if (!existing) {
+        await db
+          .insert(fieldPermission)
+          .values({ roleId: r.id, entityType: d.entityType, field: d.field, level: 'hidden' });
+      }
     }
-    console.log('✓ Демо field-level: Collaborator скрыт finding.recommendation (idempotent)');
+    console.log(
+      '✓ Демо field-level: Collaborator↛finding.recommendation, Approver↛personnel.email (idempotent)',
+    );
   } finally {
     await owner.end().catch(() => {});
   }

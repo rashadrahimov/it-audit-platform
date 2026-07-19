@@ -12,11 +12,13 @@ import { membership, role, tenant, user } from '../src/db/schema';
 const run = Date.now();
 const slug = `fl-${run}`;
 const email = `fl-collab-${run}@t.io`;
+const approverEmail = `fl-approver-${run}@t.io`;
 
 const dbService = new DbService();
 const rbacService = new RbacService(dbService);
 let tenantId: string;
 let userId: string;
+let approverUserId: string;
 
 async function presetRoleId(nameEn: string): Promise<string> {
   const roles = await dbService.db.select().from(role).where(eq(role.isSystem, true));
@@ -36,11 +38,19 @@ beforeAll(async () => {
   await dbService.db
     .insert(membership)
     .values({ userId, tenantId, roleId: await presetRoleId('Collaborator') });
+  const [ap] = await dbService.db
+    .insert(user)
+    .values({ email: approverEmail, fullName: 'FL Approver', passwordHash: 'x' })
+    .returning();
+  approverUserId = ap!.id;
+  await dbService.db
+    .insert(membership)
+    .values({ userId: approverUserId, tenantId, roleId: await presetRoleId('Approver') });
 });
 
 afterAll(async () => {
   await dbService.db.delete(membership).where(eq(membership.tenantId, tenantId));
-  await dbService.db.delete(user).where(inArray(user.email, [email]));
+  await dbService.db.delete(user).where(inArray(user.email, [email, approverEmail]));
   await dbService.db.delete(tenant).where(eq(tenant.id, tenantId));
   await dbService.onModuleDestroy();
 });
@@ -58,6 +68,16 @@ describe('RbacService.fieldLevels (SEC-04)', () => {
 
   it('не-член тенанта → пусто', async () => {
     const levels = await rbacService.fieldLevels(crypto.randomUUID(), tenantId, 'finding');
+    expect(levels).toEqual({});
+  });
+
+  it('Approver → personnel.email = hidden (из seed, T-H06)', async () => {
+    const levels = await rbacService.fieldLevels(approverUserId, tenantId, 'personnel');
+    expect(levels.email).toBe('hidden');
+  });
+
+  it('роли независимы: Collaborator не имеет personnel-оверлея', async () => {
+    const levels = await rbacService.fieldLevels(userId, tenantId, 'personnel');
     expect(levels).toEqual({});
   });
 });
