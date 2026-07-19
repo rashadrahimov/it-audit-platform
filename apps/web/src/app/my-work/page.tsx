@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
-import { attestFromMyWorkAction } from './actions';
+import { attestFromMyWorkAction, requestAccessAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -173,6 +173,33 @@ export default async function MyWorkPage() {
           {t('accessRequests')}{' '}
           <span className="text-secondary tabular-nums">({work.accessRequests.length})</span>
         </h2>
+        <form
+          action={requestAccessAction}
+          data-testid="mywork-request-access"
+          className="mb-3 flex flex-wrap items-end gap-2"
+        >
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-secondary">{t('reqSystem')}</span>
+            <input
+              name="system"
+              required
+              className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+            />
+          </label>
+          <label className="flex flex-1 flex-col gap-1 text-sm">
+            <span className="font-medium text-secondary">{t('reqJustification')}</span>
+            <input
+              name="justification"
+              className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+            />
+          </label>
+          <button
+            type="submit"
+            className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-secondary transition-colors duration-150 hover:bg-muted"
+          >
+            {t('reqSubmit')}
+          </button>
+        </form>
         {work.accessRequests.length === 0 ? (
           <p className="text-sm text-secondary">{t('none')}</p>
         ) : (

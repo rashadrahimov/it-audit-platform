@@ -633,7 +633,14 @@
     "tp": {
       "human": "Human",
       "service": "Service"
-    }
+    },
+    "owner": "Owner",
+    "deprovisioning": "Deprovisioning tasks",
+    "depAccount": "Account",
+    "depReason": "Reason",
+    "depDue": "Due",
+    "depCreate": "Create task",
+    "depComplete": "Complete"
   },
   "codeChanges": {
     "title": "Change Management",
@@ -1112,6 +1119,9 @@
       "pending": "Pending",
       "approved": "Approved",
       "rejected": "Rejected"
-    }
+    },
+    "reqSystem": "System",
+    "reqJustification": "Justification",
+    "reqSubmit": "Request access"
   }
 }

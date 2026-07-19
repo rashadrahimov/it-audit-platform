@@ -633,7 +633,14 @@
     "tp": {
       "human": "İnsan",
       "service": "Servis"
-    }
+    },
+    "owner": "Sahib",
+    "deprovisioning": "Deprovisioning tapşırıqları",
+    "depAccount": "Hesab",
+    "depReason": "Səbəb",
+    "depDue": "Son tarix",
+    "depCreate": "Tapşırıq yarat",
+    "depComplete": "Bağla"
   },
   "codeChanges": {
     "title": "Dəyişiklik İdarəetməsi",
@@ -1112,6 +1119,9 @@
       "pending": "Gözləyir",
       "approved": "Təsdiqlənib",
       "rejected": "Rədd edilib"
-    }
+    },
+    "reqSystem": "Sistem",
+    "reqJustification": "Əsaslandırma",
+    "reqSubmit": "Giriş sorğusu"
   }
 }

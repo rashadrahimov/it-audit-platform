@@ -633,7 +633,14 @@
     "tp": {
       "human": "Человек",
       "service": "Сервис"
-    }
+    },
+    "owner": "Владелец",
+    "deprovisioning": "Задачи депровижнинга",
+    "depAccount": "Аккаунт",
+    "depReason": "Причина",
+    "depDue": "Срок",
+    "depCreate": "Создать задачу",
+    "depComplete": "Закрыть"
   },
   "codeChanges": {
     "title": "Управление изменениями",
@@ -1112,6 +1119,9 @@
       "pending": "Ожидает",
       "approved": "Одобрен",
       "rejected": "Отклонён"
-    }
+    },
+    "reqSystem": "Система",
+    "reqJustification": "Обоснование",
+    "reqSubmit": "Запросить доступ"
   }
 }

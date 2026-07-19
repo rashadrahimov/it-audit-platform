@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -71,6 +72,23 @@ export class AccountsController {
   @ApiOkResponse({ description: '[{id, identifier, displayName, type, mfaEnabled, status}]' })
   list(@Req() req: TenantRequest) {
     return this.accountsService.list(req.tenantId);
+  }
+
+  @Patch(':id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-V07: назначить owner аккаунта' })
+  setOwner(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ ownerMembershipId: z.uuid() }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.accountsService.setOwner(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.ownerMembershipId,
+    );
   }
 
   @Post(':id/deactivate')
