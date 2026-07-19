@@ -1622,7 +1622,14 @@
     "failingEntities": "Провалившие сущности",
     "evidence": "Доказательство",
     "runAt": "Время прогона",
-    "ownerNone": "— не менять —"
+    "ownerNone": "— не менять —",
+    "colCategory": "Категория",
+    "colStandards": "Стандарты",
+    "cats": {
+      "hr": "HR",
+      "it": "ИТ",
+      "automated": "Автоматические"
+    }
   },
   "search": {
     "title": "Поиск",

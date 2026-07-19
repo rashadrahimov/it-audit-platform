@@ -1622,7 +1622,14 @@
     "failingEntities": "Uğursuz obyektlər",
     "evidence": "Sübut",
     "runAt": "İcra vaxtı",
-    "ownerNone": "— dəyişmə —"
+    "ownerNone": "— dəyişmə —",
+    "colCategory": "Kateqoriya",
+    "colStandards": "Standartlar",
+    "cats": {
+      "hr": "HR",
+      "it": "İT",
+      "automated": "Avtomatik"
+    }
   },
   "search": {
     "title": "Axtarış",

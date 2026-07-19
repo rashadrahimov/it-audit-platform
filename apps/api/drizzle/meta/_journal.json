@@ -484,6 +484,13 @@
       "when": 1784503173919,
       "tag": "0068_framework-activation",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1784504250120,
+      "tag": "0069_test-category",
+      "breakpoints": true
     }
   ]
 }

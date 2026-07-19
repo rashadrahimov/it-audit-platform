@@ -13,12 +13,15 @@ interface TestRow {
   id: string;
   title: string;
   kind: string;
+  category: string | null;
   frequency: string | null;
   status: string;
   slaStatus: string | null;
   dueDate: string | null;
   controlRef: string;
   owner: string | null;
+  standards: string[];
+  lastFailing: number;
 }
 interface Attention {
   counts: { overdue: number; dueSoon: number; failing: number };
@@ -26,6 +29,7 @@ interface Attention {
 
 const STATUSES = ['ok', 'failing', 'needs_attention', 'deactivated'] as const;
 const KINDS = ['manual', 'automated'] as const;
+const CATEGORIES = ['hr', 'it', 'automated'] as const;
 const SLAS = ['ok', 'due_soon', 'overdue'] as const;
 
 const STATUS_TONE: Record<string, string> = {
@@ -44,7 +48,7 @@ const SLA_TONE: Record<string, string> = {
 export default async function TestsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; kind?: string; slaStatus?: string }>;
+  searchParams: Promise<{ status?: string; kind?: string; slaStatus?: string; category?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
@@ -59,9 +63,12 @@ export default async function TestsPage({
   const headers = { 'X-Tenant-Slug': tenantSlug };
 
   const [listRes, attnRes] = await Promise.all([
-    apiFetch(`/tests?locale=${locale}${filterQuery(sp, ['status', 'kind', 'slaStatus'])}`, {
-      headers,
-    }),
+    apiFetch(
+      `/tests?locale=${locale}${filterQuery(sp, ['status', 'kind', 'slaStatus', 'category'])}`,
+      {
+        headers,
+      },
+    ),
     apiFetch(`/tests/attention?locale=${locale}`, { headers }),
   ]);
   const tests: TestRow[] = listRes.ok ? await listRes.json() : [];
@@ -113,6 +120,11 @@ export default async function TestsPage({
             label: t('colSla'),
             options: SLAS.map((s) => ({ value: s, label: t(`slas.${s}`) })),
           },
+          {
+            param: 'category',
+            label: t('colCategory'),
+            options: CATEGORIES.map((c) => ({ value: c, label: t(`cats.${c}`) })),
+          },
         ]}
       />
 
@@ -122,7 +134,8 @@ export default async function TestsPage({
             <tr className="border-b border-border text-secondary">
               <th className="px-4 py-3 font-medium">{t('colTitle')}</th>
               <th className="px-4 py-3 font-medium">{t('colControl')}</th>
-              <th className="px-4 py-3 font-medium">{t('colKind')}</th>
+              <th className="px-4 py-3 font-medium">{t('colCategory')}</th>
+              <th className="px-4 py-3 font-medium">{t('colStandards')}</th>
               <th className="px-4 py-3 font-medium">{t('colStatus')}</th>
               <th className="px-4 py-3 font-medium">{t('colSla')}</th>
               <th className="px-4 py-3 font-medium">{t('colOwner')}</th>
@@ -141,13 +154,30 @@ export default async function TestsPage({
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-secondary whitespace-nowrap">{row.controlRef}</td>
-                <td className="px-4 py-3 text-secondary">{t(`kinds.${row.kind}`)}</td>
+                <td className="px-4 py-3">
+                  {row.category &&
+                  CATEGORIES.includes(row.category as (typeof CATEGORIES)[number]) ? (
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-secondary whitespace-nowrap">
+                      {t(`cats.${row.category}`)}
+                    </span>
+                  ) : (
+                    <span className="text-secondary">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-xs text-secondary">
+                  {row.standards.length > 0 ? row.standards.join(', ') : '—'}
+                </td>
                 <td className="px-4 py-3">
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${STATUS_TONE[row.status] ?? 'bg-muted text-secondary'}`}
                   >
                     {t(`statuses.${row.status}`)}
                   </span>
+                  {row.lastFailing > 0 && (
+                    <span className="ml-1.5 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 tabular-nums">
+                      {row.lastFailing}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {row.slaStatus ? (
@@ -168,7 +198,7 @@ export default async function TestsPage({
             ))}
             {tests.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-0">
+                <td colSpan={8} className="p-0">
                   <EmptyState size="sm" text={t('empty')} />
                 </td>
               </tr>

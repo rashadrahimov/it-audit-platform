@@ -33,6 +33,7 @@ const createTestSchema = z.object({
   controlId: z.uuid(),
   titleI18n: i18nTextSchema,
   kind: z.enum(['manual', 'automated']).default('manual'),
+  category: z.enum(['hr', 'it']).optional(),
   frequency: z.string().optional(),
   dueDate: z.iso.datetime().optional(),
   ownerMembershipId: z.uuid().optional(),
@@ -174,6 +175,7 @@ export class TestsController {
     @Query('kind') kind?: string,
     @Query('slaStatus') slaStatus?: string,
     @Query('ownerMembershipId') ownerMembershipId?: string,
+    @Query('category') category?: string,
     @Query('locale') localeQuery?: string,
   ) {
     return this.testsService.list(req.tenantId, parseLocale(localeQuery), controlId, {
@@ -181,6 +183,7 @@ export class TestsController {
       kind: filterParam(kind, 'kind'),
       slaStatus: filterParam(slaStatus, 'slaStatus'),
       ownerMembershipId: uuidFilterParam(ownerMembershipId, 'ownerMembershipId'),
+      category: filterParam(category, 'category'),
     });
   }
 

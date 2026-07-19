@@ -1614,7 +1614,14 @@
     "failingEntities": "Failing entities",
     "evidence": "Evidence",
     "runAt": "Run at",
-    "ownerNone": "— keep —"
+    "ownerNone": "— keep —",
+    "colCategory": "Category",
+    "colStandards": "Standards",
+    "cats": {
+      "hr": "HR",
+      "it": "IT",
+      "automated": "Automated"
+    }
   },
   "search": {
     "title": "Search",

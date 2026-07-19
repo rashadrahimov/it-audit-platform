@@ -559,6 +559,8 @@ export const test = pgTable(
       .references(() => control.id),
     titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
     kind: text('kind').notNull().default('manual'),
+    /** T-V22: категория библиотеки тестов — hr | it | automated. */
+    category: text('category'),
     /** T-050: коннектор-источник для автотеста (FK в SQL — connector определён ниже). */
     connectorId: uuid('connector_id'),
     checkConfig: jsonb('check_config'),
