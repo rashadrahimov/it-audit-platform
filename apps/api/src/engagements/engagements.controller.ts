@@ -165,4 +165,11 @@ export class EngagementsController {
   ) {
     return this.engagementsService.detail(req.tenantId, id, parseLocale(localeQuery));
   }
+
+  @Get(':id/export')
+  @RequirePermission('report', 'export', 'edit')
+  @ApiOperation({ summary: 'Гранулярный JSON-снимок одного аудита (T-H10, BCK-04)' })
+  exportEngagement(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.engagementsService.exportEngagement(req.tenantId, id);
+  }
 }

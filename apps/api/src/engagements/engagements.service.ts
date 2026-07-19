@@ -10,6 +10,7 @@ import {
   controlDomain,
   engagement,
   engagementMilestone,
+  finding,
   membership,
   response,
   subsidiary,
@@ -397,5 +398,48 @@ export class EngagementsService {
         };
       }),
     };
+  }
+
+  /**
+   * Гранулярный экспорт одного engagement (BCK-04, T-H10): машинный JSON-снимок
+   * с raw-полями (i18n не резолвим — для портируемости/архива/бэкапа одного аудита).
+   * Restore/import через окружения — отдельный атом (ремап ID/конфликты).
+   */
+  async exportEngagement(tenantId: string, id: string) {
+    return this.dbService.withTenant(tenantId, async (tx) => {
+      const [eng] = await tx
+        .select()
+        .from(engagement)
+        .where(and(eq(engagement.id, id), isNull(engagement.deletedAt)));
+      if (!eng) throw new NotFoundException(`Engagement ${id} не найден`);
+      const checklist = await tx
+        .select()
+        .from(checklistItem)
+        .where(eq(checklistItem.engagementId, id))
+        .orderBy(asc(checklistItem.order));
+      const responses = checklist.length
+        ? await tx
+            .select()
+            .from(response)
+            .where(
+              inArray(
+                response.checklistItemId,
+                checklist.map((i) => i.id),
+              ),
+            )
+        : [];
+      const findings = await tx
+        .select()
+        .from(finding)
+        .where(and(eq(finding.engagementId, id), isNull(finding.deletedAt)));
+      return {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        engagement: eng,
+        checklist,
+        responses,
+        findings,
+      };
+    });
   }
 }
