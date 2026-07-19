@@ -58,14 +58,18 @@ export const env = {
    */
   concurrentSessionPolicy: process.env.CONCURRENT_SESSION_POLICY === 'block' ? 'block' : 'detect',
   /**
-   * EP-AI (T-H21): LLM-провайдер для ассист-фич. По умолчанию 'none' — весь ИИ
-   * ВЫКЛЮЧЕН (детерминированный assist работает как fallback, on-prem остаётся без ИИ
-   * по ADR-0002). Включение: AI_PROVIDER=anthropic + ANTHROPIC_API_KEY. Развилка по
-   * residency (облако vs локально) — конфиг, не код: aiBaseUrl направляет adapter на
-   * локальный Anthropic-совместимый прокси при необходимости.
+   * EP-AI (T-H21/H22): LLM-провайдер по умолчанию (деплой-уровень). 'none' — ИИ ВЫКЛЮЧЕН
+   * (детерминированный fallback, on-prem без ИИ по ADR-0002). 'anthropic' — Claude;
+   * 'openai_compat' — GPT/Kimi/DeepSeek/Ollama/vLLM/OpenRouter (клиент задаёт AI_BASE_URL+AI_MODEL).
+   * Per-tenant override (T-H23) переопределяет это в БД. AI_API_KEY (или legacy ANTHROPIC_API_KEY).
    */
-  aiProvider: process.env.AI_PROVIDER === 'anthropic' ? 'anthropic' : 'none',
-  anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
+  aiProvider:
+    process.env.AI_PROVIDER === 'anthropic'
+      ? 'anthropic'
+      : process.env.AI_PROVIDER === 'openai_compat'
+        ? 'openai_compat'
+        : 'none',
+  aiApiKey: process.env.AI_API_KEY ?? process.env.ANTHROPIC_API_KEY ?? '',
   aiModel: process.env.AI_MODEL ?? 'claude-opus-4-8',
   aiBaseUrl: process.env.AI_BASE_URL ?? '',
 };

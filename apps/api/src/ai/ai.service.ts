@@ -1,63 +1,54 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { Injectable, Logger } from '@nestjs/common';
 import { env } from '../env';
+import { callLlm, isConfigured, type LlmConfig, type LlmProviderKind } from './llm-provider';
 
 /**
- * Провайдер-абстракция LLM (EP-AI, T-H21). ВЫКЛЮЧЕНА по умолчанию (AI_PROVIDER=none):
- * enabled()=false, draftText()=null → вызывающий код падает на детерминированный fallback,
- * on-prem остаётся без ИИ (ADR-0002). Включение = env AI_PROVIDER=anthropic + ANTHROPIC_API_KEY.
- * Адаптер — Anthropic Claude; aiBaseUrl направляет на локальный Anthropic-совместимый прокси.
+ * Ассист поверх LLM (EP-AI, T-H21/H22). Мульти-провайдер: Claude или любой OpenAI-совместимый
+ * (GPT/Kimi/DeepSeek/Ollama/…). ВЫКЛЮЧЕН по умолчанию (AI_PROVIDER=none) → draftText()=null,
+ * вызывающий падает на детерминированный fallback; on-prem остаётся без ИИ (ADR-0002).
+ * Per-tenant override (T-H23) переопределяет env-конфиг в БД.
  */
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  private readonly client: Anthropic | null;
 
-  constructor() {
-    this.client =
-      env.aiProvider === 'anthropic' && env.anthropicApiKey
-        ? new Anthropic({
-            apiKey: env.anthropicApiKey,
-            ...(env.aiBaseUrl ? { baseURL: env.aiBaseUrl } : {}),
-          })
-        : null;
-  }
-
-  enabled(): boolean {
-    return this.client !== null;
-  }
-
-  status() {
+  /** Деплой-уровень: конфиг из env (дефолт для всех тенантов без своего override). */
+  private envConfig(): LlmConfig {
     return {
-      enabled: this.enabled(),
-      provider: env.aiProvider,
-      model: this.enabled() ? env.aiModel : null,
+      provider: env.aiProvider as LlmProviderKind,
+      apiKey: env.aiApiKey,
+      baseUrl: env.aiBaseUrl || undefined,
+      model: env.aiModel,
     };
   }
 
-  /**
-   * Один запрос system+user → текст ответа, или null если ИИ выключен/ошибка провайдера
-   * (тогда вызывающий использует детерминированный результат). Thinking выключен (короткая
-   * генерация) + инструкция «только финальный текст», чтобы reasoning не попал в ответ.
-   */
+  enabled(): boolean {
+    return isConfigured(this.envConfig());
+  }
+
+  status() {
+    const cfg = this.envConfig();
+    const on = isConfigured(cfg);
+    return {
+      enabled: on,
+      provider: cfg.provider,
+      model: on ? cfg.model : null,
+      baseUrl: on && cfg.provider === 'openai_compat' ? cfg.baseUrl : null,
+    };
+  }
+
+  /** Текст ответа, или null если ИИ выключен/ошибка (→ детерминированный fallback вызывающего). */
   async draftText(system: string, user: string): Promise<string | null> {
-    if (!this.client) return null;
+    return this.run(this.envConfig(), system, user);
+  }
+
+  /** Общий путь: вызвать провайдера, при ошибке — залогировать и вернуть null (fallback). */
+  async run(cfg: LlmConfig, system: string, user: string): Promise<string | null> {
     try {
-      const msg = await this.client.messages.create({
-        model: env.aiModel,
-        max_tokens: 1500,
-        system: `${system}\n\nОтвечай ТОЛЬКО итоговым текстом, без преамбулы и рассуждений.`,
-        messages: [{ role: 'user', content: user }],
-      });
-      const text = msg.content
-        .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-        .map((b) => b.text)
-        .join('')
-        .trim();
-      return text || null;
+      return await callLlm(cfg, system, user);
     } catch (error) {
       this.logger.warn(
-        `LLM-провайдер недоступен, fallback на детерминированный результат: ${
+        `LLM-провайдер (${cfg.provider}) недоступен, fallback на детерминированный результат: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );

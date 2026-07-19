@@ -10,7 +10,12 @@ describe('AiService — off by default', () => {
 
   it('enabled()=false и status() без модели, когда провайдер не сконфигурирован', () => {
     expect(svc.enabled()).toBe(false);
-    expect(svc.status()).toEqual({ enabled: false, provider: 'none', model: null });
+    expect(svc.status()).toEqual({
+      enabled: false,
+      provider: 'none',
+      model: null,
+      baseUrl: null,
+    });
   });
 
   it('draftText() возвращает null, когда ИИ выключен (вызывающий → детерминированный fallback)', async () => {
