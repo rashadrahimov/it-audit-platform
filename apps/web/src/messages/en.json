@@ -102,7 +102,9 @@
     "findings": "Findings",
     "documents": "Documents",
     "tests": "Tests",
-    "searchPh": "Search…"
+    "searchPh": "Search…",
+    "rolesNav": "Roles",
+    "membersNav": "Members"
   },
   "engagements": {
     "title": "Engagements",
@@ -1054,5 +1056,34 @@
     "empty": "No comments yet",
     "placeholder": "Write a comment…",
     "add": "Add"
+  },
+  "roles": {
+    "title": "Roles & permissions",
+    "preset": "· preset",
+    "createEn": "New role (EN)",
+    "createBtn": "Create role",
+    "readonly": "read-only",
+    "cellEdit": "Set cell",
+    "cellApply": "Apply",
+    "levels": {
+      "none": "No access",
+      "view": "View",
+      "edit": "Edit"
+    }
+  },
+  "members": {
+    "title": "Members",
+    "colName": "Name",
+    "colEmail": "Email",
+    "colCategory": "Category",
+    "colStatus": "Status",
+    "colRole": "Role",
+    "roleSave": "OK",
+    "empty": "No members",
+    "categories": {
+      "auditor": "Auditor",
+      "end_user": "End user",
+      "msp": "MSP"
+    }
   }
 }

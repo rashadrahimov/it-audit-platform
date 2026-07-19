@@ -1,5 +1,17 @@
-import { BadRequestException, Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { z } from 'zod';
 import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
@@ -26,5 +38,22 @@ export class MembershipsController {
   @ApiQuery({ name: 'locale', required: false })
   list(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
     return this.service.list(req.tenantId, parseLocale(localeQuery));
+  }
+
+  @Patch(':id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-V05: смена роли участника (LOG-05 в журнал)' })
+  changeRole(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ roleId: z.uuid() }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.changeRole(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.roleId,
+    );
   }
 }

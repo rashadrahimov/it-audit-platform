@@ -102,7 +102,9 @@
     "findings": "Замечания",
     "documents": "Документы",
     "tests": "Тесты",
-    "searchPh": "Поиск…"
+    "searchPh": "Поиск…",
+    "rolesNav": "Роли",
+    "membersNav": "Участники"
   },
   "engagements": {
     "title": "Аудиты",
@@ -1054,5 +1056,34 @@
     "empty": "Комментариев пока нет",
     "placeholder": "Написать комментарий…",
     "add": "Добавить"
+  },
+  "roles": {
+    "title": "Роли и права",
+    "preset": "· пресет",
+    "createEn": "Новая роль (EN)",
+    "createBtn": "Создать роль",
+    "readonly": "только чтение",
+    "cellEdit": "Выставить ячейку",
+    "cellApply": "Применить",
+    "levels": {
+      "none": "Нет доступа",
+      "view": "Просмотр",
+      "edit": "Правка"
+    }
+  },
+  "members": {
+    "title": "Участники",
+    "colName": "Имя",
+    "colEmail": "Email",
+    "colCategory": "Категория",
+    "colStatus": "Статус",
+    "colRole": "Роль",
+    "roleSave": "ОК",
+    "empty": "Участников нет",
+    "categories": {
+      "auditor": "Аудитор",
+      "end_user": "Пользователь",
+      "msp": "MSP"
+    }
   }
 }

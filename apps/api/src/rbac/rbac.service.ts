@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
-import type { PermissionDto, PermissionLevel, RoleWithMatrix } from '@it-audit/shared';
+import type { I18nText, PermissionDto, PermissionLevel, RoleWithMatrix } from '@it-audit/shared';
+import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import {
   fieldPermission,
@@ -21,7 +22,72 @@ export interface AccessResolution {
 
 @Injectable()
 export class RbacService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly auditLogService: AuditLogService,
+  ) {}
+
+  /** T-V05: кастомная роль тенанта (пресеты — read-only, is_system=false). */
+  async createRole(actor: { tenantId: string; userId: string; ip?: string }, nameI18n: I18nText) {
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .insert(role)
+        .values({ tenantId: actor.tenantId, nameI18n, isSystem: false })
+        .returning();
+      if (!row) throw new Error('Роль не создалась');
+      return row;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'role.created',
+      entityType: 'role',
+      entityId: created.id,
+      after: { name: nameI18n.en },
+    });
+    return { id: created.id, nameI18n: created.nameI18n };
+  }
+
+  /** T-V05: правка ячейки матрицы кастомной роли (глобальные пресеты защищены). */
+  async setCell(
+    actor: { tenantId: string; userId: string; ip?: string },
+    roleId: string,
+    resource: string,
+    action: string,
+    level: 'none' | 'view' | 'edit',
+  ) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [r] = await tx.select().from(role).where(eq(role.id, roleId));
+      if (!r) throw new NotFoundException(`Роль ${roleId} не найдена`);
+      if (r.tenantId !== actor.tenantId || r.isSystem) {
+        throw new BadRequestException('Менять можно только кастомные роли тенанта');
+      }
+      const [perm] = await tx
+        .select()
+        .from(permission)
+        .where(and(eq(permission.resource, resource), eq(permission.action, action)));
+      if (!perm) throw new BadRequestException(`Право ${resource}/${action} не существует`);
+      await tx
+        .insert(rolePermission)
+        .values({ roleId, permissionId: perm.id, level })
+        .onConflictDoUpdate({
+          target: [rolePermission.roleId, rolePermission.permissionId],
+          set: { level },
+        });
+      return { permissionId: perm.id };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'role.cell_set',
+      entityType: 'role',
+      entityId: roleId,
+      after: { resource, action, level, permissionId: result.permissionId },
+    });
+    return { roleId, resource, action, level };
+  }
 
   /**
    * Уровень доступа пользователя к (resource, action) в тенанте.

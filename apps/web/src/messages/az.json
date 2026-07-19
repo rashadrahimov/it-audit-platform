@@ -102,7 +102,9 @@
     "findings": "Findinqlər",
     "documents": "Sənədlər",
     "tests": "Testlər",
-    "searchPh": "Axtarış…"
+    "searchPh": "Axtarış…",
+    "rolesNav": "Rollar",
+    "membersNav": "İştirakçılar"
   },
   "engagements": {
     "title": "Auditlər",
@@ -1054,5 +1056,34 @@
     "empty": "Hələ şərh yoxdur",
     "placeholder": "Şərh yazın…",
     "add": "Əlavə et"
+  },
+  "roles": {
+    "title": "Rollar və icazələr",
+    "preset": "· hazır",
+    "createEn": "Yeni rol (EN)",
+    "createBtn": "Rol yarat",
+    "readonly": "yalnız oxu",
+    "cellEdit": "Xananı təyin et",
+    "cellApply": "Tətbiq et",
+    "levels": {
+      "none": "Giriş yoxdur",
+      "view": "Baxış",
+      "edit": "Redaktə"
+    }
+  },
+  "members": {
+    "title": "İştirakçılar",
+    "colName": "Ad",
+    "colEmail": "Email",
+    "colCategory": "Kateqoriya",
+    "colStatus": "Status",
+    "colRole": "Rol",
+    "roleSave": "OK",
+    "empty": "İştirakçı yoxdur",
+    "categories": {
+      "auditor": "Auditor",
+      "end_user": "İstifadəçi",
+      "msp": "MSP"
+    }
   }
 }
