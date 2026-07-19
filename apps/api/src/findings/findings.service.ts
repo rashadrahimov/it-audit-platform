@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import {
   localeSchema,
@@ -12,7 +17,7 @@ import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { EmailService } from '../email/email.service';
 import { RbacService } from '../rbac/rbac.service';
-import { maskFields } from '../rbac/field-policy';
+import { maskFields, rejectedWriteFields } from '../rbac/field-policy';
 import {
   checklistItem,
   control,
@@ -68,7 +73,34 @@ export class FindingsService {
     private readonly rbacService: RbacService,
   ) {}
 
+  /**
+   * SEC-04 (ADR-0020): запрет записи ограниченных полей. Ключи I18n нормализуем к
+   * domain-имени (recommendationI18n→recommendation), как в field_permission.
+   */
+  private async assertFieldWriteAllowed(
+    actor: Actor,
+    input: Record<string, unknown>,
+    entityType: string,
+  ): Promise<void> {
+    const levels = await this.rbacService.fieldLevels(actor.userId, actor.tenantId, entityType);
+    if (Object.keys(levels).length === 0) return;
+    const normalized: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(input)) {
+      if (v === undefined) continue;
+      normalized[k.replace(/I18n$/, '')] = v;
+    }
+    const rejected = rejectedWriteFields(normalized, levels);
+    if (rejected.length > 0) {
+      throw new ForbiddenException(`Нет права на запись полей: ${rejected.join(', ')}`);
+    }
+  }
+
   async create(actor: Actor, input: CreateFindingInput) {
+    await this.assertFieldWriteAllowed(
+      actor,
+      input as unknown as Record<string, unknown>,
+      'finding',
+    );
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       // все привязки опциональны (standalone), но заданные должны существовать
       if (input.engagementId) {
