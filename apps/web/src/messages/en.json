@@ -955,6 +955,21 @@
       "edit": "Edit",
       "grant": "Grant",
       "remove": "Remove"
+    },
+    "approval": "Approval",
+    "approver": "Approver",
+    "noApprover": "— no approver —",
+    "submitApproval": "Submit for approval",
+    "approve": "Approve",
+    "reject": "Reject",
+    "needsMyApproval": "Needs my approval",
+    "tabAll": "All",
+    "approvalQueueEmpty": "Nothing awaits your approval",
+    "appr": {
+      "none": "Not submitted",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
     }
   },
   "privacy": {

@@ -955,6 +955,21 @@
       "edit": "Redaktə",
       "grant": "Ver",
       "remove": "Sil"
+    },
+    "approval": "Təsdiq",
+    "approver": "Təsdiqləyən",
+    "noApprover": "— təsdiqləyən yoxdur —",
+    "submitApproval": "Təsdiqə göndər",
+    "approve": "Təsdiqlə",
+    "reject": "Rədd et",
+    "needsMyApproval": "Mənim təsdiqimi gözləyir",
+    "tabAll": "Hamısı",
+    "approvalQueueEmpty": "Təsdiqinizi gözləyən yoxdur",
+    "appr": {
+      "none": "Göndərilməyib",
+      "pending": "Gözləyir",
+      "approved": "Təsdiqlənib",
+      "rejected": "Rədd edilib"
     }
   },
   "privacy": {

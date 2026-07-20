@@ -910,6 +910,9 @@ export const risk = pgTable(
     treatment: text('treatment'),
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
     approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
+    /** T-V57: workflow согласования риска (null — не отправлен; pending/approved/rejected). */
+    approvalStatus: text('approval_status'),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
     status: text('status').notNull().default('open'),
     sourceRiskId: uuid('source_risk_id').references((): AnyPgColumn => risk.id),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),

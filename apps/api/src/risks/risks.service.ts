@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
@@ -287,6 +287,7 @@ export class RisksService {
       treatment?: string | null;
       status?: string;
       ownerMembershipId?: string | null;
+      approverMembershipId?: string | null;
     },
   ) {
     const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
@@ -295,18 +296,14 @@ export class RisksService {
         .from(risk)
         .where(and(eq(risk.id, id), isNotNull(risk.tenantId), isNull(risk.deletedAt)));
       if (!row) throw new NotFoundException(`Риск ${id} не найден`);
-      if (input.ownerMembershipId) {
-        // membership над-тенантная (без RLS) — проверяем принадлежность тенанту явно
+      // membership над-тенантная (без RLS) — проверяем принадлежность тенанту явно
+      for (const mid of [input.ownerMembershipId, input.approverMembershipId]) {
+        if (!mid) continue;
         const [m] = await tx
           .select({ id: membership.id })
           .from(membership)
-          .where(
-            and(
-              eq(membership.id, input.ownerMembershipId),
-              eq(membership.tenantId, actor.tenantId),
-            ),
-          );
-        if (!m) throw new BadRequestException('ownerMembershipId: участник не найден');
+          .where(and(eq(membership.id, mid), eq(membership.tenantId, actor.tenantId)));
+        if (!m) throw new BadRequestException('membershipId: участник не найден в тенанте');
       }
       const patch: Record<string, unknown> = {};
       if (input.titleI18n !== undefined) patch.titleI18n = input.titleI18n;
@@ -316,6 +313,8 @@ export class RisksService {
       if (input.treatment !== undefined) patch.treatment = input.treatment;
       if (input.status !== undefined) patch.status = input.status;
       if (input.ownerMembershipId !== undefined) patch.ownerMembershipId = input.ownerMembershipId;
+      if (input.approverMembershipId !== undefined)
+        patch.approverMembershipId = input.approverMembershipId;
       const [res] = await tx.update(risk).set(patch).where(eq(risk.id, id)).returning();
       return res!;
     });
@@ -333,6 +332,83 @@ export class RisksService {
       },
     });
     return { id: updated.id, treatment: updated.treatment, status: updated.status };
+  }
+
+  /** T-V57: отправить риск на согласование (approval_status → pending). Нужен назначенный approver. */
+  async submitForApproval(actor: Actor, id: string) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select({
+          approverMembershipId: risk.approverMembershipId,
+          approvalStatus: risk.approvalStatus,
+        })
+        .from(risk)
+        .where(and(eq(risk.id, id), isNotNull(risk.tenantId), isNull(risk.deletedAt)));
+      if (!row) throw new NotFoundException(`Риск ${id} не найден`);
+      if (!row.approverMembershipId) {
+        throw new BadRequestException('Сначала назначьте согласующего (approver)');
+      }
+      if (row.approvalStatus === 'pending') throw new BadRequestException('Уже на согласовании');
+      await tx
+        .update(risk)
+        .set({ approvalStatus: 'pending', approvedAt: null })
+        .where(eq(risk.id, id));
+      return { before: row.approvalStatus };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'risk.submitted_for_approval',
+      entityType: 'risk',
+      entityId: id,
+      before: { approvalStatus: result.before },
+      after: { approvalStatus: 'pending' },
+    });
+    return { id, approvalStatus: 'pending' };
+  }
+
+  /** T-V57: решение по согласованию — только назначенный approver (pending → approved|rejected). */
+  async decideApproval(actor: Actor, id: string, decision: 'approved' | 'rejected') {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select({
+          approverMembershipId: risk.approverMembershipId,
+          approvalStatus: risk.approvalStatus,
+        })
+        .from(risk)
+        .where(and(eq(risk.id, id), isNotNull(risk.tenantId), isNull(risk.deletedAt)));
+      if (!row) throw new NotFoundException(`Риск ${id} не найден`);
+      if (row.approvalStatus !== 'pending') {
+        throw new BadRequestException('Решение возможно только для риска на согласовании');
+      }
+      const [me] = await tx
+        .select({ id: membership.id })
+        .from(membership)
+        .where(and(eq(membership.userId, actor.userId), eq(membership.tenantId, actor.tenantId)));
+      if (!row.approverMembershipId || row.approverMembershipId !== me?.id) {
+        throw new ForbiddenException('Решение может принять только назначенный согласующий');
+      }
+      await tx
+        .update(risk)
+        .set({
+          approvalStatus: decision,
+          approvedAt: decision === 'approved' ? sql`now()` : null,
+        })
+        .where(eq(risk.id, id));
+      return { before: row.approvalStatus };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'risk.approval_decided',
+      entityType: 'risk',
+      entityId: id,
+      before: { approvalStatus: result.before },
+      after: { approvalStatus: decision },
+    });
+    return { id, approvalStatus: decision };
   }
 
   /** T-V12: soft delete риска (deleted_at; связи rcm/universe остаются в истории). */
@@ -591,7 +667,12 @@ export class RisksService {
     });
   }
 
-  async list(tenantId: string, locale: Locale, userId?: string) {
+  async list(
+    tenantId: string,
+    locale: Locale,
+    userId?: string,
+    opts?: { needsMyApproval?: boolean },
+  ) {
     let rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select()
@@ -609,6 +690,15 @@ export class RisksService {
         rows.map((r) => ({ id: r.id, ownerMembershipId: r.ownerMembershipId })),
       );
       rows = rows.filter((r) => visible.has(r.id));
+      // T-V57: очередь «Требуют моего согласования» — я approver и статус pending
+      if (opts?.needsMyApproval) {
+        rows = actor.membershipId
+          ? rows.filter(
+              (r) =>
+                r.approverMembershipId === actor.membershipId && r.approvalStatus === 'pending',
+            )
+          : [];
+      }
     }
     return rows.map((r) => ({
       id: r.id,
@@ -618,6 +708,7 @@ export class RisksService {
       residualClass: r.residualClass,
       treatment: r.treatment,
       status: r.status,
+      approvalStatus: r.approvalStatus,
     }));
   }
 
@@ -632,9 +723,23 @@ export class RisksService {
     );
     if (!row) throw new NotFoundException(`Риск ${id} не найден`);
     const r = row.risk;
+    // T-V57: имя согласующего (approver) — отдельным запросом (over-tenant membership)
+    const approverName = r.approverMembershipId
+      ? await this.dbService
+          .withTenant(tenantId, (tx) =>
+            tx
+              .select({ fullName: user.fullName })
+              .from(membership)
+              .innerJoin(user, eq(membership.userId, user.id))
+              .where(eq(membership.id, r.approverMembershipId!)),
+          )
+          .then((rows) => rows[0]?.fullName ?? null)
+      : null;
     // T-V48: per-entity ACL — 403, если сущность ограничена и доступа нет
+    let myMembershipId: string | null = null;
     if (userId) {
       const actor = await this.entityAcl.resolveActor(tenantId, userId);
+      myMembershipId = actor.membershipId;
       const access = await this.entityAcl.access(
         { tenantId, membershipId: actor.membershipId, isAdmin: actor.isAdmin },
         'risk',
@@ -660,6 +765,11 @@ export class RisksService {
       status: r.status,
       ownerMembershipId: r.ownerMembershipId,
       owner: row.ownerName,
+      approverMembershipId: r.approverMembershipId,
+      approver: approverName,
+      approvalStatus: r.approvalStatus,
+      approvedAt: r.approvedAt?.toISOString() ?? null,
+      amIApprover: myMembershipId !== null && myMembershipId === r.approverMembershipId,
     };
   }
 }

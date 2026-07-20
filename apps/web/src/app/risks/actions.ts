@@ -65,6 +65,10 @@ export async function updateRiskAction(id: string, formData: FormData): Promise<
     const owner = String(formData.get('ownerMembershipId') ?? '');
     body.ownerMembershipId = owner || null;
   }
+  if (formData.has('approverMembershipId')) {
+    const approver = String(formData.get('approverMembershipId') ?? '');
+    body.approverMembershipId = approver || null;
+  }
   if (formData.has('domain')) body.domain = String(formData.get('domain') ?? '').trim() || null;
   if (formData.has('category'))
     body.category = String(formData.get('category') ?? '').trim() || null;
@@ -73,6 +77,33 @@ export async function updateRiskAction(id: string, formData: FormData): Promise<
     method: 'PATCH',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+  });
+  revalidatePath(`/risks/${id}`);
+  revalidatePath('/risks');
+}
+
+/** T-V57: отправить риск на согласование (approval_status → pending). */
+export async function submitRiskApprovalAction(id: string): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch(`/risks/${id}/submit-approval`, {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  revalidatePath(`/risks/${id}`);
+  revalidatePath('/risks');
+}
+
+/** T-V57: решение согласующего по риску — approved|rejected. */
+export async function decideRiskApprovalAction(id: string, formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const decision = String(formData.get('decision') ?? '');
+  if (!['approved', 'rejected'].includes(decision)) return;
+  await apiFetch(`/risks/${id}/approve`, {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ decision }),
   });
   revalidatePath(`/risks/${id}`);
   revalidatePath('/risks');

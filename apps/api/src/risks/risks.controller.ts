@@ -54,6 +54,7 @@ const updateRiskSchema = z.object({
   treatment: z.enum(['mitigate', 'transfer', 'accept', 'avoid']).nullable().optional(),
   status: z.enum(['open', 'in_progress', 'closed']).optional(),
   ownerMembershipId: z.uuid().nullable().optional(),
+  approverMembershipId: z.uuid().nullable().optional(),
 });
 
 const matrixSchema = z.object({
@@ -253,6 +254,35 @@ export class RisksController {
     return this.service.remove({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id);
   }
 
+  @Post(':id/submit-approval')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Отправить риск на согласование (T-V57): approval_status → pending' })
+  submitApproval(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.submitForApproval(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
+  }
+
+  @Post(':id/approve')
+  @HttpCode(200)
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Решение по согласованию (T-V57): только approver — approved|rejected' })
+  decideApproval(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ decision: z.enum(['approved', 'rejected']) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.decideApproval(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.decision,
+    );
+  }
+
   @Get(':id/controls')
   @RequirePermission('control', 'view')
   @ApiOperation({ summary: 'Митигирующие контроли риска' })
@@ -262,10 +292,17 @@ export class RisksController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Реестр рисков' })
+  @ApiOperation({ summary: 'Реестр рисков (?needsMyApproval=true — очередь согласующего, T-V57)' })
   @ApiQuery({ name: 'locale', required: false })
-  list(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
-    return this.service.list(req.tenantId, parseLocale(localeQuery), req.user.sub);
+  @ApiQuery({ name: 'needsMyApproval', required: false })
+  list(
+    @Req() req: TenantRequest,
+    @Query('locale') localeQuery?: string,
+    @Query('needsMyApproval') needsMyApproval?: string,
+  ) {
+    return this.service.list(req.tenantId, parseLocale(localeQuery), req.user.sub, {
+      needsMyApproval: needsMyApproval === 'true',
+    });
   }
 
   @Get(':id')

@@ -18,7 +18,14 @@ interface Risk {
   residualClass: RiskClass | null;
   treatment: Treatment | null;
   status: string;
+  approvalStatus: string | null;
 }
+
+const APPR_TONE: Record<string, string> = {
+  approved: 'bg-emerald-100 text-emerald-700',
+  pending: 'bg-amber-100 text-amber-700',
+  rejected: 'bg-red-100 text-red-700',
+};
 
 const CLASS_TONE: Record<RiskClass, string> = {
   low: 'bg-emerald-100 text-emerald-700',
@@ -30,18 +37,25 @@ const TREATMENTS: Treatment[] = ['mitigate', 'transfer', 'accept', 'avoid'];
 const SCORES = [1, 2, 3, 4, 5];
 
 /** Реестр рисков (T-057): список + создание (impact×likelihood → risk_class). */
-export default async function RisksPage() {
+export default async function RisksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ queue?: string }>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, locale, tenantSlug] = await Promise.all([
+  const [t, locale, tenantSlug, sp] = await Promise.all([
     getTranslations('risks'),
     getCurrentLocale(),
     getActiveTenantSlug(),
+    searchParams,
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
+  // T-V57: очередь «Требуют моего согласования»
+  const approvalQueue = sp.queue === 'approval';
 
   const [res, matrixRes, libRes] = await Promise.all([
-    apiFetch(`/risks?locale=${locale}`, { headers }),
+    apiFetch(`/risks?locale=${locale}${approvalQueue ? '&needsMyApproval=true' : ''}`, { headers }),
     apiFetch('/risks/matrix', { headers }),
     apiFetch(`/risks/library?locale=${locale}`, { headers }),
   ]);
@@ -137,9 +151,34 @@ export default async function RisksPage() {
         </div>
       </form>
 
+      <nav data-testid="risk-queue-tabs" className="flex gap-1.5">
+        <Link
+          href="/risks"
+          className={
+            'rounded-full px-3 py-1 text-xs font-medium transition-colors ' +
+            (!approvalQueue
+              ? 'bg-accent text-on-primary'
+              : 'bg-muted text-secondary hover:bg-border')
+          }
+        >
+          {t('tabAll')}
+        </Link>
+        <Link
+          href="/risks?queue=approval"
+          className={
+            'rounded-full px-3 py-1 text-xs font-medium transition-colors ' +
+            (approvalQueue
+              ? 'bg-accent text-on-primary'
+              : 'bg-muted text-secondary hover:bg-border')
+          }
+        >
+          {t('needsMyApproval')}
+        </Link>
+      </nav>
+
       {risks.length === 0 ? (
         <section className="rounded-xl border border-border bg-white shadow-sm">
-          <EmptyState text={t('empty')} />
+          <EmptyState text={approvalQueue ? t('approvalQueueEmpty') : t('empty')} />
         </section>
       ) : (
         <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
@@ -151,6 +190,7 @@ export default async function RisksPage() {
                 <th className="px-4 py-3 font-medium">{t('residual')}</th>
                 <th className="px-4 py-3 font-medium">{t('treatment')}</th>
                 <th className="px-4 py-3 font-medium">{t('status')}</th>
+                <th className="px-4 py-3 font-medium">{t('approval')}</th>
               </tr>
             </thead>
             <tbody>
@@ -173,6 +213,17 @@ export default async function RisksPage() {
                     {['open', 'in_progress', 'closed'].includes(r.status)
                       ? t(`st.${r.status}`)
                       : r.status}
+                  </td>
+                  <td className="px-4 py-3">
+                    {r.approvalStatus ? (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${APPR_TONE[r.approvalStatus] ?? 'bg-muted text-secondary'}`}
+                      >
+                        {t(`appr.${r.approvalStatus}`)}
+                      </span>
+                    ) : (
+                      <span className="text-secondary">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -7,10 +7,12 @@ import { CommentsSection } from '@/components/comments-section';
 import { TasksSection, type TaskItem } from '@/components/tasks-section';
 import { ManageAccessSection, type AclGrantRow } from '@/components/manage-access-section';
 import {
+  decideRiskApprovalAction,
   deleteRiskAction,
   linkRiskControlAction,
   linkRiskEntityAction,
   rescoreRiskAction,
+  submitRiskApprovalAction,
   updateRiskAction,
 } from '../actions';
 
@@ -35,6 +37,11 @@ interface RiskDetail {
   status: string;
   ownerMembershipId: string | null;
   owner: string | null;
+  approverMembershipId: string | null;
+  approver: string | null;
+  approvalStatus: string | null;
+  approvedAt: string | null;
+  amIApprover: boolean;
 }
 
 interface Matrix {
@@ -298,6 +305,24 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
               </select>
             </label>
           )}
+          {members.length > 0 && (
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium text-secondary">{t('approver')}</span>
+              <select
+                name="approverMembershipId"
+                defaultValue={r.approverMembershipId ?? ''}
+                data-testid="risk-approver-select"
+                className={inputCls}
+              >
+                <option value="">{t('noApprover')}</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.fullName}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-secondary">{t('domain')}</span>
             <input name="domain" defaultValue={r.domain ?? ''} className={inputCls} />
@@ -310,6 +335,69 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
             {t('save')}
           </button>
         </form>
+      </section>
+
+      {/* T-V57: согласование риска */}
+      <section
+        className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+        data-testid="risk-approval"
+      >
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-primary">{t('approval')}</h2>
+          <span
+            className={
+              'rounded-full px-2 py-0.5 text-xs font-medium ' +
+              (r.approvalStatus === 'approved'
+                ? 'bg-emerald-100 text-emerald-700'
+                : r.approvalStatus === 'pending'
+                  ? 'bg-amber-100 text-amber-700'
+                  : r.approvalStatus === 'rejected'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-muted text-secondary')
+            }
+            data-testid="risk-approval-badge"
+          >
+            {r.approvalStatus ? t(`appr.${r.approvalStatus}`) : t('appr.none')}
+          </span>
+        </div>
+        <p className="text-xs text-secondary">
+          {t('approver')}: <span className="text-foreground">{r.approver ?? '—'}</span>
+        </p>
+        {/* Автор отправляет на согласование, если назначен approver и ещё не на согласовании */}
+        {r.approverMembershipId && r.approvalStatus !== 'pending' && (
+          <form action={submitRiskApprovalAction.bind(null, r.id)}>
+            <button type="submit" className={primaryBtn} data-testid="risk-submit-approval">
+              {t('submitApproval')}
+            </button>
+          </form>
+        )}
+        {/* Согласующий принимает решение, когда статус pending */}
+        {r.amIApprover && r.approvalStatus === 'pending' && (
+          <form
+            action={decideRiskApprovalAction.bind(null, r.id)}
+            className="flex gap-2"
+            data-testid="risk-decide"
+          >
+            <button
+              type="submit"
+              name="decision"
+              value="approved"
+              className={primaryBtn}
+              data-testid="risk-approve"
+            >
+              {t('approve')}
+            </button>
+            <button
+              type="submit"
+              name="decision"
+              value="rejected"
+              className="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-ring"
+              data-testid="risk-reject"
+            >
+              {t('reject')}
+            </button>
+          </form>
+        )}
       </section>
 
       <section
