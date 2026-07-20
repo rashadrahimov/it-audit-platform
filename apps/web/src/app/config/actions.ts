@@ -28,6 +28,8 @@ export async function saveBusinessProfileAction(formData: FormData): Promise<voi
   }
   const idle = Number(formData.get('idleTimeoutMin'));
   if (Number.isFinite(idle)) body.idleTimeoutMin = Math.min(1440, Math.max(0, Math.round(idle)));
+  const dl = String(formData.get('defaultLocale') ?? '').trim();
+  if (dl === 'en' || dl === 'az' || dl === 'ru') body.defaultLocale = dl;
   await apiFetch('/business-profile', {
     method: 'PUT',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },

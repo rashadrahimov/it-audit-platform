@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
+import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
 import { tenant } from '../db/schema';
 
@@ -14,6 +15,8 @@ export interface BusinessProfile {
   incidentContact: string;
   /** T-V36c: авто-логаут при простое, минуты (0 = выключено). */
   idleTimeoutMin: number;
+  /** T-V36f: локаль тенанта по умолчанию — ставится в cookie при логине. */
+  defaultLocale: Locale;
 }
 
 export const EMPTY_PROFILE: BusinessProfile = {
@@ -22,6 +25,7 @@ export const EMPTY_PROFILE: BusinessProfile = {
   address: '',
   incidentContact: '',
   idleTimeoutMin: 0,
+  defaultLocale: DEFAULT_LOCALE,
 };
 
 type TextField = 'legalName' | 'jurisdiction' | 'address' | 'incidentContact';
@@ -57,6 +61,8 @@ export class BusinessProfileService {
     if (typeof input.idleTimeoutMin === 'number' && Number.isFinite(input.idleTimeoutMin)) {
       merged.idleTimeoutMin = Math.min(1440, Math.max(0, Math.round(input.idleTimeoutMin)));
     }
+    const locale = localeSchema.safeParse(input.defaultLocale);
+    if (locale.success) merged.defaultLocale = locale.data;
     await this.dbService.db
       .update(tenant)
       .set({ settings: { ...settings, businessProfile: merged } })

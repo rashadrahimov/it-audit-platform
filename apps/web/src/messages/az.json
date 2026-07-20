@@ -1087,7 +1087,9 @@
     "incidentContact": "İnsident əlaqəsi",
     "bizSave": "Profili saxla",
     "idleTimeout": "Boşdayanma vaxtı (dəq)",
-    "idleTimeoutHint": "Fəaliyyətsizlikdən sonra avto-çıxış. 0 = söndürülüb."
+    "idleTimeoutHint": "Fəaliyyətsizlikdən sonra avto-çıxış. 0 = söndürülüb.",
+    "defaultLocale": "Standart dil",
+    "defaultLocaleHint": "Yeni girişlər istifadəçi başqasını seçənə qədər bu dili alır."
   },
   "reports": {
     "title": "Hesabatlar",

@@ -1087,7 +1087,9 @@
     "incidentContact": "Incident contact",
     "bizSave": "Save profile",
     "idleTimeout": "Idle timeout (min)",
-    "idleTimeoutHint": "Auto sign-out after inactivity. 0 = disabled."
+    "idleTimeoutHint": "Auto sign-out after inactivity. 0 = disabled.",
+    "defaultLocale": "Default language",
+    "defaultLocaleHint": "New sign-ins get this language until the user picks another."
   },
   "reports": {
     "title": "Reports",

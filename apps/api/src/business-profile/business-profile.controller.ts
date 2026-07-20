@@ -12,6 +12,7 @@ const saveSchema = z.object({
   address: z.string().max(500).optional(),
   incidentContact: z.string().max(500).optional(),
   idleTimeoutMin: z.number().int().min(0).max(1440).optional(),
+  defaultLocale: z.enum(['en', 'az', 'ru']).optional(),
 });
 
 @Controller('business-profile')

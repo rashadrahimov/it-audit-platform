@@ -36,6 +36,7 @@ interface BusinessProfile {
   address: string;
   incidentContact: string;
   idleTimeoutMin: number;
+  defaultLocale: 'en' | 'az' | 'ru';
 }
 const EMPTY_PROFILE: BusinessProfile = {
   legalName: '',
@@ -43,6 +44,7 @@ const EMPTY_PROFILE: BusinessProfile = {
   address: '',
   incidentContact: '',
   idleTimeoutMin: 0,
+  defaultLocale: 'en',
 };
 
 const inputCls =
@@ -101,6 +103,20 @@ export default async function ConfigPage() {
               className={inputCls}
             />
             <span className="text-[11px] text-secondary">{t('idleTimeoutHint')}</span>
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-xs font-medium text-secondary">{t('defaultLocale')}</span>
+            <select
+              name="defaultLocale"
+              defaultValue={biz.defaultLocale}
+              data-testid="default-locale"
+              className={inputCls}
+            >
+              <option value="en">English</option>
+              <option value="az">Azərbaycanca</option>
+              <option value="ru">Русский</option>
+            </select>
+            <span className="text-[11px] text-secondary">{t('defaultLocaleHint')}</span>
           </label>
           <button
             type="submit"
