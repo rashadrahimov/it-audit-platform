@@ -523,6 +523,11 @@ export const documentLink = pgTable(
     entityType: text('entity_type').notNull(),
     entityId: uuid('entity_id').notNull(),
     relation: text('relation').notNull().default('evidence'),
+    /**
+     * T-112: статус review доказательства аудитором (Vanta evidence tracker):
+     * not_ready → ready (auditee готов) → accepted / flagged / not_applicable (вердикт аудитора).
+     */
+    reviewStatus: text('review_status').notNull().default('not_ready'),
     ...timestamps,
   },
   (table) => [

@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -25,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { z } from 'zod';
+import { evidenceReviewStatusSchema } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
@@ -37,6 +39,8 @@ const linkSchema = z.object({
   entityId: z.uuid(),
   relation: z.string().min(1).default('evidence'),
 });
+
+const reviewSchema = z.object({ reviewStatus: evidenceReviewStatusSchema });
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard, PermissionGuard)
@@ -120,6 +124,26 @@ export class DocumentsController {
       throw new BadRequestException('Нужны entityType и entityId');
     }
     return this.documentsService.listFor(req.tenantId, req.user.sub, entityType, entityId);
+  }
+
+  @Patch('links/:linkId/review')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({
+    summary: 'Review-статус доказательства аудитором (T-112, evidence tracker)',
+  })
+  @ApiOkResponse({ description: '{id, reviewStatus}' })
+  setReviewStatus(
+    @Req() req: TenantRequest,
+    @Param('linkId', ParseUUIDPipe) linkId: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = reviewSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.documentsService.setReviewStatus(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      linkId,
+      parsed.data.reviewStatus,
+    );
   }
 
   @Get(':id/content')

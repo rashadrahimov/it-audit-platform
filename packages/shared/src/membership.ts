@@ -15,3 +15,22 @@ export const membershipCategorySchema = z.enum([
 ]);
 
 export type MembershipCategory = z.infer<typeof membershipCategorySchema>;
+
+/**
+ * Статус review доказательства (T-112, EP-AUDITOR-RELATIONSHIP) — аналог
+ * Vanta evidence tracker. Проставляется на document_link:
+ * - not_ready — ещё не готово к аудиту (дефолт);
+ * - ready — auditee пометил готовым к ревью;
+ * - accepted — аудитор принял;
+ * - flagged — аудитор вернул на доработку;
+ * - not_applicable — неприменимо.
+ */
+export const evidenceReviewStatusSchema = z.enum([
+  'not_ready',
+  'ready',
+  'accepted',
+  'flagged',
+  'not_applicable',
+]);
+
+export type EvidenceReviewStatus = z.infer<typeof evidenceReviewStatusSchema>;

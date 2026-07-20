@@ -1,6 +1,12 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
 import { and, desc, eq, isNull } from 'drizzle-orm';
+import type { EvidenceReviewStatus } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import {
@@ -197,6 +203,8 @@ export class DocumentsService {
           sha256: document.sha256,
           version: document.version,
           relation: documentLink.relation,
+          linkId: documentLink.id,
+          reviewStatus: documentLink.reviewStatus,
           renewBy: document.renewBy,
           status: document.status,
           createdAt: document.createdAt,
@@ -217,6 +225,78 @@ export class DocumentsService {
       renewBy: r.renewBy?.toISOString() ?? null,
       createdAt: r.createdAt.toISOString(),
     }));
+  }
+
+  /**
+   * T-112: аудитор проставляет review-статус доказательства (evidence tracker).
+   * Ревьюит только аудитор (category auditor/external_auditor) — capability
+   * ортогональна RBAC (как approver политик, T-052). Внешний аудитор — только
+   * в пределах своего scope.
+   */
+  async setReviewStatus(
+    actor: { tenantId: string; userId: string; ip?: string | null },
+    linkId: string,
+    reviewStatus: EvidenceReviewStatus,
+  ) {
+    const category = await this.actorCategory(actor.tenantId, actor.userId);
+    if (category !== 'auditor' && category !== 'external_auditor') {
+      throw new ForbiddenException('Ревьюить доказательства может только аудитор');
+    }
+    const [link] = await this.dbService.withTenant(actor.tenantId, (tx) =>
+      tx
+        .select({
+          id: documentLink.id,
+          entityType: documentLink.entityType,
+          entityId: documentLink.entityId,
+          reviewStatus: documentLink.reviewStatus,
+        })
+        .from(documentLink)
+        .innerJoin(document, eq(documentLink.documentId, document.id))
+        .where(eq(documentLink.id, linkId)),
+    );
+    if (!link) throw new NotFoundException('Привязка документа не найдена');
+
+    const scope = await resolveAuditorScope(this.dbService, actor.tenantId, actor.userId);
+    if (scope !== null) {
+      const { subsidiaryId, subsidiaryBound } = await this.entitySubsidiary(
+        actor.tenantId,
+        link.entityType,
+        link.entityId,
+      );
+      if (subsidiaryBound && (subsidiaryId === null || !scope.includes(subsidiaryId))) {
+        throw new ForbiddenException('Доказательство вне вашего scope');
+      }
+    }
+
+    await this.dbService.withTenant(actor.tenantId, (tx) =>
+      tx.update(documentLink).set({ reviewStatus }).where(eq(documentLink.id, linkId)),
+    );
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'document_link.review_status_changed',
+      entityType: 'document_link',
+      entityId: linkId,
+      before: { reviewStatus: link.reviewStatus },
+      after: { reviewStatus },
+    });
+    return { id: linkId, reviewStatus };
+  }
+
+  /** Категория активного membership актора в тенанте (для auditor-gate). */
+  private async actorCategory(tenantId: string, userId: string): Promise<string | null> {
+    const [m] = await this.dbService.db
+      .select({ category: membership.category })
+      .from(membership)
+      .where(
+        and(
+          eq(membership.userId, userId),
+          eq(membership.tenantId, tenantId),
+          eq(membership.status, 'active'),
+        ),
+      );
+    return m?.category ?? null;
   }
 
   /** Авторизованное скачивание: метаданные под RLS, тело — из S3. */
