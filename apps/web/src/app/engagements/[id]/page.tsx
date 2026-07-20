@@ -59,6 +59,43 @@ interface FindingRow {
   auditor: string | null;
 }
 
+interface EvidenceDoc {
+  id: string;
+  filename: string;
+  version: number;
+  relation: string;
+  renewBy: string | null;
+  status: string;
+  owner: string | null;
+}
+interface EvidenceReview {
+  status: string;
+  reviewer: string | null;
+  reviewedAt: string | null;
+}
+
+const REVIEW_TONE: Record<string, string> = {
+  not_ready: 'bg-muted text-secondary',
+  ready: 'bg-sky-100 text-sky-700',
+  flagged: 'bg-red-100 text-red-700',
+  accepted: 'bg-emerald-100 text-emerald-700',
+};
+
+/** SLA-статус доказательства по дате обновления (T-V44). */
+function slaStatus(renewBy: string | null, now: number): 'overdue' | 'soon' | 'ok' | 'none' {
+  if (!renewBy) return 'none';
+  const due = new Date(renewBy).getTime();
+  if (due < now) return 'overdue';
+  if (due < now + 30 * 24 * 60 * 60 * 1000) return 'soon';
+  return 'ok';
+}
+const SLA_TONE: Record<string, string> = {
+  overdue: 'bg-red-100 text-red-700',
+  soon: 'bg-amber-100 text-amber-700',
+  ok: 'bg-emerald-100 text-emerald-700',
+  none: 'bg-muted text-secondary',
+};
+
 /** Карточка engagement'а (T-035): состояние, переходы, вехи план/факт (ENG-03). */
 export default async function EngagementDetailPage({
   params,
@@ -113,8 +150,23 @@ export default async function EngagementDetailPage({
     ? await cRes.json()
     : [];
 
+  // T-V44: доказательства аудита (документы по привязке) + статус ревью (T-V29)
+  const evRes = await apiFetch(`/documents?entityType=engagement&entityId=${id}`, {
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  const evidence: EvidenceDoc[] = evRes.ok ? await evRes.json() : [];
+  const revRes =
+    evidence.length > 0
+      ? await apiFetch(
+          `/audit-firms/evidence-batch?entityType=document&entityIds=${evidence.map((d) => d.id).join(',')}`,
+          { headers: { 'X-Tenant-Slug': tenantSlug } },
+        )
+      : null;
+  const reviews: Record<string, EvidenceReview> = revRes && revRes.ok ? await revRes.json() : {};
+
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const fmt = (iso: string | null): string => (iso ? dateFmt.format(new Date(iso)) : '—');
+  const now = Date.now();
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 p-6 pt-12">
@@ -426,6 +478,69 @@ export default async function EngagementDetailPage({
               ))}
             </tbody>
           </table>
+        )}
+      </section>
+
+      <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-primary">{t('evidence')}</h2>
+        {evidence.length === 0 ? (
+          <p className="text-sm text-secondary">{t('evidenceEmpty')}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm" data-testid="engagement-evidence">
+              <thead>
+                <tr className="border-b border-border text-secondary">
+                  <th className="py-2 pr-4 font-medium">{t('evColName')}</th>
+                  <th className="py-2 pr-4 font-medium">{t('evColType')}</th>
+                  <th className="py-2 pr-4 font-medium">{t('evColOwner')}</th>
+                  <th className="py-2 pr-4 font-medium">{t('evColReview')}</th>
+                  <th className="py-2 font-medium">{t('evColSla')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {evidence.map((d) => {
+                  const sla = slaStatus(d.renewBy, now);
+                  const review = reviews[d.id]?.status ?? 'not_ready';
+                  return (
+                    <tr key={d.id} className="border-b border-border align-top last:border-0">
+                      <td className="py-2 pr-4">
+                        <a
+                          href={`/documents/${d.id}/download`}
+                          className="font-medium text-accent underline-offset-2 transition-colors duration-150 hover:underline"
+                        >
+                          {d.filename}
+                        </a>
+                        {d.version > 1 && (
+                          <span className="ml-1 text-xs text-secondary">v{d.version}</span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-4 text-secondary whitespace-nowrap">
+                        {t(`rel.${d.relation}`)}
+                      </td>
+                      <td className="py-2 pr-4 text-secondary">{d.owner ?? '—'}</td>
+                      <td className="py-2 pr-4">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${REVIEW_TONE[review]}`}
+                        >
+                          {t(`review.${review}`)}
+                        </span>
+                      </td>
+                      <td className="py-2 whitespace-nowrap">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${SLA_TONE[sla]}`}
+                        >
+                          {sla === 'none' ? '—' : t(`sla.${sla}`)}
+                        </span>
+                        {d.renewBy && (
+                          <span className="ml-1.5 text-xs text-secondary">{fmt(d.renewBy)}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
 

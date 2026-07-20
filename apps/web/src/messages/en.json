@@ -177,7 +177,31 @@
       "high": "High",
       "medium": "Medium"
     },
-    "suggestionCreate": "Create finding"
+    "suggestionCreate": "Create finding",
+    "evidence": "Evidence",
+    "evidenceEmpty": "No documents linked to this audit yet.",
+    "evColName": "Document",
+    "evColType": "Type",
+    "evColOwner": "Owner",
+    "evColReview": "Review",
+    "evColSla": "Renewal",
+    "rel": {
+      "evidence": "Evidence",
+      "permanent_file": "Permanent file",
+      "attachment": "Attachment",
+      "report": "Report"
+    },
+    "review": {
+      "not_ready": "Not ready",
+      "ready": "Ready",
+      "flagged": "Flagged",
+      "accepted": "Accepted"
+    },
+    "sla": {
+      "overdue": "Overdue",
+      "soon": "Due soon",
+      "ok": "OK"
+    }
   },
   "engagementStates": {
     "draft": "Draft",
@@ -1571,7 +1595,9 @@
     "risk": "Inherent risk",
     "scope": "Scope",
     "ownedByMe": "Owned by me",
-    "needsMyApproval": "Needs my approval"
+    "needsMyApproval": "Needs my approval",
+    "type": "Type",
+    "mode": "Mode"
   },
   "findings": {
     "title": "Findings",

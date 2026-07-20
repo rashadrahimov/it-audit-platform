@@ -285,7 +285,7 @@ export class EngagementsService {
     locale: Locale,
     auditTypeCode?: string,
     archived = false,
-    filters?: { state?: string; subsidiaryId?: string },
+    filters?: { state?: string; subsidiaryId?: string; mode?: string },
   ) {
     const rows = await this.dbService.withTenant(tenantId, (tx) => {
       const conds = [
@@ -294,6 +294,7 @@ export class EngagementsService {
       ];
       if (auditTypeCode) conds.push(eq(auditType.code, auditTypeCode));
       if (filters?.state) conds.push(eq(engagement.state, filters.state));
+      if (filters?.mode) conds.push(eq(engagement.mode, filters.mode));
       if (filters?.subsidiaryId) conds.push(eq(engagement.subsidiaryId, filters.subsidiaryId));
       return tx
         .select({

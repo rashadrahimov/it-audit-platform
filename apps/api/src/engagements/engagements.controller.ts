@@ -147,7 +147,7 @@ export class EngagementsController {
   @RequirePermission('engagement', 'view')
   @ApiOperation({
     summary:
-      'Список engagement’ов тенанта (?auditTypeCode, ?state=, ?subsidiaryId= — фильтры T-V16; ?archived=true — только архив)',
+      'Список engagement’ов тенанта (?auditTypeCode, ?state=, ?mode=, ?subsidiaryId= — фильтры T-V16/T-V44; ?archived=true — только архив)',
   })
   list(
     @Req() req: TenantRequest,
@@ -155,6 +155,7 @@ export class EngagementsController {
     @Query('auditTypeCode') auditTypeCode?: string,
     @Query('archived') archived?: string,
     @Query('state') state?: string,
+    @Query('mode') mode?: string,
     @Query('subsidiaryId') subsidiaryId?: string,
   ) {
     return this.engagementsService.list(
@@ -164,6 +165,7 @@ export class EngagementsController {
       archived === 'true',
       {
         state: filterParam(state, 'state'),
+        mode: filterParam(mode, 'mode'),
         subsidiaryId: uuidFilterParam(subsidiaryId, 'subsidiaryId'),
       },
     );

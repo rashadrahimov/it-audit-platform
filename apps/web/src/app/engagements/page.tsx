@@ -31,12 +31,21 @@ interface EngagementRow {
   subsidiary: string;
   auditType: string | null;
 }
+interface AuditTypeOpt {
+  code: string;
+  name: string;
+}
 
-/** Список engagement'ов (T-035; ENG-08: переключатель Активные/Архив). */
+/** Список engagement'ов (T-035; ENG-08: переключатель Активные/Архив; T-V44: фильтры type/mode). */
 export default async function EngagementsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ archived?: string; state?: string }>;
+  searchParams: Promise<{
+    archived?: string;
+    state?: string;
+    mode?: string;
+    auditTypeCode?: string;
+  }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
@@ -51,12 +60,18 @@ export default async function EngagementsPage({
   const archived = sp.archived === 'true';
 
   let engagements: EngagementRow[] = [];
+  let auditTypes: AuditTypeOpt[] = [];
   if (tenantSlug) {
-    const res = await apiFetch(
-      `/engagements?locale=${locale}${archived ? '&archived=true' : ''}${filterQuery(sp, ['state'])}`,
-      { headers: { 'X-Tenant-Slug': tenantSlug } },
-    );
+    const headers = { 'X-Tenant-Slug': tenantSlug };
+    const [res, typesRes] = await Promise.all([
+      apiFetch(
+        `/engagements?locale=${locale}${archived ? '&archived=true' : ''}${filterQuery(sp, ['state', 'mode', 'auditTypeCode'])}`,
+        { headers },
+      ),
+      apiFetch(`/audit-types?locale=${locale}`, { headers }),
+    ]);
     engagements = res.ok ? await res.json() : [];
+    auditTypes = typesRes.ok ? await typesRes.json() : [];
   }
 
   const tabCls = (on: boolean) =>
@@ -87,6 +102,23 @@ export default async function EngagementsPage({
             param: 'state',
             label: tFilters('state'),
             options: STATES.map((s) => ({ value: s, label: tStates(s) })),
+          },
+          ...(auditTypes.length > 0
+            ? [
+                {
+                  param: 'auditTypeCode',
+                  label: tFilters('type'),
+                  options: auditTypes.map((a) => ({ value: a.code, label: a.name })),
+                },
+              ]
+            : []),
+          {
+            param: 'mode',
+            label: tFilters('mode'),
+            options: [
+              { value: 'formal', label: t('modes.formal') },
+              { value: 'light', label: t('modes.light') },
+            ],
           },
         ]}
       />

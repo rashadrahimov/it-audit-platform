@@ -188,7 +188,7 @@ export class DocumentsService {
     return result;
   }
 
-  /** Документы сущности (через привязки), новые сверху. */
+  /** Документы сущности (через привязки), новые сверху; с owner-именем (T-V44). */
   async listFor(tenantId: string, entityType: string, entityId: string) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
@@ -203,9 +203,12 @@ export class DocumentsService {
           renewBy: document.renewBy,
           status: document.status,
           createdAt: document.createdAt,
+          owner: user.fullName,
         })
         .from(documentLink)
         .innerJoin(document, eq(documentLink.documentId, document.id))
+        .leftJoin(membership, eq(document.ownerMembershipId, membership.id))
+        .leftJoin(user, eq(membership.userId, user.id))
         .where(
           and(
             eq(documentLink.entityType, entityType),

@@ -177,7 +177,31 @@
       "high": "Высокий",
       "medium": "Средний"
     },
-    "suggestionCreate": "Создать замечание"
+    "suggestionCreate": "Создать замечание",
+    "evidence": "Доказательства",
+    "evidenceEmpty": "К этому аудиту ещё не привязано ни одного документа.",
+    "evColName": "Документ",
+    "evColType": "Тип",
+    "evColOwner": "Владелец",
+    "evColReview": "Ревью",
+    "evColSla": "Обновление",
+    "rel": {
+      "evidence": "Доказательство",
+      "permanent_file": "Постоянный файл",
+      "attachment": "Вложение",
+      "report": "Отчёт"
+    },
+    "review": {
+      "not_ready": "Не готово",
+      "ready": "Готово",
+      "flagged": "Отмечено",
+      "accepted": "Принято"
+    },
+    "sla": {
+      "overdue": "Просрочено",
+      "soon": "Скоро",
+      "ok": "В норме"
+    }
   },
   "engagementStates": {
     "draft": "Черновик",
@@ -1579,7 +1603,9 @@
     "risk": "Присущий риск",
     "scope": "Охват",
     "ownedByMe": "Назначено мне",
-    "needsMyApproval": "Ждут моего решения"
+    "needsMyApproval": "Ждут моего решения",
+    "type": "Тип",
+    "mode": "Режим"
   },
   "findings": {
     "title": "Замечания",

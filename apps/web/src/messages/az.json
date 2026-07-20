@@ -177,7 +177,31 @@
       "high": "Yüksək",
       "medium": "Orta"
     },
-    "suggestionCreate": "Findinq yarat"
+    "suggestionCreate": "Findinq yarat",
+    "evidence": "Sübutlar",
+    "evidenceEmpty": "Bu audit ilə əlaqəli sənəd hələ yoxdur.",
+    "evColName": "Sənəd",
+    "evColType": "Növ",
+    "evColOwner": "Sahib",
+    "evColReview": "Yoxlama",
+    "evColSla": "Yenilənmə",
+    "rel": {
+      "evidence": "Sübut",
+      "permanent_file": "Daimi fayl",
+      "attachment": "Əlavə",
+      "report": "Hesabat"
+    },
+    "review": {
+      "not_ready": "Hazır deyil",
+      "ready": "Hazır",
+      "flagged": "İşarələnib",
+      "accepted": "Qəbul edilib"
+    },
+    "sla": {
+      "overdue": "Gecikib",
+      "soon": "Tezliklə",
+      "ok": "Normada"
+    }
   },
   "engagementStates": {
     "draft": "Qaralama",
@@ -1579,7 +1603,9 @@
     "risk": "Xas risk",
     "scope": "Əhatə",
     "ownedByMe": "Mənə təyin olunub",
-    "needsMyApproval": "Mənim təsdiqimi gözləyir"
+    "needsMyApproval": "Mənim təsdiqimi gözləyir",
+    "type": "Növ",
+    "mode": "Rejim"
   },
   "findings": {
     "title": "Findinqlər",
