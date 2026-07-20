@@ -200,7 +200,19 @@
     "domain": "Домен",
     "objective": "Цель",
     "standards": "Стандарты",
-    "empty": "Контролей пока нет"
+    "empty": "Контролей пока нет",
+    "owner": "Владелец",
+    "tests": "Тесты",
+    "statusCol": "Статус",
+    "assigned": "Назначены",
+    "unassigned": "Без владельца",
+    "withPassing": "С passing-evidence",
+    "percentPassing": "% passing",
+    "st": {
+      "active": "Активен",
+      "inactive": "Неактивен",
+      "retired": "Выведен"
+    }
   },
   "controlDetail": {
     "back": "Все контроли",
@@ -226,6 +238,17 @@
       "failing": "Проваливается",
       "needs_attention": "Требует внимания",
       "deactivated": "Деактивирован"
+    },
+    "note": "Заметка",
+    "assign": "Назначение",
+    "assignGlobalHint": "Это глобальный контроль — сохранение создаёт тенантную адаптацию с вашими изменениями.",
+    "noOwner": "Без владельца",
+    "statusLabel": "Статус",
+    "save": "Сохранить",
+    "st": {
+      "active": "Активен",
+      "inactive": "Неактивен",
+      "retired": "Выведен"
     }
   },
   "frameworks": {

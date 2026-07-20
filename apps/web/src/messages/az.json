@@ -200,7 +200,19 @@
     "domain": "Domen",
     "objective": "Məqsəd",
     "standards": "Standartlar",
-    "empty": "Hələ nəzarət yoxdur"
+    "empty": "Hələ nəzarət yoxdur",
+    "owner": "Sahib",
+    "tests": "Testlər",
+    "statusCol": "Status",
+    "assigned": "Təyin edilib",
+    "unassigned": "Təyin edilməyib",
+    "withPassing": "Keçən sübutlu",
+    "percentPassing": "% keçən",
+    "st": {
+      "active": "Aktiv",
+      "inactive": "Qeyri-aktiv",
+      "retired": "Ləğv edilib"
+    }
   },
   "controlDetail": {
     "back": "Bütün nəzarətlər",
@@ -226,6 +238,17 @@
       "failing": "Uğursuz",
       "needs_attention": "Diqqət tələb edir",
       "deactivated": "Deaktiv"
+    },
+    "note": "Qeyd",
+    "assign": "Təyinat",
+    "assignGlobalHint": "Bu qlobal kontroldur — yadda saxlama dəyişikliklərinizlə tenant adaptasiyası yaradır.",
+    "noOwner": "Sahib yoxdur",
+    "statusLabel": "Status",
+    "save": "Yadda saxla",
+    "st": {
+      "active": "Aktiv",
+      "inactive": "Qeyri-aktiv",
+      "retired": "Ləğv edilib"
     }
   },
   "frameworks": {

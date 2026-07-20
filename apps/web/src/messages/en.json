@@ -200,7 +200,19 @@
     "domain": "Domain",
     "objective": "Objective",
     "standards": "Standards",
-    "empty": "No controls yet"
+    "empty": "No controls yet",
+    "owner": "Owner",
+    "tests": "Tests",
+    "statusCol": "Status",
+    "assigned": "Assigned",
+    "unassigned": "Unassigned",
+    "withPassing": "With passing evidence",
+    "percentPassing": "% passing",
+    "st": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "retired": "Retired"
+    }
   },
   "controlDetail": {
     "back": "All controls",
@@ -226,6 +238,17 @@
       "failing": "Failing",
       "needs_attention": "Needs attention",
       "deactivated": "Deactivated"
+    },
+    "note": "Note",
+    "assign": "Assignment",
+    "assignGlobalHint": "This is a global control — saving creates a tenant adaptation with your changes.",
+    "noOwner": "No owner",
+    "statusLabel": "Status",
+    "save": "Save",
+    "st": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "retired": "Retired"
     }
   },
   "frameworks": {

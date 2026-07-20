@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { CommentsSection } from '@/components/comments-section';
+import { updateControlAction } from '../actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,14 +25,24 @@ interface ControlDetail {
   objective: string;
   question: string;
   guidance: string | null;
+  note: string | null;
   status: string;
   isGlobal: boolean;
   originControlId: string | null;
-  owner: { fullName: string; email: string } | null;
+  ownerMembershipId: string | null;
+  ownerDetail: { fullName: string; email: string } | null;
   standards: Array<{ framework: string; version: string; requirement: string }>;
   history: Array<{ action: string; actor: string | null; at: string }>;
   comments: Array<{ author: string; body: string; at: string }>;
 }
+interface Member {
+  id: string;
+  fullName: string;
+}
+
+const CTRL_STATUSES = ['active', 'inactive', 'retired'] as const;
+const inputCls =
+  'rounded-md border border-border px-2 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -60,13 +71,18 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
   if (!res.ok) throw new Error(`API /controls/${id}: ${res.status}`);
   const control: ControlDetail = await res.json();
 
-  // тесты контроля (T-033): под тенант-контекстом
+  // тесты контроля (T-033) + участники для owner-формы: под тенант-контекстом
   let tests: ControlTest[] = [];
+  let members: Member[] = [];
   if (tenantSlug) {
-    const tRes = await apiFetch(`/tests?controlId=${id}&locale=${locale}`, {
-      headers: { 'X-Tenant-Slug': tenantSlug },
-    });
+    const [tRes, mRes] = await Promise.all([
+      apiFetch(`/tests?controlId=${id}&locale=${locale}`, {
+        headers: { 'X-Tenant-Slug': tenantSlug },
+      }),
+      apiFetch(`/memberships?locale=${locale}`, { headers: { 'X-Tenant-Slug': tenantSlug } }),
+    ]);
     if (tRes.ok) tests = await tRes.json();
+    if (mRes.ok) members = await mRes.json();
   }
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
@@ -98,8 +114,11 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
           <Field label={t('question')}>{control.question}</Field>
           <Field label={t('guidance')}>{control.guidance ?? '—'}</Field>
           <Field label={t('owner')}>
-            {control.owner ? `${control.owner.fullName} (${control.owner.email})` : '—'}
+            {control.ownerDetail
+              ? `${control.ownerDetail.fullName} (${control.ownerDetail.email})`
+              : '—'}
           </Field>
+          {control.note && <Field label={t('note')}>{control.note}</Field>}
           <Field label={t('standards')}>
             {control.standards.length === 0 ? (
               '—'
@@ -118,6 +137,57 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
           </Field>
         </dl>
       </section>
+
+      {tenantSlug && members.length > 0 && (
+        <section
+          className="flex flex-col gap-3 rounded-xl border border-border bg-white p-6 shadow-sm"
+          data-testid="control-assign"
+        >
+          <h2 className="text-sm font-semibold text-primary">{t('assign')}</h2>
+          {control.isGlobal && <p className="text-xs text-secondary">{t('assignGlobalHint')}</p>}
+          <form
+            action={updateControlAction.bind(null, control.id)}
+            className="flex flex-wrap items-end gap-3"
+          >
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium text-secondary">{t('owner')}</span>
+              <select
+                name="ownerMembershipId"
+                defaultValue={control.ownerMembershipId ?? ''}
+                className={inputCls}
+              >
+                <option value="">{t('noOwner')}</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.fullName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium text-secondary">{t('statusLabel')}</span>
+              <select name="status" defaultValue={control.status} className={inputCls}>
+                {CTRL_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {t(`st.${s}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex min-w-40 flex-1 flex-col gap-1 text-sm">
+              <span className="font-medium text-secondary">{t('note')}</span>
+              <input name="note" defaultValue={control.note ?? ''} className={inputCls} />
+            </label>
+            <button
+              type="submit"
+              data-testid="control-save"
+              className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-on-primary transition-colors duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t('save')}
+            </button>
+          </form>
+        </section>
+      )}
 
       <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-primary">{t('tests')}</h2>

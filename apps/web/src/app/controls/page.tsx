@@ -12,10 +12,27 @@ interface ControlRow {
   ref: string;
   domain: { code: string; name: string } | null;
   objective: string;
+  status: string;
+  owner: string | null;
+  testCount: number;
+  passingCount: number;
   standards: Array<{ framework: string; version: string; requirement: string }>;
 }
+interface Summary {
+  total: number;
+  assigned: number;
+  unassigned: number;
+  withPassingEvidence: number;
+  percentPassing: number;
+}
 
-/** Библиотека контролей (T-031): DoD — контроль виден с его стандартами. */
+const STATUS_TONE: Record<string, string> = {
+  active: 'bg-emerald-100 text-emerald-700',
+  inactive: 'bg-amber-100 text-amber-700',
+  retired: 'bg-muted text-secondary',
+};
+
+/** Библиотека контролей (T-031 → T-V45): стандарты + owner/тесты + сводка. */
 export default async function ControlsPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
@@ -27,21 +44,48 @@ export default async function ControlsPage() {
 
   const query = new URLSearchParams({ locale });
   if (tenantSlug) query.set('tenantSlug', tenantSlug);
-  const res = await apiFetch(`/controls?${query}`);
+  const [res, sumRes] = await Promise.all([
+    apiFetch(`/controls?${query}`),
+    tenantSlug
+      ? apiFetch(`/controls/summary?locale=${locale}`, { headers: { 'X-Tenant-Slug': tenantSlug } })
+      : Promise.resolve(null),
+  ]);
   const controls: ControlRow[] = res.ok ? await res.json() : [];
+  const summary: Summary | null = sumRes && sumRes.ok ? await sumRes.json() : null;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+
+      {summary && (
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" data-testid="controls-summary">
+          {(
+            [
+              ['assigned', summary.assigned, 'text-emerald-700'],
+              ['unassigned', summary.unassigned, 'text-amber-700'],
+              ['withPassing', summary.withPassingEvidence, 'text-sky-700'],
+              ['percentPassing', `${summary.percentPassing}%`, 'text-primary'],
+            ] as const
+          ).map(([key, value, tone]) => (
+            <div key={key} className="rounded-xl border border-border bg-white p-4 shadow-sm">
+              <div className={`text-2xl font-bold tabular-nums ${tone}`}>{value}</div>
+              <div className="text-xs font-medium text-secondary">{t(key)}</div>
+            </div>
+          ))}
+        </section>
+      )}
+
       <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
         <table className="w-full text-left text-sm" data-testid="controls-table">
           <thead>
             <tr className="border-b border-border text-secondary">
               <th className="px-4 py-3 font-medium">{t('ref')}</th>
               <th className="px-4 py-3 font-medium">{t('domain')}</th>
-              <th className="px-4 py-3 font-medium">{t('objective')}</th>
+              <th className="px-4 py-3 font-medium">{t('owner')}</th>
+              <th className="px-4 py-3 font-medium">{t('tests')}</th>
+              <th className="px-4 py-3 font-medium">{t('statusCol')}</th>
               <th className="px-4 py-3 font-medium">{t('standards')}</th>
             </tr>
           </thead>
@@ -57,7 +101,23 @@ export default async function ControlsPage() {
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-secondary">{c.domain?.name ?? '—'}</td>
-                <td className="px-4 py-3 text-foreground">{c.objective}</td>
+                <td className="px-4 py-3 text-secondary">{c.owner ?? '—'}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-secondary tabular-nums">
+                  {c.testCount === 0 ? (
+                    '—'
+                  ) : (
+                    <span className={c.passingCount === c.testCount ? 'text-emerald-700' : ''}>
+                      {c.passingCount}/{c.testCount}
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_TONE[c.status] ?? 'bg-muted text-secondary'}`}
+                  >
+                    {t(`st.${c.status}`)}
+                  </span>
+                </td>
                 <td className="px-4 py-3">
                   {c.standards.length === 0 ? (
                     <span className="text-secondary">—</span>
@@ -78,7 +138,7 @@ export default async function ControlsPage() {
             ))}
             {controls.length === 0 && (
               <tr>
-                <td colSpan={4} className="p-0">
+                <td colSpan={6} className="p-0">
                   <EmptyState size="sm" text={t('empty')} />
                 </td>
               </tr>
