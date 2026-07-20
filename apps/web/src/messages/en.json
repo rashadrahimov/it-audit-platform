@@ -780,7 +780,25 @@
     "add": "Add",
     "change": "Change status",
     "slaHead": "SLA",
-    "statusHead": "Status"
+    "statusHead": "Status",
+    "tabCommitments": "Commitments",
+    "tabContracts": "Contracts",
+    "contract": "Contract",
+    "contractNone": "— none —",
+    "link": "Link",
+    "contractsTitle": "Contracts",
+    "contractName": "Contract name",
+    "contractNamePh": "e.g. MSA with Acme",
+    "counterparty": "Counterparty",
+    "endDate": "End date",
+    "addContract": "Add contract",
+    "contractsEmpty": "No contracts yet.",
+    "del": "Delete",
+    "cst": {
+      "active": "Active",
+      "expired": "Expired",
+      "terminated": "Terminated"
+    }
   },
   "accessReviews": {
     "title": "Access Reviews",

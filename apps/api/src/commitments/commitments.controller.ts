@@ -24,6 +24,7 @@ const createSchema = z.object({
   dueDate: z.iso.datetime().optional(),
   reviewCadence: z.string().optional(),
   ownerMembershipId: z.uuid().optional(),
+  contractId: z.uuid().optional(),
 });
 
 @Controller('commitments')
@@ -63,6 +64,24 @@ export class CommitmentsController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data.status,
+    );
+  }
+
+  @Post(':id/contract')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Привязать обязательство к контракту (T-V31); null — отвязать' })
+  setContract(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ contractId: z.uuid().nullable() }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.setContract(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.contractId,
     );
   }
 

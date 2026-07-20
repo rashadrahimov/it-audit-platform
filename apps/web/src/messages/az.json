@@ -780,7 +780,25 @@
     "add": "Əlavə et",
     "change": "Statusu dəyiş",
     "slaHead": "SLA",
-    "statusHead": "Status"
+    "statusHead": "Status",
+    "tabCommitments": "Öhdəliklər",
+    "tabContracts": "Müqavilələr",
+    "contract": "Müqavilə",
+    "contractNone": "— yoxdur —",
+    "link": "Bağla",
+    "contractsTitle": "Müqavilələr",
+    "contractName": "Müqavilə adı",
+    "contractNamePh": "məs. Acme ilə MSA",
+    "counterparty": "Qarşı tərəf",
+    "endDate": "Bitmə tarixi",
+    "addContract": "Müqavilə əlavə et",
+    "contractsEmpty": "Hələ müqavilə yoxdur.",
+    "del": "Sil",
+    "cst": {
+      "active": "Aktiv",
+      "expired": "Bitib",
+      "terminated": "Ləğv edilib"
+    }
   },
   "accessReviews": {
     "title": "Giriş Baxışları",

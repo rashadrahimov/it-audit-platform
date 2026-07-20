@@ -561,6 +561,13 @@
       "when": 1784513719150,
       "tag": "0079_trust-activity",
       "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1784514370342,
+      "tag": "0080_contracts",
+      "breakpoints": true
     }
   ]
 }

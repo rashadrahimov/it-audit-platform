@@ -780,7 +780,25 @@
     "add": "Добавить",
     "change": "Сменить статус",
     "slaHead": "SLA",
-    "statusHead": "Статус"
+    "statusHead": "Статус",
+    "tabCommitments": "Обязательства",
+    "tabContracts": "Контракты",
+    "contract": "Контракт",
+    "contractNone": "— нет —",
+    "link": "Привязать",
+    "contractsTitle": "Контракты",
+    "contractName": "Название контракта",
+    "contractNamePh": "напр. MSA с Acme",
+    "counterparty": "Контрагент",
+    "endDate": "Дата окончания",
+    "addContract": "Добавить контракт",
+    "contractsEmpty": "Контрактов пока нет.",
+    "del": "Удалить",
+    "cst": {
+      "active": "Активен",
+      "expired": "Истёк",
+      "terminated": "Расторгнут"
+    }
   },
   "accessReviews": {
     "title": "Ревью доступа",

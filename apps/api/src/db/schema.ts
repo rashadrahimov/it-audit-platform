@@ -1299,12 +1299,35 @@ export const commitment = pgTable(
     dueDate: timestamp('due_date', { withTimezone: true }),
     reviewCadence: text('review_cadence'),
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    /** T-V31: связь обязательства с контрактом. */
+    contractId: uuid('contract_id').references((): AnyPgColumn => contract.id),
     status: text('status').notNull().default('met'),
     slaStatus: text('sla_status').notNull().default('ok'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
   (table) => [index('commitment_tenant_idx').on(table.tenantId)],
+);
+
+/** T-V31: контракт с контрагентом; commitments привязываются к контракту. */
+export const contract = pgTable(
+  'contract',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    name: text('name').notNull(),
+    counterparty: text('counterparty'),
+    status: text('status').notNull().default('active'),
+    startDate: timestamp('start_date', { withTimezone: true }),
+    endDate: timestamp('end_date', { withTimezone: true }),
+    note: text('note'),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('contract_tenant_idx').on(table.tenantId)],
 );
 
 /** Тег (T-076, EP-MISC): полиморфная навеска на любую сущность через tag_link. */
