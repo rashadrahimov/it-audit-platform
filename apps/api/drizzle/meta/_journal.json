@@ -554,6 +554,13 @@
       "when": 1784513069902,
       "tag": "0078_roadmap-target-date",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1784513719150,
+      "tag": "0079_trust-activity",
+      "breakpoints": true
     }
   ]
 }

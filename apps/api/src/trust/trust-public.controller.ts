@@ -15,10 +15,19 @@ export class TrustPublicController {
   constructor(private readonly service: TrustService) {}
 
   @Get(':slug')
-  @ApiOperation({ summary: 'Публичная страница Trust Center по slug (без auth)' })
+  @ApiOperation({
+    summary: 'Публичная страница Trust Center по slug (без auth; просмотр логируется)',
+  })
   @ApiOkResponse({ description: '{slug, title, intro, items:[{label, category}]}' })
   publicView(@Param('slug') slug: string) {
     return this.service.publicView(slug);
+  }
+
+  @Get(':slug/granted/:token')
+  @ApiOperation({ summary: 'Granted-вид по токену доступа (T-V30, без auth)' })
+  @ApiOkResponse({ description: '{title, grantedTo, items}' })
+  grantedView(@Param('slug') slug: string, @Param('token') token: string) {
+    return this.service.grantedView(slug, token);
   }
 
   @Post(':slug/access-requests')

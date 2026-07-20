@@ -508,7 +508,20 @@
     "published": "Dərc olunub",
     "draft": "Qaralama",
     "accessRequests": "giriş sorğusu",
-    "slug": "Açıq URL"
+    "slug": "Açıq URL",
+    "activity": "Fəaliyyət",
+    "noActivity": "Hələ fəaliyyət yoxdur.",
+    "requestsTitle": "Giriş tələbləri",
+    "approve": "Təsdiq et",
+    "deny": "Rədd et",
+    "grantedLink": "Giriş keçidi",
+    "copyHint": "Bu şəxsi keçidi təsdiqlənmiş tələb edənlə paylaşın.",
+    "kind": {
+      "view": "Səhifə baxışı",
+      "access_request": "Giriş tələb edildi",
+      "access_granted": "Giriş verildi",
+      "access_used": "Giriş keçidi istifadə edildi"
+    }
   },
   "glossary": {
     "title": "Lüğət",
@@ -1941,5 +1954,20 @@
       "remediation": "Aradan qaldırma",
       "audit": "Audit"
     }
+  },
+  "trustPublic": {
+    "posture": "Təhlükəsizlik vəziyyəti",
+    "requestTitle": "Tam giriş tələb et",
+    "requestHint": "Ətraflı sənədlərə giriş tələb edin. Nəzərdən keçirib şəxsi keçid verəcəyik.",
+    "email": "İş e-poçtu",
+    "company": "Şirkət",
+    "message": "Mesaj (istəyə görə)",
+    "send": "Giriş tələb et",
+    "sent": "Tələb göndərildi — e-poçtla cavab verəcəyik.",
+    "error": "Xəta baş verdi. Yenidən cəhd edin.",
+    "notFound": "Bu Trust Center mövcud deyil.",
+    "granted": "Verilmiş giriş",
+    "grantedTo": "Giriş verildi",
+    "poweredBy": "STATERA ilə"
   }
 }

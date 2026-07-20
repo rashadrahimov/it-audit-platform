@@ -508,7 +508,20 @@
     "published": "Published",
     "draft": "Draft",
     "accessRequests": "access requests",
-    "slug": "Public URL"
+    "slug": "Public URL",
+    "activity": "Activity",
+    "noActivity": "No activity yet.",
+    "requestsTitle": "Access requests",
+    "approve": "Approve",
+    "deny": "Deny",
+    "grantedLink": "Access link",
+    "copyHint": "Share this private link with the approved requester.",
+    "kind": {
+      "view": "Page view",
+      "access_request": "Access requested",
+      "access_granted": "Access granted",
+      "access_used": "Access link used"
+    }
   },
   "glossary": {
     "title": "Glossary",
@@ -1933,5 +1946,20 @@
       "remediation": "Remediation",
       "audit": "Audit"
     }
+  },
+  "trustPublic": {
+    "posture": "Security posture",
+    "requestTitle": "Request full access",
+    "requestHint": "Request access to detailed documentation. We will review and grant a private link.",
+    "email": "Work email",
+    "company": "Company",
+    "message": "Message (optional)",
+    "send": "Request access",
+    "sent": "Request sent — you will hear from us by email.",
+    "error": "Something went wrong. Try again.",
+    "notFound": "This Trust Center is not available.",
+    "granted": "Granted access",
+    "grantedTo": "Access granted to",
+    "poweredBy": "Powered by STATERA"
   }
 }

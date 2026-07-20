@@ -1262,9 +1262,27 @@ export const trustAccessRequest = pgTable(
     company: text('company'),
     message: text('message'),
     status: text('status').notNull().default('pending'),
+    /** T-V30: токен доступа, выдаётся при approve — публичная granted-ссылка. */
+    token: text('token'),
     ...timestamps,
   },
   (table) => [index('trust_access_request_tc_idx').on(table.trustCenterId)],
+);
+
+/** T-V30: лог активности Trust Center — просмотры, запросы, выдача доступа. */
+export const trustActivity = pgTable(
+  'trust_activity',
+  {
+    id: id(),
+    trustCenterId: uuid('trust_center_id')
+      .notNull()
+      .references(() => trustCenter.id, { onDelete: 'cascade' }),
+    /** view | access_request | access_granted | access_used */
+    kind: text('kind').notNull(),
+    detail: text('detail'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('trust_activity_tc_idx').on(table.trustCenterId)],
 );
 
 /** Контрактное обязательство (T-077, EP-MISC): реестр commitments + SLA на due_date. */

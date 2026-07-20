@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { trustAccessRequest, trustCenter, trustCenterItem } from '../db/schema';
+import { trustActivity, trustAccessRequest, trustCenter, trustCenterItem } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -130,13 +131,87 @@ export class TrustService {
         ),
       );
     if (!tc) throw new NotFoundException('Trust Center не найден или не опубликован');
-    const items = await this.dbService.withTenant(tc.tenantId, (tx) =>
-      tx
+    const items = await this.dbService.withTenant(tc.tenantId, async (tx) => {
+      const rows = await tx
         .select({ label: trustCenterItem.label, category: trustCenterItem.category })
         .from(trustCenterItem)
-        .where(and(eq(trustCenterItem.trustCenterId, tc.id), eq(trustCenterItem.published, true))),
-    );
+        .where(and(eq(trustCenterItem.trustCenterId, tc.id), eq(trustCenterItem.published, true)));
+      // T-V30: логируем публичный просмотр
+      await tx.insert(trustActivity).values({ trustCenterId: tc.id, kind: 'view' });
+      return rows;
+    });
     return { slug: tc.slug, title: tc.title, intro: tc.intro, items };
+  }
+
+  /**
+   * T-V30: granted-вид по токену (без auth) — approve выдал токен, посетитель
+   * видит ПОЛНУЮ постуру (все published items с деталями). Просмотр логируется.
+   */
+  async grantedView(slug: string, token: string) {
+    const [tc] = await this.dbService.db
+      .select({ id: trustCenter.id, tenantId: trustCenter.tenantId, title: trustCenter.title })
+      .from(trustCenter)
+      .where(
+        and(
+          eq(trustCenter.slug, slug),
+          eq(trustCenter.isPublic, true),
+          isNull(trustCenter.deletedAt),
+        ),
+      );
+    if (!tc) throw new NotFoundException('Trust Center не найден или не опубликован');
+    const data = await this.dbService.withTenant(tc.tenantId, async (tx) => {
+      const [req] = await tx
+        .select({ email: trustAccessRequest.email })
+        .from(trustAccessRequest)
+        .where(
+          and(
+            eq(trustAccessRequest.trustCenterId, tc.id),
+            eq(trustAccessRequest.token, token),
+            eq(trustAccessRequest.status, 'approved'),
+          ),
+        );
+      if (!req) throw new NotFoundException('Токен доступа недействителен');
+      const items = await tx
+        .select({
+          label: trustCenterItem.label,
+          category: trustCenterItem.category,
+        })
+        .from(trustCenterItem)
+        .where(and(eq(trustCenterItem.trustCenterId, tc.id), eq(trustCenterItem.published, true)));
+      await tx.insert(trustActivity).values({
+        trustCenterId: tc.id,
+        kind: 'access_used',
+        detail: req.email,
+      });
+      return { email: req.email, items };
+    });
+    return { title: tc.title, grantedTo: data.email, items: data.items };
+  }
+
+  /** T-V30: лента активности Trust Center (админ). */
+  async activity(tenantId: string) {
+    return this.dbService.withTenant(tenantId, async (tx) => {
+      const [tc] = await tx
+        .select({ id: trustCenter.id })
+        .from(trustCenter)
+        .where(and(eq(trustCenter.tenantId, tenantId), isNull(trustCenter.deletedAt)));
+      if (!tc) return [];
+      const rows = await tx
+        .select({
+          kind: trustActivity.kind,
+          detail: trustActivity.detail,
+          createdAt: trustActivity.createdAt,
+        })
+        .from(trustActivity)
+        .where(eq(trustActivity.trustCenterId, tc.id))
+        .orderBy(desc(trustActivity.createdAt))
+        .limit(50);
+      return rows.map((r) => ({
+        kind: r.kind,
+        detail: r.detail,
+        at: r.createdAt.toISOString(),
+      }));
+    });
   }
 
   /** ПУБЛИЧНЫЙ (без auth) запрос доступа к деталям Trust Center по slug (T-081). */
@@ -163,6 +238,11 @@ export class TrustService {
         })
         .returning();
       if (!row) throw new Error('Запрос не создался');
+      await tx.insert(trustActivity).values({
+        trustCenterId: tc.id,
+        kind: 'access_request',
+        detail: input.email,
+      });
       return row;
     });
     await this.auditLogService.record({
@@ -192,6 +272,7 @@ export class TrustService {
         email: r.email,
         company: r.company,
         status: r.status,
+        token: r.token,
       }));
     });
   }
@@ -202,15 +283,31 @@ export class TrustService {
     }
     const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [row] = await tx
-        .select({ status: trustAccessRequest.status })
+        .select({
+          status: trustAccessRequest.status,
+          trustCenterId: trustAccessRequest.trustCenterId,
+          email: trustAccessRequest.email,
+        })
         .from(trustAccessRequest)
         .where(eq(trustAccessRequest.id, id));
       if (!row) throw new NotFoundException(`Запрос ${id} не найден`);
       if (row.status !== 'pending') {
         throw new BadRequestException(`Запрос уже ${row.status}`);
       }
-      await tx.update(trustAccessRequest).set({ status: to }).where(eq(trustAccessRequest.id, id));
-      return { before: row.status, after: to };
+      // T-V30: approve выдаёт токен доступа → granted-ссылка
+      const token = to === 'approved' ? randomUUID() : null;
+      await tx
+        .update(trustAccessRequest)
+        .set({ status: to, token })
+        .where(eq(trustAccessRequest.id, id));
+      if (to === 'approved') {
+        await tx.insert(trustActivity).values({
+          trustCenterId: row.trustCenterId,
+          kind: 'access_granted',
+          detail: row.email,
+        });
+      }
+      return { before: row.status, after: to, token };
     });
     await this.auditLogService.record({
       tenantId: actor.tenantId,
@@ -222,6 +319,6 @@ export class TrustService {
       before: { status: result.before },
       after: { status: result.after },
     });
-    return result;
+    return { before: result.before, after: result.after, token: result.token };
   }
 }
