@@ -766,6 +766,27 @@
     "empty": "Пока нет оповещений",
     "source": "Источник",
     "severity": "Критичность",
+    "add": "Зафиксировать оповещение",
+    "titlePh": "Название оповещения",
+    "category": "Категория",
+    "catNone": "— категория —",
+    "asset": "Актив",
+    "assetNone": "— актив —",
+    "statusHead": "Статус",
+    "slaHead": "SLA",
+    "cat": {
+      "malware": "Вредонос",
+      "phishing": "Фишинг",
+      "vulnerability": "Уязвимость",
+      "misconfiguration": "Мисконфигурация",
+      "unauthorized_access": "Несанкц. доступ",
+      "other": "Другое"
+    },
+    "slaSt": {
+      "ok": "OK",
+      "due_soon": "Скоро",
+      "overdue": "Просрочен"
+    },
     "sev": {
       "low": "Низкая",
       "medium": "Средняя",
@@ -1007,6 +1028,8 @@
     "action": "Действие",
     "create": "Новое изменение",
     "titlePh": "Название изменения",
+    "asset": "Актив",
+    "assetNone": "— актив —",
     "add": "Добавить",
     "risks": {
       "low": "Низкий",

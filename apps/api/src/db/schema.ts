@@ -1039,6 +1039,8 @@ export const codeChange = pgTable(
     type: text('type'),
     risk: text('risk'),
     status: text('status').notNull().default('requested'),
+    /** T-V40: затронутый актив/система (привязка к реестру). */
+    assetId: uuid('asset_id').references(() => asset.id),
     requesterMembershipId: uuid('requester_membership_id').references(() => membership.id),
     approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
     approvedAt: timestamp('approved_at', { withTimezone: true }),
@@ -1796,6 +1798,13 @@ export const securityAlert = pgTable(
     source: text('source'),
     severity: text('severity').notNull().default('medium'),
     status: text('status').notNull().default('new'),
+    /** T-V40: категория алерта (malware/phishing/vulnerability/misconfig/access/other). */
+    category: text('category'),
+    /** T-V40: затронутый актив (привязка к реестру). */
+    assetId: uuid('asset_id').references(() => asset.id),
+    /** T-V40: resolution SLA — дедлайн закрытия по окну severity + статус (recalc-джоба). */
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    slaStatus: text('sla_status').notNull().default('ok'),
     triageNote: text('triage_note'),
     connectorId: uuid('connector_id').references(() => connector.id),
     triagedAt: timestamp('triaged_at', { withTimezone: true }),

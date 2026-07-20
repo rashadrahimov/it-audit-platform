@@ -766,6 +766,27 @@
     "empty": "Hələ bildiriş yoxdur",
     "source": "Mənbə",
     "severity": "Ciddilik",
+    "add": "Siqnalı qeyd et",
+    "titlePh": "Siqnal başlığı",
+    "category": "Kateqoriya",
+    "catNone": "— kateqoriya —",
+    "asset": "Aktiv",
+    "assetNone": "— aktiv —",
+    "statusHead": "Status",
+    "slaHead": "SLA",
+    "cat": {
+      "malware": "Zərərli proqram",
+      "phishing": "Fişinq",
+      "vulnerability": "Zəiflik",
+      "misconfiguration": "Səhv konfiqurasiya",
+      "unauthorized_access": "İcazəsiz giriş",
+      "other": "Digər"
+    },
+    "slaSt": {
+      "ok": "OK",
+      "due_soon": "Tezliklə",
+      "overdue": "Gecikmiş"
+    },
     "sev": {
       "low": "Aşağı",
       "medium": "Orta",
@@ -1007,6 +1028,8 @@
     "action": "Əməliyyat",
     "create": "Yeni dəyişiklik",
     "titlePh": "Dəyişiklik adı",
+    "asset": "Aktiv",
+    "assetNone": "— aktiv —",
     "add": "Əlavə et",
     "risks": {
       "low": "Aşağı",

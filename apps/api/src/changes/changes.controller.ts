@@ -29,6 +29,7 @@ const createSchema = z.object({
   title: z.string().min(1),
   type: z.string().optional(),
   risk: z.enum(['low', 'medium', 'high']).optional(),
+  assetId: z.uuid().optional(),
   approverMembershipId: z.uuid().optional(),
 });
 
@@ -74,13 +75,22 @@ export class ChangesController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Изменения тенанта; фильтры: ?status=, ?type= (T-V16)' })
+  @ApiOperation({
+    summary: 'Изменения тенанта; фильтры: ?status=, ?type=, ?assetId= (T-V16/T-V40)',
+  })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'type', required: false })
-  list(@Req() req: TenantRequest, @Query('status') status?: string, @Query('type') type?: string) {
+  @ApiQuery({ name: 'assetId', required: false })
+  list(
+    @Req() req: TenantRequest,
+    @Query('status') status?: string,
+    @Query('type') type?: string,
+    @Query('assetId') assetId?: string,
+  ) {
     return this.service.list(req.tenantId, {
       status: filterParam(status, 'status'),
       type: filterParam(type, 'type'),
+      assetId: filterParam(assetId, 'assetId'),
     });
   }
 }

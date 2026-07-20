@@ -766,6 +766,27 @@
     "empty": "No alerts yet",
     "source": "Source",
     "severity": "Severity",
+    "add": "Log alert",
+    "titlePh": "Alert title",
+    "category": "Category",
+    "catNone": "— category —",
+    "asset": "Asset",
+    "assetNone": "— asset —",
+    "statusHead": "Status",
+    "slaHead": "SLA",
+    "cat": {
+      "malware": "Malware",
+      "phishing": "Phishing",
+      "vulnerability": "Vulnerability",
+      "misconfiguration": "Misconfiguration",
+      "unauthorized_access": "Unauthorized access",
+      "other": "Other"
+    },
+    "slaSt": {
+      "ok": "OK",
+      "due_soon": "Due soon",
+      "overdue": "Overdue"
+    },
     "sev": {
       "low": "Low",
       "medium": "Medium",
@@ -1007,6 +1028,8 @@
     "action": "Action",
     "create": "New change",
     "titlePh": "Change title",
+    "asset": "Asset",
+    "assetNone": "— asset —",
     "add": "Add",
     "risks": {
       "low": "Low",

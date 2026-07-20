@@ -10,6 +10,7 @@ export async function createChangeAction(formData: FormData): Promise<void> {
   const title = String(formData.get('title') ?? '').trim();
   if (!title) return;
   const type = String(formData.get('type') ?? '').trim();
+  const assetId = String(formData.get('assetId') ?? '').trim();
   await apiFetch('/changes', {
     method: 'POST',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
@@ -17,6 +18,7 @@ export async function createChangeAction(formData: FormData): Promise<void> {
       title,
       type: type || undefined,
       risk: String(formData.get('risk') ?? 'medium'),
+      assetId: assetId || undefined,
     }),
   });
   revalidatePath('/code-changes');
