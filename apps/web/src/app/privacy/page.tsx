@@ -11,6 +11,7 @@ import {
   createRopaAction,
   transitionDpiaAction,
 } from './actions';
+import { RopaImport } from './ropa-import';
 
 export const dynamic = 'force-dynamic';
 
@@ -172,6 +173,7 @@ export default async function PrivacyPage({
             {t('add')}
           </button>
         </form>
+        <RopaImport />
         {ropa.length === 0 ? (
           <div className="rounded-xl border border-border bg-white shadow-sm">
             <EmptyState size="sm" text={t('empty')} />

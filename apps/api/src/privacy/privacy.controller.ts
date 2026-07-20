@@ -138,6 +138,19 @@ export class PrivacyController {
     );
   }
 
+  @Post('import')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Импорт реестра ROPA из CSV (T-V55, GDPR Art.30)' })
+  importCsv(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = z.object({ csv: z.string().min(1) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.importCsv(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.csv,
+    );
+  }
+
   @Post(':id/archive')
   @HttpCode(200)
   @RequirePermission('control', 'edit', 'edit')

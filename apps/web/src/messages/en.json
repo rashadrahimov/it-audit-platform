@@ -1002,7 +1002,12 @@
     "approverNone": "— unassigned —",
     "submitApproval": "Submit for approval",
     "approve": "Approve",
-    "vendorCol": "Vendor"
+    "vendorCol": "Vendor",
+    "importTitle": "Import ROPA (CSV)",
+    "importHint": "CSV columns: name, legal_basis, role, purpose, data_categories (\";\"-separated), cross_border, data_locations.",
+    "importBtn": "Import",
+    "importDone": "Imported {imported}, skipped {skipped}.",
+    "importFail": "Import failed — check the file."
   },
   "iam": {
     "title": "IAM — Accounts & Access",

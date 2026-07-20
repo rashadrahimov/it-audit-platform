@@ -1002,7 +1002,12 @@
     "approverNone": "— təyin edilməyib —",
     "submitApproval": "Təsdiqə göndər",
     "approve": "Təsdiq et",
-    "vendorCol": "Vendor"
+    "vendorCol": "Vendor",
+    "importTitle": "ROPA idxalı (CSV)",
+    "importHint": "CSV sütunları: name, legal_basis, role, purpose, data_categories (\";\" ilə ayrılmış), cross_border, data_locations.",
+    "importBtn": "İdxal et",
+    "importDone": "İdxal edildi: {imported}, ötürüldü: {skipped}.",
+    "importFail": "İdxal alınmadı — faylı yoxlayın."
   },
   "iam": {
     "title": "IAM — Hesablar və Giriş",

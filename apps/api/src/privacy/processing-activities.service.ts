@@ -4,6 +4,7 @@ import type { I18nText } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { processingActivity, vendor } from '../db/schema';
+import { parseRopaCsv } from './ropa-csv';
 
 interface Actor {
   tenantId: string;
@@ -70,6 +71,44 @@ export class ProcessingActivitiesService {
       after: { legalBasis: created.legalBasis, role: created.role },
     });
     return { id: created.id, status: created.status };
+  }
+
+  /**
+   * T-V55: массовый импорт ROPA из CSV (GDPR Art.30). Валидные строки создаются одним
+   * транзакционным батчем; невалидные — в errors (по номеру строки), не блокируют импорт.
+   */
+  async importCsv(actor: Actor, csv: string) {
+    const { rows, errors } = parseRopaCsv(csv);
+    let imported = 0;
+    if (rows.length > 0) {
+      await this.dbService.withTenant(actor.tenantId, async (tx) => {
+        for (const row of rows) {
+          await tx.insert(processingActivity).values({
+            tenantId: actor.tenantId,
+            nameI18n: { en: row.name },
+            legalBasis: row.legalBasis,
+            purpose: row.purpose ?? null,
+            role: row.role,
+            dataCategories: row.dataCategories,
+            dataSubjects: row.dataSubjects,
+            recipients: row.recipients,
+            retentionPeriod: row.retentionPeriod ?? null,
+            crossBorder: row.crossBorder,
+            dataLocations: row.dataLocations,
+          });
+          imported += 1;
+        }
+      });
+      await this.auditLogService.record({
+        tenantId: actor.tenantId,
+        actorUserId: actor.userId,
+        actorIp: actor.ip,
+        action: 'processing_activity.imported',
+        entityType: 'processing_activity',
+        after: { imported },
+      });
+    }
+    return { imported, skipped: errors.length, errors };
   }
 
   async archive(actor: Actor, id: string) {

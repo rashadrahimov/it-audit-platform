@@ -1002,7 +1002,12 @@
     "approverNone": "— не назначен —",
     "submitApproval": "Отправить на утверждение",
     "approve": "Утвердить",
-    "vendorCol": "Вендор"
+    "vendorCol": "Вендор",
+    "importTitle": "Импорт ROPA (CSV)",
+    "importHint": "Колонки CSV: name, legal_basis, role, purpose, data_categories (через «;»), cross_border, data_locations.",
+    "importBtn": "Импортировать",
+    "importDone": "Импортировано {imported}, пропущено {skipped}.",
+    "importFail": "Импорт не удался — проверьте файл."
   },
   "iam": {
     "title": "IAM — учётки и доступ",
