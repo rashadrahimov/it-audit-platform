@@ -565,6 +565,38 @@ export const auditorAssessment = pgTable(
 );
 
 /**
+ * T-114: request list (PBC — provided-by-client). Аудитор запрашивает у клиента
+ * доказательство; auditee прикладывает документ; аудитор принимает.
+ * requested → provided (документ приложен) → accepted (аудитор принял).
+ */
+export const evidenceRequest = pgTable(
+  'evidence_request',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    engagementId: uuid('engagement_id')
+      .notNull()
+      .references(() => engagement.id),
+    title: text('title').notNull(),
+    description: text('description'),
+    /** Аудитор, создавший запрос. */
+    requestedByMembershipId: uuid('requested_by_membership_id')
+      .notNull()
+      .references(() => membership.id),
+    /** Auditee, который должен предоставить (опционально). */
+    assigneeMembershipId: uuid('assignee_membership_id').references(() => membership.id),
+    /** Приложенный документ-доказательство (после provide). */
+    documentId: uuid('document_id').references(() => document.id),
+    status: text('status').notNull().default('requested'),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('evidence_request_engagement_idx').on(table.engagementId)],
+);
+
+/**
  * Test — проверка контроля (T-033, ADR-0010): Control 1→N Test; ручные сейчас,
  * автоматические получат connector_id/check_config с EP-INT. sla_status статичен
  * до джобы T-043. status: ok/failing/needs_attention/deactivated.

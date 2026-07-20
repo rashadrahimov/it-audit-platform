@@ -31,6 +31,7 @@ import { InfraHealthController } from './infra-health.controller';
 import { InfraHealthService } from './infra-health.service';
 import { EmailModule } from './email/email.module';
 import { EngagementsModule } from './engagements/engagements.module';
+import { EvidenceRequestsModule } from './evidence-requests/evidence-requests.module';
 import { FieldPermissionsModule } from './field-permissions/field-permissions.module';
 import { FilesModule } from './files/files.module';
 import { FindingsModule } from './findings/findings.module';
@@ -99,6 +100,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     DocumentsModule,
     EmailModule,
     EngagementsModule,
+    EvidenceRequestsModule,
     FieldPermissionsModule,
     FilesModule,
     FindingsModule,
