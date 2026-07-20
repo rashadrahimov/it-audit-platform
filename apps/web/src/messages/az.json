@@ -918,8 +918,25 @@
       "archived": "Arxiv",
       "draft": "Qaralama",
       "in_progress": "Davam edir",
-      "completed": "Tamamlanıb"
-    }
+      "completed": "Tamamlanıb",
+      "pending_approval": "Təsdiq gözləyir",
+      "approved": "Təsdiqlənib"
+    },
+    "tabAll": "Hamısı",
+    "needsApproval": "Təsdiqim gözlənilir",
+    "purpose": "Məqsəd",
+    "retention": "Saxlama",
+    "crossBorderLabel": "Sərhədlərarası",
+    "vendor": "Vendor / prosessor",
+    "vendorNone": "— yoxdur —",
+    "dataLocations": "Data lokasiyaları",
+    "dataLocationsPh": "EU, US (vergüllə)",
+    "reviewDate": "Baxış tarixi",
+    "approver": "Təsdiqləyən",
+    "approverNone": "— təyin edilməyib —",
+    "submitApproval": "Təsdiqə göndər",
+    "approve": "Təsdiq et",
+    "vendorCol": "Vendor"
   },
   "iam": {
     "title": "IAM — Hesablar və Giriş",

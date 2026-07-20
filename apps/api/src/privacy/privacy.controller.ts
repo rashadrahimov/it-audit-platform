@@ -33,6 +33,8 @@ const dpiaCreateSchema = z.object({
   riskLevel: z.enum(['low', 'medium', 'high']).optional(),
   necessityNote: z.string().optional(),
   mitigations: z.array(z.unknown()).optional(),
+  approverMembershipId: z.uuid().optional(),
+  reviewDate: z.string().optional(),
 });
 
 const createSchema = z.object({
@@ -46,6 +48,10 @@ const createSchema = z.object({
   retentionPeriod: z.string().optional(),
   crossBorder: z.boolean().optional(),
   ownerMembershipId: z.uuid().optional(),
+  vendorId: z.uuid().optional(),
+  dataLocations: z.array(z.string()).optional(),
+  reviewOwnerMembershipId: z.uuid().optional(),
+  reviewDate: z.string().optional(),
 });
 
 @Controller('processing-activities')
@@ -80,7 +86,9 @@ export class PrivacyController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: unknown,
   ) {
-    const parsed = z.object({ to: z.enum(['in_progress', 'completed']) }).safeParse(body ?? {});
+    const parsed = z
+      .object({ to: z.enum(['in_progress', 'pending_approval', 'completed']) })
+      .safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.dpia.transition(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
@@ -89,11 +97,25 @@ export class PrivacyController {
     );
   }
 
+  @Post('dpia/:id/approve')
+  @HttpCode(200)
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Утвердить DPIA (T-V41): только назначенный approver' })
+  approveDpia(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.dpia.approve({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id);
+  }
+
   @Get('dpia')
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Список DPIA тенанта' })
-  listDpia(@Req() req: TenantRequest) {
-    return this.dpia.list(req.tenantId);
+  @ApiOperation({
+    summary: 'Список DPIA тенанта (?needsMyApproval=true — очередь approver, T-V41)',
+  })
+  @ApiQuery({ name: 'needsMyApproval', required: false })
+  listDpia(@Req() req: TenantRequest, @Query('needsMyApproval') needsMyApproval?: string) {
+    return this.dpia.list(req.tenantId, {
+      userId: req.user.sub,
+      needsMyApproval: needsMyApproval === 'true',
+    });
   }
 
   @Get('dpia/:id')

@@ -918,8 +918,25 @@
       "archived": "Архив",
       "draft": "Черновик",
       "in_progress": "В процессе",
-      "completed": "Завершена"
-    }
+      "completed": "Завершена",
+      "pending_approval": "На утверждении",
+      "approved": "Утверждён"
+    },
+    "tabAll": "Все",
+    "needsApproval": "Ждут моего решения",
+    "purpose": "Цель",
+    "retention": "Хранение",
+    "crossBorderLabel": "Трансграничная",
+    "vendor": "Вендор / процессор",
+    "vendorNone": "— нет —",
+    "dataLocations": "Локации данных",
+    "dataLocationsPh": "EU, US (через запятую)",
+    "reviewDate": "Дата пересмотра",
+    "approver": "Утверждающий",
+    "approverNone": "— не назначен —",
+    "submitApproval": "Отправить на утверждение",
+    "approve": "Утвердить",
+    "vendorCol": "Вендор"
   },
   "iam": {
     "title": "IAM — учётки и доступ",

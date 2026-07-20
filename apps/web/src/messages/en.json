@@ -918,8 +918,25 @@
       "archived": "Archived",
       "draft": "Draft",
       "in_progress": "In progress",
-      "completed": "Completed"
-    }
+      "completed": "Completed",
+      "pending_approval": "Pending approval",
+      "approved": "Approved"
+    },
+    "tabAll": "All",
+    "needsApproval": "Needs my approval",
+    "purpose": "Purpose",
+    "retention": "Retention",
+    "crossBorderLabel": "Cross-border",
+    "vendor": "Vendor / processor",
+    "vendorNone": "— none —",
+    "dataLocations": "Data locations",
+    "dataLocationsPh": "EU, US (comma-separated)",
+    "reviewDate": "Review date",
+    "approver": "Approver",
+    "approverNone": "— unassigned —",
+    "submitApproval": "Submit for approval",
+    "approve": "Approve",
+    "vendorCol": "Vendor"
   },
   "iam": {
     "title": "IAM — Accounts & Access",

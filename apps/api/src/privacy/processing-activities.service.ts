@@ -3,7 +3,7 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import type { I18nText } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { processingActivity } from '../db/schema';
+import { processingActivity, vendor } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -22,6 +22,10 @@ interface CreateInput {
   retentionPeriod?: string;
   crossBorder?: boolean;
   ownerMembershipId?: string;
+  vendorId?: string;
+  dataLocations?: string[];
+  reviewOwnerMembershipId?: string;
+  reviewDate?: string;
 }
 
 @Injectable()
@@ -47,6 +51,10 @@ export class ProcessingActivitiesService {
           retentionPeriod: input.retentionPeriod ?? null,
           crossBorder: input.crossBorder ?? false,
           ownerMembershipId: input.ownerMembershipId ?? null,
+          vendorId: input.vendorId ?? null,
+          dataLocations: input.dataLocations ?? [],
+          reviewOwnerMembershipId: input.reviewOwnerMembershipId ?? null,
+          reviewDate: input.reviewDate ? new Date(input.reviewDate) : null,
         })
         .returning();
       if (!row) throw new Error('Операция обработки не создалась');
@@ -97,8 +105,20 @@ export class ProcessingActivitiesService {
     if (filters?.status) conds.push(eq(processingActivity.status, filters.status));
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
-        .select()
+        .select({
+          id: processingActivity.id,
+          nameI18n: processingActivity.nameI18n,
+          legalBasis: processingActivity.legalBasis,
+          role: processingActivity.role,
+          crossBorder: processingActivity.crossBorder,
+          status: processingActivity.status,
+          dataLocations: processingActivity.dataLocations,
+          reviewDate: processingActivity.reviewDate,
+          vendorId: processingActivity.vendorId,
+          vendorName: vendor.name,
+        })
         .from(processingActivity)
+        .leftJoin(vendor, eq(processingActivity.vendorId, vendor.id))
         .where(and(...conds))
         .orderBy(desc(processingActivity.createdAt)),
     );
@@ -109,6 +129,10 @@ export class ProcessingActivitiesService {
       role: p.role,
       crossBorder: p.crossBorder,
       status: p.status,
+      dataLocations: (p.dataLocations as string[]) ?? [],
+      reviewDate: p.reviewDate?.toISOString() ?? null,
+      vendorId: p.vendorId,
+      vendorName: p.vendorName ?? null,
     }));
   }
 

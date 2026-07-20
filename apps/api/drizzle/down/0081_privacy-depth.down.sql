@@ -1,0 +1,10 @@
+ALTER TABLE "processing_activity" DROP CONSTRAINT IF EXISTS "processing_activity_vendor_id_vendor_id_fk";
+ALTER TABLE "processing_activity" DROP CONSTRAINT IF EXISTS "processing_activity_review_owner_membership_id_membership_id_fk";
+ALTER TABLE "processing_activity" DROP COLUMN IF EXISTS "vendor_id";
+ALTER TABLE "processing_activity" DROP COLUMN IF EXISTS "data_locations";
+ALTER TABLE "processing_activity" DROP COLUMN IF EXISTS "review_owner_membership_id";
+ALTER TABLE "processing_activity" DROP COLUMN IF EXISTS "review_date";
+ALTER TABLE "privacy_assessment" DROP CONSTRAINT IF EXISTS "privacy_assessment_approver_membership_id_membership_id_fk";
+ALTER TABLE "privacy_assessment" DROP COLUMN IF EXISTS "approver_membership_id";
+ALTER TABLE "privacy_assessment" DROP COLUMN IF EXISTS "approved_at";
+ALTER TABLE "privacy_assessment" DROP COLUMN IF EXISTS "review_date";

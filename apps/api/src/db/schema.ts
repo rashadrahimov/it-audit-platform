@@ -1447,6 +1447,13 @@ export const processingActivity = pgTable(
     retentionPeriod: text('retention_period'),
     crossBorder: boolean('cross_border').notNull().default(false),
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    /** T-V41: связь ROPA с вендором-получателем/процессором. */
+    vendorId: uuid('vendor_id').references(() => vendor.id),
+    /** T-V41: локации хранения данных (jsonb-массив строк). */
+    dataLocations: jsonb('data_locations').notNull().default([]),
+    /** T-V41: owner и дата пересмотра ROPA. */
+    reviewOwnerMembershipId: uuid('review_owner_membership_id').references(() => membership.id),
+    reviewDate: timestamp('review_date', { withTimezone: true }),
     status: text('status').notNull().default('active'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
@@ -1470,6 +1477,10 @@ export const privacyAssessment = pgTable(
     necessityNote: text('necessity_note'),
     mitigations: jsonb('mitigations').notNull().default([]),
     status: text('status').notNull().default('draft'),
+    /** T-V41: DPIA approval-workflow — approver + факт/дата. */
+    approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    reviewDate: timestamp('review_date', { withTimezone: true }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
