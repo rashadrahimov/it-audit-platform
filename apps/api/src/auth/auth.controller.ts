@@ -24,6 +24,7 @@ import {
   mfaEnableRequestSchema,
   mfaVerifyRequestSchema,
   registerRequestSchema,
+  ssoDispatchRequestSchema,
   type AuthTokenResponse,
   type LoginResponse,
   type MagicLinkRequestResponse,
@@ -31,11 +32,13 @@ import {
   type MeTenantsResponse,
   type MfaEnableResponse,
   type MfaSetupResponse,
+  type SsoDispatchResponse,
 } from '@it-audit/shared';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard, type AuthenticatedRequest } from './jwt-auth.guard';
 import { MagicLinkService } from './magic-link.service';
 import { MfaService } from './mfa.service';
+import { SsoConfigService } from './sso-config.service';
 
 function parse<T extends z.ZodType>(schema: T, body: unknown): z.infer<T> {
   const result = schema.safeParse(body ?? {});
@@ -49,6 +52,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly mfaService: MfaService,
     private readonly magicLinkService: MagicLinkService,
+    private readonly ssoConfigService: SsoConfigService,
   ) {}
 
   @Post('register')
@@ -101,6 +105,19 @@ export class AuthController {
       ip: req.ip,
       userAgent: req.headers['user-agent'],
     });
+  }
+
+  @Post('sso/dispatch')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'SSO home-realm discovery: по email-домену — пароль или редирект на IdP (V49)',
+  })
+  @ApiOkResponse({
+    description: 'Решение: {dispatch:"password"} либо {dispatch:"sso", redirectPath}',
+  })
+  ssoDispatch(@Body() body: unknown): Promise<SsoDispatchResponse> {
+    const { email } = parse(ssoDispatchRequestSchema, body);
+    return this.ssoConfigService.dispatch(email);
   }
 
   @Post('mfa/setup')

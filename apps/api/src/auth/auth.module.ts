@@ -9,6 +9,7 @@ import { LdapController } from './ldap.controller';
 import { LdapService } from './ldap.service';
 import { MagicLinkService } from './magic-link.service';
 import { MfaService } from './mfa.service';
+import { SsoConfigService } from './sso-config.service';
 import { OidcController } from './oidc.controller';
 import { OidcService } from './oidc.service';
 import { PasswordService } from './password.service';
@@ -30,12 +31,13 @@ import { SsoUserService } from './sso-user.service';
     LdapService,
     MagicLinkService,
     MfaService,
+    SsoConfigService,
     OidcService,
     SamlService,
     SsoUserService,
     PasswordService,
     JwtAuthGuard,
   ],
-  exports: [JwtAuthGuard, JwtModule, PasswordService],
+  exports: [JwtAuthGuard, JwtModule, PasswordService, SsoConfigService],
 })
 export class AuthModule {}

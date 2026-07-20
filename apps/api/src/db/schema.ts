@@ -267,6 +267,32 @@ export const magicLinkToken = pgTable(
   ],
 );
 
+/**
+ * Per-tenant SSO-конфиг (V49, ADR-0021): маршрутизация логина на IdP тенанта по
+ * домену e-mail (home-realm discovery). Над-тенантная, без RLS — читается на этапе
+ * логина до tenant-контекста (как user/membership); изоляция тенантов — в CRUD-коде
+ * по tenant_id из guard. Домен уникален глобально. Client secret — AES-256-GCM.
+ */
+export const ssoConfig = pgTable(
+  'sso_config',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id, { onDelete: 'cascade' }),
+    emailDomain: text('email_domain').notNull().unique(),
+    method: text('method').notNull(),
+    providerLabel: text('provider_label').notNull(),
+    issuerUrl: text('issuer_url'),
+    clientId: text('client_id'),
+    secretEncrypted: text('secret_encrypted'),
+    metadataUrl: text('metadata_url'),
+    enabled: boolean('enabled').notNull().default(true),
+    ...timestamps,
+  },
+  (table) => [index('sso_config_tenant_idx').on(table.tenantId)],
+);
+
 /** Полиморфные комментарии (T-023): entity_type+entity_id, soft-delete. */
 export const comment = pgTable(
   'comment',

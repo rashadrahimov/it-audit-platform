@@ -44,7 +44,18 @@
     "magicVerifying": "Giriş keçidi yoxlanılır…",
     "magicComplete": "Girişi tamamla",
     "magicInvalid": "Bu giriş keçidi etibarsızdır və ya vaxtı bitib. Yenisini istəyin.",
-    "backToLogin": "Girişə qayıt"
+    "backToLogin": "Girişə qayıt",
+    "ssoToggle": "SSO ilə daxil ol",
+    "ssoTitle": "Vahid giriş (SSO)",
+    "ssoHint": "İş e-poçtunuzu daxil edin — sizi təşkilatınızın kimlik provayderinə yönləndirəcəyik.",
+    "workEmail": "İş e-poçtu",
+    "ssoContinue": "Davam et",
+    "ssoChecking": "Yoxlanılır…",
+    "ssoBadEmail": "Düzgün iş e-poçtu daxil edin.",
+    "ssoConfigured": "Təşkilatınız üçün {provider} vasitəsilə vahid giriş qurulub.",
+    "ssoContinueHint": "Girişi tamamlamaq üçün kimlik provayderinizdə davam edin.",
+    "ssoNotConfigured": "Bu e-poçt üçün vahid giriş qurulmayıb. Şifrə ilə daxil olun.",
+    "ssoUsePassword": "Şifrə ilə daxil ol"
   },
   "account": {
     "title": "Hesab",

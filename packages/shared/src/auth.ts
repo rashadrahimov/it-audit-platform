@@ -73,6 +73,52 @@ export const magicLinkConsumeSchema = z.object({
   token: z.string().min(1),
 });
 
+/**
+ * Per-tenant SSO + маршрутизация по email-домену (V49, ADR-0021).
+ * Диспатч отдаёт решение: показать пароль или увести на IdP тенанта.
+ */
+export const ssoMethodSchema = z.enum(['oidc', 'saml']);
+
+export const ssoConfigUpsertSchema = z.object({
+  emailDomain: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i, 'домен невалиден'),
+  method: ssoMethodSchema,
+  providerLabel: z.string().min(1),
+  issuerUrl: z.url().optional(),
+  clientId: z.string().optional(),
+  clientSecret: z.string().optional(),
+  metadataUrl: z.url().optional(),
+  enabled: z.boolean().optional(),
+});
+
+export const ssoConfigResponseSchema = z.object({
+  id: z.string(),
+  emailDomain: z.string(),
+  method: ssoMethodSchema,
+  providerLabel: z.string(),
+  issuerUrl: z.string().nullable(),
+  clientId: z.string().nullable(),
+  metadataUrl: z.string().nullable(),
+  /** Секрет IdP наружу не отдаётся — только факт наличия. */
+  hasSecret: z.boolean(),
+  enabled: z.boolean(),
+});
+
+export const ssoDispatchRequestSchema = z.object({ email: z.email() });
+
+export const ssoDispatchResponseSchema = z.discriminatedUnion('dispatch', [
+  z.object({ dispatch: z.literal('password') }),
+  z.object({
+    dispatch: z.literal('sso'),
+    method: ssoMethodSchema,
+    providerLabel: z.string(),
+    /** Куда увести браузер для инициации SSO (init-маршрут API). */
+    redirectPath: z.string(),
+  }),
+]);
+
 export const mfaSetupResponseSchema = z.object({
   secret: z.string(),
   otpauthUrl: z.string(),
@@ -118,6 +164,11 @@ export type LoginResponse = z.infer<typeof loginResponseSchema>;
 export type MagicLinkRequest = z.infer<typeof magicLinkRequestSchema>;
 export type MagicLinkRequestResponse = z.infer<typeof magicLinkRequestResponseSchema>;
 export type MagicLinkConsumeRequest = z.infer<typeof magicLinkConsumeSchema>;
+export type SsoMethod = z.infer<typeof ssoMethodSchema>;
+export type SsoConfigUpsert = z.infer<typeof ssoConfigUpsertSchema>;
+export type SsoConfigResponse = z.infer<typeof ssoConfigResponseSchema>;
+export type SsoDispatchRequest = z.infer<typeof ssoDispatchRequestSchema>;
+export type SsoDispatchResponse = z.infer<typeof ssoDispatchResponseSchema>;
 export type MfaSetupResponse = z.infer<typeof mfaSetupResponseSchema>;
 export type MfaEnableRequest = z.infer<typeof mfaEnableRequestSchema>;
 export type MfaEnableResponse = z.infer<typeof mfaEnableResponseSchema>;

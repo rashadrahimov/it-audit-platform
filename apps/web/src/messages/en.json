@@ -44,7 +44,18 @@
     "magicVerifying": "Verifying your sign-in link…",
     "magicComplete": "Complete sign-in",
     "magicInvalid": "This sign-in link is invalid or has expired. Request a new one.",
-    "backToLogin": "Back to sign-in"
+    "backToLogin": "Back to sign-in",
+    "ssoToggle": "Sign in with SSO",
+    "ssoTitle": "Single sign-on",
+    "ssoHint": "Enter your work email and we'll route you to your organization's identity provider.",
+    "workEmail": "Work email",
+    "ssoContinue": "Continue",
+    "ssoChecking": "Checking…",
+    "ssoBadEmail": "Enter a valid work email address.",
+    "ssoConfigured": "Single sign-on via {provider} is set up for your organization.",
+    "ssoContinueHint": "Continue on your identity provider to finish signing in.",
+    "ssoNotConfigured": "This email isn't set up for single sign-on. Sign in with your password instead.",
+    "ssoUsePassword": "Sign in with password"
   },
   "account": {
     "title": "Account",

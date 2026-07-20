@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import {
   loginAction,
   magicLinkRequestAction,
@@ -171,6 +172,13 @@ export function LoginForm() {
       >
         {t('magicToggle')}
       </button>
+      <Link
+        href="/login/sso"
+        data-testid="sso-link"
+        className="text-center text-sm font-medium text-accent hover:underline"
+      >
+        {t('ssoToggle')}
+      </Link>
     </form>
   );
 }
