@@ -332,7 +332,11 @@
     "attStatuses": {
       "pending": "Pending",
       "attested": "Attested"
-    }
+    },
+    "templates": "Policy templates",
+    "templatesHint": "Ready-made skeletons (EN/AZ/RU) — one click creates a draft policy with a markdown document as version 1.",
+    "useTemplate": "Create from template",
+    "tplCreated": "Created"
   },
   "universe": {
     "title": "Audit Universe",

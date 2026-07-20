@@ -8,9 +8,11 @@ import { and, asc, desc, eq, inArray, isNull, max, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
+import { DocumentsService } from '../documents/documents.service';
 import { NotificationDispatchService } from '../notifications/notification-dispatch.service';
 import { DbService } from '../db/db.service';
 import { document, framework, membership, policy, policyVersion, user } from '../db/schema';
+import { POLICY_TEMPLATES } from '../seed-data/policy-templates';
 
 interface Actor {
   tenantId: string;
@@ -33,7 +35,48 @@ export class PoliciesService {
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
     private readonly notificationDispatch: NotificationDispatchService,
+    private readonly documentsService: DocumentsService,
   ) {}
+
+  /** T-V24: каталог шаблонов политик (статичный контент EN/AZ/RU). */
+  templates(locale: Locale) {
+    return POLICY_TEMPLATES.map((tpl) => ({
+      key: tpl.key,
+      title: resolveLocalized(tpl.title, locale),
+      preview: resolveLocalized(tpl.body, locale).slice(0, 400),
+    }));
+  }
+
+  /** T-V24: политика из шаблона — policy + markdown-документ (3 языка) + версия v1. */
+  async createFromTemplate(actor: Actor, templateKey: string) {
+    const tpl = POLICY_TEMPLATES.find((p) => p.key === templateKey);
+    if (!tpl) throw new NotFoundException(`Шаблон «${templateKey}» не найден`);
+    const created = await this.create(actor, { titleI18n: tpl.title });
+    const markdown = `${tpl.body.en}\n---\n\n${tpl.body.az}\n---\n\n${tpl.body.ru}`;
+    const doc = await this.documentsService.upload(
+      actor,
+      {
+        buffer: Buffer.from(markdown, 'utf-8'),
+        originalName: `${tpl.key}.md`,
+        mime: 'text/markdown',
+      },
+      { link: { entityType: 'policy', entityId: created.id, relation: 'attachment' } },
+    );
+    await this.addVersion(actor, created.id, {
+      documentId: doc.id,
+      changelog: `Created from template: ${tpl.key}`,
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'policy.created_from_template',
+      entityType: 'policy',
+      entityId: created.id,
+      after: { template: tpl.key },
+    });
+    return { id: created.id, template: tpl.key };
+  }
 
   async create(actor: Actor, input: CreatePolicyInput) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {

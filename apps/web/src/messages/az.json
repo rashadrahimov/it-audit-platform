@@ -332,7 +332,11 @@
     "attStatuses": {
       "pending": "Gözləyir",
       "attested": "Təsdiqlənib"
-    }
+    },
+    "templates": "Siyasət şablonları",
+    "templatesHint": "Hazır skeletlər (EN/AZ/RU) — bir klik v1 markdown sənədi ilə qaralama siyasət yaradır.",
+    "useTemplate": "Şablondan yarat",
+    "tplCreated": "Yaradılıb"
   },
   "universe": {
     "title": "Audit Kainatı",

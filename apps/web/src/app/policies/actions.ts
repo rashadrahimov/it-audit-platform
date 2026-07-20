@@ -71,3 +71,15 @@ export async function attestPolicyAction(id: string): Promise<void> {
   });
   revalidatePath(`/policies/${id}`);
 }
+
+/** Создать политику из шаблона (T-V24): policy + md-документ + версия v1. */
+export async function createPolicyFromTemplateAction(templateKey: string): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch('/policies/from-template', {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ templateKey }),
+  });
+  revalidatePath('/policies');
+}

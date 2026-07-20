@@ -4,6 +4,7 @@ import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import Link from 'next/link';
 import { EmptyState } from '@/components/empty-state';
+import { createPolicyFromTemplateAction } from './actions';
 import { FilterBar } from '@/components/filter-bar';
 import { filterQuery } from '@/lib/filters';
 
@@ -43,15 +44,20 @@ export default async function PoliciesPage({
   ]);
 
   let policies: Policy[] = [];
+  let templates: Array<{ key: string; title: string; preview: string }> = [];
   if (tenantSlug) {
-    const res = await apiFetch(
-      `/policies?locale=${locale}${filterQuery(sp, ['status', 'needsMyApproval'])}`,
-      {
+    const [res, tplRes] = await Promise.all([
+      apiFetch(`/policies?locale=${locale}${filterQuery(sp, ['status', 'needsMyApproval'])}`, {
         headers: { 'X-Tenant-Slug': tenantSlug },
-      },
-    );
+      }),
+      apiFetch(`/policies/templates?locale=${locale}`, {
+        headers: { 'X-Tenant-Slug': tenantSlug },
+      }),
+    ]);
     policies = res.ok ? await res.json() : [];
+    templates = tplRes.ok ? await tplRes.json() : [];
   }
+  const existingTitles = new Set(policies.map((p) => p.title));
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
 
   return (
@@ -133,6 +139,41 @@ export default async function PoliciesPage({
           </tbody>
         </table>
       </section>
+
+      {templates.length > 0 && (
+        <section
+          className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+          data-testid="policy-templates"
+        >
+          <h2 className="text-sm font-semibold text-primary">{t('templates')}</h2>
+          <p className="text-xs text-secondary">{t('templatesHint')}</p>
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {templates.map((tpl) => (
+              <li
+                key={tpl.key}
+                className="flex items-center justify-between gap-2 rounded-lg bg-muted/60 px-3 py-2"
+              >
+                <span className="text-sm font-medium text-foreground">{tpl.title}</span>
+                {existingTitles.has(tpl.title) ? (
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 whitespace-nowrap">
+                    {t('tplCreated')}
+                  </span>
+                ) : (
+                  <form action={createPolicyFromTemplateAction.bind(null, tpl.key)}>
+                    <button
+                      type="submit"
+                      data-testid="template-create"
+                      className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium whitespace-nowrap text-on-primary transition-colors duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      {t('useTemplate')}
+                    </button>
+                  </form>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }

@@ -104,6 +104,26 @@ export class PoliciesController {
     return this.attestationsService.status(req.tenantId, id, parseLocale(localeQuery));
   }
 
+  @Get('templates')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'Библиотека шаблонов политик (T-V24): каталог EN/AZ/RU' })
+  templates(@Query('locale') localeQuery?: string) {
+    return this.policiesService.templates(parseLocale(localeQuery));
+  }
+
+  @Post('from-template')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Создать политику из шаблона (T-V24): policy + md-документ + v1' })
+  @ApiCreatedResponse({ description: '{id, template}' })
+  createFromTemplate(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = z.object({ templateKey: z.string().min(1).max(64) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.policiesService.createFromTemplate(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.templateKey,
+    );
+  }
+
   @Post()
   @RequirePermission('settings', 'edit', 'edit')
   @ApiOperation({ summary: 'Создать политику (T-051, B4)' })

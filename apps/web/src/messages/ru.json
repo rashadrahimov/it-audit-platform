@@ -332,7 +332,11 @@
     "attStatuses": {
       "pending": "Ожидает",
       "attested": "Подтверждено"
-    }
+    },
+    "templates": "Шаблоны политик",
+    "templatesHint": "Готовые заготовки (EN/AZ/RU) — один клик создаёт draft-политику с markdown-документом как версией 1.",
+    "useTemplate": "Создать из шаблона",
+    "tplCreated": "Создана"
   },
   "universe": {
     "title": "Аудируемая вселенная",
