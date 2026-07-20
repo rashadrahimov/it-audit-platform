@@ -55,7 +55,8 @@
     "ssoConfigured": "Для вашей организации настроен единый вход через {provider}.",
     "ssoContinueHint": "Завершите вход на стороне вашего провайдера идентификации.",
     "ssoNotConfigured": "Для этого e-mail единый вход не настроен. Войдите по паролю.",
-    "ssoUsePassword": "Войти по паролю"
+    "ssoUsePassword": "Войти по паролю",
+    "ssoContinueWith": "Продолжить с {provider}"
   },
   "account": {
     "title": "Аккаунт",

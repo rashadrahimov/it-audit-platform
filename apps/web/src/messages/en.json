@@ -55,7 +55,8 @@
     "ssoConfigured": "Single sign-on via {provider} is set up for your organization.",
     "ssoContinueHint": "Continue on your identity provider to finish signing in.",
     "ssoNotConfigured": "This email isn't set up for single sign-on. Sign in with your password instead.",
-    "ssoUsePassword": "Sign in with password"
+    "ssoUsePassword": "Sign in with password",
+    "ssoContinueWith": "Continue with {provider}"
   },
   "account": {
     "title": "Account",

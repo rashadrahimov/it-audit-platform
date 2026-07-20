@@ -6,10 +6,18 @@ import type {
   SsoDispatchResponse,
   SsoMethod,
 } from '@it-audit/shared';
-import { encryptConfig } from '../connectors/config-crypto';
+import { decryptConfig, encryptConfig } from '../connectors/config-crypto';
 import { DbService } from '../db/db.service';
 import { ssoConfig } from '../db/schema';
 import { emailDomain, resolveDispatch } from './sso-dispatch';
+
+/** Параметры подключения OIDC-клиента тенанта (V49, T-H40) — секрет расшифрован. */
+export interface TenantOidcParams {
+  ssoConfigId: string;
+  issuerUrl: string;
+  clientId: string;
+  clientSecret: string;
+}
 
 /**
  * Per-tenant SSO-конфиг (V49, ADR-0021): CRUD для админа тенанта + публичный
@@ -37,6 +45,36 @@ export class SsoConfigService {
           }
         : null,
     );
+  }
+
+  /** OIDC-параметры тенанта по домену (для init логина). null — если не OIDC/выключен. */
+  async oidcParamsByDomain(domain: string): Promise<TenantOidcParams | null> {
+    const [row] = await this.dbService.db
+      .select()
+      .from(ssoConfig)
+      .where(eq(ssoConfig.emailDomain, domain.toLowerCase()));
+    return this.toOidcParams(row);
+  }
+
+  /** OIDC-параметры тенанта по id конфига (для callback — id берётся из state). */
+  async oidcParamsById(id: string): Promise<TenantOidcParams | null> {
+    const [row] = await this.dbService.db.select().from(ssoConfig).where(eq(ssoConfig.id, id));
+    return this.toOidcParams(row);
+  }
+
+  private toOidcParams(row?: typeof ssoConfig.$inferSelect): TenantOidcParams | null {
+    if (!row || !row.enabled || row.method !== 'oidc' || !row.issuerUrl || !row.clientId) {
+      return null;
+    }
+    const secret = row.secretEncrypted
+      ? String(decryptConfig(row.secretEncrypted).secret ?? '')
+      : '';
+    return {
+      ssoConfigId: row.id,
+      issuerUrl: row.issuerUrl,
+      clientId: row.clientId,
+      clientSecret: secret,
+    };
   }
 
   async list(tenantId: string): Promise<SsoConfigResponse[]> {

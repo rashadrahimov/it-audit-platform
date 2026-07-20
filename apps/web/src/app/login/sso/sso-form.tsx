@@ -49,7 +49,17 @@ export function SsoForm() {
             {t('ssoConfigured', { provider: state.providerLabel ?? '' })}
           </p>
         </div>
-        <p className="text-xs text-secondary">{t('ssoContinueHint')}</p>
+        {state.method === 'oidc' ? (
+          <a
+            href={`/login/sso/start?email=${encodeURIComponent(state.email ?? '')}`}
+            data-testid="sso-continue"
+            className="w-full rounded-md bg-accent px-4 py-2.5 text-center font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90"
+          >
+            {t('ssoContinueWith', { provider: state.providerLabel ?? '' })}
+          </a>
+        ) : (
+          <p className="text-xs text-secondary">{t('ssoContinueHint')}</p>
+        )}
         <Link href="/login" className="text-sm font-medium text-accent hover:underline">
           {t('backToLogin')}
         </Link>

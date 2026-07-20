@@ -72,3 +72,18 @@ init/callback-маршруты tenant-aware — строить OIDC/SAML-кли�
   до него demo-домен работает через совпадающий с env Keycloak.
 - Риск: критичный login-контур — все правки аддитивны, парольный путь не тронут,
   покрыты unit+integration+e2e.
+
+## Статус реализации
+
+- **T-H39** — таблица `sso_config`, резолвер, CRUD `/sso-config`, публичный
+  `/auth/sso/dispatch`, веб `/login/sso` (home-realm discovery).
+- **T-H40** — OIDC init+callback tenant-aware: клиент строится из `sso_config` по
+  домену (`?domain=`/`?email=`), `ssoConfigId` едет в state, discovery кешируется;
+  `?mode=web` завершает вход в веб-сессию (cookie `session` + redirect `/account`),
+  `mode=api` (дефолт) сохраняет JSON-контракт T-016. Веб-кнопка «Continue with
+  {provider}» через route `/login/sso/start` уводит на IdP; браузерный round-trip
+  через Keycloak доведён до `/account` (e2e под гейтом `E2E_KEYCLOAK=1` — в CI
+  Keycloak нет).
+- **Остаток:** (1) per-tenant **SAML** (аналогично OIDC, из `metadata_url`);
+  (2) прод с раздельными доменами api/web — cookie ставит API host-scoped на
+  `localhost`, для прода нужен same-origin callback на веб-домене (пункт T-047).

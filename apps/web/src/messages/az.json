@@ -55,7 +55,8 @@
     "ssoConfigured": "Təşkilatınız üçün {provider} vasitəsilə vahid giriş qurulub.",
     "ssoContinueHint": "Girişi tamamlamaq üçün kimlik provayderinizdə davam edin.",
     "ssoNotConfigured": "Bu e-poçt üçün vahid giriş qurulmayıb. Şifrə ilə daxil olun.",
-    "ssoUsePassword": "Şifrə ilə daxil ol"
+    "ssoUsePassword": "Şifrə ilə daxil ol",
+    "ssoContinueWith": "{provider} ilə davam et"
   },
   "account": {
     "title": "Hesab",
