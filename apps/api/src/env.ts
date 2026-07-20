@@ -22,6 +22,8 @@ export const env = {
   inactivityDeactivationDays: Number(process.env.INACTIVITY_DEACTIVATION_DAYS ?? 90),
   /** База ссылок в письмах (веб-приложение). */
   appUrl: process.env.APP_URL ?? 'http://localhost:3000',
+  /** Passwordless magic-link: сколько минут живёт ссылка из письма. */
+  magicLinkTtlMinutes: Number(process.env.MAGIC_LINK_TTL_MINUTES ?? 15),
   /** OIDC SSO (T-016). Дефолты — локальный Keycloak из docker-compose (realm it-audit). */
   oidcIssuerUrl: process.env.OIDC_ISSUER_URL ?? 'http://localhost:8081/realms/it-audit',
   oidcClientId: process.env.OIDC_CLIENT_ID ?? 'it-audit-app',

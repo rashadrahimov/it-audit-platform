@@ -1,1 +1,0 @@
-ALTER TABLE "policy" ADD COLUMN "renewal_reminder_sent_at" timestamp with time zone;

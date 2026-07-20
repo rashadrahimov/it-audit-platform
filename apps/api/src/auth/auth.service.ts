@@ -93,28 +93,27 @@ export class AuthService {
       throw new UnauthorizedException('Неверный email или пароль');
     }
 
-    // Пароль верен → пост-аутентификация (MFA-челлендж или сразу сессия)
-    return this.beginSession(found.id, found.email, found.mfaEnabled, meta);
+    // Пароль верен — общий пост-верификационный путь (MFA-челлендж либо токен)
+    return this.completeAfterPrimaryFactor(found, meta);
   }
 
   /**
-   * Пост-аутентификация: при включённой MFA — челлендж (T-014), иначе сразу сессия.
-   * Общая для парольного входа и magic-link (T-V36e) — фактор уже подтверждён вызывающим.
+   * Пост-верификация первого фактора (пароль или magic-link): при включённой MFA —
+   * второй шаг (T-014), иначе — токен. Общее для /auth/login и magic-link consume,
+   * чтобы passwordless-вход не обходил MFA.
    */
-  async beginSession(
-    userId: string,
-    email: string,
-    mfaEnabled: boolean,
+  async completeAfterPrimaryFactor(
+    found: typeof user.$inferSelect,
     meta: RequestMeta = {},
   ): Promise<LoginResponse> {
-    if (mfaEnabled) {
+    if (found.mfaEnabled) {
       const mfaToken = await this.jwtService.signAsync(
-        { sub: userId, purpose: 'mfa' },
+        { sub: found.id, purpose: 'mfa' },
         { expiresIn: 300 },
       );
       return { mfaRequired: true, mfaToken };
     }
-    return this.completeLogin(userId, email, meta);
+    return this.completeLogin(found.id, found.email, meta);
   }
 
   /** Выдать токен пользователю после полной аутентификации (пароль или пароль+MFA). */
@@ -204,6 +203,7 @@ export class AuthService {
       .innerJoin(tenant, eq(membership.tenantId, tenant.id))
       .innerJoin(role, eq(membership.roleId, role.id))
       .where(and(eq(membership.userId, userId), eq(membership.status, 'active')));
+    // T-V50: category (internal|auditor) — для scoped-навигации внешнего аудитора
     return rows.map((row) => ({
       slug: row.slug,
       name: row.name,
@@ -237,6 +237,7 @@ export class AuthService {
       email: u.email,
       fullName: u.fullName,
       locale: (u.locale as MeResponse['locale']) ?? 'en',
+      // T-V52/T-V60: признак включённого MFA — для экрана /security и require-MFA policy
       mfaEnabled: u.mfaEnabled,
     };
   }

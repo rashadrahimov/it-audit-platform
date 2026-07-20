@@ -1,1 +1,0 @@
-ALTER TABLE "kb_entry" ADD COLUMN "trust_visible" boolean DEFAULT false NOT NULL;

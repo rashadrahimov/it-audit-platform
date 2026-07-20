@@ -5,34 +5,30 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import {
   authTokenResponseSchema,
-  localeSchema,
   loginResponseSchema,
+  localeSchema,
   mfaChallengeResponseSchema,
 } from '@it-audit/shared';
-import { SESSION_COOKIE, apiFetch, getActiveTenantSlug } from '@/lib/session';
+import { getCurrentLocale } from '@/lib/locale';
+import { apiFetch, getActiveTenantSlug, SESSION_COOKIE } from '@/lib/session';
 
 const API_URL = process.env.API_URL ?? 'http://localhost:3001';
 
 /**
- * T-V36f: после успешного логина выставить cookie `locale` из defaultLocale активного
- * тенанта — но не перезатирать явный выбор пользователя (LocaleSwitcher). Best-effort:
- * любая ошибка проглатывается, логин не ломается.
+ * T-V36f: при отсутствии явной cookie `locale` выставляем её из defaultLocale тенанта
+ * (business-profile). Hot-path i18n не трогаем — ставим только на входе. Best-effort.
  */
 async function applyTenantLocale(): Promise<void> {
   try {
     const store = await cookies();
-    if (store.get('locale')) return; // уважаем явный выбор
+    if (store.get('locale')) return; // уважаем явный выбор пользователя
     const slug = await getActiveTenantSlug();
     if (!slug) return;
     const res = await apiFetch('/business-profile', { headers: { 'X-Tenant-Slug': slug } });
     if (!res.ok) return;
     const parsed = localeSchema.safeParse((await res.json()).defaultLocale);
     if (parsed.success) {
-      store.set('locale', parsed.data, {
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365,
-      });
+      store.set('locale', parsed.data, { sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 });
     }
   } catch {
     // best-effort — локаль не критична для логина
@@ -121,39 +117,47 @@ export async function mfaVerifyAction(
   redirect('/account');
 }
 
-/** T-V36e: состояние формы запроса magic-link. */
+/** Состояние формы запроса magic-link: письмо отправлено и/или ошибка сети. */
 export interface MagicRequestState {
   sent?: boolean;
   error?: string;
 }
 
-/** Запросить magic-link на email. Ответ API всегда 200 — показываем нейтральное «проверьте почту». */
-export async function magicRequestAction(
+/** Запрос passwordless-ссылки. Успех «тихий» — существование аккаунта не раскрываем. */
+export async function magicLinkRequestAction(
   _prev: MagicRequestState,
   formData: FormData,
 ): Promise<MagicRequestState> {
-  const email = String(formData.get('email') ?? '').trim();
-  if (!email) return { error: 'email' };
-  const store = await cookies();
-  const locale = store.get('locale')?.value;
+  const t = await getTranslations('auth');
+  const email = String(formData.get('email') ?? '');
+  const locale = await getCurrentLocale();
+
+  let response: Response;
   try {
-    await fetch(`${API_URL}/auth/magic-link/request`, {
+    response = await fetch(`${API_URL}/auth/magic-link/request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, locale }),
       cache: 'no-store',
     });
   } catch {
-    // сеть недоступна — но не раскрываем, показываем то же «проверьте почту»
+    return { error: t('apiUnreachable') };
   }
+  if (!response.ok) return { error: t('apiUnreachable') };
   return { sent: true };
 }
 
-/** T-V36e: погасить magic-link токен → сессия (или MFA-челлендж). */
+/** Состояние обмена magic-link на сессию: активный MFA-челлендж и/или ошибка. */
+export interface MagicConsumeState {
+  mfaToken?: string;
+  error?: string;
+}
+
+/** Обмен ссылки на сессию. Токен → cookie+redirect; MFA-аккаунт → второй шаг. */
 export async function magicConsumeAction(
-  _prev: LoginFormState,
+  _prev: MagicConsumeState,
   formData: FormData,
-): Promise<LoginFormState> {
+): Promise<MagicConsumeState> {
   const t = await getTranslations('auth');
   const token = String(formData.get('token') ?? '');
   if (!token) return { error: t('magicInvalid') };
@@ -177,8 +181,8 @@ export async function magicConsumeAction(
   const mfa = mfaChallengeResponseSchema.safeParse(parsed.data);
   if (mfa.success) return { mfaToken: mfa.data.mfaToken };
 
-  const tokenResp = authTokenResponseSchema.parse(parsed.data);
-  await setSessionCookie(tokenResp.accessToken, tokenResp.expiresInSeconds);
+  const token2 = authTokenResponseSchema.parse(parsed.data);
+  await setSessionCookie(token2.accessToken, token2.expiresInSeconds);
   await applyTenantLocale();
   redirect('/account');
 }

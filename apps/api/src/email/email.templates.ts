@@ -18,29 +18,6 @@ const wrap = (body: string): string =>
   `<div style="font-family:sans-serif;max-width:600px">${body}</div>`;
 
 export const emailTemplates = {
-  'magic-link': {
-    en: ({ magicUrl }) => ({
-      subject: 'Your sign-in link — IT Audit Platform',
-      html: wrap(
-        `<p>Use the link below to sign in. It is valid for 15 minutes and works once.</p><p><a href="${magicUrl}">Sign in</a></p><p style="color:#888;font-size:12px">If you didn't request this, ignore this email.</p>`,
-      ),
-      text: `Sign in to IT Audit Platform: ${magicUrl} (valid 15 minutes). If you didn't request this, ignore this email.`,
-    }),
-    az: ({ magicUrl }) => ({
-      subject: 'Giriş keçidiniz — IT Audit Platform',
-      html: wrap(
-        `<p>Daxil olmaq üçün aşağıdakı keçiddən istifadə edin. 15 dəqiqə etibarlıdır.</p><p><a href="${magicUrl}">Daxil ol</a></p><p style="color:#888;font-size:12px">Əgər bunu tələb etməmisinizsə, bu məktubu nəzərə almayın.</p>`,
-      ),
-      text: `IT Audit Platform-a daxil olun: ${magicUrl} (15 dəqiqə etibarlıdır).`,
-    }),
-    ru: ({ magicUrl }) => ({
-      subject: 'Ссылка для входа — IT Audit Platform',
-      html: wrap(
-        `<p>Войдите по ссылке ниже. Она действует 15 минут.</p><p><a href="${magicUrl}">Войти</a></p><p style="color:#888;font-size:12px">Если вы не запрашивали вход, проигнорируйте это письмо.</p>`,
-      ),
-      text: `Вход в IT Audit Platform: ${magicUrl} (действует 15 минут). Если вы не запрашивали — проигнорируйте.`,
-    }),
-  },
   invite: {
     en: ({ inviteUrl, tenantName }) => ({
       subject: `You are invited to IT Audit Platform (${tenantName})`,
@@ -62,6 +39,29 @@ export const emailTemplates = {
         `<p>Вас пригласили присоединиться к <b>${tenantName}</b> в IT Audit Platform.</p><p><a href="${inviteUrl}">Принять приглашение</a> (ссылка действует 7 дней).</p>`,
       ),
       text: `Вас пригласили в ${tenantName}. Принять: ${inviteUrl} (действует 7 дней)`,
+    }),
+  },
+  'magic-link': {
+    en: ({ magicUrl, minutes }) => ({
+      subject: 'Your STATERA sign-in link',
+      html: wrap(
+        `<p>Use this link to sign in to STATERA — no password needed.</p><p><a href="${magicUrl}">Sign in</a> (link is valid for ${minutes} minutes and can be used once).</p><p style="color:#64748b;font-size:13px">If you didn't request this, you can safely ignore this email.</p>`,
+      ),
+      text: `Use this link to sign in to STATERA (no password needed): ${magicUrl} — valid for ${minutes} minutes, single use. If you didn't request this, ignore this email.`,
+    }),
+    az: ({ magicUrl, minutes }) => ({
+      subject: 'STATERA-ya giriş keçidiniz',
+      html: wrap(
+        `<p>Şifrəsiz STATERA-ya daxil olmaq üçün bu keçiddən istifadə edin.</p><p><a href="${magicUrl}">Daxil ol</a> (keçid ${minutes} dəqiqə etibarlıdır və bir dəfə istifadə olunur).</p><p style="color:#64748b;font-size:13px">Bunu siz istəməmisinizsə, bu məktubu nəzərə almaya bilərsiniz.</p>`,
+      ),
+      text: `Şifrəsiz STATERA-ya daxil olmaq üçün keçid: ${magicUrl} — ${minutes} dəqiqə etibarlıdır, bir dəfəlik. Bunu siz istəməmisinizsə, məktubu nəzərə almayın.`,
+    }),
+    ru: ({ magicUrl, minutes }) => ({
+      subject: 'Ссылка для входа в STATERA',
+      html: wrap(
+        `<p>Войдите в STATERA по этой ссылке — пароль не нужен.</p><p><a href="${magicUrl}">Войти</a> (ссылка действует ${minutes} минут и одноразовая).</p><p style="color:#64748b;font-size:13px">Если вы не запрашивали вход, просто проигнорируйте это письмо.</p>`,
+      ),
+      text: `Войдите в STATERA по ссылке (пароль не нужен): ${magicUrl} — действует ${minutes} минут, одноразовая. Если вы не запрашивали вход, проигнорируйте письмо.`,
     }),
   },
   'finding-assigned': {

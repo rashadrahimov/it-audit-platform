@@ -1,1 +1,0 @@
-ALTER TABLE "framework_activation" ADD COLUMN "target_date" timestamp with time zone;
