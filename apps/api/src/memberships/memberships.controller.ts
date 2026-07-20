@@ -1,5 +1,18 @@
-import { BadRequestException, Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { z } from 'zod';
 import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
@@ -12,6 +25,15 @@ function parseLocale(localeQuery?: string): Locale {
   if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
   return parsed.data;
 }
+
+const updateSchema = z
+  .object({
+    roleId: z.uuid().optional(),
+    subsidiaryScope: z.array(z.uuid()).nullable().optional(),
+  })
+  .refine((d) => d.roleId !== undefined || d.subsidiaryScope !== undefined, {
+    message: 'Нужно указать roleId и/или subsidiaryScope',
+  });
 
 @Controller('memberships')
 @UseGuards(JwtAuthGuard, PermissionGuard)
@@ -26,5 +48,27 @@ export class MembershipsController {
   @ApiQuery({ name: 'locale', required: false })
   list(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
     return this.service.list(req.tenantId, parseLocale(localeQuery));
+  }
+
+  @Patch(':id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Сменить роль/scoped-доступ участника (T-109, grant access)' })
+  @ApiOkResponse({ description: '{id, roleId, subsidiaryScope}' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Delete(':id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Отозвать доступ участника (T-109, soft — status=revoked)' })
+  @ApiOkResponse({ description: '{id, status}' })
+  revoke(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.revoke({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id);
   }
 }
