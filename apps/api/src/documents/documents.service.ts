@@ -287,6 +287,7 @@ export class DocumentsService {
   /** Авторизованное скачивание: метаданные под RLS, тело — из S3. */
   async content(
     tenantId: string,
+    userId: string,
     documentId: string,
   ): Promise<{ filename: string; stored: StoredObject }> {
     const [doc] = await this.dbService.withTenant(tenantId, (tx) =>
@@ -296,9 +297,45 @@ export class DocumentsService {
         .where(and(eq(document.id, documentId), isNull(document.deletedAt))),
     );
     if (!doc) throw new NotFoundException(`Документ ${documentId} не найден`);
+    // T-122: скачивание по ID режется auditor-scope так же, как список (T-111).
+    // Внешний аудитор со scope качает документ, только если он привязан к
+    // видимой ему сущности (дочка в scope или библиотечная/глобальная).
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
+    if (scope !== null && !(await this.documentVisibleInScope(tenantId, documentId, scope))) {
+      throw new NotFoundException(`Документ ${documentId} не найден`);
+    }
     const stored = await this.storage.get(doc.storageKey);
     if (!stored) throw new NotFoundException('Файл отсутствует в хранилище');
     return { filename: doc.filename, stored };
+  }
+
+  /**
+   * T-122: виден ли документ внешнему аудитору со scope. Документ виден, если
+   * хотя бы одна его привязка ведёт к библиотечной/глобальной сущности
+   * (`subsidiaryBound=false`, видна всем) ИЛИ к дочке в scope. Без привязок или
+   * только к дочкам вне scope — не виден.
+   */
+  private async documentVisibleInScope(
+    tenantId: string,
+    documentId: string,
+    scope: string[],
+  ): Promise<boolean> {
+    const links = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ entityType: documentLink.entityType, entityId: documentLink.entityId })
+        .from(documentLink)
+        .where(eq(documentLink.documentId, documentId)),
+    );
+    for (const link of links) {
+      const { subsidiaryId, subsidiaryBound } = await this.entitySubsidiary(
+        tenantId,
+        link.entityType,
+        link.entityId,
+      );
+      if (!subsidiaryBound) return true;
+      if (subsidiaryId !== null && scope.includes(subsidiaryId)) return true;
+    }
+    return false;
   }
 
   private validateLink(link: LinkInput): void {

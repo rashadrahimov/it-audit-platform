@@ -389,6 +389,25 @@ export class FindingsService {
         .where(and(eq(finding.id, id), isNull(finding.deletedAt))),
     );
     if (!row) throw new NotFoundException(`Finding ${id} не найден`);
+    // T-122: чтение по ID режется auditor-scope так же, как список (T-111).
+    // Дочка finding'а — через engagement; standalone (без engagement) для
+    // scoped-аудитора скрыт (как в списке).
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
+    if (scope !== null) {
+      const subId = row.engagementId
+        ? ((
+            await this.dbService.withTenant(tenantId, (tx) =>
+              tx
+                .select({ s: engagement.subsidiaryId })
+                .from(engagement)
+                .where(eq(engagement.id, row.engagementId!)),
+            )
+          )[0]?.s ?? null)
+        : null;
+      if (subId === null || !scope.includes(subId)) {
+        throw new NotFoundException(`Finding ${id} не найден`);
+      }
+    }
     const dto = {
       id: row.id,
       title: resolveLocalized(row.titleI18n, locale),

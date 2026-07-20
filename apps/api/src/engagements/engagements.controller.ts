@@ -223,7 +223,7 @@ export class EngagementsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('locale') localeQuery?: string,
   ) {
-    return this.engagementsService.detail(req.tenantId, id, parseLocale(localeQuery));
+    return this.engagementsService.detail(req.tenantId, req.user.sub, id, parseLocale(localeQuery));
   }
 
   @Get(':id/export')

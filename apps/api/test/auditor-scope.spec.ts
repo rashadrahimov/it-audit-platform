@@ -1,9 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
+import { NotFoundException } from '@nestjs/common';
 import { DbService } from '../src/db/db.service';
 import { AuditLogService } from '../src/audit/audit-log.service';
 import { EngagementsService } from '../src/engagements/engagements.service';
-import { resolveAuditorScope } from '../src/rbac/auditor-scope';
+import { assertSubsidiaryInAuditorScope, resolveAuditorScope } from '../src/rbac/auditor-scope';
 import { engagement, membership, role, subsidiary, tenant, user } from '../src/db/schema';
 
 /**
@@ -31,6 +32,8 @@ let adminId: string; // внутренний Admin
 let emptyId: string; // external_auditor scope=[]
 let subAId: string;
 let subBId: string;
+let engAId: string; // engagement в дочке A
+let engBId: string; // engagement в дочке B
 
 async function presetRoleId(nameEn: string): Promise<string> {
   const roles = await dbService.db.select().from(role).where(eq(role.isSystem, true));
@@ -65,10 +68,15 @@ beforeAll(async () => {
       .returning();
     subAId = a!.id;
     subBId = b!.id;
-    await tx.insert(engagement).values([
-      { tenantId, subsidiaryId: subAId, titleI18n: { en: 'Audit A' } },
-      { tenantId, subsidiaryId: subBId, titleI18n: { en: 'Audit B' } },
-    ]);
+    const engs = await tx
+      .insert(engagement)
+      .values([
+        { tenantId, subsidiaryId: subAId, titleI18n: { en: 'Audit A' } },
+        { tenantId, subsidiaryId: subBId, titleI18n: { en: 'Audit B' } },
+      ])
+      .returning();
+    engAId = engs[0]!.id;
+    engBId = engs[1]!.id;
   });
 
   const extRole = await presetRoleId('External Auditor');
@@ -146,5 +154,63 @@ describe('EngagementsService.list scoped (T-111)', () => {
   it('external_auditor с пустым scope [] не видит ни одного engagement', async () => {
     const rows = await engagementsService.list(tenantId, emptyId, 'en');
     expect(rows).toHaveLength(0);
+  });
+});
+
+describe('assertSubsidiaryInAuditorScope guard (T-122)', () => {
+  it('scoped external_auditor + дочка в scope → пропускает', async () => {
+    await expect(
+      assertSubsidiaryInAuditorScope(dbService, tenantId, scopedId, subAId),
+    ).resolves.toBeUndefined();
+  });
+  it('scoped external_auditor + чужая дочка → NotFound', async () => {
+    await expect(
+      assertSubsidiaryInAuditorScope(dbService, tenantId, scopedId, subBId),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+  it('scoped external_auditor + null-дочка (standalone) → NotFound', async () => {
+    await expect(
+      assertSubsidiaryInAuditorScope(dbService, tenantId, scopedId, null),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+  it('empty-scope external_auditor + любая дочка → NotFound', async () => {
+    await expect(
+      assertSubsidiaryInAuditorScope(dbService, tenantId, emptyId, subAId),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+  it('full-scope external_auditor (scope=null) + чужая дочка → пропускает', async () => {
+    await expect(
+      assertSubsidiaryInAuditorScope(dbService, tenantId, fullId, subBId),
+    ).resolves.toBeUndefined();
+  });
+  it('внутренний Admin + чужая дочка → пропускает (не режется)', async () => {
+    await expect(
+      assertSubsidiaryInAuditorScope(dbService, tenantId, adminId, subBId),
+    ).resolves.toBeUndefined();
+  });
+});
+
+describe('EngagementsService.detail scoped (T-122)', () => {
+  it('scoped external_auditor читает engagement своей дочки', async () => {
+    const d = await engagementsService.detail(tenantId, scopedId, engAId, 'en');
+    expect(d.title).toBe('Audit A');
+  });
+  it('scoped external_auditor НЕ читает engagement чужой дочки по ID → NotFound', async () => {
+    await expect(
+      engagementsService.detail(tenantId, scopedId, engBId, 'en'),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+  it('full-scope external_auditor читает engagement чужой дочки', async () => {
+    const d = await engagementsService.detail(tenantId, fullId, engBId, 'en');
+    expect(d.title).toBe('Audit B');
+  });
+  it('empty-scope external_auditor не читает свою же дочку по ID → NotFound', async () => {
+    await expect(engagementsService.detail(tenantId, emptyId, engAId, 'en')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+  it('внутренний Admin читает любой engagement по ID', async () => {
+    const d = await engagementsService.detail(tenantId, adminId, engBId, 'en');
+    expect(d.title).toBe('Audit B');
   });
 });

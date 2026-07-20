@@ -29,7 +29,7 @@ import {
   user,
 } from '../db/schema';
 import type { ComplianceStatus } from '@it-audit/shared';
-import { resolveAuditorScope } from '../rbac/auditor-scope';
+import { assertSubsidiaryInAuditorScope, resolveAuditorScope } from '../rbac/auditor-scope';
 import { suggestFindings } from './finding-suggest';
 import {
   allowedTransitions,
@@ -369,7 +369,7 @@ export class EngagementsService {
     }));
   }
 
-  async detail(tenantId: string, id: string, locale: Locale) {
+  async detail(tenantId: string, userId: string, id: string, locale: Locale) {
     const data = await this.dbService.withTenant(tenantId, async (tx) => {
       const [row] = await tx
         .select()
@@ -410,6 +410,9 @@ export class EngagementsService {
         : [];
       return { row, sub, type, milestones, checklist, responses };
     });
+
+    // T-122: чтение по ID режется auditor-scope так же, как список (T-111).
+    await assertSubsidiaryInAuditorScope(this.dbService, tenantId, userId, data.row.subsidiaryId);
 
     const stageOrder = (s: string): number => {
       const i = ENGAGEMENT_FLOW.indexOf(s as (typeof ENGAGEMENT_FLOW)[number]);

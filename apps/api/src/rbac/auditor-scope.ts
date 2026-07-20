@@ -1,4 +1,5 @@
 import { and, eq } from 'drizzle-orm';
+import { NotFoundException } from '@nestjs/common';
 import type { DbService } from '../db/db.service';
 import { membership } from '../db/schema';
 
@@ -27,6 +28,32 @@ export async function resolveAuditorScope(
     .where(and(eq(membership.userId, userId), eq(membership.tenantId, tenantId)));
   if (!me || me.category !== 'external_auditor') return null;
   return me.scope ?? null;
+}
+
+/**
+ * Guard для чтения по прямому ID (T-122, follow-up к T-111).
+ *
+ * Списки режутся `resolveAuditorScope`, но чтение по ID (GET /engagements/:id,
+ * /findings/:id, скачивание документа) раньше scope не проверяло — внешний
+ * аудитор мог прочитать чужую дочку, зная ID. Этот guard закрывает обход.
+ *
+ * Бросает `NotFoundException` (а не Forbidden — не раскрываем существование
+ * ресурса вне scope), если сущность привязана к дочке вне скоупа аудитора.
+ * `subsidiaryId === null` для scoped-аудитора трактуется как «вне доступа»
+ * (standalone/без дочки — как и в списках, скрыто). Для не ограниченного
+ * актора (`scope === null`) — no-op.
+ */
+export async function assertSubsidiaryInAuditorScope(
+  dbService: DbService,
+  tenantId: string,
+  userId: string,
+  subsidiaryId: string | null,
+): Promise<void> {
+  const scope = await resolveAuditorScope(dbService, tenantId, userId);
+  if (scope === null) return;
+  if (subsidiaryId === null || !scope.includes(subsidiaryId)) {
+    throw new NotFoundException('Ресурс не найден');
+  }
 }
 
 /**

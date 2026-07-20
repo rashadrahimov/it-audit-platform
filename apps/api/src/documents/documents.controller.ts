@@ -154,7 +154,11 @@ export class DocumentsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Res() res: Response,
   ): Promise<void> {
-    const { filename, stored } = await this.documentsService.content(req.tenantId, id);
+    const { filename, stored } = await this.documentsService.content(
+      req.tenantId,
+      req.user.sub,
+      id,
+    );
     res.setHeader('Content-Type', stored.contentType);
     if (stored.contentLength !== undefined) {
       res.setHeader('Content-Length', String(stored.contentLength));
