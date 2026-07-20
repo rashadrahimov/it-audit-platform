@@ -424,7 +424,16 @@
       "medium": "Orta",
       "high": "Yüksək",
       "critical": "Kritik"
-    }
+    },
+    "matrix": "Təsir × Ehtimal",
+    "impact": "Təsir",
+    "likelihood": "Ehtimal",
+    "topCategories": "Əsas risk kateqoriyaları",
+    "process": "Proses",
+    "allProcesses": "Bütün proseslər",
+    "uncategorized": "Kateqoriyasız",
+    "risks": "risk",
+    "distribution": "Sinif bölgüsü"
   },
   "plans": {
     "title": "Audit Planları",

@@ -472,6 +472,118 @@ export class RisksService {
     return { total: rows.length, inherent, residual };
   }
 
+  /**
+   * T-V35: настоящая матрица impact×likelihood — счётчик рисков в каждой ячейке
+   * + класс ячейки по порогам тенанта. mode inherent|residual, срез по узлу universe
+   * (процессу). Плюс топ категорий рисков и список узлов для селектора среза.
+   */
+  async heatmapMatrix(tenantId: string, locale: Locale, opts: { mode?: string; nodeId?: string }) {
+    const mode = opts.mode === 'residual' ? 'residual' : 'inherent';
+    return this.dbService.withTenant(tenantId, async (tx) => {
+      const [cfg] = await tx
+        .select()
+        .from(riskMatrixConfig)
+        .where(eq(riskMatrixConfig.tenantId, tenantId));
+      const impactScale = cfg?.impactScale ?? 5;
+      const likelihoodScale = cfg?.likelihoodScale ?? 5;
+      const thresholds = cfg?.thresholds ?? DEFAULT_THRESHOLDS;
+
+      // опциональный срез по узлу universe (процессу): id рисков, привязанных к узлу
+      let nodeRiskIds: Set<string> | null = null;
+      if (opts.nodeId) {
+        const links = await tx
+          .select({ riskId: riskEntity.riskId })
+          .from(riskEntity)
+          .where(eq(riskEntity.auditableEntityId, opts.nodeId));
+        nodeRiskIds = new Set(links.map((l) => l.riskId));
+      }
+
+      const rows = await tx
+        .select({
+          id: risk.id,
+          category: risk.category,
+          ii: risk.inherentImpact,
+          il: risk.inherentLikelihood,
+          ri: risk.residualImpact,
+          rl: risk.residualLikelihood,
+        })
+        .from(risk)
+        .where(and(isNotNull(risk.tenantId), isNull(risk.deletedAt)));
+      const filtered = nodeRiskIds ? rows.filter((r) => nodeRiskIds!.has(r.id)) : rows;
+
+      // ячейки I×L: счётчик рисков + класс ячейки по порогам
+      const counts = new Map<string, number>();
+      let total = 0;
+      for (const r of filtered) {
+        const impact = mode === 'residual' ? r.ri : r.ii;
+        const likelihood = mode === 'residual' ? r.rl : r.il;
+        if (!impact || !likelihood) continue;
+        const key = `${impact}:${likelihood}`;
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+        total += 1;
+      }
+      const cells: Array<{
+        impact: number;
+        likelihood: number;
+        count: number;
+        cellClass: string | null;
+      }> = [];
+      for (let i = 1; i <= impactScale; i += 1) {
+        for (let l = 1; l <= likelihoodScale; l += 1) {
+          cells.push({
+            impact: i,
+            likelihood: l,
+            count: counts.get(`${i}:${l}`) ?? 0,
+            cellClass: classifyRisk(i, l, thresholds),
+          });
+        }
+      }
+
+      // топ категорий рисков (по числу в срезе)
+      const catCounts = new Map<string, number>();
+      for (const r of filtered) {
+        const c = r.category ?? 'uncategorized';
+        catCounts.set(c, (catCounts.get(c) ?? 0) + 1);
+      }
+      const topCategories = [...catCounts.entries()]
+        .map(([category, count]) => ({ category, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // узлы universe, к которым привязан хотя бы один риск — для селектора среза
+      const nodeRows = await tx
+        .select({
+          id: auditableEntity.id,
+          kind: auditableEntity.kind,
+          nameI18n: auditableEntity.nameI18n,
+        })
+        .from(riskEntity)
+        .innerJoin(auditableEntity, eq(riskEntity.auditableEntityId, auditableEntity.id));
+      const nodesById = new Map<string, { id: string; kind: string; name: string }>();
+      for (const n of nodeRows) {
+        if (!nodesById.has(n.id)) {
+          nodesById.set(n.id, {
+            id: n.id,
+            kind: n.kind,
+            name: resolveLocalized(n.nameI18n, locale),
+          });
+        }
+      }
+
+      return {
+        mode,
+        impactScale,
+        likelihoodScale,
+        thresholds,
+        total,
+        cells,
+        topCategories,
+        nodes: [...nodesById.values()],
+        nodeId: opts.nodeId ?? null,
+      };
+    });
+  }
+
   async list(tenantId: string, locale: Locale) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx

@@ -424,7 +424,16 @@
       "medium": "Medium",
       "high": "High",
       "critical": "Critical"
-    }
+    },
+    "matrix": "Impact × Likelihood",
+    "impact": "Impact",
+    "likelihood": "Likelihood",
+    "topCategories": "Top risk categories",
+    "process": "Process",
+    "allProcesses": "All processes",
+    "uncategorized": "Uncategorized",
+    "risks": "risks",
+    "distribution": "Class distribution"
   },
   "plans": {
     "title": "Audit Plans",

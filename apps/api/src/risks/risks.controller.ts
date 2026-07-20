@@ -189,6 +189,28 @@ export class RisksController {
     return this.service.getMatrix(req.tenantId);
   }
 
+  @Get('heatmap-matrix')
+  @RequirePermission('control', 'view')
+  @ApiOperation({
+    summary:
+      'Матрица impact×likelihood (T-V35): ?mode=inherent|residual, ?nodeId= срез по процессу',
+  })
+  @ApiQuery({ name: 'mode', required: false })
+  @ApiQuery({ name: 'nodeId', required: false })
+  @ApiQuery({ name: 'locale', required: false })
+  heatmapMatrix(
+    @Req() req: TenantRequest,
+    @Query('mode') mode?: string,
+    @Query('nodeId') nodeId?: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    const validNode = nodeId && /^[0-9a-f-]{36}$/i.test(nodeId) ? nodeId : undefined;
+    return this.service.heatmapMatrix(req.tenantId, parseLocale(localeQuery), {
+      mode,
+      nodeId: validNode,
+    });
+  }
+
   @Get('library')
   @RequirePermission('control', 'view')
   @ApiOperation({ summary: 'Библиотека risk-сценариев (T-V23): глобальный каталог + added' })
