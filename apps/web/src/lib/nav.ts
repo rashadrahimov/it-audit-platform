@@ -87,6 +87,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/roles', testid: 'go-roles', label: 'rolesNav' },
       { href: '/members', testid: 'go-members', label: 'membersNav' },
       { href: '/field-permissions', testid: 'go-field-permissions', label: 'fieldPermissions' },
+      { href: '/auditors', testid: 'go-auditors', label: 'auditors' },
+      { href: '/auditor-view', testid: 'go-auditor-view', label: 'auditorView' },
       { href: '/api-keys', testid: 'go-api-keys', label: 'apiKeys' },
       { href: '/notifications', testid: 'go-notifications', label: 'notifications' },
       { href: '/migration', testid: 'go-migration', label: 'migration' },

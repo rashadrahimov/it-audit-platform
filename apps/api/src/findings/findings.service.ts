@@ -19,6 +19,7 @@ import { DbService } from '../db/db.service';
 import { EmailService } from '../email/email.service';
 import { RbacService } from '../rbac/rbac.service';
 import { dueDateFor, SlaConfigService } from '../sla-config/sla-config.service';
+import { resolveAuditorScope } from '../rbac/auditor-scope';
 import { maskFields, rejectedWriteFields } from '../rbac/field-policy';
 import { FINDING_TEMPLATES } from '../seed-data/finding-templates';
 import {
@@ -370,6 +371,7 @@ export class FindingsService {
 
   async list(
     tenantId: string,
+    userId: string,
     locale: Locale,
     engagementId?: string,
     filters?: {
@@ -384,6 +386,9 @@ export class FindingsService {
     const ownerUser = alias(user, 'owner_user');
     const auditorMembership = alias(membership, 'auditor_membership');
     const auditorUser = alias(user, 'auditor_user');
+    // T-111: внешний аудитор со scope видит только findings своих дочек
+    // (через engagement.subsidiary_id); standalone-findings (без engagement) — скрыты.
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
     const conds = [isNull(finding.deletedAt)];
     if (engagementId) conds.push(eq(finding.engagementId, engagementId));
     if (filters?.status) conds.push(eq(finding.status, filters.status));
@@ -402,6 +407,20 @@ export class FindingsService {
             .from(tagLink)
             .where(and(eq(tagLink.tagId, filters.tagId), eq(tagLink.entityType, 'finding'))),
         ),
+      );
+    }
+    // T-111: scope внешнего аудитора — только его дочки (subquery через engagement)
+    if (scope !== null) {
+      conds.push(
+        scope.length === 0
+          ? sql`false`
+          : inArray(
+              finding.engagementId,
+              this.dbService.db
+                .select({ id: engagement.id })
+                .from(engagement)
+                .where(inArray(engagement.subsidiaryId, scope)),
+            ),
       );
     }
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
@@ -480,6 +499,25 @@ export class FindingsService {
     });
     if (!data) throw new NotFoundException(`Finding ${id} не найден`);
     const { row, names, history, comments } = data;
+    // T-122: чтение по ID режется auditor-scope так же, как список (T-111).
+    // Дочка finding'а — через engagement; standalone (без engagement) для
+    // scoped-аудитора скрыт (как в списке).
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
+    if (scope !== null) {
+      const subId = row.engagementId
+        ? ((
+            await this.dbService.withTenant(tenantId, (tx) =>
+              tx
+                .select({ s: engagement.subsidiaryId })
+                .from(engagement)
+                .where(eq(engagement.id, row.engagementId!)),
+            )
+          )[0]?.s ?? null)
+        : null;
+      if (subId === null || !scope.includes(subId)) {
+        throw new NotFoundException(`Finding ${id} не найден`);
+      }
+    }
     const nextIdx = flowIndex(row.status);
     const dto = {
       id: row.id,

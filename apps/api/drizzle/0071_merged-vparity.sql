@@ -139,8 +139,7 @@ ALTER TABLE "processing_activity" ADD CONSTRAINT "processing_activity_vendor_id_
 ALTER TABLE "processing_activity" ADD CONSTRAINT "processing_activity_review_owner_membership_id_membership_id_fk" FOREIGN KEY ("review_owner_membership_id") REFERENCES "public"."membership"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "security_alert" ADD CONSTRAINT "security_alert_asset_id_asset_id_fk" FOREIGN KEY ("asset_id") REFERENCES "public"."asset"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "vulnerability" ADD CONSTRAINT "vulnerability_asset_id_asset_id_fk" FOREIGN KEY ("asset_id") REFERENCES "public"."asset"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "vulnerability_asset_idx" ON "vulnerability" USING btree ("asset_id");
---> statement-breakpoint
+CREATE INDEX "vulnerability_asset_idx" ON "vulnerability" USING btree ("asset_id");--> statement-breakpoint
 -- RLS-политики, извлечённые из миграций 0067-0089 (регенерация их не воспроизводит)
 
 -- from 0068_framework-activation.sql

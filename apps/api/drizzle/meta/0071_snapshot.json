@@ -1,6 +1,6 @@
 {
-  "id": "4270ac2e-03f1-4d3d-9409-aea024903c97",
-  "prevId": "8d0cbfb4-5500-47bb-9589-3e1cdf0ac83e",
+  "id": "86691758-ab29-4b90-8abf-42f9f4160e30",
+  "prevId": "e4ccefeb-57e2-4c5c-8685-fec3bbc40a50",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -937,6 +937,99 @@
           "tableTo": "connector",
           "columnsFrom": [
             "connector_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.audit_firm": {
+      "name": "audit_firm",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contact_email": {
+          "name": "contact_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "audit_firm_tenant_idx": {
+          "name": "audit_firm_tenant_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "audit_firm_tenant_id_tenant_id_fk": {
+          "name": "audit_firm_tenant_id_tenant_id_fk",
+          "tableFrom": "audit_firm",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
           ],
           "columnsTo": [
             "id"
@@ -2031,6 +2124,12 @@
           "notNull": true,
           "default": "'requested'"
         },
+        "asset_id": {
+          "name": "asset_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "requester_membership_id": {
           "name": "requester_membership_id",
           "type": "uuid",
@@ -2100,6 +2199,19 @@
           "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "code_change_asset_id_asset_id_fk": {
+          "name": "code_change_asset_id_asset_id_fk",
+          "tableFrom": "code_change",
+          "tableTo": "asset",
+          "columnsFrom": [
+            "asset_id"
           ],
           "columnsTo": [
             "id"
@@ -2316,6 +2428,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "contract_id": {
+          "name": "contract_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "status": {
           "name": "status",
           "type": "text",
@@ -2388,6 +2506,19 @@
           "tableTo": "membership",
           "columnsFrom": [
             "owner_membership_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "commitment_contract_id_contract_id_fk": {
+          "name": "commitment_contract_id_contract_id_fk",
+          "tableFrom": "commitment",
+          "tableTo": "contract",
+          "columnsFrom": [
+            "contract_id"
           ],
           "columnsTo": [
             "id"
@@ -2539,6 +2670,12 @@
           "notNull": true,
           "default": "'active'"
         },
+        "sync_interval_minutes": {
+          "name": "sync_interval_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "last_sync_at": {
           "name": "last_sync_at",
           "type": "timestamp with time zone",
@@ -2590,6 +2727,137 @@
           "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.contract": {
+      "name": "contract",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "counterparty": {
+          "name": "counterparty",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "owner_membership_id": {
+          "name": "owner_membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "contract_tenant_idx": {
+          "name": "contract_tenant_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "contract_tenant_id_tenant_id_fk": {
+          "name": "contract_tenant_id_tenant_id_fk",
+          "tableFrom": "contract",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "contract_owner_membership_id_membership_id_fk": {
+          "name": "contract_owner_membership_id_membership_id_fk",
+          "tableFrom": "contract",
+          "tableTo": "membership",
+          "columnsFrom": [
+            "owner_membership_id"
           ],
           "columnsTo": [
             "id"
@@ -3799,6 +4067,12 @@
           "notNull": true,
           "default": "'active'"
         },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "deleted_at": {
           "name": "deleted_at",
           "type": "timestamp with time zone",
@@ -4182,6 +4456,131 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.engagement_member": {
+      "name": "engagement_member",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "engagement_id": {
+          "name": "engagement_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "membership_id": {
+          "name": "membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "engagement_role": {
+          "name": "engagement_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stage_permissions": {
+          "name": "stage_permissions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "engagement_member_unique_idx": {
+          "name": "engagement_member_unique_idx",
+          "columns": [
+            {
+              "expression": "engagement_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "membership_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "engagement_member_tenant_id_tenant_id_fk": {
+          "name": "engagement_member_tenant_id_tenant_id_fk",
+          "tableFrom": "engagement_member",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "engagement_member_engagement_id_engagement_id_fk": {
+          "name": "engagement_member_engagement_id_engagement_id_fk",
+          "tableFrom": "engagement_member",
+          "tableTo": "engagement",
+          "columnsFrom": [
+            "engagement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "engagement_member_membership_id_membership_id_fk": {
+          "name": "engagement_member_membership_id_membership_id_fk",
+          "tableFrom": "engagement_member",
+          "tableTo": "membership",
+          "columnsFrom": [
+            "membership_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.engagement_milestone": {
       "name": "engagement_milestone",
       "schema": "",
@@ -4261,6 +4660,146 @@
           "tableTo": "engagement",
           "columnsFrom": [
             "engagement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.entity_acl": {
+      "name": "entity_acl",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "membership_id": {
+          "name": "membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "level": {
+          "name": "level",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'view'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "entity_acl_entity_idx": {
+          "name": "entity_acl_entity_idx",
+          "columns": [
+            {
+              "expression": "entity_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "entity_acl_triple_idx": {
+          "name": "entity_acl_triple_idx",
+          "columns": [
+            {
+              "expression": "entity_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "membership_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "entity_acl_tenant_id_tenant_id_fk": {
+          "name": "entity_acl_tenant_id_tenant_id_fk",
+          "tableFrom": "entity_acl",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "entity_acl_membership_id_membership_id_fk": {
+          "name": "entity_acl_membership_id_membership_id_fk",
+          "tableFrom": "entity_acl",
+          "tableTo": "membership",
+          "columnsFrom": [
+            "membership_id"
           ],
           "columnsTo": [
             "id"
@@ -4431,6 +4970,137 @@
           "tableTo": "document",
           "columnsFrom": [
             "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.evidence_review": {
+      "name": "evidence_review",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'not_ready'"
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by_membership_id": {
+          "name": "reviewed_by_membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "evidence_review_entity_idx": {
+          "name": "evidence_review_entity_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "evidence_review_tenant_id_tenant_id_fk": {
+          "name": "evidence_review_tenant_id_tenant_id_fk",
+          "tableFrom": "evidence_review",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "evidence_review_reviewed_by_membership_id_membership_id_fk": {
+          "name": "evidence_review_reviewed_by_membership_id_membership_id_fk",
+          "tableFrom": "evidence_review",
+          "tableTo": "membership",
+          "columnsFrom": [
+            "reviewed_by_membership_id"
           ],
           "columnsTo": [
             "id"
@@ -4884,9 +5554,27 @@
           "notNull": true,
           "default": "'published'"
         },
+        "domain": {
+          "name": "domain",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "source_framework_id": {
           "name": "source_framework_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "previous_version_id": {
+          "name": "previous_version_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "update_notes": {
+          "name": "update_notes",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4953,6 +5641,119 @@
             "id"
           ],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "framework_previous_version_id_framework_id_fk": {
+          "name": "framework_previous_version_id_framework_id_fk",
+          "tableFrom": "framework",
+          "tableTo": "framework",
+          "columnsFrom": [
+            "previous_version_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.framework_activation": {
+      "name": "framework_activation",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "framework_id": {
+          "name": "framework_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_date": {
+          "name": "target_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "framework_activation_pair_idx": {
+          "name": "framework_activation_pair_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "framework_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "framework_activation_tenant_id_tenant_id_fk": {
+          "name": "framework_activation_tenant_id_tenant_id_fk",
+          "tableFrom": "framework_activation",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "framework_activation_framework_id_framework_id_fk": {
+          "name": "framework_activation_framework_id_framework_id_fk",
+          "tableFrom": "framework_activation",
+          "tableTo": "framework",
+          "columnsFrom": [
+            "framework_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -5214,6 +6015,25 @@
           "notNull": true,
           "default": "'[]'::jsonb"
         },
+        "owner_membership_id": {
+          "name": "owner_membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "trust_visible": {
+          "name": "trust_visible",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "deleted_at": {
           "name": "deleted_at",
           "type": "timestamp with time zone",
@@ -5259,6 +6079,19 @@
           "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "kb_entry_owner_membership_id_membership_id_fk": {
+          "name": "kb_entry_owner_membership_id_membership_id_fk",
+          "tableFrom": "kb_entry",
+          "tableTo": "membership",
+          "columnsFrom": [
+            "owner_membership_id"
           ],
           "columnsTo": [
             "id"
@@ -5515,7 +6348,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'auditor'"
+          "default": "'internal'"
         },
         "is_audit_seat": {
           "name": "is_audit_seat",
@@ -6196,6 +7029,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "renewal_reminder_sent_at": {
+          "name": "renewal_reminder_sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "status": {
           "name": "status",
           "type": "text",
@@ -6588,6 +7427,24 @@
           "notNull": true,
           "default": "'draft'"
         },
+        "approver_membership_id": {
+          "name": "approver_membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_date": {
+          "name": "review_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "deleted_at": {
           "name": "deleted_at",
           "type": "timestamp with time zone",
@@ -6646,6 +7503,19 @@
           "tableTo": "processing_activity",
           "columnsFrom": [
             "processing_activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_assessment_approver_membership_id_membership_id_fk": {
+          "name": "privacy_assessment_approver_membership_id_membership_id_fk",
+          "tableFrom": "privacy_assessment",
+          "tableTo": "membership",
+          "columnsFrom": [
+            "approver_membership_id"
           ],
           "columnsTo": [
             "id"
@@ -6741,6 +7611,31 @@
           "primaryKey": false,
           "notNull": false
         },
+        "vendor_id": {
+          "name": "vendor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_locations": {
+          "name": "data_locations",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "review_owner_membership_id": {
+          "name": "review_owner_membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_date": {
+          "name": "review_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "status": {
           "name": "status",
           "type": "text",
@@ -6806,6 +7701,32 @@
           "tableTo": "membership",
           "columnsFrom": [
             "owner_membership_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "processing_activity_vendor_id_vendor_id_fk": {
+          "name": "processing_activity_vendor_id_vendor_id_fk",
+          "tableFrom": "processing_activity",
+          "tableTo": "vendor",
+          "columnsFrom": [
+            "vendor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "processing_activity_review_owner_membership_id_membership_id_fk": {
+          "name": "processing_activity_review_owner_membership_id_membership_id_fk",
+          "tableFrom": "processing_activity",
+          "tableTo": "membership",
+          "columnsFrom": [
+            "review_owner_membership_id"
           ],
           "columnsTo": [
             "id"
@@ -7145,6 +8066,13 @@
           "notNull": true,
           "default": "'{}'::jsonb"
         },
+        "composition": {
+          "name": "composition",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
         "captured_at": {
           "name": "captured_at",
           "type": "timestamp with time zone",
@@ -7451,7 +8379,7 @@
           "name": "tenant_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "subsidiary_id": {
           "name": "subsidiary_id",
@@ -7534,6 +8462,18 @@
         "approver_membership_id": {
           "name": "approver_membership_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approval_status": {
+          "name": "approval_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -8387,6 +9327,31 @@
           "notNull": true,
           "default": "'new'"
         },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "asset_id": {
+          "name": "asset_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "due_date": {
+          "name": "due_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sla_status": {
+          "name": "sla_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ok'"
+        },
         "triage_note": {
           "name": "triage_note",
           "type": "text",
@@ -8456,6 +9421,19 @@
           "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "security_alert_asset_id_asset_id_fk": {
+          "name": "security_alert_asset_id_asset_id_fk",
+          "tableFrom": "security_alert",
+          "tableTo": "asset",
+          "columnsFrom": [
+            "asset_id"
           ],
           "columnsTo": [
             "id"
@@ -9132,6 +10110,143 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.task": {
+      "name": "task",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'open'"
+        },
+        "assignee_membership_id": {
+          "name": "assignee_membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "due_date": {
+          "name": "due_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "task_entity_idx": {
+          "name": "task_entity_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "task_tenant_id_tenant_id_fk": {
+          "name": "task_tenant_id_tenant_id_fk",
+          "tableFrom": "task",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "task_assignee_membership_id_membership_id_fk": {
+          "name": "task_assignee_membership_id_membership_id_fk",
+          "tableFrom": "task",
+          "tableTo": "membership",
+          "columnsFrom": [
+            "assignee_membership_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.tenant": {
       "name": "tenant",
       "schema": "",
@@ -9240,6 +10355,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "memory": {
+          "name": "memory",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -9319,6 +10440,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'manual'"
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "connector_id": {
           "name": "connector_id",
@@ -9791,6 +10918,12 @@
           "notNull": true,
           "default": "'pending'"
         },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -9827,6 +10960,80 @@
         "trust_access_request_trust_center_id_trust_center_id_fk": {
           "name": "trust_access_request_trust_center_id_trust_center_id_fk",
           "tableFrom": "trust_access_request",
+          "tableTo": "trust_center",
+          "columnsFrom": [
+            "trust_center_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.trust_activity": {
+      "name": "trust_activity",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "trust_center_id": {
+          "name": "trust_center_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "detail": {
+          "name": "detail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "trust_activity_tc_idx": {
+          "name": "trust_activity_tc_idx",
+          "columns": [
+            {
+              "expression": "trust_center_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "trust_activity_trust_center_id_trust_center_id_fk": {
+          "name": "trust_activity_trust_center_id_trust_center_id_fk",
+          "tableFrom": "trust_activity",
           "tableTo": "trust_center",
           "columnsFrom": [
             "trust_center_id"
@@ -10495,6 +11702,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "asset_id": {
+          "name": "asset_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "cve": {
           "name": "cve",
           "type": "text",
@@ -10582,6 +11795,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "vulnerability_asset_idx": {
+          "name": "vulnerability_asset_idx",
+          "columns": [
+            {
+              "expression": "asset_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -10591,6 +11819,19 @@
           "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vulnerability_asset_id_asset_id_fk": {
+          "name": "vulnerability_asset_id_asset_id_fk",
+          "tableFrom": "vulnerability",
+          "tableTo": "asset",
+          "columnsFrom": [
+            "asset_id"
           ],
           "columnsTo": [
             "id"

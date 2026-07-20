@@ -136,7 +136,9 @@
     "assetsNav": "Assets",
     "roadmap": "Roadmap",
     "ssoSettings": "SSO",
-    "security": "Security"
+    "security": "Security",
+    "auditors": "Auditors",
+    "auditorView": "Auditor view"
   },
   "engagements": {
     "title": "Engagements",
@@ -152,7 +154,14 @@
     "modes": {
       "formal": "Formal",
       "light": "Light"
-    }
+    },
+    "createTitle": "Create engagement",
+    "titlePh": "e.g. IT General Controls 2026",
+    "none": "—",
+    "periodStart": "Period from",
+    "periodEnd": "Period to",
+    "createSubmit": "Create",
+    "createError": "Could not create"
   },
   "engagementDetail": {
     "back": "All engagements",
@@ -1492,7 +1501,9 @@
       "assets": "IT asset inventory: systems, databases, cloud services with owners and sources.",
       "roadmap": "Implementation roadmap: phases, target dates, progress from tests.",
       "sso-settings": "Connect your own identity provider (OIDC/SAML) per tenant.",
-      "security": "Manage your 2FA and personal account security."
+      "security": "Manage your 2FA and personal account security.",
+      "auditors": "Manage external auditors.",
+      "auditor-view": "Review evidence and record verdicts."
     },
     "details": {
       "account": [
@@ -1734,6 +1745,16 @@
         "Click Enable 2FA and scan the QR with an authenticator app",
         "Enter the 6-digit code to confirm",
         "Save the recovery codes — shown only once"
+      ],
+      "auditors": [
+        "Invite an auditor by email with a role",
+        "Pick subsidiaries in scope (or leave empty for the whole group)",
+        "Set an access window and revoke access when done"
+      ],
+      "auditor-view": [
+        "Select an audit",
+        "Review evidence and set a status; record a verdict per finding",
+        "Request documents and accept what the client provides"
       ]
     },
     "long": {
@@ -1788,7 +1809,9 @@
       "assets": "The asset inventory lists every IT asset in scope — ERP systems, databases, network devices, applications, cloud services and endpoints. Each asset shows its owner and where it came from: created manually or discovered automatically through a connector. Assets can be tagged in bulk (e.g. to mark PCI or SOX scope) and the whole inventory exports to CSV for auditors. Assets are projected into the Audit Universe, so risks can be linked to them.",
       "roadmap": "The roadmap turns each activated framework into a phased implementation plan — Setup, Policies, Remediation, Audit — with progress computed from live data (control coverage, approved policies, closed findings, passing tests). Set an audit-ready target date and the roadmap flags whether you are on or off track. Use it to see, at a glance, how close each standard is to being audit-ready.",
       "sso-settings": "Configure single sign-on for this tenant: choose OIDC or SAML, set the email domain, issuer/metadata URL, client ID and secret. The secret is stored encrypted and never shown again. Use this when your organization runs its own identity provider and wants employees to sign in with corporate credentials.",
-      "security": "Personal security settings. Enable two-factor authentication (2FA): scan a QR with an authenticator app, confirm a code, and save one-time recovery codes. Disabling requires a current code. 2FA adds a second step at sign-in on top of your password or magic link."
+      "security": "Personal security settings. Enable two-factor authentication (2FA): scan a QR with an authenticator app, confirm a code, and save one-time recovery codes. Disabling requires a current code. 2FA adds a second step at sign-in on top of your password or magic link.",
+      "auditors": "Invite external auditors by email, scope them to specific subsidiaries, set a time-boxed access window, and revoke access. Also lists internal members and MSPs by category.",
+      "auditor-view": "The auditor storefront for a selected audit: review evidence with statuses, record auditor assessments with rounds, and request documents from the client (PBC)."
     }
   },
   "tour": {
@@ -2212,5 +2235,90 @@
     "teamTitle": "Team MFA compliance",
     "teamCount": "{enabled} of {total} members have MFA enabled.",
     "off": "Off"
+  },
+  "auditors": {
+    "title": "Auditors",
+    "subtitle": "Invite external auditors, scope them to subsidiaries, set access windows, and revoke access.",
+    "addAuditor": "Add your auditor",
+    "email": "Email",
+    "emailPh": "auditor@firm.com",
+    "role": "Role",
+    "scope": "Subsidiaries in scope",
+    "scopeHint": "Leave empty to grant access to the whole group.",
+    "invite": "Send invite",
+    "invited": "Invited",
+    "inviteError": "Could not invite",
+    "externalAuditors": "External auditors",
+    "noExternal": "No external auditors yet",
+    "accessFrom": "Access from",
+    "accessUntil": "Access until",
+    "saveWindow": "Save window",
+    "windowHint": "Empty = no time limit",
+    "revoke": "Revoke",
+    "roster": "Organization & MSP",
+    "empty": "No members yet",
+    "name": "Name",
+    "category": "Category",
+    "status": "Status",
+    "allSubsidiaries": "All subsidiaries",
+    "noSubsidiaries": "No subsidiaries",
+    "st": {
+      "active": "Active",
+      "invited": "Invited",
+      "revoked": "Revoked"
+    },
+    "cat": {
+      "auditor": "Internal auditor",
+      "respondent": "Respondent",
+      "msp": "MSP",
+      "external_auditor": "External auditor"
+    }
+  },
+  "auditorView": {
+    "title": "Auditor view",
+    "subtitle": "Review evidence, record assessments, and request documents from the client for an audit.",
+    "noEngagements": "No audits yet",
+    "selectEngagement": "Select an audit",
+    "requestList": "Document requests",
+    "openCount": "{n} open",
+    "reqTitle": "Request",
+    "reqTitlePh": "e.g. Access review report",
+    "assignee": "Assignee",
+    "anyone": "Anyone",
+    "createRequest": "Request",
+    "created": "Request created",
+    "reqError": "Could not create request",
+    "noRequests": "No requests yet",
+    "status": "Status",
+    "accept": "Accept",
+    "req": {
+      "requested": "Requested",
+      "provided": "Provided",
+      "accepted": "Accepted"
+    },
+    "evidenceTracker": "Evidence tracker",
+    "noEvidence": "No evidence attached",
+    "evidence": "Evidence",
+    "reviewStatus": "Review status",
+    "setStatus": "Set status",
+    "rev": {
+      "not_ready": "Not ready",
+      "ready": "Ready",
+      "accepted": "Accepted",
+      "flagged": "Flagged",
+      "not_applicable": "N/A"
+    },
+    "assessments": "Auditor assessments",
+    "noFindings": "No findings yet",
+    "notAssessed": "Not assessed",
+    "round": "Round {n}",
+    "notePh": "Note (optional)",
+    "addVerdict": "Add verdict",
+    "assessError": "Could not add",
+    "verdict": {
+      "satisfactory": "Satisfactory",
+      "exception": "Exception",
+      "not_applicable": "N/A"
+    }
   }
 }

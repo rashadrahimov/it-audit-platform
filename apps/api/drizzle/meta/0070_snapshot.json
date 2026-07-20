@@ -1,6 +1,6 @@
 {
-  "id": "4270ac2e-03f1-4d3d-9409-aea024903c97",
-  "prevId": "8d0cbfb4-5500-47bb-9589-3e1cdf0ac83e",
+  "id": "e4ccefeb-57e2-4c5c-8685-fec3bbc40a50",
+  "prevId": "4270ac2e-03f1-4d3d-9409-aea024903c97",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -4168,6 +4168,131 @@
           "tableTo": "audit_type",
           "columnsFrom": [
             "audit_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.engagement_member": {
+      "name": "engagement_member",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "engagement_id": {
+          "name": "engagement_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "membership_id": {
+          "name": "membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "engagement_role": {
+          "name": "engagement_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stage_permissions": {
+          "name": "stage_permissions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "engagement_member_unique_idx": {
+          "name": "engagement_member_unique_idx",
+          "columns": [
+            {
+              "expression": "engagement_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "membership_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "engagement_member_tenant_id_tenant_id_fk": {
+          "name": "engagement_member_tenant_id_tenant_id_fk",
+          "tableFrom": "engagement_member",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "engagement_member_engagement_id_engagement_id_fk": {
+          "name": "engagement_member_engagement_id_engagement_id_fk",
+          "tableFrom": "engagement_member",
+          "tableTo": "engagement",
+          "columnsFrom": [
+            "engagement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "engagement_member_membership_id_membership_id_fk": {
+          "name": "engagement_member_membership_id_membership_id_fk",
+          "tableFrom": "engagement_member",
+          "tableTo": "membership",
+          "columnsFrom": [
+            "membership_id"
           ],
           "columnsTo": [
             "id"

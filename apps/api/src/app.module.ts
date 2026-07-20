@@ -11,6 +11,7 @@ import { AssetsModule } from './assets/assets.module';
 import { AuditModule } from './audit/audit.module';
 import { AuditProgramsModule } from './audit-programs/audit-programs.module';
 import { AuditTypesModule } from './audit-types/audit-types.module';
+import { AuditorAssessmentsModule } from './auditor-assessments/auditor-assessments.module';
 import { AuthModule } from './auth/auth.module';
 import { SsoConfigModule } from './auth/sso-config.module';
 import { ChangesModule } from './changes/changes.module';
@@ -31,6 +32,7 @@ import { InfraHealthController } from './infra-health.controller';
 import { InfraHealthService } from './infra-health.service';
 import { EmailModule } from './email/email.module';
 import { EngagementsModule } from './engagements/engagements.module';
+import { EvidenceRequestsModule } from './evidence-requests/evidence-requests.module';
 import { FieldPermissionsModule } from './field-permissions/field-permissions.module';
 import { FilesModule } from './files/files.module';
 import { FindingsModule } from './findings/findings.module';
@@ -90,6 +92,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     AuditModule,
     AuditProgramsModule,
     AuditTypesModule,
+    AuditorAssessmentsModule,
     AuthModule,
     SsoConfigModule,
     ChangesModule,
@@ -107,6 +110,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     DocumentsModule,
     EmailModule,
     EngagementsModule,
+    EvidenceRequestsModule,
     FieldPermissionsModule,
     FilesModule,
     FindingsModule,

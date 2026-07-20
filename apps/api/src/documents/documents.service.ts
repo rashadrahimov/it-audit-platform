@@ -1,9 +1,24 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import type { EvidenceReviewStatus } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { document, documentLink, membership, user } from '../db/schema';
+import {
+  checklistItem,
+  document,
+  documentLink,
+  engagement,
+  membership,
+  response,
+  user,
+} from '../db/schema';
+import { resolveActorCategory, resolveAuditorScope } from '../rbac/auditor-scope';
 import { FileStorageService, type StoredObject } from '../files/file-storage.service';
 
 /** Известные цели привязки; целостность полиморфизма — на уровне сервиса (data-model §10.5). */
@@ -343,8 +358,65 @@ export class DocumentsService {
     return result;
   }
 
-  /** Документы сущности (через привязки), новые сверху; с owner-именем (T-V44). */
-  async listFor(tenantId: string, entityType: string, entityId: string) {
+  /**
+   * T-111: дочка сущности, к которой привязан документ, — для scoped Auditor View.
+   * Прослеживает evidence-путь response→checklist_item→engagement→subsidiary.
+   * Возвращает null для глобальных/библиотечных целей (control/framework/…) —
+   * их скоуп не режет; для несуществующей сущности — тоже null.
+   */
+  private async entitySubsidiary(
+    tenantId: string,
+    entityType: string,
+    entityId: string,
+  ): Promise<{ subsidiaryId: string | null; subsidiaryBound: boolean }> {
+    if (entityType === 'subsidiary') return { subsidiaryId: entityId, subsidiaryBound: true };
+    if (entityType === 'engagement') {
+      const [e] = await this.dbService.withTenant(tenantId, (tx) =>
+        tx
+          .select({ s: engagement.subsidiaryId })
+          .from(engagement)
+          .where(eq(engagement.id, entityId)),
+      );
+      return { subsidiaryId: e?.s ?? null, subsidiaryBound: true };
+    }
+    if (entityType === 'checklist_item') {
+      const [ci] = await this.dbService.withTenant(tenantId, (tx) =>
+        tx
+          .select({ s: engagement.subsidiaryId })
+          .from(checklistItem)
+          .innerJoin(engagement, eq(checklistItem.engagementId, engagement.id))
+          .where(eq(checklistItem.id, entityId)),
+      );
+      return { subsidiaryId: ci?.s ?? null, subsidiaryBound: true };
+    }
+    if (entityType === 'response') {
+      const [r] = await this.dbService.withTenant(tenantId, (tx) =>
+        tx
+          .select({ s: engagement.subsidiaryId })
+          .from(response)
+          .innerJoin(checklistItem, eq(response.checklistItemId, checklistItem.id))
+          .innerJoin(engagement, eq(checklistItem.engagementId, engagement.id))
+          .where(eq(response.id, entityId)),
+      );
+      return { subsidiaryId: r?.s ?? null, subsidiaryBound: true };
+    }
+    // control/framework/policy/… — не привязаны к дочке: библиотека/глобальные.
+    return { subsidiaryId: null, subsidiaryBound: false };
+  }
+
+  async listFor(tenantId: string, userId: string, entityType: string, entityId: string) {
+    // T-111: внешний аудитор со scope не видит документы сущностей вне своих дочек.
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
+    if (scope !== null) {
+      const { subsidiaryId, subsidiaryBound } = await this.entitySubsidiary(
+        tenantId,
+        entityType,
+        entityId,
+      );
+      if (subsidiaryBound && (subsidiaryId === null || !scope.includes(subsidiaryId))) {
+        return [];
+      }
+    }
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
@@ -355,6 +427,8 @@ export class DocumentsService {
           sha256: document.sha256,
           version: document.version,
           relation: documentLink.relation,
+          linkId: documentLink.id,
+          reviewStatus: documentLink.reviewStatus,
           renewBy: document.renewBy,
           status: document.status,
           category: document.category,
@@ -381,9 +455,67 @@ export class DocumentsService {
     }));
   }
 
+  /**
+   * T-112: аудитор проставляет review-статус доказательства (evidence tracker).
+   * Ревьюит только аудитор (category auditor/external_auditor) — capability
+   * ортогональна RBAC (как approver политик, T-052). Внешний аудитор — только
+   * в пределах своего scope.
+   */
+  async setReviewStatus(
+    actor: { tenantId: string; userId: string; ip?: string | null },
+    linkId: string,
+    reviewStatus: EvidenceReviewStatus,
+  ) {
+    const category = await resolveActorCategory(this.dbService, actor.tenantId, actor.userId);
+    if (category !== 'auditor' && category !== 'external_auditor') {
+      throw new ForbiddenException('Ревьюить доказательства может только аудитор');
+    }
+    const [link] = await this.dbService.withTenant(actor.tenantId, (tx) =>
+      tx
+        .select({
+          id: documentLink.id,
+          entityType: documentLink.entityType,
+          entityId: documentLink.entityId,
+          reviewStatus: documentLink.reviewStatus,
+        })
+        .from(documentLink)
+        .innerJoin(document, eq(documentLink.documentId, document.id))
+        .where(eq(documentLink.id, linkId)),
+    );
+    if (!link) throw new NotFoundException('Привязка документа не найдена');
+
+    const scope = await resolveAuditorScope(this.dbService, actor.tenantId, actor.userId);
+    if (scope !== null) {
+      const { subsidiaryId, subsidiaryBound } = await this.entitySubsidiary(
+        actor.tenantId,
+        link.entityType,
+        link.entityId,
+      );
+      if (subsidiaryBound && (subsidiaryId === null || !scope.includes(subsidiaryId))) {
+        throw new ForbiddenException('Доказательство вне вашего scope');
+      }
+    }
+
+    await this.dbService.withTenant(actor.tenantId, (tx) =>
+      tx.update(documentLink).set({ reviewStatus }).where(eq(documentLink.id, linkId)),
+    );
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'document_link.review_status_changed',
+      entityType: 'document_link',
+      entityId: linkId,
+      before: { reviewStatus: link.reviewStatus },
+      after: { reviewStatus },
+    });
+    return { id: linkId, reviewStatus };
+  }
+
   /** Авторизованное скачивание: метаданные под RLS, тело — из S3. */
   async content(
     tenantId: string,
+    userId: string,
     documentId: string,
   ): Promise<{ filename: string; stored: StoredObject }> {
     const [doc] = await this.dbService.withTenant(tenantId, (tx) =>
@@ -393,12 +525,48 @@ export class DocumentsService {
         .where(and(eq(document.id, documentId), isNull(document.deletedAt))),
     );
     if (!doc) throw new NotFoundException(`Документ ${documentId} не найден`);
+    // T-122: скачивание по ID режется auditor-scope так же, как список (T-111).
+    // Внешний аудитор со scope качает документ, только если он привязан к
+    // видимой ему сущности (дочка в scope или библиотечная/глобальная).
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
+    if (scope !== null && !(await this.documentVisibleInScope(tenantId, documentId, scope))) {
+      throw new NotFoundException(`Документ ${documentId} не найден`);
+    }
     if (doc.status === 'needs_document' || !doc.storageKey) {
       throw new BadRequestException('Файл ещё не загружен (needs_document)');
     }
     const stored = await this.storage.get(doc.storageKey);
     if (!stored) throw new NotFoundException('Файл отсутствует в хранилище');
     return { filename: doc.filename, stored };
+  }
+
+  /**
+   * T-122: виден ли документ внешнему аудитору со scope. Документ виден, если
+   * хотя бы одна его привязка ведёт к библиотечной/глобальной сущности
+   * (`subsidiaryBound=false`, видна всем) ИЛИ к дочке в scope. Без привязок или
+   * только к дочкам вне scope — не виден.
+   */
+  private async documentVisibleInScope(
+    tenantId: string,
+    documentId: string,
+    scope: string[],
+  ): Promise<boolean> {
+    const links = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ entityType: documentLink.entityType, entityId: documentLink.entityId })
+        .from(documentLink)
+        .where(eq(documentLink.documentId, documentId)),
+    );
+    for (const link of links) {
+      const { subsidiaryId, subsidiaryBound } = await this.entitySubsidiary(
+        tenantId,
+        link.entityType,
+        link.entityId,
+      );
+      if (!subsidiaryBound) return true;
+      if (subsidiaryId !== null && scope.includes(subsidiaryId)) return true;
+    }
+    return false;
   }
 
   private validateLink(link: LinkInput): void {

@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { z } from 'zod';
-import { localeSchema } from '@it-audit/shared';
+import { localeSchema, membershipCategorySchema } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
@@ -20,6 +20,9 @@ const inviteSchema = z.object({
   roleId: z.uuid(),
   isAuditSeat: z.boolean().optional().default(false),
   locale: localeSchema.optional().default('en'),
+  // T-108: категория стороны + scoped-доступ (внешний аудитор видит только эти дочки).
+  category: membershipCategorySchema.optional().default('auditor'),
+  subsidiaryScope: z.array(z.uuid()).nullable().optional(),
 });
 
 const acceptSchema = z.object({

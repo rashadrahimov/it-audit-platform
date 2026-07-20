@@ -136,7 +136,9 @@
     "assetsNav": "Aktivlər",
     "roadmap": "Yol xəritəsi",
     "ssoSettings": "SSO",
-    "security": "Təhlükəsizlik"
+    "security": "Təhlükəsizlik",
+    "auditors": "Auditorlar",
+    "auditorView": "Auditor görünüşü"
   },
   "engagements": {
     "title": "Auditlər",
@@ -152,7 +154,14 @@
     "modes": {
       "formal": "Formal",
       "light": "Yüngül"
-    }
+    },
+    "createTitle": "Audit yarat",
+    "titlePh": "məs. Ümumi İT nəzarətləri 2026",
+    "none": "—",
+    "periodStart": "Dövr başı",
+    "periodEnd": "Dövr sonu",
+    "createSubmit": "Yarat",
+    "createError": "Yaradıla bilmədi"
   },
   "engagementDetail": {
     "back": "Bütün auditlər",
@@ -1492,7 +1501,9 @@
       "assets": "İT aktivləri inventarı: sistemlər, verilənlər bazaları, bulud xidmətləri — sahiblər və mənbələrlə.",
       "roadmap": "Tətbiq yol xəritəsi: fazalar, hədəf tarixlər, testlərdən irəliləyiş.",
       "sso-settings": "Tenant üçün öz IdP-nizi (OIDC/SAML) qoşun.",
-      "security": "2FA və hesab təhlükəsizliyinizi idarə edin."
+      "security": "2FA və hesab təhlükəsizliyinizi idarə edin.",
+      "auditors": "Xarici auditorların idarəsi.",
+      "auditor-view": "Sübutların baxışı və verdiktlər."
     },
     "details": {
       "account": [
@@ -1742,6 +1753,16 @@
         "«2FA-nı aktiv et» düyməsini basın və QR-ı skan edin",
         "Təsdiq üçün 6 rəqəmli kodu daxil edin",
         "Bərpa kodlarını saxlayın — yalnız bir dəfə göstərilir"
+      ],
+      "auditors": [
+        "Auditoru rol ilə e-poçtla dəvət edin",
+        "Əhatə üçün törəmələri seçin (və ya bütün qrup üçün boş buraxın)",
+        "Giriş pəncərəsi təyin edin və bitəndə girişi ləğv edin"
+      ],
+      "auditor-view": [
+        "Audit seçin",
+        "Sübutları nəzərdən keçirin və status təyin edin; tapıntı üzrə verdikt qeyd edin",
+        "Sənəd tələb edin və müştərinin təqdim etdiyini qəbul edin"
       ]
     },
     "long": {
@@ -1796,7 +1817,9 @@
       "assets": "Aktiv inventarı əhatə dairəsindəki bütün İT aktivlərini göstərir — ERP sistemləri, verilənlər bazaları, şəbəkə qurğuları, tətbiqlər, bulud xidmətləri və son nöqtələr. Hər aktivin sahibi və mənbəyi görünür: əl ilə yaradılıb və ya konnektor vasitəsilə avtomatik aşkarlanıb. Aktivləri toplu şəkildə teqləmək (məs. PCI və ya SOX əhatəsini işarələmək) və bütün inventarı auditorlar üçün CSV-yə ixrac etmək olar. Aktivlər Audit Universe-ə proyeksiya olunur və risklərlə əlaqələndirilə bilər.",
       "roadmap": "Yol xəritəsi hər aktivləşdirilmiş çərçivəni fazalı tətbiq planına çevirir — Quraşdırma, Siyasətlər, Aradan qaldırma, Audit — irəliləyiş canlı məlumatlardan hesablanır (nəzarət əhatəsi, təsdiqlənmiş siyasətlər, bağlanmış findinqlər, keçən testlər). Audit hazırlığı hədəf tarixi təyin edin və yol xəritəsi qrafikdə olub-olmadığınızı göstərir.",
       "sso-settings": "Bu tenant üçün vahid girişi konfiqurasiya edin: OIDC və ya SAML seçin, e-poçt domenini, issuer/metadata URL, client ID və secret təyin edin. Secret şifrələnmiş saxlanılır və bir daha göstərilmir. Təşkilatınızın öz kimlik provayderi olduqda və işçilər korporativ hesab məlumatları ilə daxil olduqda istifadə edin.",
-      "security": "Şəxsi təhlükəsizlik parametrləri. İki faktorlu autentifikasiyanı (2FA) aktiv edin: QR-ı autentifikator tətbiqi ilə skan edin, kodu təsdiqləyin və birdəfəlik bərpa kodlarını saxlayın. Söndürmək üçün cari kod lazımdır."
+      "security": "Şəxsi təhlükəsizlik parametrləri. İki faktorlu autentifikasiyanı (2FA) aktiv edin: QR-ı autentifikator tətbiqi ilə skan edin, kodu təsdiqləyin və birdəfəlik bərpa kodlarını saxlayın. Söndürmək üçün cari kod lazımdır.",
+      "auditors": "Xarici auditorları e-poçtla dəvət edin, onları konkret törəmələrlə məhdudlaşdırın, vaxt məhdudiyyətli giriş pəncərəsi təyin edin və girişi ləğv edin. Həmçinin daxili iştirakçıları və MSP-ləri kateqoriyalar üzrə göstərir.",
+      "auditor-view": "Seçilmiş audit üçün auditor görünüşü: statuslarla sübutların baxışı, raundlarla auditor qiymətləndirmələri və müştəridən sənəd tələbi (PBC)."
     }
   },
   "tour": {
@@ -2220,5 +2243,90 @@
     "teamTitle": "Komandanın MFA komplayensi",
     "teamCount": "{total} iştirakçıdan {enabled} MFA aktiv edib.",
     "off": "Söndürülüb"
+  },
+  "auditors": {
+    "title": "Auditorlar",
+    "subtitle": "Xarici auditorları dəvət edin, onları törəmə şirkətlərlə məhdudlaşdırın, giriş pəncərəsi təyin edin və girişi ləğv edin.",
+    "addAuditor": "Auditor əlavə et",
+    "email": "E-poçt",
+    "emailPh": "auditor@firm.com",
+    "role": "Rol",
+    "scope": "Əhatə olunan törəmələr",
+    "scopeHint": "Boş buraxsanız — bütün qrupa giriş.",
+    "invite": "Dəvət göndər",
+    "invited": "Dəvət olundu",
+    "inviteError": "Dəvət alınmadı",
+    "externalAuditors": "Xarici auditorlar",
+    "noExternal": "Hələ xarici auditor yoxdur",
+    "accessFrom": "Girişin başlanğıcı",
+    "accessUntil": "Girişin sonu",
+    "saveWindow": "Pəncərəni saxla",
+    "windowHint": "Boş = vaxt limiti yoxdur",
+    "revoke": "Ləğv et",
+    "roster": "Təşkilat və MSP",
+    "empty": "Hələ iştirakçı yoxdur",
+    "name": "Ad",
+    "category": "Kateqoriya",
+    "status": "Status",
+    "allSubsidiaries": "Bütün törəmələr",
+    "noSubsidiaries": "Törəmə yoxdur",
+    "st": {
+      "active": "Aktiv",
+      "invited": "Dəvət olundu",
+      "revoked": "Ləğv edilib"
+    },
+    "cat": {
+      "auditor": "Daxili auditor",
+      "respondent": "Respondent",
+      "msp": "MSP",
+      "external_auditor": "Xarici auditor"
+    }
+  },
+  "auditorView": {
+    "title": "Auditor görünüşü",
+    "subtitle": "Sübutları nəzərdən keçirin, qiymətləndirmələri qeyd edin və audit üçün müştəridən sənəd tələb edin.",
+    "noEngagements": "Hələ audit yoxdur",
+    "selectEngagement": "Audit seçin",
+    "requestList": "Sənəd tələbləri",
+    "openCount": "açıq: {n}",
+    "reqTitle": "Tələb",
+    "reqTitlePh": "məs. Giriş baxışı hesabatı",
+    "assignee": "Məsul",
+    "anyone": "İstənilən",
+    "createRequest": "Tələb et",
+    "created": "Tələb yaradıldı",
+    "reqError": "Tələb yaradıla bilmədi",
+    "noRequests": "Hələ tələb yoxdur",
+    "status": "Status",
+    "accept": "Qəbul et",
+    "req": {
+      "requested": "Tələb olunub",
+      "provided": "Təqdim edilib",
+      "accepted": "Qəbul edilib"
+    },
+    "evidenceTracker": "Sübut izləyicisi",
+    "noEvidence": "Sübut əlavə edilməyib",
+    "evidence": "Sübut",
+    "reviewStatus": "Baxış statusu",
+    "setStatus": "Status təyin et",
+    "rev": {
+      "not_ready": "Hazır deyil",
+      "ready": "Hazır",
+      "accepted": "Qəbul edilib",
+      "flagged": "Qaytarılıb",
+      "not_applicable": "Tətbiq edilmir"
+    },
+    "assessments": "Auditor qiymətləndirmələri",
+    "noFindings": "Hələ tapıntı yoxdur",
+    "notAssessed": "Qiymətləndirilməyib",
+    "round": "Raund {n}",
+    "notePh": "Qeyd (istəyə görə)",
+    "addVerdict": "Verdikt əlavə et",
+    "assessError": "Əlavə edilə bilmədi",
+    "verdict": {
+      "satisfactory": "Qənaətbəxş",
+      "exception": "Kənarlaşma",
+      "not_applicable": "Tətbiq edilmir"
+    }
   }
 }

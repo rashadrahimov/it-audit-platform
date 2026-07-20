@@ -178,13 +178,19 @@ export class FindingsController {
       owner = (await this.findingsService.membershipOf(req.user.sub, req.tenantId)) ?? owner;
       if (!owner) return [];
     }
-    return this.findingsService.list(req.tenantId, parseLocale(localeQuery), engagementId, {
-      status: filterParam(status, 'status'),
-      riskRating: filterParam(riskRating, 'riskRating'),
-      slaStatus: filterParam(slaStatus, 'slaStatus'),
-      ownerMembershipId: owner,
-      tagId: uuidFilterParam(tagId, 'tagId'),
-    });
+    return this.findingsService.list(
+      req.tenantId,
+      req.user.sub,
+      parseLocale(localeQuery),
+      engagementId,
+      {
+        status: filterParam(status, 'status'),
+        riskRating: filterParam(riskRating, 'riskRating'),
+        slaStatus: filterParam(slaStatus, 'slaStatus'),
+        ownerMembershipId: owner,
+        tagId: uuidFilterParam(tagId, 'tagId'),
+      },
+    );
   }
 
   @Get(':id')

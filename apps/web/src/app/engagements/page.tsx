@@ -6,6 +6,7 @@ import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
 import { FilterBar } from '@/components/filter-bar';
 import { filterQuery } from '@/lib/filters';
+import { NewEngagementForm } from './new-engagement-form';
 
 const STATES = [
   'draft',
@@ -31,12 +32,16 @@ interface EngagementRow {
   subsidiary: string;
   auditType: string | null;
 }
-interface AuditTypeOpt {
+interface Subsidiary {
+  id: string;
+  name: string;
+}
+interface AuditType {
   code: string;
   name: string;
 }
 
-/** Список engagement'ов (T-035; ENG-08: переключатель Активные/Архив; T-V44: фильтры type/mode). */
+/** Список engagement'ов (T-035; ENG-08: Активные/Архив; T-V44: фильтры type/mode; T-117: форма создания). */
 export default async function EngagementsPage({
   searchParams,
 }: {
@@ -60,18 +65,21 @@ export default async function EngagementsPage({
   const archived = sp.archived === 'true';
 
   let engagements: EngagementRow[] = [];
-  let auditTypes: AuditTypeOpt[] = [];
+  let subsidiaries: Subsidiary[] = [];
+  let auditTypes: AuditType[] = [];
   if (tenantSlug) {
     const headers = { 'X-Tenant-Slug': tenantSlug };
-    const [res, typesRes] = await Promise.all([
+    const [eRes, sRes, aRes] = await Promise.all([
       apiFetch(
         `/engagements?locale=${locale}${archived ? '&archived=true' : ''}${filterQuery(sp, ['state', 'mode', 'auditTypeCode'])}`,
         { headers },
       ),
+      apiFetch(`/subsidiaries?locale=${locale}`, { headers }),
       apiFetch(`/audit-types?locale=${locale}`, { headers }),
     ]);
-    engagements = res.ok ? await res.json() : [];
-    auditTypes = typesRes.ok ? await typesRes.json() : [];
+    engagements = eRes.ok ? await eRes.json() : [];
+    subsidiaries = sRes.ok ? await sRes.json() : [];
+    auditTypes = aRes.ok ? await aRes.json() : [];
   }
 
   const tabCls = (on: boolean) =>
@@ -92,6 +100,27 @@ export default async function EngagementsPage({
           {t('viewArchived')}
         </Link>
       </nav>
+      {!archived && (
+        <NewEngagementForm
+          subsidiaries={subsidiaries}
+          auditTypes={auditTypes}
+          labels={{
+            create: t('createTitle'),
+            title: t('name'),
+            titlePh: t('titlePh'),
+            subsidiary: t('subsidiary'),
+            auditType: t('auditType'),
+            none: t('none'),
+            mode: t('mode'),
+            formal: t('modes.formal'),
+            light: t('modes.light'),
+            periodStart: t('periodStart'),
+            periodEnd: t('periodEnd'),
+            submit: t('createSubmit'),
+            error: t('createError'),
+          }}
+        />
+      )}
       <FilterBar
         basePath="/engagements"
         sp={sp}

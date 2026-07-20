@@ -164,6 +164,13 @@ export const membership = pgTable(
     subsidiaryScope: jsonb('subsidiary_scope').$type<string[] | null>(),
     /** T-044: департамент member'а (unit придёт с CRUD оргструктуры). */
     departmentId: uuid('department_id'),
+    /**
+     * T-110: окно доступа (time-boxed) — когда участник (внешний аудитор) реально
+     * имеет доступ, отдельно от аудируемого периода engagement. NULL = без границы
+     * (бессрочно). Вне окна resolveAccess отказывает.
+     */
+    dataAccessFrom: timestamp('data_access_from', { withTimezone: true }),
+    dataAccessUntil: timestamp('data_access_until', { withTimezone: true }),
     ...timestamps,
   },
   (table) => [uniqueIndex('membership_user_tenant_idx').on(table.userId, table.tenantId)],
@@ -501,6 +508,35 @@ export const engagementMilestone = pgTable(
 );
 
 /**
+ * T-116 (GEN-08/SCH-02, data-model §5): состав аудит-команды на engagement с
+ * ролью. Роль ограничивает права по стадиям (наша добавка D2: иерархия
+ * assessor/reviewer/approver). Стаффинг по часам — отдельно в resource_allocation.
+ */
+export const engagementMember = pgTable(
+  'engagement_member',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    engagementId: uuid('engagement_id')
+      .notNull()
+      .references(() => engagement.id, { onDelete: 'cascade' }),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id),
+    /** lead | assessor | reviewer | approver | observer */
+    engagementRole: text('engagement_role').notNull(),
+    /** Переопределение прав по стадиям: {stage: 'read-only'|'hidden'|'edit'}. */
+    stagePermissions: jsonb('stage_permissions').$type<Record<string, string> | null>(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('engagement_member_unique_idx').on(table.engagementId, table.membershipId),
+  ],
+);
+
+/**
  * Пункт чеклиста engagement'а (T-036) — СНАПШОТ контроля на момент включения
  * (data-model §10.1): текст копируется, правка библиотеки не меняет выпущенные
  * отчёты. control_id — только origin-ссылка.
@@ -595,12 +631,77 @@ export const documentLink = pgTable(
     entityType: text('entity_type').notNull(),
     entityId: uuid('entity_id').notNull(),
     relation: text('relation').notNull().default('evidence'),
+    /**
+     * T-112: статус review доказательства аудитором (Vanta evidence tracker):
+     * not_ready → ready (auditee готов) → accepted / flagged / not_applicable (вердикт аудитора).
+     */
+    reviewStatus: text('review_status').notNull().default('not_ready'),
     ...timestamps,
   },
   (table) => [
     uniqueIndex('document_link_triple_idx').on(table.documentId, table.entityType, table.entityId),
     index('document_link_entity_idx').on(table.entityType, table.entityId),
   ],
+);
+
+/**
+ * T-113: аудиторская оценка (Auditor Assessment) — вердикт аудитора по пункту
+ * аудита (checklist_item/finding), ОТДЕЛЬНО от самооценки auditee
+ * (response.compliance_status). Append-only лог раундов (round растёт на цель).
+ */
+export const auditorAssessment = pgTable(
+  'auditor_assessment',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    /** checklist_item | finding — пункт аудита, который оценивает аудитор. */
+    targetType: text('target_type').notNull(),
+    targetId: uuid('target_id').notNull(),
+    assessorMembershipId: uuid('assessor_membership_id')
+      .notNull()
+      .references(() => membership.id),
+    /** satisfactory | exception | not_applicable — вердикт аудитора. */
+    verdict: text('verdict').notNull(),
+    note: text('note'),
+    /** Номер раунда оценки по этой цели (растёт при каждой новой оценке). */
+    round: integer('round').notNull().default(1),
+    ...timestamps,
+  },
+  (table) => [index('auditor_assessment_target_idx').on(table.targetType, table.targetId)],
+);
+
+/**
+ * T-114: request list (PBC — provided-by-client). Аудитор запрашивает у клиента
+ * доказательство; auditee прикладывает документ; аудитор принимает.
+ * requested → provided (документ приложен) → accepted (аудитор принял).
+ */
+export const evidenceRequest = pgTable(
+  'evidence_request',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    engagementId: uuid('engagement_id')
+      .notNull()
+      .references(() => engagement.id),
+    title: text('title').notNull(),
+    description: text('description'),
+    /** Аудитор, создавший запрос. */
+    requestedByMembershipId: uuid('requested_by_membership_id')
+      .notNull()
+      .references(() => membership.id),
+    /** Auditee, который должен предоставить (опционально). */
+    assigneeMembershipId: uuid('assignee_membership_id').references(() => membership.id),
+    /** Приложенный документ-доказательство (после provide). */
+    documentId: uuid('document_id').references(() => document.id),
+    status: text('status').notNull().default('requested'),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('evidence_request_engagement_idx').on(table.engagementId)],
 );
 
 /**

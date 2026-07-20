@@ -1,6 +1,17 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and, asc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
-import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
+import {
+  engagementRoleSchema,
+  resolveLocalized,
+  type EngagementRole,
+  type I18nText,
+  type Locale,
+} from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import {
@@ -9,6 +20,7 @@ import {
   control,
   controlDomain,
   engagement,
+  engagementMember,
   engagementMilestone,
   finding,
   membership,
@@ -17,6 +29,7 @@ import {
   user,
 } from '../db/schema';
 import type { ComplianceStatus } from '@it-audit/shared';
+import { assertSubsidiaryInAuditorScope, resolveAuditorScope } from '../rbac/auditor-scope';
 import { suggestFindings } from './finding-suggest';
 import {
   allowedTransitions,
@@ -24,6 +37,7 @@ import {
   ENGAGEMENT_FLOW,
   type EngagementMode,
 } from './engagement-states';
+import { memberTransitionDenial, transitionDenialMessage } from './engagement-stage-permissions';
 
 export interface CreateEngagementInput {
   subsidiaryId: string;
@@ -116,6 +130,43 @@ export class EngagementsService {
         .from(engagement)
         .where(and(eq(engagement.id, id), isNull(engagement.deletedAt)));
       if (!row) throw new NotFoundException(`Engagement ${id} не найден`);
+      // T-116/T-123: постадийные права члена команды. Актор, состоящий в составе
+      // engagement, ограничен ролью + stage_permissions при движении state-machine
+      // (observer не двигает; sign-off — только lead/approver; явные override поверх).
+      // Не-члены с RBAC engagement.edit не ограничиваются (обратная совместимость).
+      {
+        const [me] = await tx
+          .select({ id: membership.id })
+          .from(membership)
+          .where(
+            and(
+              eq(membership.userId, actor.userId),
+              eq(membership.tenantId, actor.tenantId),
+              eq(membership.status, 'active'),
+            ),
+          );
+        if (me) {
+          const [em] = await tx
+            .select({
+              role: engagementMember.engagementRole,
+              stagePermissions: engagementMember.stagePermissions,
+            })
+            .from(engagementMember)
+            .where(
+              and(eq(engagementMember.engagementId, id), eq(engagementMember.membershipId, me.id)),
+            );
+          if (em) {
+            const denial = memberTransitionDenial(
+              em.role as EngagementRole,
+              em.stagePermissions,
+              to,
+            );
+            if (denial) {
+              throw new ForbiddenException(transitionDenialMessage(denial, em.role, to));
+            }
+          }
+        }
+      }
       if (!canTransition(row.mode as EngagementMode, row.state, to, row.pausedFromState)) {
         throw new BadRequestException(
           `Переход ${row.state} → ${to} недопустим в режиме ${row.mode}`,
@@ -282,16 +333,22 @@ export class EngagementsService {
   /** ENG-08: активный список исключает архивные (archivedAt); archived=true — только архивные. */
   async list(
     tenantId: string,
+    userId: string,
     locale: Locale,
     auditTypeCode?: string,
     archived = false,
     filters?: { state?: string; subsidiaryId?: string; mode?: string },
   ) {
+    // T-111: внешний аудитор со scope видит engagement'ы только своих дочек.
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
     const rows = await this.dbService.withTenant(tenantId, (tx) => {
       const conds = [
         isNull(engagement.deletedAt),
         archived ? isNotNull(engagement.archivedAt) : isNull(engagement.archivedAt),
       ];
+      if (scope !== null) {
+        conds.push(scope.length === 0 ? sql`false` : inArray(engagement.subsidiaryId, scope));
+      }
       if (auditTypeCode) conds.push(eq(auditType.code, auditTypeCode));
       if (filters?.state) conds.push(eq(engagement.state, filters.state));
       if (filters?.mode) conds.push(eq(engagement.mode, filters.mode));
@@ -322,7 +379,7 @@ export class EngagementsService {
     }));
   }
 
-  async detail(tenantId: string, id: string, locale: Locale) {
+  async detail(tenantId: string, userId: string, id: string, locale: Locale) {
     const data = await this.dbService.withTenant(tenantId, async (tx) => {
       const [row] = await tx
         .select()
@@ -363,6 +420,9 @@ export class EngagementsService {
         : [];
       return { row, sub, type, milestones, checklist, responses };
     });
+
+    // T-122: чтение по ID режется auditor-scope так же, как список (T-111).
+    await assertSubsidiaryInAuditorScope(this.dbService, tenantId, userId, data.row.subsidiaryId);
 
     const stageOrder = (s: string): number => {
       const i = ENGAGEMENT_FLOW.indexOf(s as (typeof ENGAGEMENT_FLOW)[number]);
@@ -585,5 +645,104 @@ export class EngagementsService {
       after: { source: id, ...created },
     });
     return created;
+  }
+
+  // --- T-116: состав аудит-команды на engagement (engagement_member) ---
+
+  /** Назначить участника на engagement с ролью (upsert по engagement+membership). */
+  async assignMember(
+    actor: Actor,
+    engagementId: string,
+    input: {
+      membershipId: string;
+      engagementRole: string;
+      stagePermissions?: Record<string, string> | null;
+    },
+  ) {
+    const role = engagementRoleSchema.safeParse(input.engagementRole);
+    if (!role.success) {
+      throw new BadRequestException('engagementRole: lead|assessor|reviewer|approver|observer');
+    }
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [eng] = await tx
+        .select({ id: engagement.id })
+        .from(engagement)
+        .where(and(eq(engagement.id, engagementId), isNull(engagement.deletedAt)));
+      if (!eng) throw new NotFoundException(`Engagement ${engagementId} не найден`);
+      const [m] = await tx
+        .select({ id: membership.id })
+        .from(membership)
+        .where(and(eq(membership.id, input.membershipId), eq(membership.tenantId, actor.tenantId)));
+      if (!m) throw new BadRequestException('membershipId не найден в тенанте');
+      const [row] = await tx
+        .insert(engagementMember)
+        .values({
+          tenantId: actor.tenantId,
+          engagementId,
+          membershipId: input.membershipId,
+          engagementRole: role.data,
+          stagePermissions: input.stagePermissions ?? null,
+        })
+        .onConflictDoUpdate({
+          target: [engagementMember.engagementId, engagementMember.membershipId],
+          set: { engagementRole: role.data, stagePermissions: input.stagePermissions ?? null },
+        })
+        .returning();
+      return row!;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'engagement.member_assigned',
+      entityType: 'engagement_member',
+      entityId: created.id,
+      after: { engagementId, membershipId: input.membershipId, engagementRole: role.data },
+    });
+    return { id: created.id, engagementRole: created.engagementRole };
+  }
+
+  /** Состав команды engagement с именами и ролями. */
+  async listMembers(tenantId: string, engagementId: string) {
+    return this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          id: engagementMember.id,
+          membershipId: engagementMember.membershipId,
+          engagementRole: engagementMember.engagementRole,
+          stagePermissions: engagementMember.stagePermissions,
+          fullName: user.fullName,
+          email: user.email,
+        })
+        .from(engagementMember)
+        .innerJoin(membership, eq(engagementMember.membershipId, membership.id))
+        .innerJoin(user, eq(membership.userId, user.id))
+        .where(eq(engagementMember.engagementId, engagementId))
+        .orderBy(asc(user.fullName)),
+    );
+  }
+
+  /** Снять участника с engagement. */
+  async removeMember(actor: Actor, engagementId: string, memberId: string) {
+    const removed = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .delete(engagementMember)
+        .where(
+          and(eq(engagementMember.id, memberId), eq(engagementMember.engagementId, engagementId)),
+        )
+        .returning();
+      return row;
+    });
+    if (!removed) throw new NotFoundException('Член команды не найден');
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'engagement.member_removed',
+      entityType: 'engagement_member',
+      entityId: memberId,
+      before: { membershipId: removed.membershipId, engagementRole: removed.engagementRole },
+    });
+    return { id: memberId };
   }
 }
