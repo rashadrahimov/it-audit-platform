@@ -512,6 +512,13 @@
       "when": 1784506617397,
       "tag": "0072_control-mapping-tenant-fw",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1784507436726,
+      "tag": "0073_remediation-task",
+      "breakpoints": true
     }
   ]
 }

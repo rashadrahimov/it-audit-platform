@@ -771,7 +771,8 @@
     "library": "Risk kitabxanası",
     "libraryHint": "Tipik risk ssenariləri — bir kliklə reyestrə əlavə edin; sinif sizin matrisinizlə hesablanır.",
     "addToRegister": "Reyestrə əlavə et",
-    "inRegister": "Reyestrdədir"
+    "inRegister": "Reyestrdədir",
+    "actionTracker": "Fəaliyyət izləyicisi"
   },
   "privacy": {
     "title": "Məxfilik — ROPA və DPIA",
@@ -1608,7 +1609,8 @@
     },
     "templates": "Finding şablonları",
     "templatesHint": "Preset risk və tövsiyə ilə tipik findinqlər — bir klik redaktə edilə bilən finding yaradır.",
-    "useTemplate": "Finding yarat"
+    "useTemplate": "Finding yarat",
+    "tasks": "Aradan qaldırma tapşırıqları"
   },
   "documents": {
     "title": "Sənədlər",
@@ -1771,5 +1773,22 @@
     "applyTag": "Teqi tətbiq et",
     "bulkHint": "Cədvəldə aktivləri seçin, teq adını daxil edin, tətbiq edin.",
     "exportCsv": "CSV ixrac et"
+  },
+  "tasks": {
+    "openCount": "{open} açıq · {total}",
+    "empty": "Hələ tapşırıq yoxdur",
+    "titleLabel": "Tapşırıq",
+    "titlePh": "Aradan qaldırma addımı",
+    "assignee": "İcraçı",
+    "due": "Son tarix",
+    "add": "Tapşırıq əlavə et",
+    "start": "Başla",
+    "complete": "Tamamla",
+    "delete": "Sil",
+    "st": {
+      "open": "Açıq",
+      "in_progress": "İcrada",
+      "done": "Hazır"
+    }
   }
 }

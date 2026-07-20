@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { CommentsSection } from '@/components/comments-section';
+import { TasksSection, type TaskItem } from '@/components/tasks-section';
 import {
   deleteRiskAction,
   linkRiskControlAction,
@@ -84,16 +85,25 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
   if (!res.ok) redirect('/risks');
   const r: RiskDetail = await res.json();
 
-  const [matrixRes, controlsRes, entitiesRes, allControlsRes, universeRes, membersRes, cRes] =
-    await Promise.all([
-      apiFetch('/risks/matrix', { headers }),
-      apiFetch(`/risks/${id}/controls`, { headers }),
-      apiFetch(`/risks/${id}/entities`, { headers }),
-      apiFetch(`/controls?locale=${locale}`, { headers }),
-      apiFetch('/universe', { headers }),
-      apiFetch(`/memberships?locale=${locale}`, { headers }),
-      apiFetch(`/comments?entityType=risk&entityId=${id}`, { headers }),
-    ]);
+  const [
+    matrixRes,
+    controlsRes,
+    entitiesRes,
+    allControlsRes,
+    universeRes,
+    membersRes,
+    cRes,
+    tasksRes,
+  ] = await Promise.all([
+    apiFetch('/risks/matrix', { headers }),
+    apiFetch(`/risks/${id}/controls`, { headers }),
+    apiFetch(`/risks/${id}/entities`, { headers }),
+    apiFetch(`/controls?locale=${locale}`, { headers }),
+    apiFetch('/universe', { headers }),
+    apiFetch(`/memberships?locale=${locale}`, { headers }),
+    apiFetch(`/comments?entityType=risk&entityId=${id}`, { headers }),
+    apiFetch(`/tasks?entityType=risk&entityId=${id}`, { headers }),
+  ]);
   const matrix: Matrix = matrixRes.ok
     ? await matrixRes.json()
     : { impactScale: 5, likelihoodScale: 5, thresholds: { medium: 6, high: 12, critical: 20 } };
@@ -115,6 +125,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
   const comments: Array<{ author: string; body: string; at: string }> = cRes.ok
     ? await cRes.json()
     : [];
+  const tasks: TaskItem[] = tasksRes.ok ? await tasksRes.json() : [];
 
   const linkedControlIds = new Set(linkedControls.map((c) => c.id));
   const linkableControls = allControls.filter((c) => !linkedControlIds.has(c.id));
@@ -380,6 +391,16 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
           </form>
         )}
       </section>
+
+      <TasksSection
+        entityType="risk"
+        entityId={r.id}
+        path={`/risks/${r.id}`}
+        tasks={tasks}
+        members={members}
+        testid="risk-tasks"
+        title={t('actionTracker')}
+      />
 
       <CommentsSection
         entityType="risk"

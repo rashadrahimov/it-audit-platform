@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import { TasksSection, type TaskItem } from '@/components/tasks-section';
 import {
   addFindingCommentAction,
   assignFindingAction,
@@ -75,8 +76,12 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
   const f: FindingDetail = await res.json();
 
   // список участников для assign-формы; у не-админа (403) — форма скрыта
-  const mRes = await apiFetch(`/memberships?locale=${locale}`, { headers });
+  const [mRes, tasksRes] = await Promise.all([
+    apiFetch(`/memberships?locale=${locale}`, { headers }),
+    apiFetch(`/tasks?entityType=finding&entityId=${id}`, { headers }),
+  ]);
   const members: Member[] = mRes.ok ? await mRes.json() : [];
+  const tasks: TaskItem[] = tasksRes.ok ? await tasksRes.json() : [];
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const dateTimeFmt = new Intl.DateTimeFormat(locale, {
@@ -193,6 +198,16 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
           </form>
         )}
       </section>
+
+      <TasksSection
+        entityType="finding"
+        entityId={f.id}
+        path={`/findings/${f.id}`}
+        tasks={tasks}
+        members={members}
+        testid="finding-tasks"
+        title={t('tasks')}
+      />
 
       <section
         className="rounded-xl border border-border bg-white p-4 shadow-sm"

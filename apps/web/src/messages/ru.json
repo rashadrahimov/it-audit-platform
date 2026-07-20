@@ -771,7 +771,8 @@
     "library": "Библиотека рисков",
     "libraryHint": "Типовые risk-сценарии — добавляются в реестр одним кликом; класс считается по вашей матрице.",
     "addToRegister": "В реестр",
-    "inRegister": "В реестре"
+    "inRegister": "В реестре",
+    "actionTracker": "Трекер действий"
   },
   "privacy": {
     "title": "Приватность — ROPA и DPIA",
@@ -1608,7 +1609,8 @@
     },
     "templates": "Шаблоны findings",
     "templatesHint": "Типовые findings с преднастроенным риском и рекомендацией — один клик создаёт редактируемый finding.",
-    "useTemplate": "Создать finding"
+    "useTemplate": "Создать finding",
+    "tasks": "Задачи ремедиации"
   },
   "documents": {
     "title": "Документы",
@@ -1771,5 +1773,22 @@
     "applyTag": "Применить тег",
     "bulkHint": "Отметьте активы в таблице, введите имя тега, примените.",
     "exportCsv": "Экспорт CSV"
+  },
+  "tasks": {
+    "openCount": "{open} открыто · {total}",
+    "empty": "Пока нет задач",
+    "titleLabel": "Задача",
+    "titlePh": "Шаг ремедиации",
+    "assignee": "Исполнитель",
+    "due": "Срок",
+    "add": "Добавить задачу",
+    "start": "Начать",
+    "complete": "Завершить",
+    "delete": "Удалить",
+    "st": {
+      "open": "Открыта",
+      "in_progress": "В работе",
+      "done": "Готова"
+    }
   }
 }

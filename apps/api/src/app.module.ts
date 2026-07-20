@@ -55,6 +55,7 @@ import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
 import { ReportsExportModule } from './reports-export/reports-export.module';
 import { RisksModule } from './risks/risks.module';
+import { TasksModule } from './tasks/tasks.module';
 import { SatisfactionModule } from './satisfaction/satisfaction.module';
 import { SearchModule } from './search/search.module';
 import { SecurityAlertsModule } from './security-alerts/security-alerts.module';
@@ -123,6 +124,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     ReportsModule,
     ReportsExportModule,
     RisksModule,
+    TasksModule,
     SatisfactionModule,
     SearchModule,
     SecurityAlertsModule,

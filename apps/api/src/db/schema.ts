@@ -1313,6 +1313,30 @@ export const tagLink = pgTable(
   (table) => [uniqueIndex('tag_link_triple_idx').on(table.tagId, table.entityType, table.entityId)],
 );
 
+/**
+ * Задача ремедиации (T-V27): полиморфная (entity_type, entity_id) —
+ * finding/risk/control/vendor и т.п. Декомпозиция ремедиации на шаги с
+ * assignee/due/status (open|in_progress|done).
+ */
+export const task = pgTable(
+  'task',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    title: text('title').notNull(),
+    status: text('status').notNull().default('open'),
+    assigneeMembershipId: uuid('assignee_membership_id').references(() => membership.id),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('task_entity_idx').on(table.tenantId, table.entityType, table.entityId)],
+);
+
 /** ROPA — операция обработки ПДн (T-074, GDPR Art. 30, EP-PRIV). */
 export const processingActivity = pgTable(
   'processing_activity',
