@@ -1,0 +1,1 @@
+ALTER TABLE "connector" ADD COLUMN "sync_interval_minutes" integer;

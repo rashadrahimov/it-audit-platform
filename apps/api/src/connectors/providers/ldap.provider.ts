@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Client } from 'ldapts';
-import type { ConnectorProvider, SyncResult } from '../connector-provider';
+import type {
+  ConfigField,
+  ConnectorProvider,
+  SyncResult,
+  TestConnectionResult,
+} from '../connector-provider';
 
 interface LdapConfig {
   url: string;
@@ -44,6 +49,62 @@ const str = (v: unknown): string | null =>
 export class LdapConnectorProvider implements ConnectorProvider {
   readonly provider = 'ldap';
   readonly capabilities = ['personnel', 'access'] as const;
+  readonly label = 'LDAP / Active Directory';
+  readonly description =
+    'Синхронизация сотрудников и учётных записей из локального каталога (LDAP/AD) — без выхода в интернет.';
+  readonly configFields: readonly ConfigField[] = [
+    {
+      key: 'url',
+      label: 'URL сервера',
+      type: 'url',
+      required: true,
+      placeholder: 'ldap://dc.corp.local:389',
+    },
+    {
+      key: 'bindDn',
+      label: 'Bind DN',
+      type: 'text',
+      required: true,
+      placeholder: 'cn=svc,dc=corp,dc=local',
+    },
+    { key: 'bindPassword', label: 'Пароль', type: 'password', required: true, secret: true },
+    {
+      key: 'searchBase',
+      label: 'Search Base',
+      type: 'text',
+      required: true,
+      placeholder: 'ou=people,dc=corp,dc=local',
+    },
+    {
+      key: 'searchFilter',
+      label: 'Search Filter',
+      type: 'text',
+      required: false,
+      placeholder: '(objectClass=person)',
+    },
+  ];
+
+  /** T-V38: bind+unbind без поиска — проверяет доступность сервера и креды. */
+  async testConnection(rawConfig: Record<string, unknown>): Promise<TestConnectionResult> {
+    let config: LdapConfig;
+    try {
+      config = asLdapConfig(rawConfig);
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : String(error) };
+    }
+    const client = new Client({ url: config.url, timeout: 5000, connectTimeout: 5000 });
+    try {
+      await client.bind(config.bindDn, config.bindPassword);
+      return { ok: true, message: `Bind OK: ${config.url}` };
+    } catch (error) {
+      return {
+        ok: false,
+        message: `Не удалось подключиться: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    } finally {
+      await client.unbind().catch(() => undefined);
+    }
+  }
 
   async sync(rawConfig: Record<string, unknown>): Promise<SyncResult> {
     const config = asLdapConfig(rawConfig);

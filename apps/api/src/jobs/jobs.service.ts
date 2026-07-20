@@ -20,10 +20,12 @@ import {
   JOB_SLA_RECALC,
   JOB_WEEKLY_DIGEST,
   JOB_DOCUMENT_SLA,
+  JOB_CONNECTOR_AUTOSYNC,
   SLA_RECALC_EVERY_MS,
   SYSTEM_QUEUE,
   WEEKLY_DIGEST_EVERY_MS,
   DOCUMENT_SLA_EVERY_MS,
+  CONNECTOR_AUTOSYNC_EVERY_MS,
 } from './jobs.constants';
 
 @Injectable()
@@ -73,6 +75,11 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       'document-sla-scheduler',
       { every: DOCUMENT_SLA_EVERY_MS },
       { name: JOB_DOCUMENT_SLA },
+    );
+    await this.queue.upsertJobScheduler(
+      'connector-autosync-scheduler',
+      { every: CONNECTOR_AUTOSYNC_EVERY_MS },
+      { name: JOB_CONNECTOR_AUTOSYNC },
     );
   }
 

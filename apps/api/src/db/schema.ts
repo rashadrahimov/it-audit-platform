@@ -665,6 +665,8 @@ export const connector = pgTable(
     capabilities: jsonb('capabilities').$type<string[]>().notNull().default([]),
     configEncrypted: text('config_encrypted'),
     status: text('status').notNull().default('active'),
+    /** T-V38: интервал автосинка в минутах (null/0 = только ручной запуск). */
+    syncIntervalMinutes: integer('sync_interval_minutes'),
     lastSyncAt: timestamp('last_sync_at', { withTimezone: true }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,

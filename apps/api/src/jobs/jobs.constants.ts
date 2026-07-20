@@ -46,3 +46,9 @@ export const JOB_DOCUMENT_SLA = 'document-sla';
 
 /** SLA документов (T-V02): раз в сутки — просроченный renew_by → overdue + письмо owner'у. */
 export const DOCUMENT_SLA_EVERY_MS = 24 * 60 * 60 * 1000;
+
+export const JOB_CONNECTOR_AUTOSYNC = 'connector-autosync';
+
+/** Автосинк коннекторов (T-V38): тик раз в 5 минут; per-connector интервал решает,
+ * пора ли синкать (isDue). Минимальный пользовательский интервал — тоже 5 минут. */
+export const CONNECTOR_AUTOSYNC_EVERY_MS = 5 * 60 * 1000;

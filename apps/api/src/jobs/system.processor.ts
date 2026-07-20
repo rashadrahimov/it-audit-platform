@@ -1,6 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { env } from '../env';
+import { ConnectorAutoSyncService } from '../connectors/connector-autosync.service';
 import { UsersService } from '../users/users.service';
 import { AutoTestService } from '../tests/auto-test.service';
 import { EmailService } from '../email/email.service';
@@ -21,6 +22,7 @@ import {
   JOB_SLA_RECALC,
   JOB_WEEKLY_DIGEST,
   JOB_DOCUMENT_SLA,
+  JOB_CONNECTOR_AUTOSYNC,
   SYSTEM_QUEUE,
 } from './jobs.constants';
 
@@ -37,6 +39,7 @@ export class SystemProcessor extends WorkerHost {
     private readonly emailService: EmailService,
     private readonly weeklyDigestService: WeeklyDigestService,
     private readonly documentSlaService: DocumentSlaService,
+    private readonly connectorAutoSyncService: ConnectorAutoSyncService,
   ) {
     super();
   }
@@ -85,6 +88,10 @@ export class SystemProcessor extends WorkerHost {
       case JOB_DOCUMENT_SLA: {
         const result = await this.documentSlaService.run();
         return `document-sla: overdue=${result.overdue}, писем=${result.emails}`;
+      }
+      case JOB_CONNECTOR_AUTOSYNC: {
+        const result = await this.connectorAutoSyncService.run();
+        return `connector-autosync: тенантов=${result.tenants}, синков=${result.synced}`;
       }
       default:
         throw new Error(`Неизвестная джоба «${job.name}» в очереди ${SYSTEM_QUEUE}`);

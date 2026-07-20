@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { AuthModule } from '../auth/auth.module';
+import { ConnectorsModule } from '../connectors/connectors.module';
 import { EmailModule } from '../email/email.module';
 import { env } from '../env';
 import { TestsModule } from '../tests/tests.module';
@@ -24,6 +25,7 @@ const redisUrl = new URL(env.redisUrl);
     }),
     BullModule.registerQueue({ name: SYSTEM_QUEUE }),
     AuthModule,
+    ConnectorsModule,
     EmailModule,
     TestsModule,
     UsersModule,

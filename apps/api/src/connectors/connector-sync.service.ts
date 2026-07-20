@@ -4,12 +4,13 @@ import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { connector, syncRun } from '../db/schema';
 import { decryptConfig } from './config-crypto';
-import type { ConnectorProvider, SyncResult } from './connector-provider';
+import type { ConnectorProvider, SyncResult, TestConnectionResult } from './connector-provider';
 import { LdapConnectorProvider } from './providers/ldap.provider';
+import { ManualConnectorProvider } from './providers/manual.provider';
 
 interface Actor {
   tenantId: string;
-  userId: string;
+  userId: string | null;
   ip?: string;
 }
 
@@ -26,8 +27,49 @@ export class ConnectorSyncService {
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
     ldap: LdapConnectorProvider,
+    manual: ManualConnectorProvider,
   ) {
-    for (const p of [ldap]) this.providers.set(p.provider, p);
+    for (const p of [ldap, manual]) this.providers.set(p.provider, p);
+  }
+
+  /** T-V38: каталог провайдеров — метаданные для формы создания/редактирования в UI. */
+  catalog() {
+    return [...this.providers.values()]
+      .map((p) => ({
+        provider: p.provider,
+        label: p.label,
+        description: p.description,
+        capabilities: [...p.capabilities],
+        configFields: p.configFields.map((f) => ({ ...f })),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  /** T-V38: capabilities провайдера по id (для валидации при создании). */
+  providerCapabilities(provider: string): readonly string[] | null {
+    return this.providers.get(provider)?.capabilities ?? null;
+  }
+
+  /**
+   * T-V38: проверка соединения сохранённого коннектора — по сохранённому конфигу.
+   * Никогда не бросает на кред/сетевых ошибках: провайдер возвращает {ok:false, message}.
+   */
+  async testConnection(tenantId: string, connectorId: string): Promise<TestConnectionResult> {
+    const [row] = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select()
+        .from(connector)
+        .where(and(eq(connector.id, connectorId), isNull(connector.deletedAt))),
+    );
+    if (!row) throw new NotFoundException(`Коннектор ${connectorId} не найден`);
+    const provider = this.providers.get(row.provider);
+    if (!provider) return { ok: false, message: `Провайдер «${row.provider}» не поддерживается` };
+    if (!row.configEncrypted) return { ok: false, message: 'У коннектора нет конфига' };
+    try {
+      return await provider.testConnection(decryptConfig(row.configEncrypted));
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : String(error) };
+    }
   }
 
   async run(actor: Actor, connectorId: string) {
