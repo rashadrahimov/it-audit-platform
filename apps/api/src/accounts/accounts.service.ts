@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { ConnectorSyncService } from '../connectors/connector-sync.service';
 import { DbService } from '../db/db.service';
-import { account, connector } from '../db/schema';
+import { account, connector, membership, user } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -97,10 +97,19 @@ export class AccountsService {
   }
 
   async list(tenantId: string) {
+    // T-V07: + owner (оживлено мёртвое поле owner_membership_id)
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx.select().from(account).orderBy(desc(account.createdAt)),
+      tx
+        .select({
+          row: account,
+          owner: user.fullName,
+        })
+        .from(account)
+        .leftJoin(membership, eq(account.ownerMembershipId, membership.id))
+        .leftJoin(user, eq(membership.userId, user.id))
+        .orderBy(desc(account.createdAt)),
     );
-    return rows.map((r) => ({
+    return rows.map(({ row: r, owner }) => ({
       id: r.id,
       identifier: r.identifier,
       displayName: r.displayName,
@@ -108,7 +117,37 @@ export class AccountsService {
       mfaEnabled: r.mfaEnabled,
       status: r.status,
       fromConnector: r.connectorId !== null,
+      ownerMembershipId: r.ownerMembershipId,
+      owner,
     }));
+  }
+
+  /** T-V07: назначить owner аккаунта («Assign accounts to owners» у Vanta). */
+  async setOwner(actor: Actor, id: string, ownerMembershipId: string) {
+    const [m] = await this.dbService.db
+      .select({ id: membership.id })
+      .from(membership)
+      .where(and(eq(membership.id, ownerMembershipId), eq(membership.tenantId, actor.tenantId)));
+    if (!m) throw new BadRequestException('ownerMembershipId: membership не найден в тенанте');
+    const row = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [updated] = await tx
+        .update(account)
+        .set({ ownerMembershipId })
+        .where(eq(account.id, id))
+        .returning();
+      return updated;
+    });
+    if (!row) throw new NotFoundException(`Аккаунт ${id} не найден`);
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'account.owner_changed',
+      entityType: 'account',
+      entityId: id,
+      after: { ownerMembershipId },
+    });
+    return { id, ownerMembershipId };
   }
 
   async deactivate(actor: Actor, id: string) {

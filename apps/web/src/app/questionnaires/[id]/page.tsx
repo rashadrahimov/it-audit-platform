@@ -2,7 +2,12 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
-import { addQuestionAction, answerAction, submitQuestionnaireAction } from './actions';
+import {
+  addQuestionAction,
+  answerAction,
+  submitQuestionnaireAction,
+  useKbSuggestionAction,
+} from './actions';
 import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +25,12 @@ interface QuestionnaireDetail {
   source: string | null;
   status: 'draft' | 'submitted';
   answers: Answer[];
+}
+interface Suggestion {
+  kbEntryId: string;
+  kbQuestion: string;
+  suggestedAnswer: string;
+  score: number;
 }
 
 const inputCls =
@@ -45,6 +56,10 @@ export default async function QuestionnaireDetailPage({
   const q: QuestionnaireDetail = await res.json();
   const allAnswered = q.answers.length > 0 && q.answers.every((a) => a.answer);
   const isDraft = q.status === 'draft';
+
+  // T-V42: детерминированные предложения ответов из KB (без LLM)
+  const sRes = isDraft ? await apiFetch(`/questionnaires/${id}/suggestions`, { headers }) : null;
+  const suggestions: Record<string, Suggestion> = sRes && sRes.ok ? await sRes.json() : {};
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
@@ -87,22 +102,56 @@ export default async function QuestionnaireDetailPage({
             {a.answer ? (
               <p className="text-sm text-secondary">{a.answer}</p>
             ) : isDraft ? (
-              <form action={answerAction} className="flex flex-wrap items-end gap-2">
-                <input type="hidden" name="id" value={q.id} />
-                <input type="hidden" name="answerId" value={a.id} />
-                <input
-                  name="answer"
-                  required
-                  placeholder={t('answerPh')}
-                  className={`flex-1 ${inputCls}`}
-                />
-                <button
-                  type="submit"
-                  className="rounded-md border border-border px-3 py-2 text-sm text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                >
-                  {t('reply')}
-                </button>
-              </form>
+              <div className="flex flex-col gap-2">
+                {suggestions[a.id] && (
+                  <div
+                    data-testid={`suggestion-${a.id}`}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-sky-50 px-3 py-2"
+                  >
+                    <span className="flex flex-col">
+                      <span className="text-xs font-medium text-sky-700">
+                        {t('suggested')} · {t('match')} {Math.round(suggestions[a.id]!.score * 100)}
+                        %
+                      </span>
+                      <span className="text-sm text-foreground">
+                        {suggestions[a.id]!.suggestedAnswer}
+                      </span>
+                    </span>
+                    <form
+                      action={useKbSuggestionAction.bind(
+                        null,
+                        q.id,
+                        a.id,
+                        suggestions[a.id]!.kbEntryId,
+                      )}
+                    >
+                      <button
+                        type="submit"
+                        data-testid={`use-suggestion-${a.id}`}
+                        className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white transition-opacity duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {t('useSuggestion')}
+                      </button>
+                    </form>
+                  </div>
+                )}
+                <form action={answerAction} className="flex flex-wrap items-end gap-2">
+                  <input type="hidden" name="id" value={q.id} />
+                  <input type="hidden" name="answerId" value={a.id} />
+                  <input
+                    name="answer"
+                    required
+                    placeholder={t('answerPh')}
+                    className={`flex-1 ${inputCls}`}
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-md border border-border px-3 py-2 text-sm text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    {t('reply')}
+                  </button>
+                </form>
+              </div>
             ) : (
               <p className="text-sm text-secondary italic">{t('noAnswer')}</p>
             )}

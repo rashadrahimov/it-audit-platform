@@ -3,6 +3,7 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { kbEntry, questionnaire, questionnaireAnswer } from '../db/schema';
+import { suggestKbForQuestion } from './answer-suggest';
 
 interface Actor {
   tenantId: string;
@@ -127,15 +128,53 @@ export class QuestionnairesService {
     return { id: questionnaireId, status: 'submitted' };
   }
 
-  async list(tenantId: string) {
+  async list(tenantId: string, filters?: { status?: string }) {
+    const conds = [isNull(questionnaire.deletedAt)];
+    if (filters?.status) conds.push(eq(questionnaire.status, filters.status));
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select()
         .from(questionnaire)
-        .where(isNull(questionnaire.deletedAt))
+        .where(and(...conds))
         .orderBy(desc(questionnaire.createdAt)),
     );
     return rows.map((q) => ({ id: q.id, title: q.title, source: q.source, status: q.status }));
+  }
+
+  /**
+   * T-V42: детерминированный auto-suggest — для каждого НЕотвеченного вопроса
+   * предлагает лучший KB-ответ (матчинг токенов, без LLM). Один клик → answer(kbEntryId).
+   */
+  async suggestions(tenantId: string, id: string) {
+    return this.dbService.withTenant(tenantId, async (tx) => {
+      const [q] = await tx
+        .select({ id: questionnaire.id })
+        .from(questionnaire)
+        .where(and(eq(questionnaire.id, id), isNull(questionnaire.deletedAt)));
+      if (!q) throw new NotFoundException(`Опросник ${id} не найден`);
+      const pending = await tx
+        .select({ id: questionnaireAnswer.id, question: questionnaireAnswer.question })
+        .from(questionnaireAnswer)
+        .where(
+          and(
+            eq(questionnaireAnswer.questionnaireId, id),
+            eq(questionnaireAnswer.status, 'pending'),
+          ),
+        );
+      const kb = await tx
+        .select({ id: kbEntry.id, question: kbEntry.question, answer: kbEntry.answer })
+        .from(kbEntry)
+        .where(isNull(kbEntry.deletedAt));
+      const suggestions: Record<
+        string,
+        { kbEntryId: string; kbQuestion: string; suggestedAnswer: string; score: number }
+      > = {};
+      for (const a of pending) {
+        const s = suggestKbForQuestion(a.question, kb);
+        if (s) suggestions[a.id] = s;
+      }
+      return suggestions;
+    });
   }
 
   async get(tenantId: string, id: string) {

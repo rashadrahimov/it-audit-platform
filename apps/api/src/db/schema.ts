@@ -155,7 +155,8 @@ export const membership = pgTable(
     roleId: uuid('role_id')
       .notNull()
       .references(() => role.id),
-    category: text('category').notNull().default('auditor'),
+    /** T-V50: internal (сотрудник тенанта) | auditor (внешний аудитор — scoped-nav). */
+    category: text('category').notNull().default('internal'),
     isAuditSeat: boolean('is_audit_seat').notNull().default(false),
     invitedBy: uuid('invited_by'),
     status: text('status').notNull().default('active'),
@@ -334,11 +335,35 @@ export const framework = pgTable(
     /** Версия издания стандарта: «2022», «2019», «2.0». */
     version: text('version').notNull(),
     status: text('status').notNull().default('published'),
+    /** T-V25: домен каталога — security | privacy | industry | custom. */
+    domain: text('domain'),
     sourceFrameworkId: uuid('source_framework_id').references((): AnyPgColumn => framework.id),
+    /** T-V46: предыдущая версия этого же стандарта (для diff требований). */
+    previousVersionId: uuid('previous_version_id').references((): AnyPgColumn => framework.id),
+    /** T-V46: заметки к выпуску новой версии (tracked changes). */
+    updateNotes: text('update_notes'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
   (table) => [index('framework_tenant_idx').on(table.tenantId)],
+);
+
+/** T-V25: активация фреймворка тенантом (Active/Available в каталоге). */
+export const frameworkActivation = pgTable(
+  'framework_activation',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    frameworkId: uuid('framework_id')
+      .notNull()
+      .references(() => framework.id, { onDelete: 'cascade' }),
+    /** T-V33: целевая дата audit-ready для roadmap-прогресса. */
+    targetDate: timestamp('target_date', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('framework_activation_pair_idx').on(table.tenantId, table.frameworkId)],
 );
 
 /**
@@ -582,7 +607,10 @@ export const document = pgTable(
       .references(() => membership.id),
     /** Cadence: дата, к которой доказательство надо обновить (renew-by). */
     renewBy: timestamp('renew_by', { withTimezone: true }),
+    /** T-V02 lifecycle: needs_document | draft | active | overdue. */
     status: text('status').notNull().default('active'),
+    /** T-V02: категория документа (policy/report/evidence/contract/…). */
+    category: text('category'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
@@ -693,6 +721,8 @@ export const test = pgTable(
       .references(() => control.id),
     titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
     kind: text('kind').notNull().default('manual'),
+    /** T-V22: категория библиотеки тестов — hr | it | automated. */
+    category: text('category'),
     /** T-050: коннектор-источник для автотеста (FK в SQL — connector определён ниже). */
     connectorId: uuid('connector_id'),
     checkConfig: jsonb('check_config'),
@@ -788,6 +818,8 @@ export const connector = pgTable(
     capabilities: jsonb('capabilities').$type<string[]>().notNull().default([]),
     configEncrypted: text('config_encrypted'),
     status: text('status').notNull().default('active'),
+    /** T-V38: интервал автосинка в минутах (null/0 = только ручной запуск). */
+    syncIntervalMinutes: integer('sync_interval_minutes'),
     lastSyncAt: timestamp('last_sync_at', { withTimezone: true }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
@@ -828,6 +860,8 @@ export const policy = pgTable(
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
     approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
     renewBy: timestamp('renew_by', { withTimezone: true }),
+    /** T-V04: дедуп напоминания о продлении (одно письмо на срок, как finding.reminder_sent_at). */
+    renewalReminderSentAt: timestamp('renewal_reminder_sent_at', { withTimezone: true }),
     status: text('status').notNull().default('draft'),
     frameworkIds: jsonb('framework_ids').$type<string[]>().notNull().default([]),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
@@ -1012,9 +1046,8 @@ export const risk = pgTable(
   'risk',
   {
     id: id(),
-    tenantId: uuid('tenant_id')
-      .notNull()
-      .references(() => tenant.id),
+    /** T-V23: NULL — глобальная библиотека risk-сценариев (ADR-0016 global+override). */
+    tenantId: uuid('tenant_id').references(() => tenant.id),
     subsidiaryId: uuid('subsidiary_id').references(() => subsidiary.id),
     domain: text('domain'),
     titleI18n: jsonb('title_i18n').$type<I18nText>().notNull(),
@@ -1029,6 +1062,9 @@ export const risk = pgTable(
     treatment: text('treatment'),
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
     approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
+    /** T-V57: workflow согласования риска (null — не отправлен; pending/approved/rejected). */
+    approvalStatus: text('approval_status'),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
     status: text('status').notNull().default('open'),
     sourceRiskId: uuid('source_risk_id').references((): AnyPgColumn => risk.id),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
@@ -1128,6 +1164,8 @@ export const vulnerability = pgTable(
       .references(() => tenant.id),
     accountId: uuid('account_id'),
     connectorId: uuid('connector_id'),
+    /** T-V32: связь уязвимость↔актив для группировки и Asset SLA status. */
+    assetId: uuid('asset_id').references((): AnyPgColumn => asset.id),
     cve: text('cve'),
     title: text('title').notNull(),
     description: text('description'),
@@ -1139,7 +1177,10 @@ export const vulnerability = pgTable(
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
-  (table) => [index('vulnerability_tenant_idx').on(table.tenantId)],
+  (table) => [
+    index('vulnerability_tenant_idx').on(table.tenantId),
+    index('vulnerability_asset_idx').on(table.assetId),
+  ],
 );
 
 /** Change management (T-063, B13): изменение с approval-workflow requested→approved→deployed. */
@@ -1154,6 +1195,8 @@ export const codeChange = pgTable(
     type: text('type'),
     risk: text('risk'),
     status: text('status').notNull().default('requested'),
+    /** T-V40: затронутый актив/система (привязка к реестру). */
+    assetId: uuid('asset_id').references(() => asset.id),
     requesterMembershipId: uuid('requester_membership_id').references(() => membership.id),
     approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
     approvedAt: timestamp('approved_at', { withTimezone: true }),
@@ -1324,6 +1367,11 @@ export const kbEntry = pgTable(
     answer: text('answer').notNull(),
     category: text('category'),
     tags: jsonb('tags').notNull().default([]),
+    /** T-V43: владелец и срок годности KB-ответа (verified пока не истёк). */
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    /** T-V54: опубликовать ответ как публичный FAQ в Trust Center (KB→Trust visibility). */
+    trustVisible: boolean('trust_visible').notNull().default(false),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
@@ -1379,9 +1427,27 @@ export const trustAccessRequest = pgTable(
     company: text('company'),
     message: text('message'),
     status: text('status').notNull().default('pending'),
+    /** T-V30: токен доступа, выдаётся при approve — публичная granted-ссылка. */
+    token: text('token'),
     ...timestamps,
   },
   (table) => [index('trust_access_request_tc_idx').on(table.trustCenterId)],
+);
+
+/** T-V30: лог активности Trust Center — просмотры, запросы, выдача доступа. */
+export const trustActivity = pgTable(
+  'trust_activity',
+  {
+    id: id(),
+    trustCenterId: uuid('trust_center_id')
+      .notNull()
+      .references(() => trustCenter.id, { onDelete: 'cascade' }),
+    /** view | access_request | access_granted | access_used */
+    kind: text('kind').notNull(),
+    detail: text('detail'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('trust_activity_tc_idx').on(table.trustCenterId)],
 );
 
 /** Контрактное обязательство (T-077, EP-MISC): реестр commitments + SLA на due_date. */
@@ -1398,12 +1464,35 @@ export const commitment = pgTable(
     dueDate: timestamp('due_date', { withTimezone: true }),
     reviewCadence: text('review_cadence'),
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    /** T-V31: связь обязательства с контрактом. */
+    contractId: uuid('contract_id').references((): AnyPgColumn => contract.id),
     status: text('status').notNull().default('met'),
     slaStatus: text('sla_status').notNull().default('ok'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
   (table) => [index('commitment_tenant_idx').on(table.tenantId)],
+);
+
+/** T-V31: контракт с контрагентом; commitments привязываются к контракту. */
+export const contract = pgTable(
+  'contract',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    name: text('name').notNull(),
+    counterparty: text('counterparty'),
+    status: text('status').notNull().default('active'),
+    startDate: timestamp('start_date', { withTimezone: true }),
+    endDate: timestamp('end_date', { withTimezone: true }),
+    note: text('note'),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('contract_tenant_idx').on(table.tenantId)],
 );
 
 /** Тег (T-076, EP-MISC): полиморфная навеска на любую сущность через tag_link. */
@@ -1440,6 +1529,99 @@ export const tagLink = pgTable(
   (table) => [uniqueIndex('tag_link_triple_idx').on(table.tagId, table.entityType, table.entityId)],
 );
 
+/**
+ * T-V48 (ADR-0021): per-entity ACL «Manage access». Полиморфный грант доступа
+ * конкретному membership на конкретную сущность. Семантика additive-restrictive:
+ * если у сущности есть ХОТЯ БЫ одна acl-строка — доступ ограничен (только гранты
+ * + владелец + админ); нет строк — сущность видна всему тенанту (текущее поведение).
+ */
+export const entityAcl = pgTable(
+  'entity_acl',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id, { onDelete: 'cascade' }),
+    /** view | edit — уровень предоставленного доступа. */
+    level: text('level').notNull().default('view'),
+    ...timestamps,
+  },
+  (table) => [
+    index('entity_acl_entity_idx').on(table.entityType, table.entityId),
+    uniqueIndex('entity_acl_triple_idx').on(table.entityType, table.entityId, table.membershipId),
+  ],
+);
+
+/** Аудиторская фирма (T-V29): реестр внешних аудиторов, приглашаемых в тенант. */
+export const auditFirm = pgTable(
+  'audit_firm',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    name: text('name').notNull(),
+    contactEmail: text('contact_email'),
+    note: text('note'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('audit_firm_tenant_idx').on(table.tenantId)],
+);
+
+/**
+ * Evidence review (T-V29): полиморфный статус ревью доказательства аудитором —
+ * (entity_type, entity_id) → not_ready|ready|flagged|accepted + заметка.
+ */
+export const evidenceReview = pgTable(
+  'evidence_review',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    status: text('status').notNull().default('not_ready'),
+    note: text('note'),
+    reviewedByMembershipId: uuid('reviewed_by_membership_id').references(() => membership.id),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('evidence_review_entity_idx').on(table.tenantId, table.entityType, table.entityId),
+  ],
+);
+
+/**
+ * Задача ремедиации (T-V27): полиморфная (entity_type, entity_id) —
+ * finding/risk/control/vendor и т.п. Декомпозиция ремедиации на шаги с
+ * assignee/due/status (open|in_progress|done).
+ */
+export const task = pgTable(
+  'task',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    title: text('title').notNull(),
+    status: text('status').notNull().default('open'),
+    assigneeMembershipId: uuid('assignee_membership_id').references(() => membership.id),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('task_entity_idx').on(table.tenantId, table.entityType, table.entityId)],
+);
+
 /** ROPA — операция обработки ПДн (T-074, GDPR Art. 30, EP-PRIV). */
 export const processingActivity = pgTable(
   'processing_activity',
@@ -1458,6 +1640,13 @@ export const processingActivity = pgTable(
     retentionPeriod: text('retention_period'),
     crossBorder: boolean('cross_border').notNull().default(false),
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    /** T-V41: связь ROPA с вендором-получателем/процессором. */
+    vendorId: uuid('vendor_id').references(() => vendor.id),
+    /** T-V41: локации хранения данных (jsonb-массив строк). */
+    dataLocations: jsonb('data_locations').notNull().default([]),
+    /** T-V41: owner и дата пересмотра ROPA. */
+    reviewOwnerMembershipId: uuid('review_owner_membership_id').references(() => membership.id),
+    reviewDate: timestamp('review_date', { withTimezone: true }),
     status: text('status').notNull().default('active'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
@@ -1481,6 +1670,10 @@ export const privacyAssessment = pgTable(
     necessityNote: text('necessity_note'),
     mitigations: jsonb('mitigations').notNull().default([]),
     status: text('status').notNull().default('draft'),
+    /** T-V41: DPIA approval-workflow — approver + факт/дата. */
+    approverMembershipId: uuid('approver_membership_id').references(() => membership.id),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    reviewDate: timestamp('review_date', { withTimezone: true }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
@@ -1611,6 +1804,8 @@ export const tenantAiConfig = pgTable('tenant_ai_config', {
   model: text('model'),
   /** {apiKey} зашифрованный (encryptConfig); null = ключ не задан. */
   apiKeyEncrypted: text('api_key_encrypted'),
+  /** T-V36b: AI Memory — контекст тенанта, подмешивается в system-промпт. */
+  memory: text('memory'),
   ...timestamps,
 });
 
@@ -1769,6 +1964,8 @@ export const reportSnapshot = pgTable(
       .references(() => tenant.id),
     label: text('label').notNull(),
     metrics: jsonb('metrics').notNull().default({}),
+    /** T-V34: замороженный состав открытых findings/vulnerabilities на дату. */
+    composition: jsonb('composition').notNull().default({}),
     capturedAt: timestamp('captured_at', { withTimezone: true }).notNull().defaultNow(),
     ...timestamps,
   },
@@ -1787,6 +1984,13 @@ export const securityAlert = pgTable(
     source: text('source'),
     severity: text('severity').notNull().default('medium'),
     status: text('status').notNull().default('new'),
+    /** T-V40: категория алерта (malware/phishing/vulnerability/misconfig/access/other). */
+    category: text('category'),
+    /** T-V40: затронутый актив (привязка к реестру). */
+    assetId: uuid('asset_id').references(() => asset.id),
+    /** T-V40: resolution SLA — дедлайн закрытия по окну severity + статус (recalc-джоба). */
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    slaStatus: text('sla_status').notNull().default('ok'),
     triageNote: text('triage_note'),
     connectorId: uuid('connector_id').references(() => connector.id),
     triagedAt: timestamp('triaged_at', { withTimezone: true }),

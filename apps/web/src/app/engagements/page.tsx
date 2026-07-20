@@ -4,7 +4,23 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
+import { FilterBar } from '@/components/filter-bar';
+import { filterQuery } from '@/lib/filters';
 import { NewEngagementForm } from './new-engagement-form';
+
+const STATES = [
+  'draft',
+  'manager_review',
+  'issued_to_respondents',
+  'responses_in_progress',
+  'findings_drafting',
+  'management_response',
+  'approval',
+  'report_issued',
+  'follow_up',
+  'closed',
+  'paused',
+] as const;
 
 export const dynamic = 'force-dynamic';
 
@@ -25,17 +41,23 @@ interface AuditType {
   name: string;
 }
 
-/** Список engagement'ов (T-035; ENG-08: переключатель Активные/Архив). */
+/** Список engagement'ов (T-035; ENG-08: Активные/Архив; T-V44: фильтры type/mode; T-117: форма создания). */
 export default async function EngagementsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ archived?: string }>;
+  searchParams: Promise<{
+    archived?: string;
+    state?: string;
+    mode?: string;
+    auditTypeCode?: string;
+  }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tStates, locale, tenantSlug, sp] = await Promise.all([
+  const [t, tStates, tFilters, locale, tenantSlug, sp] = await Promise.all([
     getTranslations('engagements'),
     getTranslations('engagementStates'),
+    getTranslations('filters'),
     getCurrentLocale(),
     getActiveTenantSlug(),
     searchParams,
@@ -48,7 +70,10 @@ export default async function EngagementsPage({
   if (tenantSlug) {
     const headers = { 'X-Tenant-Slug': tenantSlug };
     const [eRes, sRes, aRes] = await Promise.all([
-      apiFetch(`/engagements?locale=${locale}${archived ? '&archived=true' : ''}`, { headers }),
+      apiFetch(
+        `/engagements?locale=${locale}${archived ? '&archived=true' : ''}${filterQuery(sp, ['state', 'mode', 'auditTypeCode'])}`,
+        { headers },
+      ),
       apiFetch(`/subsidiaries?locale=${locale}`, { headers }),
       apiFetch(`/audit-types?locale=${locale}`, { headers }),
     ]);
@@ -96,6 +121,36 @@ export default async function EngagementsPage({
           }}
         />
       )}
+      <FilterBar
+        basePath="/engagements"
+        sp={sp}
+        keep={['archived']}
+        allLabel={tFilters('all')}
+        groups={[
+          {
+            param: 'state',
+            label: tFilters('state'),
+            options: STATES.map((s) => ({ value: s, label: tStates(s) })),
+          },
+          ...(auditTypes.length > 0
+            ? [
+                {
+                  param: 'auditTypeCode',
+                  label: tFilters('type'),
+                  options: auditTypes.map((a) => ({ value: a.code, label: a.name })),
+                },
+              ]
+            : []),
+          {
+            param: 'mode',
+            label: tFilters('mode'),
+            options: [
+              { value: 'formal', label: t('modes.formal') },
+              { value: 'light', label: t('modes.light') },
+            ],
+          },
+        ]}
+      />
       <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
         <table className="w-full text-left text-sm" data-testid="engagements-table">
           <thead>

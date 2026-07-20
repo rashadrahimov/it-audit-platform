@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { commitment } from '../db/schema';
+import { commitment, contract, membership, user } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -28,6 +28,7 @@ export class CommitmentsService {
       dueDate?: string;
       reviewCadence?: string;
       ownerMembershipId?: string;
+      contractId?: string;
     },
   ) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
@@ -41,6 +42,7 @@ export class CommitmentsService {
           dueDate: input.dueDate ? new Date(input.dueDate) : null,
           reviewCadence: input.reviewCadence ?? null,
           ownerMembershipId: input.ownerMembershipId ?? null,
+          contractId: input.contractId ?? null,
         })
         .returning();
       if (!row) throw new Error('Обязательство не создалось');
@@ -84,11 +86,97 @@ export class CommitmentsService {
     return result;
   }
 
+  /** T-V31: привязать/отвязать обязательство к контракту. */
+  async setContract(actor: Actor, id: string, contractId: string | null) {
+    await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select({ id: commitment.id })
+        .from(commitment)
+        .where(and(eq(commitment.id, id), isNull(commitment.deletedAt)));
+      if (!row) throw new NotFoundException(`Обязательство ${id} не найдено`);
+      if (contractId) {
+        const [c] = await tx
+          .select({ id: contract.id })
+          .from(contract)
+          .where(and(eq(contract.id, contractId), isNull(contract.deletedAt)));
+        if (!c) throw new BadRequestException('contractId: контракт не найден');
+      }
+      await tx.update(commitment).set({ contractId }).where(eq(commitment.id, id));
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'commitment.contract_set',
+      entityType: 'commitment',
+      entityId: id,
+      after: { contractId },
+    });
+    return { id, contractId };
+  }
+
+  /** T-V43: правка обязательства — owner и срок. */
+  async update(
+    actor: Actor,
+    id: string,
+    input: { ownerMembershipId?: string | null; dueDate?: string | null },
+  ) {
+    await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select({ id: commitment.id })
+        .from(commitment)
+        .where(and(eq(commitment.id, id), isNull(commitment.deletedAt)));
+      if (!row) throw new NotFoundException(`Обязательство ${id} не найдено`);
+      if (input.ownerMembershipId) {
+        const [m] = await tx
+          .select({ id: membership.id })
+          .from(membership)
+          .where(
+            and(
+              eq(membership.id, input.ownerMembershipId),
+              eq(membership.tenantId, actor.tenantId),
+            ),
+          );
+        if (!m) throw new BadRequestException('ownerMembershipId не найден в тенанте');
+      }
+      const patch: Record<string, unknown> = {};
+      if (input.ownerMembershipId !== undefined) patch.ownerMembershipId = input.ownerMembershipId;
+      if (input.dueDate !== undefined)
+        patch.dueDate = input.dueDate ? new Date(input.dueDate) : null;
+      if (Object.keys(patch).length === 0) throw new BadRequestException('Нечего обновлять');
+      await tx.update(commitment).set(patch).where(eq(commitment.id, id));
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'commitment.updated',
+      entityType: 'commitment',
+      entityId: id,
+      after: { ownerMembershipId: input.ownerMembershipId, dueDate: input.dueDate },
+    });
+    return { id };
+  }
+
   async list(tenantId: string) {
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
-        .select()
+        .select({
+          id: commitment.id,
+          title: commitment.title,
+          source: commitment.source,
+          status: commitment.status,
+          slaStatus: commitment.slaStatus,
+          dueDate: commitment.dueDate,
+          contractId: commitment.contractId,
+          contractName: contract.name,
+          ownerMembershipId: commitment.ownerMembershipId,
+          owner: user.fullName,
+        })
         .from(commitment)
+        .leftJoin(contract, eq(commitment.contractId, contract.id))
+        .leftJoin(membership, eq(commitment.ownerMembershipId, membership.id))
+        .leftJoin(user, eq(membership.userId, user.id))
         .where(isNull(commitment.deletedAt))
         .orderBy(desc(commitment.createdAt)),
     );
@@ -99,6 +187,10 @@ export class CommitmentsService {
       status: c.status,
       slaStatus: c.slaStatus,
       dueDate: c.dueDate,
+      contractId: c.contractId,
+      contractName: c.contractName ?? null,
+      ownerMembershipId: c.ownerMembershipId,
+      owner: c.owner ?? null,
     }));
   }
 }

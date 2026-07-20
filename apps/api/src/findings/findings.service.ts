@@ -14,18 +14,24 @@ import {
 } from '@it-audit/shared';
 import { alias } from 'drizzle-orm/pg-core';
 import { AuditLogService } from '../audit/audit-log.service';
+import { NotificationDispatchService } from '../notifications/notification-dispatch.service';
 import { DbService } from '../db/db.service';
 import { EmailService } from '../email/email.service';
 import { RbacService } from '../rbac/rbac.service';
+import { dueDateFor, SlaConfigService } from '../sla-config/sla-config.service';
 import { resolveAuditorScope } from '../rbac/auditor-scope';
 import { maskFields, rejectedWriteFields } from '../rbac/field-policy';
+import { FINDING_TEMPLATES } from '../seed-data/finding-templates';
 import {
+  auditLog,
   checklistItem,
+  comment,
   control,
   engagement,
   finding,
   membership,
   response,
+  tagLink,
   user,
 } from '../db/schema';
 
@@ -72,6 +78,8 @@ export class FindingsService {
     private readonly auditLogService: AuditLogService,
     private readonly emailService: EmailService,
     private readonly rbacService: RbacService,
+    private readonly notificationDispatch: NotificationDispatchService,
+    private readonly slaConfig: SlaConfigService,
   ) {}
 
   /**
@@ -96,12 +104,36 @@ export class FindingsService {
     }
   }
 
+  /** T-V28: каталог шаблонов findings (статичный контент). */
+  templates(locale: Locale) {
+    return FINDING_TEMPLATES.map((tpl) => ({
+      key: tpl.key,
+      title: resolveLocalized(tpl.title, locale),
+      riskRating: tpl.riskRating,
+      recommendation: resolveLocalized(tpl.recommendation, locale),
+    }));
+  }
+
+  /** T-V28: создать finding из шаблона (preset title/risk/recommendation). */
+  async createFromTemplate(actor: Actor, templateKey: string) {
+    const tpl = FINDING_TEMPLATES.find((t) => t.key === templateKey);
+    if (!tpl) throw new NotFoundException(`Шаблон «${templateKey}» не найден`);
+    return this.create(actor, {
+      titleI18n: tpl.title,
+      riskRating: tpl.riskRating,
+      recommendationI18n: tpl.recommendation,
+    });
+  }
+
   async create(actor: Actor, input: CreateFindingInput) {
     await this.assertFieldWriteAllowed(
       actor,
       input as unknown as Record<string, unknown>,
       'finding',
     );
+    // T-V32: авто-дедлайн по SLA-окну риск-рейтинга, если due не задан вручную
+    const windows = await this.slaConfig.configOf(actor.tenantId);
+    const dueDate = input.dueDate ? new Date(input.dueDate) : dueDateFor(windows, input.riskRating);
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       // все привязки опциональны (standalone), но заданные должны существовать
       if (input.engagementId) {
@@ -158,7 +190,7 @@ export class FindingsService {
           recommendationI18n: input.recommendationI18n ?? null,
           ownerMembershipId: input.ownerMembershipId ?? null,
           auditorMembershipId: input.auditorMembershipId ?? null,
-          dueDate: input.dueDate ? new Date(input.dueDate) : null,
+          dueDate,
           managementResponse: input.managementResponse ?? null,
         })
         .returning();
@@ -202,6 +234,13 @@ export class FindingsService {
       .innerJoin(user, eq(membership.userId, user.id))
       .where(and(eq(membership.id, ownerMembershipId), eq(membership.tenantId, actor.tenantId)));
     if (!owner) throw new BadRequestException('ownerMembershipId: membership не найден в тенанте');
+    // T-V19: in-app уведомление владельцу (email ниже шлётся напрямую, как в T-039)
+    await this.notificationDispatch.notify({
+      tenantId: actor.tenantId,
+      recipientMembershipId: ownerMembershipId,
+      type: 'action',
+      title: `Finding assigned: ${result.row.titleI18n.en}`,
+    });
     const parsedLocale = localeSchema.safeParse(owner.locale);
     await this.emailService.sendTemplate(
       'finding-assigned',
@@ -321,7 +360,28 @@ export class FindingsService {
     return result.updated;
   }
 
-  async list(tenantId: string, userId: string, locale: Locale, engagementId?: string) {
+  /** T-V17: membership текущего юзера в тенанте (для очереди «моё»). */
+  async membershipOf(userId: string, tenantId: string): Promise<string | undefined> {
+    const [m] = await this.dbService.db
+      .select({ id: membership.id })
+      .from(membership)
+      .where(and(eq(membership.userId, userId), eq(membership.tenantId, tenantId)));
+    return m?.id;
+  }
+
+  async list(
+    tenantId: string,
+    userId: string,
+    locale: Locale,
+    engagementId?: string,
+    filters?: {
+      status?: string;
+      riskRating?: string;
+      slaStatus?: string;
+      ownerMembershipId?: string;
+      tagId?: string;
+    },
+  ) {
     const ownerMembership = alias(membership, 'owner_membership');
     const ownerUser = alias(user, 'owner_user');
     const auditorMembership = alias(membership, 'auditor_membership');
@@ -329,6 +389,40 @@ export class FindingsService {
     // T-111: внешний аудитор со scope видит только findings своих дочек
     // (через engagement.subsidiary_id); standalone-findings (без engagement) — скрыты.
     const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
+    const conds = [isNull(finding.deletedAt)];
+    if (engagementId) conds.push(eq(finding.engagementId, engagementId));
+    if (filters?.status) conds.push(eq(finding.status, filters.status));
+    if (filters?.riskRating) conds.push(eq(finding.riskRating, filters.riskRating));
+    if (filters?.slaStatus) conds.push(eq(finding.slaStatus, filters.slaStatus));
+    if (filters?.ownerMembershipId) {
+      conds.push(eq(finding.ownerMembershipId, filters.ownerMembershipId));
+    }
+    // T-V36d: фильтр по тегу — сущности finding с этой tag_link-привязкой
+    if (filters?.tagId) {
+      conds.push(
+        inArray(
+          finding.id,
+          this.dbService.db
+            .select({ id: tagLink.entityId })
+            .from(tagLink)
+            .where(and(eq(tagLink.tagId, filters.tagId), eq(tagLink.entityType, 'finding'))),
+        ),
+      );
+    }
+    // T-111: scope внешнего аудитора — только его дочки (subquery через engagement)
+    if (scope !== null) {
+      conds.push(
+        scope.length === 0
+          ? sql`false`
+          : inArray(
+              finding.engagementId,
+              this.dbService.db
+                .select({ id: engagement.id })
+                .from(engagement)
+                .where(inArray(engagement.subsidiaryId, scope)),
+            ),
+      );
+    }
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
@@ -348,23 +442,7 @@ export class FindingsService {
         .leftJoin(ownerUser, eq(ownerMembership.userId, ownerUser.id))
         .leftJoin(auditorMembership, eq(finding.auditorMembershipId, auditorMembership.id))
         .leftJoin(auditorUser, eq(auditorMembership.userId, auditorUser.id))
-        .where(
-          and(
-            isNull(finding.deletedAt),
-            engagementId ? eq(finding.engagementId, engagementId) : undefined,
-            scope !== null
-              ? scope.length === 0
-                ? sql`false`
-                : inArray(
-                    finding.engagementId,
-                    tx
-                      .select({ id: engagement.id })
-                      .from(engagement)
-                      .where(inArray(engagement.subsidiaryId, scope)),
-                  )
-              : undefined,
-          ),
-        )
+        .where(and(...conds))
         .orderBy(desc(finding.createdAt)),
     );
     return rows.map((row) => ({
@@ -382,13 +460,45 @@ export class FindingsService {
   }
 
   async detail(tenantId: string, userId: string, id: string, locale: Locale) {
-    const [row] = await this.dbService.withTenant(tenantId, (tx) =>
-      tx
+    const data = await this.dbService.withTenant(tenantId, async (tx) => {
+      const [row] = await tx
         .select()
         .from(finding)
-        .where(and(eq(finding.id, id), isNull(finding.deletedAt))),
-    );
-    if (!row) throw new NotFoundException(`Finding ${id} не найден`);
+        .where(and(eq(finding.id, id), isNull(finding.deletedAt)));
+      if (!row) return null;
+      // T-V03: карточка одним ответом (паттерн T-032) — имена сторон, история, комментарии
+      const names = new Map<string, string>();
+      for (const mid of [row.ownerMembershipId, row.auditorMembershipId]) {
+        if (!mid) continue;
+        const [m] = await tx
+          .select({ fullName: user.fullName })
+          .from(membership)
+          .innerJoin(user, eq(membership.userId, user.id))
+          .where(eq(membership.id, mid));
+        if (m) names.set(mid, m.fullName);
+      }
+      const history = await tx
+        .select({ action: auditLog.action, at: auditLog.at, actor: user.fullName })
+        .from(auditLog)
+        .leftJoin(user, eq(auditLog.actorUserId, user.id))
+        .where(and(eq(auditLog.entityType, 'finding'), eq(auditLog.entityId, id)))
+        .orderBy(desc(auditLog.at));
+      const comments = await tx
+        .select({ body: comment.body, at: comment.createdAt, author: user.fullName })
+        .from(comment)
+        .innerJoin(user, eq(comment.authorUserId, user.id))
+        .where(
+          and(
+            eq(comment.entityType, 'finding'),
+            eq(comment.entityId, id),
+            isNull(comment.deletedAt),
+          ),
+        )
+        .orderBy(desc(comment.createdAt));
+      return { row, names, history, comments };
+    });
+    if (!data) throw new NotFoundException(`Finding ${id} не найден`);
+    const { row, names, history, comments } = data;
     // T-122: чтение по ID режется auditor-scope так же, как список (T-111).
     // Дочка finding'а — через engagement; standalone (без engagement) для
     // scoped-аудитора скрыт (как в списке).
@@ -408,6 +518,7 @@ export class FindingsService {
         throw new NotFoundException(`Finding ${id} не найден`);
       }
     }
+    const nextIdx = flowIndex(row.status);
     const dto = {
       id: row.id,
       title: resolveLocalized(row.titleI18n, locale),
@@ -425,10 +536,16 @@ export class FindingsService {
       controlId: row.controlId,
       ownerMembershipId: row.ownerMembershipId,
       auditorMembershipId: row.auditorMembershipId,
+      owner: row.ownerMembershipId ? (names.get(row.ownerMembershipId) ?? null) : null,
+      auditor: row.auditorMembershipId ? (names.get(row.auditorMembershipId) ?? null) : null,
       managementResponse: row.managementResponse,
       remediatedAt: row.remediatedAt?.toISOString() ?? null,
       retestResult: row.retestResult,
       resolutionDate: row.resolutionDate?.toISOString() ?? null,
+      // T-V03: следующий шаг lifecycle для кнопок UI (сервер всё равно enforce'ит)
+      allowedNext: nextIdx >= 0 ? (FINDING_FLOW[nextIdx + 1] ?? null) : null,
+      history: history.map((h) => ({ action: h.action, actor: h.actor, at: h.at.toISOString() })),
+      comments: comments.map((c) => ({ author: c.author, body: c.body, at: c.at.toISOString() })),
     };
     // SEC-04 (ADR-0020): field-level маскирование по роли (эталон: recommendation)
     const levels = await this.rbacService.fieldLevels(userId, tenantId, 'finding');

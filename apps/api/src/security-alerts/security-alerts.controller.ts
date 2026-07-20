@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -17,10 +18,22 @@ import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { SecurityAlertsService } from './security-alerts.service';
 
+/** T-V40: категории алертов. */
+export const ALERT_CATEGORIES = [
+  'malware',
+  'phishing',
+  'vulnerability',
+  'misconfiguration',
+  'unauthorized_access',
+  'other',
+] as const;
+
 const createSchema = z.object({
   title: z.string().min(1),
   source: z.string().optional(),
   severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+  category: z.enum(ALERT_CATEGORIES).optional(),
+  assetId: z.uuid().optional(),
   connectorId: z.uuid().optional(),
 });
 
@@ -70,8 +83,14 @@ export class SecurityAlertsController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Security alerts тенанта' })
-  list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId);
+  @ApiOperation({ summary: 'Security alerts тенанта (фильтры: status/severity/category/assetId)' })
+  list(
+    @Req() req: TenantRequest,
+    @Query('status') status?: string,
+    @Query('severity') severity?: string,
+    @Query('category') category?: string,
+    @Query('assetId') assetId?: string,
+  ) {
+    return this.service.list(req.tenantId, { status, severity, category, assetId });
   }
 }

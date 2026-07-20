@@ -14,10 +14,18 @@ import {
   JOB_DEACTIVATE_INACTIVE,
   JOB_DEMO_DELAYED,
   JOB_FINDING_REMINDERS,
+  JOB_POLICY_RENEWAL_REMINDERS,
+  POLICY_RENEWAL_REMINDERS_EVERY_MS,
   JOB_HEARTBEAT,
   JOB_SLA_RECALC,
+  JOB_WEEKLY_DIGEST,
+  JOB_DOCUMENT_SLA,
+  JOB_CONNECTOR_AUTOSYNC,
   SLA_RECALC_EVERY_MS,
   SYSTEM_QUEUE,
+  WEEKLY_DIGEST_EVERY_MS,
+  DOCUMENT_SLA_EVERY_MS,
+  CONNECTOR_AUTOSYNC_EVERY_MS,
 } from './jobs.constants';
 
 @Injectable()
@@ -49,9 +57,29 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       { name: JOB_FINDING_REMINDERS },
     );
     await this.queue.upsertJobScheduler(
+      'policy-renewal-reminders-scheduler',
+      { every: POLICY_RENEWAL_REMINDERS_EVERY_MS },
+      { name: JOB_POLICY_RENEWAL_REMINDERS },
+    );
+    await this.queue.upsertJobScheduler(
       'auto-test-run-scheduler',
       { every: AUTO_TEST_RUN_EVERY_MS },
       { name: JOB_AUTO_TEST_RUN },
+    );
+    await this.queue.upsertJobScheduler(
+      'weekly-digest-scheduler',
+      { every: WEEKLY_DIGEST_EVERY_MS },
+      { name: JOB_WEEKLY_DIGEST },
+    );
+    await this.queue.upsertJobScheduler(
+      'document-sla-scheduler',
+      { every: DOCUMENT_SLA_EVERY_MS },
+      { name: JOB_DOCUMENT_SLA },
+    );
+    await this.queue.upsertJobScheduler(
+      'connector-autosync-scheduler',
+      { every: CONNECTOR_AUTOSYNC_EVERY_MS },
+      { name: JOB_CONNECTOR_AUTOSYNC },
     );
   }
 

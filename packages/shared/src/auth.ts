@@ -142,6 +142,8 @@ export const meResponseSchema = z.object({
   email: z.email(),
   fullName: z.string(),
   locale: localeSchema,
+  /** T-V52: включён ли у пользователя MFA — для self-service экрана /security. */
+  mfaEnabled: z.boolean().default(false),
 });
 
 /** Тенанты юзера (T-032): контекст для UI до полноценного переключателя. */
@@ -150,6 +152,8 @@ export const meTenantsResponseSchema = z.array(
     slug: z.string(),
     name: z.string(),
     role: z.string(),
+    /** T-V50: internal | auditor — auditor получает scoped-навигацию. */
+    category: z.string().default('internal'),
   }),
 );
 

@@ -6,12 +6,34 @@ import { getTranslations } from 'next-intl/server';
 import {
   authTokenResponseSchema,
   loginResponseSchema,
+  localeSchema,
   mfaChallengeResponseSchema,
 } from '@it-audit/shared';
 import { getCurrentLocale } from '@/lib/locale';
-import { SESSION_COOKIE } from '@/lib/session';
+import { apiFetch, getActiveTenantSlug, SESSION_COOKIE } from '@/lib/session';
 
 const API_URL = process.env.API_URL ?? 'http://localhost:3001';
+
+/**
+ * T-V36f: при отсутствии явной cookie `locale` выставляем её из defaultLocale тенанта
+ * (business-profile). Hot-path i18n не трогаем — ставим только на входе. Best-effort.
+ */
+async function applyTenantLocale(): Promise<void> {
+  try {
+    const store = await cookies();
+    if (store.get('locale')) return; // уважаем явный выбор пользователя
+    const slug = await getActiveTenantSlug();
+    if (!slug) return;
+    const res = await apiFetch('/business-profile', { headers: { 'X-Tenant-Slug': slug } });
+    if (!res.ok) return;
+    const parsed = localeSchema.safeParse((await res.json()).defaultLocale);
+    if (parsed.success) {
+      store.set('locale', parsed.data, { sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 });
+    }
+  } catch {
+    // best-effort — локаль не критична для логина
+  }
+}
 
 /** Состояние формы логина: ошибка и/или активный MFA-челлендж (T-047). */
 export interface LoginFormState {
@@ -61,6 +83,7 @@ export async function loginAction(
 
   const token = authTokenResponseSchema.parse(parsed.data);
   await setSessionCookie(token.accessToken, token.expiresInSeconds);
+  await applyTenantLocale();
   redirect('/account');
 }
 
@@ -90,6 +113,7 @@ export async function mfaVerifyAction(
   const parsed = authTokenResponseSchema.safeParse(await response.json());
   if (!parsed.success) return { error: t('apiUnreachable'), mfaToken };
   await setSessionCookie(parsed.data.accessToken, parsed.data.expiresInSeconds);
+  await applyTenantLocale();
   redirect('/account');
 }
 
@@ -159,6 +183,7 @@ export async function magicConsumeAction(
 
   const token2 = authTokenResponseSchema.parse(parsed.data);
   await setSessionCookie(token2.accessToken, token2.expiresInSeconds);
+  await applyTenantLocale();
   redirect('/account');
 }
 

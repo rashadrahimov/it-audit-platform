@@ -3,7 +3,8 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import type { I18nText } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { processingActivity } from '../db/schema';
+import { processingActivity, vendor } from '../db/schema';
+import { parseRopaCsv } from './ropa-csv';
 
 interface Actor {
   tenantId: string;
@@ -22,6 +23,10 @@ interface CreateInput {
   retentionPeriod?: string;
   crossBorder?: boolean;
   ownerMembershipId?: string;
+  vendorId?: string;
+  dataLocations?: string[];
+  reviewOwnerMembershipId?: string;
+  reviewDate?: string;
 }
 
 @Injectable()
@@ -47,6 +52,10 @@ export class ProcessingActivitiesService {
           retentionPeriod: input.retentionPeriod ?? null,
           crossBorder: input.crossBorder ?? false,
           ownerMembershipId: input.ownerMembershipId ?? null,
+          vendorId: input.vendorId ?? null,
+          dataLocations: input.dataLocations ?? [],
+          reviewOwnerMembershipId: input.reviewOwnerMembershipId ?? null,
+          reviewDate: input.reviewDate ? new Date(input.reviewDate) : null,
         })
         .returning();
       if (!row) throw new Error('Операция обработки не создалась');
@@ -62,6 +71,44 @@ export class ProcessingActivitiesService {
       after: { legalBasis: created.legalBasis, role: created.role },
     });
     return { id: created.id, status: created.status };
+  }
+
+  /**
+   * T-V55: массовый импорт ROPA из CSV (GDPR Art.30). Валидные строки создаются одним
+   * транзакционным батчем; невалидные — в errors (по номеру строки), не блокируют импорт.
+   */
+  async importCsv(actor: Actor, csv: string) {
+    const { rows, errors } = parseRopaCsv(csv);
+    let imported = 0;
+    if (rows.length > 0) {
+      await this.dbService.withTenant(actor.tenantId, async (tx) => {
+        for (const row of rows) {
+          await tx.insert(processingActivity).values({
+            tenantId: actor.tenantId,
+            nameI18n: { en: row.name },
+            legalBasis: row.legalBasis,
+            purpose: row.purpose ?? null,
+            role: row.role,
+            dataCategories: row.dataCategories,
+            dataSubjects: row.dataSubjects,
+            recipients: row.recipients,
+            retentionPeriod: row.retentionPeriod ?? null,
+            crossBorder: row.crossBorder,
+            dataLocations: row.dataLocations,
+          });
+          imported += 1;
+        }
+      });
+      await this.auditLogService.record({
+        tenantId: actor.tenantId,
+        actorUserId: actor.userId,
+        actorIp: actor.ip,
+        action: 'processing_activity.imported',
+        entityType: 'processing_activity',
+        after: { imported },
+      });
+    }
+    return { imported, skipped: errors.length, errors };
   }
 
   async archive(actor: Actor, id: string) {
@@ -91,12 +138,27 @@ export class ProcessingActivitiesService {
     return { id, status: 'archived' };
   }
 
-  async list(tenantId: string) {
+  async list(tenantId: string, filters?: { role?: string; status?: string }) {
+    const conds = [isNull(processingActivity.deletedAt)];
+    if (filters?.role) conds.push(eq(processingActivity.role, filters.role));
+    if (filters?.status) conds.push(eq(processingActivity.status, filters.status));
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
-        .select()
+        .select({
+          id: processingActivity.id,
+          nameI18n: processingActivity.nameI18n,
+          legalBasis: processingActivity.legalBasis,
+          role: processingActivity.role,
+          crossBorder: processingActivity.crossBorder,
+          status: processingActivity.status,
+          dataLocations: processingActivity.dataLocations,
+          reviewDate: processingActivity.reviewDate,
+          vendorId: processingActivity.vendorId,
+          vendorName: vendor.name,
+        })
         .from(processingActivity)
-        .where(isNull(processingActivity.deletedAt))
+        .leftJoin(vendor, eq(processingActivity.vendorId, vendor.id))
+        .where(and(...conds))
         .orderBy(desc(processingActivity.createdAt)),
     );
     return rows.map((p) => ({
@@ -106,6 +168,10 @@ export class ProcessingActivitiesService {
       role: p.role,
       crossBorder: p.crossBorder,
       status: p.status,
+      dataLocations: (p.dataLocations as string[]) ?? [],
+      reviewDate: p.reviewDate?.toISOString() ?? null,
+      vendorId: p.vendorId,
+      vendorName: p.vendorName ?? null,
     }));
   }
 

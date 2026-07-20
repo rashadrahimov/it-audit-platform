@@ -106,6 +106,63 @@ export const emailTemplates = {
       text: `Приближается дедлайн по finding ${findingTitle}: ${dueDate}.`,
     }),
   },
+  'test-failing': {
+    en: ({ testTitle }) => ({
+      subject: `Test failing: ${testTitle}`,
+      html: wrap(`<p>The test <b>${testTitle}</b> you own is failing. Please review it.</p>`),
+      text: `The test ${testTitle} is failing.`,
+    }),
+    az: ({ testTitle }) => ({
+      subject: `Test uğursuzdur: ${testTitle}`,
+      html: wrap(`<p>Sahibi olduğunuz <b>${testTitle}</b> testi uğursuzdur. Nəzərdən keçirin.</p>`),
+      text: `${testTitle} testi uğursuzdur.`,
+    }),
+    ru: ({ testTitle }) => ({
+      subject: `Тест провален: ${testTitle}`,
+      html: wrap(`<p>Ваш тест <b>${testTitle}</b> провален. Посмотрите, что случилось.</p>`),
+      text: `Тест ${testTitle} провален.`,
+    }),
+  },
+  'policy-review-request': {
+    en: ({ policyTitle }) => ({
+      subject: `Approval requested: ${policyTitle}`,
+      html: wrap(`<p>The policy <b>${policyTitle}</b> awaits your approval.</p>`),
+      text: `The policy ${policyTitle} awaits your approval.`,
+    }),
+    az: ({ policyTitle }) => ({
+      subject: `Təsdiq tələb olunur: ${policyTitle}`,
+      html: wrap(`<p><b>${policyTitle}</b> siyasəti təsdiqinizi gözləyir.</p>`),
+      text: `${policyTitle} siyasəti təsdiqinizi gözləyir.`,
+    }),
+    ru: ({ policyTitle }) => ({
+      subject: `Требуется согласование: ${policyTitle}`,
+      html: wrap(`<p>Политика <b>${policyTitle}</b> ждёт вашего решения.</p>`),
+      text: `Политика ${policyTitle} ждёт вашего решения.`,
+    }),
+  },
+  'policy-renewal': {
+    en: ({ policyTitle, renewBy }) => ({
+      subject: `Policy renewal due: ${policyTitle}`,
+      html: wrap(
+        `<p>The policy <b>${policyTitle}</b> is due for renewal by ${renewBy}. Please review and update it.</p>`,
+      ),
+      text: `The policy ${policyTitle} is due for renewal by ${renewBy}.`,
+    }),
+    az: ({ policyTitle, renewBy }) => ({
+      subject: `Siyasətin yenilənmə vaxtıdır: ${policyTitle}`,
+      html: wrap(
+        `<p><b>${policyTitle}</b> siyasətinin yenilənmə tarixi: ${renewBy}. Zəhmət olmasa nəzərdən keçirin.</p>`,
+      ),
+      text: `${policyTitle} siyasətinin yenilənmə tarixi: ${renewBy}.`,
+    }),
+    ru: ({ policyTitle, renewBy }) => ({
+      subject: `Пора продлить политику: ${policyTitle}`,
+      html: wrap(
+        `<p>Политике <b>${policyTitle}</b> требуется продление к ${renewBy}. Пожалуйста, пересмотрите её.</p>`,
+      ),
+      text: `Политике ${policyTitle} требуется продление к ${renewBy}.`,
+    }),
+  },
   'policy-attestation': {
     en: ({ policyTitle }) => ({
       subject: `Please attest: ${policyTitle}`,
@@ -125,6 +182,63 @@ export const emailTemplates = {
         `<p>Пожалуйста, ознакомьтесь и подтвердите прочтение политики <b>${policyTitle}</b>.</p>`,
       ),
       text: `Пожалуйста, подтвердите ознакомление с политикой: ${policyTitle}.`,
+    }),
+  },
+  'weekly-digest': {
+    en: ({ tenantName, openFindings, overdueFindings, overdueTasks, policiesDue }) => ({
+      subject: `Weekly compliance digest — ${tenantName}`,
+      html: wrap(
+        `<p>Your weekly compliance digest for <b>${tenantName}</b>:</p>` +
+          `<ul><li>Open findings: <b>${openFindings}</b> (${overdueFindings} overdue)</li>` +
+          `<li>Overdue tasks: <b>${overdueTasks}</b></li>` +
+          `<li>Policies due for renewal: <b>${policiesDue}</b></li></ul>` +
+          `<p>Sign in to review and act on outstanding items.</p>`,
+      ),
+      text: `Weekly digest for ${tenantName}: open findings ${openFindings} (${overdueFindings} overdue), overdue tasks ${overdueTasks}, policies due ${policiesDue}.`,
+    }),
+    az: ({ tenantName, openFindings, overdueFindings, overdueTasks, policiesDue }) => ({
+      subject: `Həftəlik uyğunluq icmalı — ${tenantName}`,
+      html: wrap(
+        `<p><b>${tenantName}</b> üçün həftəlik icmal:</p>` +
+          `<ul><li>Açıq findinqlər: <b>${openFindings}</b> (${overdueFindings} gecikmiş)</li>` +
+          `<li>Gecikmiş tapşırıqlar: <b>${overdueTasks}</b></li>` +
+          `<li>Yenilənməli siyasətlər: <b>${policiesDue}</b></li></ul>`,
+      ),
+      text: `Həftəlik icmal ${tenantName}: açıq findinqlər ${openFindings} (${overdueFindings} gecikmiş), gecikmiş tapşırıqlar ${overdueTasks}, siyasətlər ${policiesDue}.`,
+    }),
+    ru: ({ tenantName, openFindings, overdueFindings, overdueTasks, policiesDue }) => ({
+      subject: `Еженедельный дайджест комплаенса — ${tenantName}`,
+      html: wrap(
+        `<p>Ваш еженедельный дайджест по <b>${tenantName}</b>:</p>` +
+          `<ul><li>Открытых findings: <b>${openFindings}</b> (${overdueFindings} просрочено)</li>` +
+          `<li>Просроченных задач: <b>${overdueTasks}</b></li>` +
+          `<li>Политик к продлению: <b>${policiesDue}</b></li></ul>` +
+          `<p>Войдите, чтобы разобрать открытые пункты.</p>`,
+      ),
+      text: `Дайджест ${tenantName}: открытых findings ${openFindings} (${overdueFindings} просрочено), просроченных задач ${overdueTasks}, политик ${policiesDue}.`,
+    }),
+  },
+  'document-overdue': {
+    en: ({ filename, renewBy }) => ({
+      subject: `Evidence overdue: ${filename}`,
+      html: wrap(
+        `<p>The document <b>${filename}</b> is overdue for renewal${renewBy ? ` (due ${renewBy})` : ''}. Please upload a fresh version to keep your evidence current.</p>`,
+      ),
+      text: `The document ${filename} is overdue for renewal${renewBy ? ` (due ${renewBy})` : ''}. Please upload a fresh version.`,
+    }),
+    az: ({ filename, renewBy }) => ({
+      subject: `Sübut gecikib: ${filename}`,
+      html: wrap(
+        `<p><b>${filename}</b> sənədinin yenilənmə vaxtı keçib${renewBy ? ` (son tarix ${renewBy})` : ''}. Zəhmət olmasa yeni versiya yükləyin.</p>`,
+      ),
+      text: `${filename} sənədinin yenilənmə vaxtı keçib${renewBy ? ` (son tarix ${renewBy})` : ''}. Yeni versiya yükləyin.`,
+    }),
+    ru: ({ filename, renewBy }) => ({
+      subject: `Доказательство просрочено: ${filename}`,
+      html: wrap(
+        `<p>Документ <b>${filename}</b> просрочен по сроку обновления${renewBy ? ` (до ${renewBy})` : ''}. Пожалуйста, загрузите свежую версию, чтобы поддерживать доказательства актуальными.</p>`,
+      ),
+      text: `Документ ${filename} просрочен по сроку обновления${renewBy ? ` (до ${renewBy})` : ''}. Загрузите свежую версию.`,
     }),
   },
   'test-email': {

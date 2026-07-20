@@ -15,3 +15,22 @@ export async function markReadAction(formData: FormData): Promise<void> {
   });
   revalidatePath('/notifications');
 }
+
+/** T-V19: сохранить настройки уведомлений тенанта (расписание/таймзона/email). */
+export async function saveNotificationSettingsAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch('/notifications/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
+    body: JSON.stringify({
+      emailEnabled: formData.get('emailEnabled') === 'on',
+      schedule: formData.get('schedule') === 'work_hours' ? 'work_hours' : 'anytime',
+      timezone: String(formData.get('timezone') ?? 'UTC') || 'UTC',
+      digest: ['weekly', 'daily', 'off'].includes(String(formData.get('digest')))
+        ? String(formData.get('digest'))
+        : 'weekly',
+    }),
+  });
+  revalidatePath('/notifications');
+}

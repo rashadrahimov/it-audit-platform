@@ -61,3 +61,27 @@ export async function transitionAction(engagementId: string, to: string): Promis
   });
   revalidatePath(`/engagements/${engagementId}`);
 }
+
+/** T-V03: создать finding из детерминированного предложения (T-H15) одним кликом. */
+export async function createFindingFromSuggestionAction(
+  engagementId: string,
+  checklistItemId: string,
+  suggestedTitle: string,
+  suggestedRisk: string,
+  reason: string,
+): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch('/findings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
+    body: JSON.stringify({
+      engagementId,
+      checklistItemId,
+      titleI18n: { en: suggestedTitle },
+      descriptionI18n: reason ? { en: reason } : undefined,
+      riskRating: suggestedRisk,
+    }),
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}

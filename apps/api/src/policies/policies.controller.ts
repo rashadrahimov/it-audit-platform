@@ -22,6 +22,7 @@ import {
 import { z } from 'zod';
 import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam, uuidFilterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { AttestationsService } from './attestations.service';
@@ -103,6 +104,26 @@ export class PoliciesController {
     return this.attestationsService.status(req.tenantId, id, parseLocale(localeQuery));
   }
 
+  @Get('templates')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'Библиотека шаблонов политик (T-V24): каталог EN/AZ/RU' })
+  templates(@Query('locale') localeQuery?: string) {
+    return this.policiesService.templates(parseLocale(localeQuery));
+  }
+
+  @Post('from-template')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Создать политику из шаблона (T-V24): policy + md-документ + v1' })
+  @ApiCreatedResponse({ description: '{id, template}' })
+  createFromTemplate(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = z.object({ templateKey: z.string().min(1).max(64) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.policiesService.createFromTemplate(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.templateKey,
+    );
+  }
+
   @Post()
   @RequirePermission('settings', 'edit', 'edit')
   @ApiOperation({ summary: 'Создать политику (T-051, B4)' })
@@ -172,11 +193,30 @@ export class PoliciesController {
 
   @Get()
   @RequirePermission('settings', 'view')
-  @ApiOperation({ summary: 'Политики тенанта' })
+  @ApiOperation({ summary: 'Политики тенанта; фильтры: ?status=, ?approverMembershipId= (T-V16)' })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'approverMembershipId', required: false })
   @ApiQuery({ name: 'locale', required: false })
   @ApiOkResponse({ description: '[{id, title, status, owner, renewBy}]' })
-  list(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
-    return this.policiesService.list(req.tenantId, parseLocale(localeQuery));
+  async list(
+    @Req() req: TenantRequest,
+    @Query('status') status?: string,
+    @Query('approverMembershipId') approverMembershipId?: string,
+    @Query('needsMyApproval') needsMyApproval?: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    // T-V17: ?needsMyApproval=true — очередь approver'а (я согласующий, статус in_review)
+    let approver = uuidFilterParam(approverMembershipId, 'approverMembershipId');
+    let statusFilter = filterParam(status, 'status');
+    if (needsMyApproval === 'true') {
+      approver = (await this.policiesService.membershipOf(req.user.sub, req.tenantId)) ?? approver;
+      if (!approver) return [];
+      statusFilter = 'in_review';
+    }
+    return this.policiesService.list(req.tenantId, parseLocale(localeQuery), {
+      status: statusFilter,
+      approverMembershipId: approver,
+    });
   }
 
   @Get(':id')

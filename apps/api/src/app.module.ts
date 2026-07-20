@@ -44,6 +44,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { KnowledgeBaseModule } from './knowledge-base/knowledge-base.module';
 import { LicenseModule } from './license/license.module';
 import { MembershipsModule } from './memberships/memberships.module';
+import { MyWorkModule } from './my-work/my-work.module';
 import { MigrationModule } from './migration/migration.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
@@ -57,6 +58,13 @@ import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
 import { ReportsExportModule } from './reports-export/reports-export.module';
 import { RisksModule } from './risks/risks.module';
+import { EntityAclModule } from './entity-acl/entity-acl.module';
+import { AuditFirmsModule } from './audit-firms/audit-firms.module';
+import { SlaConfigModule } from './sla-config/sla-config.module';
+import { RoadmapModule } from './roadmap/roadmap.module';
+import { ContractsModule } from './contracts/contracts.module';
+import { BusinessProfileModule } from './business-profile/business-profile.module';
+import { TasksModule } from './tasks/tasks.module';
 import { SatisfactionModule } from './satisfaction/satisfaction.module';
 import { SearchModule } from './search/search.module';
 import { SecurityAlertsModule } from './security-alerts/security-alerts.module';
@@ -114,6 +122,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     KnowledgeBaseModule,
     LicenseModule,
     MembershipsModule,
+    MyWorkModule,
     MigrationModule,
     NotificationsModule,
     OnboardingModule,
@@ -127,6 +136,13 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     ReportsModule,
     ReportsExportModule,
     RisksModule,
+    EntityAclModule,
+    TasksModule,
+    AuditFirmsModule,
+    SlaConfigModule,
+    RoadmapModule,
+    ContractsModule,
+    BusinessProfileModule,
     SatisfactionModule,
     SearchModule,
     SecurityAlertsModule,

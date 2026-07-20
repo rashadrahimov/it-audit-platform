@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -28,6 +29,7 @@ import type { Response } from 'express';
 import { z } from 'zod';
 import { evidenceReviewStatusSchema } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam, uuidFilterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { DocumentsService } from './documents.service';
@@ -40,6 +42,14 @@ const linkSchema = z.object({
   relation: z.string().min(1).default('evidence'),
 });
 
+const requestSchema = z.object({
+  filename: z.string().min(1).max(300),
+  category: z.string().max(100).optional(),
+  renewBy: z.string().optional(),
+  entityType: z.string().min(1).optional(),
+  entityId: z.uuid().optional(),
+  relation: z.string().min(1).optional(),
+});
 const reviewSchema = z.object({ reviewStatus: evidenceReviewStatusSchema });
 
 @Controller('documents')
@@ -62,6 +72,12 @@ export class DocumentsController {
       properties: {
         file: { type: 'string', format: 'binary' },
         renewBy: { type: 'string', description: 'ISO-дата обновления доказательства (cadence)' },
+        category: { type: 'string', description: 'Категория документа (T-V02)' },
+        status: { type: 'string', description: 'draft|active (T-V02); по умолчанию active' },
+        supersedesId: {
+          type: 'string',
+          description: 'T-V02: закрыть needs_document или загрузить новую версию документа',
+        },
         entityType: { type: 'string', description: 'Сразу привязать: response/framework/…' },
         entityId: { type: 'string' },
         relation: { type: 'string', description: 'evidence|permanent_file|attachment|report' },
@@ -86,10 +102,53 @@ export class DocumentsController {
       if (!parsed.success) throw new BadRequestException(parsed.error.issues);
       link = parsed.data;
     }
+    const status =
+      body.status === 'draft' ? 'draft' : body.status === 'active' ? 'active' : undefined;
     return this.documentsService.upload(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       { buffer: file.buffer, originalName, mime: file.mimetype },
-      { renewBy: body.renewBy, link },
+      {
+        renewBy: body.renewBy,
+        category: body.category,
+        status,
+        supersedesId: body.supersedesId,
+        link,
+      },
+    );
+  }
+
+  @Post('request')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({ summary: 'T-V02: запросить доказательство (needs_document без файла)' })
+  @ApiCreatedResponse({ description: 'Плейсхолдер документа' })
+  requestDocument(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = requestSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    const { filename, category, renewBy, entityType, entityId, relation } = parsed.data;
+    let link;
+    if (entityType || entityId) {
+      const linkParsed = linkSchema.safeParse({
+        entityType,
+        entityId,
+        relation: relation || 'evidence',
+      });
+      if (!linkParsed.success) throw new BadRequestException(linkParsed.error.issues);
+      link = linkParsed.data;
+    }
+    return this.documentsService.requestDocument(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      { filename, category, renewBy, link },
+    );
+  }
+
+  @Post(':id/publish')
+  @HttpCode(200)
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({ summary: 'T-V02: опубликовать черновик документа (draft → active)' })
+  publish(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.documentsService.publish(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
     );
   }
 
@@ -113,17 +172,45 @@ export class DocumentsController {
 
   @Get()
   @RequirePermission('engagement', 'view')
-  @ApiOperation({ summary: 'Документы сущности (по привязкам)' })
-  @ApiOkResponse({ description: '[{id, filename, relation, sha256, renewBy, status}]' })
+  @ApiOperation({
+    summary:
+      'Документы: с ?entityType&entityId — по привязкам; без — tenant-wide реестр (T-V01; фильтры ?status=, ?ownerMembershipId=)',
+  })
+  @ApiOkResponse({ description: '[{id, filename, owner, links, renewBy, status}]' })
   listFor(
     @Req() req: TenantRequest,
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
+    @Query('status') status?: string,
+    @Query('ownerMembershipId') ownerMembershipId?: string,
   ) {
-    if (!entityType || !entityId) {
-      throw new BadRequestException('Нужны entityType и entityId');
+    if (entityType || entityId) {
+      if (!entityType || !entityId) {
+        throw new BadRequestException('Нужны entityType и entityId вместе');
+      }
+      return this.documentsService.listFor(req.tenantId, req.user.sub, entityType, entityId);
     }
-    return this.documentsService.listFor(req.tenantId, req.user.sub, entityType, entityId);
+    return this.documentsService.listAll(req.tenantId, {
+      status: filterParam(status, 'status'),
+      ownerMembershipId: uuidFilterParam(ownerMembershipId, 'ownerMembershipId'),
+    });
+  }
+
+  @Patch(':id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-V01: переназначить owner документа' })
+  reassign(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ ownerMembershipId: z.uuid() }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.documentsService.reassignOwner(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.ownerMembershipId,
+    );
   }
 
   @Patch('links/:linkId/review')

@@ -32,6 +32,7 @@ import {
   license,
   membership,
   permission,
+  risk,
   role,
   rolePermission,
   ssoConfig,
@@ -42,6 +43,8 @@ import {
 } from './db/schema';
 import { PasswordService } from './auth/password.service';
 import { CONTROL_DOMAINS, GLOBAL_CONTROLS } from './seed-data/global-controls';
+import { GLOBAL_FRAMEWORKS } from './seed-data/global-frameworks';
+import { RISK_LIBRARY } from './seed-data/risk-library';
 import { encryptConfig } from './connectors/config-crypto';
 
 const DEMO_OBJECT_KEY = 'demo/welcome.txt';
@@ -131,6 +134,7 @@ async function seedPostgres(): Promise<void> {
     await seedDemoFieldPermissions();
     await seedGlobalFrameworks();
     await seedGlobalControls();
+    await seedGlobalRiskLibrary();
     await seedAuditTypes();
     await seedGlossary();
     await seedDemoUsers(db, demoTenant.id);
@@ -225,278 +229,6 @@ export async function seedPresetRoles(catalog: (typeof permission.$inferSelect)[
 
 /** Демо-логины (T-020): admin@demo.io / Demo-Admin-2026 и collaborator@demo.io / Demo-Collab-2026. */
 /** Приоритетные стандарты из ответов клиента (T-001) + местный регулятор CBAR (T-C01, назван клиентом). */
-const GLOBAL_FRAMEWORKS = [
-  {
-    name: { en: 'ISO/IEC 27001' },
-    version: '2022',
-    requirements: [
-      {
-        ref: 'A.5.1',
-        title: {
-          en: 'Policies for information security',
-          az: 'İnformasiya təhlükəsizliyi siyasətləri',
-          ru: 'Политики информационной безопасности',
-        },
-      },
-      {
-        ref: 'A.5.2',
-        title: {
-          en: 'Information security roles and responsibilities',
-          az: 'İnformasiya təhlükəsizliyi üzrə rollar və məsuliyyətlər',
-          ru: 'Роли и обязанности в области информационной безопасности',
-        },
-      },
-      {
-        ref: 'A.8.1',
-        title: {
-          en: 'User endpoint devices',
-          az: 'İstifadəçi son nöqtə cihazları',
-          ru: 'Конечные устройства пользователей',
-        },
-      },
-    ],
-  },
-  {
-    name: { en: 'COBIT' },
-    version: '2019',
-    requirements: [
-      {
-        ref: 'EDM01',
-        title: {
-          en: 'Ensured governance framework setting and maintenance',
-          az: 'İdarəetmə çərçivəsinin qurulması və saxlanması',
-          ru: 'Формирование и поддержка системы корпоративного управления ИТ',
-        },
-      },
-      {
-        ref: 'APO01',
-        title: {
-          en: 'Managed I&T management framework',
-          az: 'İdarə olunan İT idarəetmə çərçivəsi',
-          ru: 'Управление системой менеджмента ИТ',
-        },
-      },
-    ],
-  },
-  {
-    name: { en: 'NIST CSF' },
-    version: '2.0',
-    requirements: [
-      {
-        ref: 'GV.OC',
-        title: {
-          en: 'Organizational context',
-          az: 'Təşkilati kontekst',
-          ru: 'Организационный контекст',
-        },
-      },
-      {
-        ref: 'ID.AM',
-        title: {
-          en: 'Asset management',
-          az: 'Aktivlərin idarə edilməsi',
-          ru: 'Управление активами',
-        },
-      },
-    ],
-  },
-  // EP-FWK (T-078): расширение библиотеки до паритета с Vanta.
-  {
-    name: { en: 'SOC 2' },
-    version: '2017 (rev. 2022)',
-    requirements: [
-      {
-        ref: 'CC1.1',
-        title: {
-          en: 'Control environment: integrity and ethical values',
-          ru: 'Контрольная среда: честность и этические ценности',
-        },
-      },
-      {
-        ref: 'CC6.1',
-        title: {
-          en: 'Logical and physical access controls',
-          ru: 'Логический и физический контроль доступа',
-        },
-      },
-      {
-        ref: 'CC7.2',
-        title: { en: 'System monitoring for anomalies', ru: 'Мониторинг системы на аномалии' },
-      },
-      {
-        ref: 'A1.2',
-        title: {
-          en: 'Availability: environmental protections and backup',
-          ru: 'Доступность: защита среды и резервное копирование',
-        },
-      },
-    ],
-  },
-  {
-    name: { en: 'PCI DSS' },
-    version: '4.0',
-    requirements: [
-      {
-        ref: 'Req.1',
-        title: {
-          en: 'Install and maintain network security controls',
-          ru: 'Установка и поддержка сетевых средств защиты',
-        },
-      },
-      {
-        ref: 'Req.3',
-        title: { en: 'Protect stored account data', ru: 'Защита хранимых данных держателей карт' },
-      },
-      {
-        ref: 'Req.8',
-        title: {
-          en: 'Identify users and authenticate access',
-          ru: 'Идентификация пользователей и аутентификация доступа',
-        },
-      },
-    ],
-  },
-  {
-    name: { en: 'GDPR' },
-    version: '2016/679',
-    requirements: [
-      {
-        ref: 'Art.30',
-        title: { en: 'Records of processing activities', ru: 'Реестр операций обработки' },
-      },
-      { ref: 'Art.32', title: { en: 'Security of processing', ru: 'Безопасность обработки' } },
-      {
-        ref: 'Art.35',
-        title: { en: 'Data protection impact assessment', ru: 'Оценка влияния на защиту данных' },
-      },
-    ],
-  },
-  {
-    name: { en: 'HIPAA' },
-    version: 'Security Rule',
-    requirements: [
-      {
-        ref: '164.308',
-        title: { en: 'Administrative safeguards', ru: 'Административные меры защиты' },
-      },
-      { ref: '164.312', title: { en: 'Technical safeguards', ru: 'Технические меры защиты' } },
-    ],
-  },
-  // Местный регулятор (T-001/T-C01): CBAR — Центробанк Азербайджана (из client-answers.md,
-  // контроль IR-02). Требования — по 16 доменам IT-аудита из клиентского чеклиста
-  // (docs/client-templates/checklist-analysis.md), не выдуманные номера регуляций.
-  {
-    name: { en: 'CBAR IT Audit', az: 'MB İT Audit', ru: 'ЦБА ИТ-аудит' },
-    version: 'v1.0',
-    requirements: [
-      { ref: 'GOV', title: { en: 'IT governance', az: 'İT idarəetməsi', ru: 'ИТ-управление' } },
-      {
-        ref: 'AC',
-        title: { en: 'Access control', az: 'Girişə nəzarət', ru: 'Управление доступом' },
-      },
-      {
-        ref: 'CM',
-        title: {
-          en: 'Change management',
-          az: 'Dəyişikliklərin idarə edilməsi',
-          ru: 'Управление изменениями',
-        },
-      },
-      {
-        ref: 'BK',
-        title: {
-          en: 'Backup & recovery',
-          az: 'Ehtiyat nüsxə və bərpa',
-          ru: 'Резервное копирование и восстановление',
-        },
-      },
-      {
-        ref: 'DR',
-        title: {
-          en: 'Business continuity',
-          az: 'Biznesin fasiləsizliyi',
-          ru: 'Непрерывность бизнеса',
-        },
-      },
-      {
-        ref: 'NW',
-        title: { en: 'Network security', az: 'Şəbəkə təhlükəsizliyi', ru: 'Сетевая безопасность' },
-      },
-      {
-        ref: 'VM',
-        title: {
-          en: 'Vulnerability management',
-          az: 'Zəifliklərin idarə edilməsi',
-          ru: 'Управление уязвимостями',
-        },
-      },
-      {
-        ref: 'EP',
-        title: {
-          en: 'Endpoint security',
-          az: 'Son nöqtə təhlükəsizliyi',
-          ru: 'Защита конечных устройств',
-        },
-      },
-      {
-        ref: 'LM',
-        title: {
-          en: 'Logging & monitoring',
-          az: 'Jurnal və monitorinq',
-          ru: 'Логирование и мониторинг',
-        },
-      },
-      {
-        ref: 'DP',
-        title: { en: 'Data protection', az: 'Məlumatların qorunması', ru: 'Защита данных' },
-      },
-      {
-        ref: 'TP',
-        title: {
-          en: 'Third-party / vendor',
-          az: 'Üçüncü tərəf / təchizatçı',
-          ru: 'Третьи стороны / вендоры',
-        },
-      },
-      {
-        ref: 'IR',
-        title: {
-          en: 'Incident management',
-          az: 'İnsidentlərin idarə edilməsi',
-          ru: 'Управление инцидентами',
-        },
-      },
-      {
-        ref: 'AM',
-        title: {
-          en: 'Asset management',
-          az: 'Aktivlərin idarə edilməsi',
-          ru: 'Управление активами',
-        },
-      },
-      {
-        ref: 'CL',
-        title: { en: 'Cloud security', az: 'Bulud təhlükəsizliyi', ru: 'Безопасность облака' },
-      },
-      {
-        ref: 'PH',
-        title: {
-          en: 'Physical security',
-          az: 'Fiziki təhlükəsizlik',
-          ru: 'Физическая безопасность',
-        },
-      },
-      {
-        ref: 'SA',
-        title: {
-          en: 'Security awareness',
-          az: 'Təhlükəsizlik maarifləndirməsi',
-          ru: 'Осведомлённость о безопасности',
-        },
-      },
-    ],
-  },
-];
 
 /**
  * Демо field-level права (SEC-04, T-H04/T-H06, ADR-0020). Под owner (глобальные
@@ -564,10 +296,34 @@ export async function seedGlobalFrameworks(): Promise<void> {
             eq(framework.version, fw.version),
           ),
         );
-      if (existing) continue;
+      if (existing) {
+        // T-V25: обновляем домен каталога у ранее посеянных фреймворков
+        if (existing.domain !== fw.domain) {
+          await db
+            .update(framework)
+            .set({ domain: fw.domain })
+            .where(eq(framework.id, existing.id));
+        }
+        // T-V47: досев недостающих требований (уникальность по (framework_id, ref))
+        const added = await db
+          .insert(frameworkRequirement)
+          .values(
+            fw.requirements.map((r) => ({
+              frameworkId: existing.id,
+              ref: r.ref,
+              titleI18n: r.title,
+            })),
+          )
+          .onConflictDoNothing()
+          .returning({ id: frameworkRequirement.id });
+        if (added.length > 0) {
+          console.log(`  + ${fw.name.en}: досеяно требований ${added.length}`);
+        }
+        continue;
+      }
       const [created] = await db
         .insert(framework)
-        .values({ tenantId: null, nameI18n: fw.name, version: fw.version })
+        .values({ tenantId: null, nameI18n: fw.name, version: fw.version, domain: fw.domain })
         .returning();
       if (!created) throw new Error(`Фреймворк «${fw.name.en}» не создался`);
       await db.insert(frameworkRequirement).values(
@@ -579,6 +335,40 @@ export async function seedGlobalFrameworks(): Promise<void> {
       );
     }
     console.log(`✓ Глобальная библиотека фреймворков: ${GLOBAL_FRAMEWORKS.length} (idempotent)`);
+  } finally {
+    await owner.end().catch(() => {});
+  }
+}
+
+/** T-V23: глобальная библиотека risk-сценариев (tenant_id NULL) — под owner, как фреймворки. */
+export async function seedGlobalRiskLibrary(): Promise<void> {
+  const owner = new Client({
+    connectionString: env.databaseUrlOwner,
+    connectionTimeoutMillis: 5000,
+  });
+  try {
+    await owner.connect();
+    const db = drizzle(owner);
+    const existing = await db
+      .select({ titleI18n: risk.titleI18n })
+      .from(risk)
+      .where(isNull(risk.tenantId));
+    const known = new Set(existing.map((r) => r.titleI18n.en));
+    let added = 0;
+    for (const item of RISK_LIBRARY) {
+      if (known.has(item.title.en)) continue;
+      await db.insert(risk).values({
+        tenantId: null,
+        titleI18n: item.title,
+        descriptionI18n: item.description,
+        category: item.category,
+        inherentImpact: item.inherentImpact,
+        inherentLikelihood: item.inherentLikelihood,
+        status: 'library',
+      });
+      added += 1;
+    }
+    console.log(`✓ Библиотека risk-сценариев: ${RISK_LIBRARY.length} (новых ${added})`);
   } finally {
     await owner.end().catch(() => {});
   }
@@ -703,19 +493,23 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       fullName: 'Demo Admin',
       password: 'Demo-Admin-2026',
       roleEn: 'Admin',
+      category: 'internal',
     },
     {
       email: 'collaborator@demo.io',
       fullName: 'Demo Collaborator',
       password: 'Demo-Collab-2026',
       roleEn: 'Collaborator',
+      category: 'internal',
     },
     {
       // T-052: approver политик — роль Approver (settings.view, но не settings.edit)
+      // T-V50: демо-внешний аудитор — category=auditor → scoped-навигация
       email: 'approver@demo.io',
       fullName: 'Demo Approver',
       password: 'Demo-Approver-2026',
       roleEn: 'Approver',
+      category: 'auditor',
     },
   ];
   const systemRoles = await db.select().from(role).where(eq(role.isSystem, true));
@@ -736,11 +530,22 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
     if (!seededUser) throw new Error(`Демо-юзер ${demo.email} не найден после вставки`);
     await db
       .insert(membership)
-      .values({ userId: seededUser.id, tenantId, roleId: presetRole.id, isAuditSeat: true })
+      .values({
+        userId: seededUser.id,
+        tenantId,
+        roleId: presetRole.id,
+        isAuditSeat: true,
+        category: demo.category,
+      })
       .onConflictDoNothing();
+    // T-V50: нормализуем category и на уже засеянных БД (insert выше — no-op при конфликте)
+    await db
+      .update(membership)
+      .set({ category: demo.category })
+      .where(and(eq(membership.userId, seededUser.id), eq(membership.tenantId, tenantId)));
   }
   console.log(
-    '✓ Демо-юзеры: admin@demo.io (Admin), collaborator@demo.io (Collaborator), approver@demo.io (Approver)',
+    '✓ Демо-юзеры: admin@demo.io (Admin/internal), collaborator@demo.io (Collaborator/internal), approver@demo.io (Approver/auditor — демо scoped-nav)',
   );
 }
 

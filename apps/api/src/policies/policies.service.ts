@@ -4,11 +4,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, max, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, max, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
+import { DocumentsService } from '../documents/documents.service';
+import { NotificationDispatchService } from '../notifications/notification-dispatch.service';
 import { DbService } from '../db/db.service';
-import { document, membership, policy, policyVersion, user } from '../db/schema';
+import { document, framework, membership, policy, policyVersion, user } from '../db/schema';
+import { POLICY_TEMPLATES } from '../seed-data/policy-templates';
 
 interface Actor {
   tenantId: string;
@@ -30,7 +34,49 @@ export class PoliciesService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly notificationDispatch: NotificationDispatchService,
+    private readonly documentsService: DocumentsService,
   ) {}
+
+  /** T-V24: каталог шаблонов политик (статичный контент EN/AZ/RU). */
+  templates(locale: Locale) {
+    return POLICY_TEMPLATES.map((tpl) => ({
+      key: tpl.key,
+      title: resolveLocalized(tpl.title, locale),
+      preview: resolveLocalized(tpl.body, locale).slice(0, 400),
+    }));
+  }
+
+  /** T-V24: политика из шаблона — policy + markdown-документ (3 языка) + версия v1. */
+  async createFromTemplate(actor: Actor, templateKey: string) {
+    const tpl = POLICY_TEMPLATES.find((p) => p.key === templateKey);
+    if (!tpl) throw new NotFoundException(`Шаблон «${templateKey}» не найден`);
+    const created = await this.create(actor, { titleI18n: tpl.title });
+    const markdown = `${tpl.body.en}\n---\n\n${tpl.body.az}\n---\n\n${tpl.body.ru}`;
+    const doc = await this.documentsService.upload(
+      actor,
+      {
+        buffer: Buffer.from(markdown, 'utf-8'),
+        originalName: `${tpl.key}.md`,
+        mime: 'text/markdown',
+      },
+      { link: { entityType: 'policy', entityId: created.id, relation: 'attachment' } },
+    );
+    await this.addVersion(actor, created.id, {
+      documentId: doc.id,
+      changelog: `Created from template: ${tpl.key}`,
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'policy.created_from_template',
+      entityType: 'policy',
+      entityId: created.id,
+      after: { template: tpl.key },
+    });
+    return { id: created.id, template: tpl.key };
+  }
 
   async create(actor: Actor, input: CreatePolicyInput) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
@@ -164,7 +210,7 @@ export class PoliciesService {
             .where(eq(policyVersion.id, latest[0].id));
         }
       }
-      return { before: row.status, after: nextStatus };
+      return { before: row.status, after: nextStatus, row };
     });
     await this.auditLogService.record({
       tenantId: actor.tenantId,
@@ -176,7 +222,20 @@ export class PoliciesService {
       before: { status: result.before },
       after: { status: result.after, action },
     });
-    return result;
+    // T-V19: политика ушла на согласование → уведомить approver'а
+    if (action === 'submit' && result.row.approverMembershipId) {
+      await this.notificationDispatch.notify({
+        tenantId: actor.tenantId,
+        recipientMembershipId: result.row.approverMembershipId,
+        type: 'action',
+        title: `Approval requested: ${result.row.titleI18n.en}`,
+        email: {
+          template: 'policy-review-request',
+          params: { policyTitle: result.row.titleI18n.en },
+        },
+      });
+    }
+    return { before: result.before, after: result.after };
   }
 
   private nextStatus(current: string, action: string): string | null {
@@ -188,8 +247,27 @@ export class PoliciesService {
     return table[current]?.[action] ?? null;
   }
 
-  async list(tenantId: string, locale: Locale) {
-    const ownerUser = user;
+  /** T-V17: membership текущего юзера в тенанте (для очереди approver'а). */
+  async membershipOf(userId: string, tenantId: string): Promise<string | undefined> {
+    const [m] = await this.dbService.db
+      .select({ id: membership.id })
+      .from(membership)
+      .where(and(eq(membership.userId, userId), eq(membership.tenantId, tenantId)));
+    return m?.id;
+  }
+
+  async list(
+    tenantId: string,
+    locale: Locale,
+    filters?: { status?: string; approverMembershipId?: string },
+  ) {
+    const conds = [isNull(policy.deletedAt)];
+    if (filters?.status) conds.push(eq(policy.status, filters.status));
+    if (filters?.approverMembershipId) {
+      conds.push(eq(policy.approverMembershipId, filters.approverMembershipId));
+    }
+    const approverMembership = alias(membership, 'approver_membership');
+    const approverUser = alias(user, 'approver_user');
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
@@ -197,20 +275,27 @@ export class PoliciesService {
           titleI18n: policy.titleI18n,
           status: policy.status,
           renewBy: policy.renewBy,
-          owner: ownerUser.fullName,
+          owner: user.fullName,
+          approver: approverUser.fullName,
         })
         .from(policy)
         .leftJoin(membership, eq(policy.ownerMembershipId, membership.id))
-        .leftJoin(ownerUser, eq(membership.userId, ownerUser.id))
-        .where(isNull(policy.deletedAt))
+        .leftJoin(user, eq(membership.userId, user.id))
+        .leftJoin(approverMembership, eq(policy.approverMembershipId, approverMembership.id))
+        .leftJoin(approverUser, eq(approverMembership.userId, approverUser.id))
+        .where(and(...conds))
         .orderBy(desc(policy.createdAt)),
     );
+    const now = Date.now();
     return rows.map((row) => ({
       id: row.id,
       title: resolveLocalized(row.titleI18n, locale),
       status: row.status,
       renewBy: row.renewBy?.toISOString() ?? null,
       owner: row.owner,
+      approver: row.approver,
+      // T-V04: вычисляемая просрочка продления (архивные не считаем)
+      expired: row.renewBy !== null && row.status !== 'archived' && row.renewBy.getTime() < now,
     }));
   }
 
@@ -226,16 +311,45 @@ export class PoliciesService {
         .from(policyVersion)
         .where(eq(policyVersion.policyId, id))
         .orderBy(asc(policyVersion.version));
-      return { row, versions };
+      // T-V04: имена сторон + резолв фреймворков в названия
+      const names = new Map<string, string>();
+      for (const mid of [row.ownerMembershipId, row.approverMembershipId]) {
+        if (!mid) continue;
+        const [m] = await tx
+          .select({ fullName: user.fullName })
+          .from(membership)
+          .innerJoin(user, eq(membership.userId, user.id))
+          .where(eq(membership.id, mid));
+        if (m) names.set(mid, m.fullName);
+      }
+      const frameworks =
+        row.frameworkIds.length > 0
+          ? await tx
+              .select({ id: framework.id, nameI18n: framework.nameI18n })
+              .from(framework)
+              .where(inArray(framework.id, row.frameworkIds))
+          : [];
+      return { row, versions, names, frameworks };
     });
     return {
       id: data.row.id,
       title: resolveLocalized(data.row.titleI18n, locale),
       status: data.row.status,
       renewBy: data.row.renewBy?.toISOString() ?? null,
+      expired:
+        data.row.renewBy !== null &&
+        data.row.status !== 'archived' &&
+        data.row.renewBy.getTime() < Date.now(),
       ownerMembershipId: data.row.ownerMembershipId,
       approverMembershipId: data.row.approverMembershipId,
+      owner: data.row.ownerMembershipId
+        ? (data.names.get(data.row.ownerMembershipId) ?? null)
+        : null,
+      approver: data.row.approverMembershipId
+        ? (data.names.get(data.row.approverMembershipId) ?? null)
+        : null,
       frameworkIds: data.row.frameworkIds,
+      frameworks: data.frameworks.map((f) => resolveLocalized(f.nameI18n, locale)),
       versions: data.versions.map((v) => ({
         version: v.version,
         documentId: v.documentId,

@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
-import { createKbAction } from './actions';
+import { getCurrentLocale } from '@/lib/locale';
+import { createKbAction, updateKbAction } from './actions';
 import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -12,6 +13,15 @@ interface KbEntry {
   question: string;
   answer: string;
   category: string | null;
+  owner: string | null;
+  ownerMembershipId: string | null;
+  expiresAt: string | null;
+  verified: boolean;
+  trustVisible: boolean;
+}
+interface Member {
+  id: string;
+  fullName: string;
 }
 
 const inputCls =
@@ -25,16 +35,22 @@ export default async function KnowledgeBasePage({
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug, sp] = await Promise.all([
+  const [t, locale, tenantSlug, sp] = await Promise.all([
     getTranslations('knowledgeBase'),
+    getCurrentLocale(),
     getActiveTenantSlug(),
     searchParams,
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
   const q = sp.q?.trim() ?? '';
 
-  const res = await apiFetch(`/kb${q ? `?q=${encodeURIComponent(q)}` : ''}`, { headers });
+  const [res, memRes] = await Promise.all([
+    apiFetch(`/kb${q ? `?q=${encodeURIComponent(q)}` : ''}`, { headers }),
+    apiFetch(`/memberships?locale=${locale}`, { headers }),
+  ]);
   const entries: KbEntry[] = res.ok ? await res.json() : [];
+  const members: Member[] = memRes.ok ? await memRes.json() : [];
+  const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
@@ -80,6 +96,18 @@ export default async function KnowledgeBasePage({
             className={`flex-1 ${inputCls}`}
           />
           <input name="category" placeholder={t('category')} className={inputCls} />
+          <select name="ownerMembershipId" defaultValue="" className={inputCls}>
+            <option value="">{t('ownerNone')}</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.fullName}
+              </option>
+            ))}
+          </select>
+          <label className="flex flex-col text-xs text-secondary">
+            <span>{t('expires')}</span>
+            <input type="date" name="expiresAt" className={inputCls} />
+          </label>
         </div>
         <textarea
           name="answer"
@@ -105,17 +133,90 @@ export default async function KnowledgeBasePage({
           {entries.map((e) => (
             <li
               key={e.id}
-              className="flex flex-col gap-1 rounded-xl border border-border bg-white p-4 shadow-sm"
+              data-testid={`kb-entry-${e.id}`}
+              className="flex flex-col gap-1.5 rounded-xl border border-border bg-white p-4 shadow-sm"
             >
-              <span className="flex items-center gap-2">
+              <span className="flex flex-wrap items-center gap-2">
                 <span className="font-medium text-foreground">{e.question}</span>
                 {e.category && (
                   <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-secondary">
                     {e.category}
                   </span>
                 )}
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    e.verified ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {e.verified ? t('verified') : t('expired')}
+                </span>
+                {e.trustVisible && (
+                  <span
+                    data-testid={`kb-trust-badge-${e.id}`}
+                    className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700"
+                  >
+                    {t('trustPublished')}
+                  </span>
+                )}
               </span>
               <p className="text-sm text-secondary">{e.answer}</p>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-secondary">
+                <span>
+                  {t('owner')}: <span className="text-foreground">{e.owner ?? '—'}</span>
+                </span>
+                <span>
+                  {t('expires')}:{' '}
+                  <span className="text-foreground">
+                    {e.expiresAt ? dateFmt.format(new Date(e.expiresAt)) : t('noExpiry')}
+                  </span>
+                </span>
+              </div>
+              <details className="mt-1">
+                <summary className="cursor-pointer text-xs font-medium text-accent">
+                  {t('edit')}
+                </summary>
+                <form
+                  action={updateKbAction.bind(null, e.id)}
+                  className="mt-2 flex flex-wrap items-end gap-2"
+                >
+                  <select
+                    name="ownerMembershipId"
+                    defaultValue={e.ownerMembershipId ?? ''}
+                    data-testid={`kb-owner-${e.id}`}
+                    className={inputCls}
+                  >
+                    <option value="">{t('ownerNone')}</option>
+                    {members.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.fullName}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="date"
+                    name="expiresAt"
+                    defaultValue={e.expiresAt ? e.expiresAt.slice(0, 10) : ''}
+                    className={inputCls}
+                  />
+                  <label className="flex items-center gap-1.5 text-xs text-secondary">
+                    <input
+                      type="checkbox"
+                      name="trustVisible"
+                      defaultChecked={e.trustVisible}
+                      data-testid={`kb-trust-${e.id}`}
+                      className="h-4 w-4 rounded border-border text-accent focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    {t('trustVisible')}
+                  </label>
+                  <button
+                    type="submit"
+                    data-testid={`kb-save-${e.id}`}
+                    className="rounded-md border border-border px-3 py-2 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted"
+                  >
+                    {t('save')}
+                  </button>
+                </form>
+              </details>
             </li>
           ))}
         </ul>

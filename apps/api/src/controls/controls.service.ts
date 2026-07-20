@@ -1,7 +1,14 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
+import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
+import { EntityAclService } from '../entity-acl/entity-acl.service';
 import {
   auditLog,
   comment,
@@ -12,8 +19,15 @@ import {
   frameworkRequirement,
   membership,
   tenant,
+  test as testTable,
   user,
 } from '../db/schema';
+
+interface Actor {
+  tenantId: string;
+  userId: string;
+  ip?: string;
+}
 
 export interface ControlListItem {
   id: string;
@@ -23,15 +37,22 @@ export interface ControlListItem {
   question: string;
   status: string;
   isGlobal: boolean;
+  /** T-V45: назначенный владелец (в тенант-контексте). */
+  owner: string | null;
+  /** T-V45: счётчики тестов контроля (passing = status ok). */
+  testCount: number;
+  passingCount: number;
   /** Маппинг на стандарты (DoD T-031: «контроль виден с его стандартами»). */
   standards: Array<{ framework: string; version: string; requirement: string }>;
 }
 
 export interface ControlDetail extends ControlListItem {
   guidance: string | null;
+  note: string | null;
   /** ref глобального оригинала — признак тенантской адаптации (ADR-0016). */
   originControlId: string | null;
-  owner: { fullName: string; email: string } | null;
+  ownerMembershipId: string | null;
+  ownerDetail: { fullName: string; email: string } | null;
   history: Array<{ action: string; actor: string | null; at: string }>;
   comments: Array<{ author: string; body: string; at: string }>;
 }
@@ -39,10 +60,19 @@ export interface ControlDetail extends ControlListItem {
 /** Библиотека контролей (T-031, T-032, ADR-0016): глобальная + адаптации тенанта. */
 @Injectable()
 export class ControlsService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly auditLogService: AuditLogService,
+    private readonly entityAcl: EntityAclService,
+  ) {}
 
   /** Карточка контроля (T-032): поля + owner + стандарты + history + comments одним ответом. */
-  async detail(id: string, tenantSlug: string | undefined, locale: Locale): Promise<ControlDetail> {
+  async detail(
+    id: string,
+    tenantSlug: string | undefined,
+    locale: Locale,
+    userId?: string,
+  ): Promise<ControlDetail> {
     const collect = async (db: Pick<typeof this.dbService.db, 'select'>) => {
       const [row] = await db
         .select()
@@ -94,10 +124,16 @@ export class ControlsService {
           ),
         )
         .orderBy(asc(comment.createdAt));
-      return { row, domain, mappings: effectiveMappings, owner, history, comments };
+      // T-V45: счётчики тестов контроля (в тенант-контексте пусты для чистого global)
+      const tests = await db
+        .select({ status: testTable.status })
+        .from(testTable)
+        .where(and(eq(testTable.controlId, row.id), isNull(testTable.deletedAt)));
+      return { row, domain, mappings: effectiveMappings, owner, history, comments, tests };
     };
 
     let data;
+    let tenantId: string | undefined;
     if (!tenantSlug) {
       data = await collect(this.dbService.db);
     } else {
@@ -106,7 +142,21 @@ export class ControlsService {
         .from(tenant)
         .where(eq(tenant.slug, tenantSlug));
       if (!found) throw new BadRequestException(`Тенант «${tenantSlug}» не найден`);
+      tenantId = found.id;
       data = await this.dbService.withTenant(found.id, collect);
+    }
+
+    // T-V56: per-entity ACL — 403, если контроль ограничен и доступа нет (только в тенант-контексте)
+    if (tenantId && userId) {
+      const actor = await this.entityAcl.resolveActor(tenantId, userId);
+      const access = await this.entityAcl.access(
+        { tenantId, membershipId: actor.membershipId, isAdmin: actor.isAdmin },
+        'control',
+        data.row.id,
+        data.row.ownerMembershipId,
+      );
+      if (!access.canView)
+        throw new ForbiddenException('Нет доступа к этому контролю (Manage access)');
     }
 
     const actorIds = [...new Set(data.history.map((h) => h.actorUserId).filter(Boolean))];
@@ -127,10 +177,17 @@ export class ControlsService {
       objective: resolveLocalized(data.row.objectiveI18n, locale),
       question: resolveLocalized(data.row.questionI18n, locale),
       guidance: data.row.guidanceI18n ? resolveLocalized(data.row.guidanceI18n, locale) : null,
+      note: (data.row.custom as Record<string, unknown>)?.note
+        ? String((data.row.custom as Record<string, unknown>).note)
+        : null,
       status: data.row.status,
       isGlobal: data.row.tenantId === null,
       originControlId: data.row.originControlId,
-      owner: data.owner,
+      ownerMembershipId: data.row.ownerMembershipId,
+      owner: data.owner?.fullName ?? null,
+      ownerDetail: data.owner,
+      testCount: data.tests.length,
+      passingCount: data.tests.filter((t) => t.status === 'ok').length,
       standards: data.mappings.map((m) => ({
         framework: resolveLocalized(m.frameworkName, locale),
         version: m.frameworkVersion,
@@ -149,11 +206,29 @@ export class ControlsService {
     };
   }
 
-  async list(tenantSlug: string | undefined, locale: Locale): Promise<ControlListItem[]> {
+  async list(
+    tenantSlug: string | undefined,
+    locale: Locale,
+    filters?: { domainCode?: string; q?: string },
+    userId?: string,
+  ): Promise<ControlListItem[]> {
     const collect = async (db: Pick<typeof this.dbService.db, 'select'>) => {
       const controls = await db
-        .select()
+        .select({
+          id: control.id,
+          ref: control.ref,
+          tenantId: control.tenantId,
+          originControlId: control.originControlId,
+          domainId: control.domainId,
+          objectiveI18n: control.objectiveI18n,
+          questionI18n: control.questionI18n,
+          status: control.status,
+          ownerMembershipId: control.ownerMembershipId,
+          ownerName: user.fullName,
+        })
         .from(control)
+        .leftJoin(membership, eq(control.ownerMembershipId, membership.id))
+        .leftJoin(user, eq(membership.userId, user.id))
         .where(isNull(control.deletedAt))
         .orderBy(asc(control.ref));
       const domains = await db.select().from(controlDomain);
@@ -167,10 +242,16 @@ export class ControlsService {
         .from(controlMapping)
         .innerJoin(frameworkRequirement, eq(controlMapping.requirementId, frameworkRequirement.id))
         .innerJoin(framework, eq(frameworkRequirement.frameworkId, framework.id));
-      return { controls, domains, mappings };
+      // T-V45: счётчики тестов по контролю (тенант-контекст)
+      const testRows = await db
+        .select({ controlId: testTable.controlId, status: testTable.status })
+        .from(testTable)
+        .where(isNull(testTable.deletedAt));
+      return { controls, domains, mappings, testRows };
     };
 
     let data;
+    let tenantId: string | undefined;
     if (!tenantSlug) {
       data = await collect(this.dbService.db);
     } else {
@@ -179,12 +260,35 @@ export class ControlsService {
         .from(tenant)
         .where(eq(tenant.slug, tenantSlug));
       if (!found) throw new BadRequestException(`Тенант «${tenantSlug}» не найден`);
+      tenantId = found.id;
       data = await this.dbService.withTenant(found.id, collect);
     }
 
+    // T-V56: per-entity ACL — скрыть ограниченные контроли без доступа (только в тенант-контексте)
+    let visible: Set<string> | null = null;
+    if (tenantId && userId) {
+      const actor = await this.entityAcl.resolveActor(tenantId, userId);
+      visible = await this.entityAcl.filterVisible(
+        { tenantId, membershipId: actor.membershipId, isAdmin: actor.isAdmin },
+        'control',
+        data.controls.map((c) => ({ id: c.id, ownerMembershipId: c.ownerMembershipId })),
+      );
+    }
+
     const domainById = new Map(data.domains.map((d) => [d.id, d]));
-    return data.controls.map((row) => {
+    const testsByControl = new Map<string, { total: number; passing: number }>();
+    for (const tr of data.testRows) {
+      const acc = testsByControl.get(tr.controlId) ?? { total: 0, passing: 0 };
+      acc.total += 1;
+      if (tr.status === 'ok') acc.passing += 1;
+      testsByControl.set(tr.controlId, acc);
+    }
+    const visibleControls = visible
+      ? data.controls.filter((c) => visible.has(c.id))
+      : data.controls;
+    const items = visibleControls.map((row) => {
       const domain = domainById.get(row.domainId);
+      const tests = testsByControl.get(row.id) ?? { total: 0, passing: 0 };
       return {
         id: row.id,
         ref: row.ref,
@@ -195,6 +299,9 @@ export class ControlsService {
         question: resolveLocalized(row.questionI18n, locale),
         status: row.status,
         isGlobal: row.tenantId === null,
+        owner: row.ownerName,
+        testCount: tests.total,
+        passingCount: tests.passing,
         standards: standardsFor(row, data.mappings).map((m) => ({
           framework: resolveLocalized(m.frameworkName, locale),
           version: m.frameworkVersion,
@@ -202,6 +309,133 @@ export class ControlsService {
         })),
       };
     });
+    // T-V16: библиотека собирается в памяти (global+tenant) — фильтруем здесь же
+    const needle = filters?.q?.toLowerCase();
+    return items.filter(
+      (c) =>
+        (!filters?.domainCode || c.domain?.code === filters.domainCode) &&
+        (!needle ||
+          c.ref.toLowerCase().includes(needle) ||
+          c.objective.toLowerCase().includes(needle)),
+    );
+  }
+
+  /** T-V45: сводка назначений и % контролей с passing-тестами (дедуп по ref: адаптация > global). */
+  async summary(tenantSlug: string, locale: Locale, userId?: string) {
+    const items = await this.list(tenantSlug, locale, undefined, userId);
+    // дедуп по ref — тенантная адаптация (не global) перекрывает глобальный оригинал
+    const byRef = new Map<string, (typeof items)[number]>();
+    for (const c of items) {
+      const prev = byRef.get(c.ref);
+      if (!prev || (prev.isGlobal && !c.isGlobal)) byRef.set(c.ref, c);
+    }
+    const deduped = [...byRef.values()];
+    const total = deduped.length;
+    const assigned = deduped.filter((c) => c.owner).length;
+    const withPassing = deduped.filter((c) => c.passingCount > 0).length;
+    return {
+      total,
+      assigned,
+      unassigned: total - assigned,
+      withPassingEvidence: withPassing,
+      percentPassing: total === 0 ? 0 : Math.round((withPassing / total) * 100),
+    };
+  }
+
+  /**
+   * T-V45: назначить owner/статус/заметку. Тенантный контроль правится напрямую;
+   * глобальный — через тенантную адаптацию (ADR-0016 global+override).
+   */
+  async update(
+    actor: Actor,
+    id: string,
+    input: { ownerMembershipId?: string | null; status?: string; note?: string | null },
+  ) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(control)
+        .where(and(eq(control.id, id), isNull(control.deletedAt)));
+      if (!row) throw new NotFoundException(`Контроль ${id} не найден`);
+      if (input.ownerMembershipId) {
+        const [m] = await tx
+          .select({ id: membership.id })
+          .from(membership)
+          .where(
+            and(
+              eq(membership.id, input.ownerMembershipId),
+              eq(membership.tenantId, actor.tenantId),
+            ),
+          );
+        if (!m) throw new BadRequestException('ownerMembershipId: участник не найден в тенанте');
+      }
+      const applyFields = (custom: Record<string, unknown>) => {
+        const patch: Record<string, unknown> = {};
+        if (input.ownerMembershipId !== undefined)
+          patch.ownerMembershipId = input.ownerMembershipId;
+        if (input.status !== undefined) patch.status = input.status;
+        if (input.note !== undefined) {
+          patch.custom = { ...custom, note: input.note ?? undefined };
+        }
+        return patch;
+      };
+
+      if (row.tenantId === actor.tenantId) {
+        const patch = applyFields((row.custom as Record<string, unknown>) ?? {});
+        const [res] = await tx.update(control).set(patch).where(eq(control.id, id)).returning();
+        return { id: res!.id, adapted: false };
+      }
+      // глобальный → адаптация: существующая для ref или новая
+      const [existing] = await tx
+        .select()
+        .from(control)
+        .where(
+          and(
+            eq(control.tenantId, actor.tenantId),
+            eq(control.ref, row.ref),
+            isNull(control.deletedAt),
+          ),
+        );
+      if (existing) {
+        const patch = applyFields((existing.custom as Record<string, unknown>) ?? {});
+        const [res] = await tx
+          .update(control)
+          .set(patch)
+          .where(eq(control.id, existing.id))
+          .returning();
+        return { id: res!.id, adapted: false };
+      }
+      const patch = applyFields({});
+      const [adapted] = await tx
+        .insert(control)
+        .values({
+          tenantId: actor.tenantId,
+          originControlId: row.id,
+          ref: row.ref,
+          domainId: row.domainId,
+          objectiveI18n: row.objectiveI18n,
+          questionI18n: row.questionI18n,
+          guidanceI18n: row.guidanceI18n,
+          ownerMembershipId: (patch.ownerMembershipId as string | null) ?? null,
+          status: (patch.status as string) ?? row.status,
+          custom: (patch.custom as Record<string, unknown>) ?? {},
+        })
+        .returning();
+      return { id: adapted!.id, adapted: true };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: result.adapted ? 'control.adapted' : 'control.updated',
+      entityType: 'control',
+      entityId: result.id,
+      after: {
+        ownerMembershipId: input.ownerMembershipId ?? null,
+        status: input.status ?? null,
+      },
+    });
+    return result;
   }
 }
 

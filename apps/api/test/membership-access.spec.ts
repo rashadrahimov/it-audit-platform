@@ -18,7 +18,7 @@ const emails = [`ma-admin-${run}@t.io`, `ma-ext-${run}@firm.io`];
 
 const dbService = new DbService();
 const service = new MembershipsService(dbService, new AuditLogService(dbService));
-const rbac = new RbacService(dbService);
+const rbac = new RbacService(dbService, new AuditLogService(dbService));
 
 let tenantId: string;
 let adminUserId: string;

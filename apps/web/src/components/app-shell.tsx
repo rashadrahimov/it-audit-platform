@@ -24,6 +24,7 @@ interface Labels {
   signOut: string;
   menu: string;
   home: string;
+  searchPh: string;
 }
 
 /** Иконки групп (Heroicons outline, 18px). SVG, не emoji — по чеклисту ui-ux-pro-max. */
@@ -76,6 +77,7 @@ export function AppShell({
   labels,
   tour,
   help,
+  idleTimeoutMin = 0,
   children,
 }: {
   groups: NavGroup[];
@@ -83,10 +85,28 @@ export function AppShell({
   labels: Labels;
   tour: { steps: TourStep[]; labels: TourLabels };
   help: { entries: Record<string, HelpEntry>; labels: HelpLabels };
+  idleTimeoutMin?: number;
   children: ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  // T-V36c: авто-логаут при простое (per-tenant idleTimeoutMin, 0 = выкл)
+  useEffect(() => {
+    if (!idleTimeoutMin || idleTimeoutMin <= 0) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => void logoutAction(), idleTimeoutMin * 60_000);
+    };
+    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [idleTimeoutMin]);
   const [tourSignal, setTourSignal] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
   // справочник: запись по текущему разделу (первый сегмент пути; '' → account)
@@ -346,13 +366,24 @@ export function AppShell({
             )}
           </nav>
 
+          {/* Глобальный поиск (T-V09): GET-форма → /search?q= */}
+          <form action="/search" className="ml-auto flex min-w-0 items-center" role="search">
+            <input
+              type="search"
+              name="q"
+              placeholder={labels.searchPh}
+              data-testid="global-search"
+              className="w-32 rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground transition-[width] duration-200 focus:w-56 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:w-44"
+            />
+          </form>
+
           {/* Помощь: запуск тура */}
           <button
             type="button"
             data-testid="topbar-help"
             aria-label="Tour"
             onClick={() => setHelpOpen(true)}
-            className="ml-auto flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-secondary transition-colors duration-150 hover:bg-muted hover:text-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-secondary transition-colors duration-150 hover:bg-muted hover:text-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <svg
               aria-hidden

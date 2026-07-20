@@ -34,16 +34,17 @@
       "p3": "Hər törəmə şirkət üzrə hesabat, panel və KPI-lar"
     },
     "or": "və ya",
-    "magicToggle": "Giriş keçidini e-poçtla göndər",
     "magicHint": "Şifrəsiz daxil olmaq üçün e-poçtunuza birdəfəlik keçid göndərəcəyik.",
     "magicSend": "Giriş keçidini göndər",
-    "magicSending": "Göndərilir…",
     "magicSent": "Bu e-poçt üçün hesab varsa, giriş keçidi yola düşdü. Poçtunuzu yoxlayın — keçid bir neçə dəqiqə etibarlıdır.",
-    "backToPassword": "Şifrə ilə girişə qayıt",
     "magicTitle": "Giriş edilir",
+    "magicConsuming": "Giriş tamamlanır…",
+    "magicInvalid": "Bu giriş keçidi etibarsızdır və ya vaxtı bitib. Yenisini istəyin.",
+    "magicToggle": "Giriş keçidini e-poçtla göndər",
+    "magicSending": "Göndərilir…",
+    "backToPassword": "Şifrə ilə girişə qayıt",
     "magicVerifying": "Giriş keçidi yoxlanılır…",
     "magicComplete": "Girişi tamamla",
-    "magicInvalid": "Bu giriş keçidi etibarsızdır və ya vaxtı bitib. Yenisini istəyin.",
     "backToLogin": "Girişə qayıt",
     "ssoToggle": "SSO ilə daxil ol",
     "ssoTitle": "Vahid giriş (SSO)",
@@ -125,6 +126,17 @@
     "aiSettings": "AI provayderi",
     "home": "Əsas",
     "guide": "Bələdçi",
+    "findings": "Findinqlər",
+    "documents": "Sənədlər",
+    "tests": "Testlər",
+    "searchPh": "Axtarış…",
+    "rolesNav": "Rollar",
+    "membersNav": "İştirakçılar",
+    "myWorkNav": "Mənim işim",
+    "assetsNav": "Aktivlər",
+    "roadmap": "Yol xəritəsi",
+    "ssoSettings": "SSO",
+    "security": "Təhlükəsizlik",
     "auditors": "Auditorlar",
     "auditorView": "Auditor görünüşü"
   },
@@ -201,6 +213,31 @@
     "risk": {
       "high": "Yüksək",
       "medium": "Orta"
+    },
+    "suggestionCreate": "Findinq yarat",
+    "evidence": "Sübutlar",
+    "evidenceEmpty": "Bu audit ilə əlaqəli sənəd hələ yoxdur.",
+    "evColName": "Sənəd",
+    "evColType": "Növ",
+    "evColOwner": "Sahib",
+    "evColReview": "Yoxlama",
+    "evColSla": "Yenilənmə",
+    "rel": {
+      "evidence": "Sübut",
+      "permanent_file": "Daimi fayl",
+      "attachment": "Əlavə",
+      "report": "Hesabat"
+    },
+    "review": {
+      "not_ready": "Hazır deyil",
+      "ready": "Hazır",
+      "flagged": "İşarələnib",
+      "accepted": "Qəbul edilib"
+    },
+    "sla": {
+      "overdue": "Gecikib",
+      "soon": "Tezliklə",
+      "ok": "Normada"
     }
   },
   "engagementStates": {
@@ -224,7 +261,19 @@
     "domain": "Domen",
     "objective": "Məqsəd",
     "standards": "Standartlar",
-    "empty": "Hələ nəzarət yoxdur"
+    "empty": "Hələ nəzarət yoxdur",
+    "owner": "Sahib",
+    "tests": "Testlər",
+    "statusCol": "Status",
+    "assigned": "Təyin edilib",
+    "unassigned": "Təyin edilməyib",
+    "withPassing": "Keçən sübutlu",
+    "percentPassing": "% keçən",
+    "st": {
+      "active": "Aktiv",
+      "inactive": "Qeyri-aktiv",
+      "retired": "Ləğv edilib"
+    }
   },
   "controlDetail": {
     "back": "Bütün nəzarətlər",
@@ -250,6 +299,28 @@
       "failing": "Uğursuz",
       "needs_attention": "Diqqət tələb edir",
       "deactivated": "Deaktiv"
+    },
+    "note": "Qeyd",
+    "assign": "Təyinat",
+    "assignGlobalHint": "Bu qlobal kontroldur — yadda saxlama dəyişikliklərinizlə tenant adaptasiyası yaradır.",
+    "noOwner": "Sahib yoxdur",
+    "statusLabel": "Status",
+    "save": "Yadda saxla",
+    "st": {
+      "active": "Aktiv",
+      "inactive": "Qeyri-aktiv",
+      "retired": "Ləğv edilib"
+    },
+    "access": {
+      "title": "Girişi idarə et",
+      "open": "Hamıya görünür",
+      "restricted": "Məhdud",
+      "member": "İştirakçı",
+      "level": "Səviyyə",
+      "view": "Baxış",
+      "edit": "Redaktə",
+      "grant": "Ver",
+      "remove": "Sil"
     }
   },
   "frameworks": {
@@ -266,7 +337,39 @@
       "published": "Dərc edilib",
       "draft": "Qaralama",
       "deprecated": "Köhnəlib"
-    }
+    },
+    "domain": "Domen",
+    "dom": {
+      "security": "Təhlükəsizlik",
+      "privacy": "Məxfilik",
+      "industry": "Sahə",
+      "custom": "Fərdi"
+    },
+    "active": "Aktiv",
+    "available": "Mövcud",
+    "noActive": "Aktiv freymvork yoxdur — aşağıdakı kataloqdan əlavə edin",
+    "addFramework": "Freymvork əlavə et",
+    "remove": "Çıxar",
+    "coverage": "Kontrol əhatəsi",
+    "coverageSub": "{total} tələbdən {covered} maplanıb",
+    "evidenceCompleteness": "Sübut tamlığı",
+    "evidenceSub": "{total} tələbdən {n} sübutlu",
+    "audits": "Auditlər",
+    "noAudits": "Bu freymvorka toxunan audit hələ yoxdur",
+    "checklistItems": "{n} çeklist bəndi",
+    "requirements": "Tələblər",
+    "versionDiff": "Tələb dəyişiklikləri",
+    "vsPrevious": "{v} ilə müqayisə",
+    "added": "əlavə",
+    "removed": "silinib",
+    "changed": "dəyişib",
+    "newVersion": "Yeni versiya buraxın",
+    "newVersionHint": "Yeni versiya ilə tenant kopyası yaradır; tələblər və kontrol maplemeləri köçürülür, sonra redaktə edib diff ilə müqayisə edin.",
+    "newVersionLabel": "Versiya",
+    "newVersionPh": "məs. 2025",
+    "updateNotes": "Yeniləmə qeydləri",
+    "updateNotesPh": "Bu revizioyada nə dəyişib",
+    "releaseVersion": "Versiya buraxın"
   },
   "dashboard": {
     "title": "İdarə panelləri",
@@ -292,6 +395,26 @@
     "empty": "Hələ konnektor yoxdur",
     "sync": "Sinxronlaşdır",
     "lastSync": "Son sinxronizasiya",
+    "listTitle": "Qurulmuş konnektorlar",
+    "addTitle": "Konnektor əlavə et",
+    "provider": "Provayder",
+    "pickProvider": "Provayder seçin…",
+    "capabilities": "İmkanlar",
+    "create": "Yarat",
+    "schedule": "Cədvəl",
+    "everyMin": "hər {n} dəq",
+    "manual": "Əl ilə",
+    "test": "Bağlantını yoxla",
+    "testing": "Yoxlanılır…",
+    "edit": "Düzəliş et",
+    "close": "Bağla",
+    "delete": "Sil",
+    "deleteConfirm": "Bu konnektoru silmək?",
+    "status": "Status",
+    "intervalMin": "Avtosinx intervalı (dəq)",
+    "intervalHint": "0 = yalnız əl ilə; minimum 5 dəq",
+    "configEdit": "Konfiqi yenilə (boş = saxla)",
+    "save": "Yadda saxla",
     "statuses": {
       "active": "Aktiv",
       "error": "Xəta",
@@ -311,7 +434,36 @@
       "in_review": "Baxışda",
       "approved": "Təsdiqlənib",
       "archived": "Arxiv"
-    }
+    },
+    "approver": "Təsdiqləyən",
+    "expired": "Vaxtı keçib",
+    "back": "Siyasət siyahısına",
+    "frameworks": "Çərçivələr",
+    "workflow": "Təsdiq axını",
+    "wfSubmit": "Baxışa göndər",
+    "wfApprove": "Təsdiqlə",
+    "wfReject": "Rədd et",
+    "wfArchive": "Arxivə",
+    "versions": "Versiyalar",
+    "versionsEmpty": "Hələ versiya yoxdur",
+    "changelog": "Dəyişikliklər",
+    "document": "Sənəd",
+    "download": "Yüklə",
+    "approvedAt": "Təsdiqlənib",
+    "addVersion": "Versiya əlavə et",
+    "attestations": "Tanışlıq",
+    "attestationsEmpty": "Hələ tanışlıq kampaniyası olmayıb",
+    "campaignPick": "Kimə göndərilsin",
+    "campaignStart": "Kampaniyanı başlat",
+    "attestSelf": "Tanışlığı təsdiqlə",
+    "attStatuses": {
+      "pending": "Gözləyir",
+      "attested": "Təsdiqlənib"
+    },
+    "templates": "Siyasət şablonları",
+    "templatesHint": "Hazır skeletlər (EN/AZ/RU) — bir klik v1 markdown sənədi ilə qaralama siyasət yaradır.",
+    "useTemplate": "Şablondan yarat",
+    "tplCreated": "Yaradılıb"
   },
   "universe": {
     "title": "Audit Kainatı",
@@ -340,7 +492,16 @@
       "medium": "Orta",
       "high": "Yüksək",
       "critical": "Kritik"
-    }
+    },
+    "matrix": "Təsir × Ehtimal",
+    "impact": "Təsir",
+    "likelihood": "Ehtimal",
+    "topCategories": "Əsas risk kateqoriyaları",
+    "process": "Proses",
+    "allProcesses": "Bütün proseslər",
+    "uncategorized": "Kateqoriyasız",
+    "risks": "risk",
+    "distribution": "Sinif bölgüsü"
   },
   "plans": {
     "title": "Audit Planları",
@@ -367,7 +528,42 @@
     "title": "Qrafik Panelləri",
     "toAccount": "Hesab",
     "empty": "Hələ panel yoxdur",
-    "widgets": "vidjet"
+    "widgets": "vidjet",
+    "create": "Yeni dashboard",
+    "namePh": "Dashboard adı",
+    "add": "Yarat",
+    "slot": "Vidcet",
+    "metric": "Metrika",
+    "chartType": "Qrafik",
+    "widgetTitle": "Başlıq",
+    "back": "Dashboardlar",
+    "edit": "Dashboardu redaktə et",
+    "save": "Yadda saxla",
+    "delete": "Sil",
+    "exportPdf": "PDF ixrac et",
+    "m": {
+      "findings_by_status": "Findinqlər status üzrə",
+      "findings_by_severity": "Findinqlər kritiklik üzrə",
+      "tests_by_status": "Testlər status üzrə",
+      "vendors_by_risk": "Vendorlar risk üzrə",
+      "risks_by_class": "Risklər sinif üzrə",
+      "devices_compliance": "Cihaz uyğunluğu",
+      "controls_total": "Kontrolların sayı",
+      "tests_passing": "Keçən testlər (əl ilə/avtomatik)",
+      "documents_readiness": "Sənədlərin hazırlığı",
+      "vendors_by_category": "Vendorlar kateqoriya üzrə",
+      "risks_by_treatment": "Risklər emal üzrə",
+      "trust_requests": "Trust Center sorğuları",
+      "questionnaires_by_status": "Anketlər status üzrə",
+      "commitments_by_status": "Öhdəliklər status üzrə"
+    },
+    "ct": {
+      "bar": "Barlar",
+      "pie": "Dairəvi",
+      "donut": "Donut",
+      "number": "Rəqəm",
+      "line": "Xətt"
+    }
   },
   "trustCenter": {
     "title": "Etibar Mərkəzi",
@@ -379,7 +575,20 @@
     "published": "Dərc olunub",
     "draft": "Qaralama",
     "accessRequests": "giriş sorğusu",
-    "slug": "Açıq URL"
+    "slug": "Açıq URL",
+    "activity": "Fəaliyyət",
+    "noActivity": "Hələ fəaliyyət yoxdur.",
+    "requestsTitle": "Giriş tələbləri",
+    "approve": "Təsdiq et",
+    "deny": "Rədd et",
+    "grantedLink": "Giriş keçidi",
+    "copyHint": "Bu şəxsi keçidi təsdiqlənmiş tələb edənlə paylaşın.",
+    "kind": {
+      "view": "Səhifə baxışı",
+      "access_request": "Giriş tələb edildi",
+      "access_granted": "Giriş verildi",
+      "access_used": "Giriş keçidi istifadə edildi"
+    }
   },
   "glossary": {
     "title": "Lüğət",
@@ -396,7 +605,19 @@
     "capturedAt": "qeyd edilib",
     "controls": "Kontrollar",
     "risks": "Risklər",
-    "findings": "Tapıntılar"
+    "findings": "Tapıntılar",
+    "create": "Snapshot yarat",
+    "labelPh": "Etiket — məs. Q3 2026 bağlanış",
+    "createBtn": "Fiksasiya et",
+    "composition": "Fiksasiya anında açıq findinqlər",
+    "viewComposition": "Dondurulmuş tərkib",
+    "noOpen": "Fiksasiya anında açıq findinq yoxdur.",
+    "colTitle": "Findinq",
+    "colRisk": "Risk",
+    "colStatus": "Status",
+    "colDue": "Son tarix",
+    "openVulns": "Açıq zəifliklər",
+    "count": "{n} findinq"
   },
   "devices": {
     "title": "Cihaz Uyğunluğu",
@@ -421,7 +642,27 @@
       "active": "Aktiv",
       "onboarding": "İşə qəbul",
       "offboarded": "İşdən çıxıb"
-    }
+    },
+    "name": "Ad",
+    "statusCol": "Məşğulluq",
+    "taskStatus": "Tapşırıq statusu",
+    "actions": "Əməliyyatlar",
+    "noTasks": "Tapşırıq yoxdur",
+    "nOverdue": "{n} gecikmiş",
+    "nOpen": "{n} açıq",
+    "complete": "Tamamlanıb",
+    "to": {
+      "active": "Aktiv et",
+      "onboarding": "Onboardinq başlat",
+      "offboarded": "Offboard et"
+    },
+    "groups": "Qruplar",
+    "noGroups": "Hələ qrup yoxdur",
+    "people": "{n} nəfər",
+    "newGroup": "Yeni qrup",
+    "groupPh": "Qrup adı",
+    "addGroup": "Əlavə et",
+    "deleteGroup": "Qrupu sil"
   },
   "vendors": {
     "title": "Təchizatçı Riski",
@@ -449,7 +690,50 @@
     "residual": "Qalıq risk",
     "assessments": "Qiymətləndirmələr",
     "noAssessments": "Hələ qiymətləndirmə yoxdur",
-    "statusLabel": "Status"
+    "statusLabel": "Status",
+    "securityOwner": "Təhlükəsizlik sahibi",
+    "edit": "Vendoru redaktə et",
+    "save": "Yadda saxla",
+    "analytics": "Kateqoriya üzrə",
+    "uncategorized": "Kateqoriyasız",
+    "intake": "Sorğu anketi",
+    "intakeHint": "Satınalma anketi: vendor nə edir və hansı dataya toxunur.",
+    "saveIntake": "Anketi saxla",
+    "in": {
+      "businessPurpose": "Biznes məqsədi",
+      "dataTypes": "Data növləri",
+      "dataClassification": "Data təsnifatı",
+      "authMethod": "Autentifikasiya",
+      "notes": "Qeydlər"
+    },
+    "dc": {
+      "public": "Açıq",
+      "internal": "Daxili",
+      "confidential": "Konfidensial",
+      "restricted": "Məhdud"
+    },
+    "am": {
+      "sso": "SSO",
+      "password": "Parol",
+      "api_key": "API açarı"
+    },
+    "assessmentType": "Növ",
+    "assessmentTypePh": "məs. SOC 2 icmalı",
+    "due": "Son tarix",
+    "addAssessment": "Qiymətləndirmə istə",
+    "ast": {
+      "requested": "İstənilib",
+      "in_progress": "İcrada",
+      "completed": "Tamamlanıb"
+    },
+    "startAssessment": "Başla",
+    "completeAssessment": "Tamamla",
+    "recommendation": "Tövsiyə",
+    "recommendationPh": "Nəticə / tövsiyə",
+    "evidence": "Sübut",
+    "evProvided": "Təqdim edilib",
+    "attachDoc": "Sənəd əlavə et",
+    "attach": "Əlavə et"
   },
   "workingPapers": {
     "title": "İş Sənədləri",
@@ -464,7 +748,30 @@
       "in_review": "Baxışda",
       "reviewed": "Baxılıb",
       "signed_off": "İmzalanıb"
-    }
+    },
+    "annotations": "Annotasiyalar",
+    "noAnnotations": "Hələ annotasiya yoxdur",
+    "kind": "Növ",
+    "anchor": "Bağlantı",
+    "body": "Mətn",
+    "createdAt": "Yaradılıb",
+    "state": "Vəziyyət",
+    "k": {
+      "comment": "Şərh",
+      "tick_mark": "İşarə",
+      "exception": "İstisna"
+    },
+    "anchorPh": "məs. B12 xanası",
+    "bodyPh": "Annotasiya mətni",
+    "add": "Əlavə et",
+    "resolved": "Həll edilib",
+    "openState": "Açıq",
+    "resolve": "Həll et",
+    "delete": "Sil",
+    "exceptionReport": "İstisna hesabatı",
+    "openCount": "{n} açıq",
+    "totalCount": "cəmi {n}",
+    "noExceptions": "İstisna yoxdur — təmiz audit."
   },
   "vulnerabilities": {
     "title": "Zəifliklər",
@@ -489,7 +796,16 @@
       "due_soon": "Vaxtı yaxınlaşır",
       "overdue": "Gecikib"
     },
-    "action": "Əməliyyat"
+    "action": "Əməliyyat",
+    "fTitle": "Başlıq",
+    "fTitlePh": "məs. web-01-də köhnə OpenSSL",
+    "asset": "Aktiv",
+    "assetNone": "— yoxdur —",
+    "addBtn": "Əlavə et",
+    "byAsset": "Aktivlərə görə (SLA statusu)",
+    "unassigned": "Təyin edilməyib",
+    "openOfTotal": "{open} açıq / {total}",
+    "statusHead": "Status"
   },
   "securityAlerts": {
     "title": "Təhlükəsizlik Bildirişləri",
@@ -497,6 +813,27 @@
     "empty": "Hələ bildiriş yoxdur",
     "source": "Mənbə",
     "severity": "Ciddilik",
+    "add": "Siqnalı qeyd et",
+    "titlePh": "Siqnal başlığı",
+    "category": "Kateqoriya",
+    "catNone": "— kateqoriya —",
+    "asset": "Aktiv",
+    "assetNone": "— aktiv —",
+    "statusHead": "Status",
+    "slaHead": "SLA",
+    "cat": {
+      "malware": "Zərərli proqram",
+      "phishing": "Fişinq",
+      "vulnerability": "Zəiflik",
+      "misconfiguration": "Səhv konfiqurasiya",
+      "unauthorized_access": "İcazəsiz giriş",
+      "other": "Digər"
+    },
+    "slaSt": {
+      "ok": "OK",
+      "due_soon": "Tezliklə",
+      "overdue": "Gecikmiş"
+    },
     "sev": {
       "low": "Aşağı",
       "medium": "Orta",
@@ -531,7 +868,30 @@
     "add": "Əlavə et",
     "change": "Statusu dəyiş",
     "slaHead": "SLA",
-    "statusHead": "Status"
+    "statusHead": "Status",
+    "tabCommitments": "Öhdəliklər",
+    "tabContracts": "Müqavilələr",
+    "contract": "Müqavilə",
+    "contractNone": "— yoxdur —",
+    "link": "Bağla",
+    "contractsTitle": "Müqavilələr",
+    "contractName": "Müqavilə adı",
+    "contractNamePh": "məs. Acme ilə MSA",
+    "counterparty": "Qarşı tərəf",
+    "endDate": "Bitmə tarixi",
+    "addContract": "Müqavilə əlavə et",
+    "contractsEmpty": "Hələ müqavilə yoxdur.",
+    "del": "Sil",
+    "cst": {
+      "active": "Aktiv",
+      "expired": "Bitib",
+      "terminated": "Ləğv edilib"
+    },
+    "owner": "Sahib",
+    "ownerNone": "— təyin edilməyib —",
+    "due": "Son tarix",
+    "save": "Saxla",
+    "editOwner": "Sahib / son tarix"
   },
   "accessReviews": {
     "title": "Giriş Baxışları",
@@ -541,6 +901,18 @@
       "draft": "Qaralama",
       "in_progress": "Davam edir",
       "completed": "Tamamlanıb"
+    },
+    "createTitle": "Yeni kampaniya",
+    "createDue": "Son tarix",
+    "createScope": "Əhatə (boş = bütün aktivlər)",
+    "createBtn": "UAR başlat",
+    "back": "Baxış siyahısına",
+    "itemAccount": "Hesab",
+    "itemDecision": "Qərar",
+    "dec": {
+      "certify": "Təsdiqlə",
+      "revoke": "Ləğv et",
+      "modify": "Dəyiş"
     }
   },
   "risks": {
@@ -567,7 +939,67 @@
       "transfer": "Ötürmək",
       "accept": "Qəbul",
       "avoid": "Qaçınmaq"
-    }
+    },
+    "back": "Risk Reyestri",
+    "description": "Təsvir",
+    "domain": "Domen",
+    "category": "Kateqoriya",
+    "owner": "Sahib",
+    "noOwner": "Sahib yoxdur",
+    "st": {
+      "open": "Açıq",
+      "in_progress": "İcrada",
+      "closed": "Bağlı"
+    },
+    "rescore": "Yenidən qiymətləndir",
+    "scoreNow": "Cari ballar — xas {ii}×{il}, qalıq {ri}×{rl} (təsir × ehtimal).",
+    "applyRescore": "Yenidən hesabla",
+    "edit": "Riski redaktə et",
+    "save": "Yadda saxla",
+    "linkedControls": "Azaldıcı kontrollar",
+    "linkedEntities": "Audit universe obyektləri",
+    "noLinks": "Hələ heç nə bağlanmayıb",
+    "linkControl": "Kontrol bağla",
+    "linkEntity": "Obyekt bağla",
+    "link": "Bağla",
+    "deleteHint": "Silmə riski reyestrdən çıxarır (tarixçə saxlanılır).",
+    "delete": "Riski sil",
+    "matrix": "Risk matrisi",
+    "saveMatrix": "Matrisi saxla",
+    "matrixHint": "Sinif = təsir × ehtimal və hədlər: Orta həddindən aşağı — Aşağı, sonra Orta / Yüksək / Kritik. Şkalalar maksimum balı təyin edir.",
+    "library": "Risk kitabxanası",
+    "libraryHint": "Tipik risk ssenariləri — bir kliklə reyestrə əlavə edin; sinif sizin matrisinizlə hesablanır.",
+    "addToRegister": "Reyestrə əlavə et",
+    "inRegister": "Reyestrdədir",
+    "actionTracker": "Fəaliyyət izləyicisi",
+    "access": {
+      "title": "Girişi idarə et",
+      "open": "Hamıya görünür",
+      "restricted": "Məhdud",
+      "member": "İştirakçı",
+      "level": "Səviyyə",
+      "view": "Baxış",
+      "edit": "Redaktə",
+      "grant": "Ver",
+      "remove": "Sil"
+    },
+    "approval": "Təsdiq",
+    "approver": "Təsdiqləyən",
+    "noApprover": "— təsdiqləyən yoxdur —",
+    "submitApproval": "Təsdiqə göndər",
+    "approve": "Təsdiqlə",
+    "reject": "Rədd et",
+    "needsMyApproval": "Mənim təsdiqimi gözləyir",
+    "tabAll": "Hamısı",
+    "approvalQueueEmpty": "Təsdiqinizi gözləyən yoxdur",
+    "appr": {
+      "none": "Göndərilməyib",
+      "pending": "Gözləyir",
+      "approved": "Təsdiqlənib",
+      "rejected": "Rədd edilib"
+    },
+    "byTreatment": "Müalicə üzrə",
+    "byClass": "Risk sinfi üzrə"
   },
   "privacy": {
     "title": "Məxfilik — ROPA və DPIA",
@@ -607,8 +1039,30 @@
       "archived": "Arxiv",
       "draft": "Qaralama",
       "in_progress": "Davam edir",
-      "completed": "Tamamlanıb"
-    }
+      "completed": "Tamamlanıb",
+      "pending_approval": "Təsdiq gözləyir",
+      "approved": "Təsdiqlənib"
+    },
+    "tabAll": "Hamısı",
+    "needsApproval": "Təsdiqim gözlənilir",
+    "purpose": "Məqsəd",
+    "retention": "Saxlama",
+    "crossBorderLabel": "Sərhədlərarası",
+    "vendor": "Vendor / prosessor",
+    "vendorNone": "— yoxdur —",
+    "dataLocations": "Data lokasiyaları",
+    "dataLocationsPh": "EU, US (vergüllə)",
+    "reviewDate": "Baxış tarixi",
+    "approver": "Təsdiqləyən",
+    "approverNone": "— təyin edilməyib —",
+    "submitApproval": "Təsdiqə göndər",
+    "approve": "Təsdiq et",
+    "vendorCol": "Vendor",
+    "importTitle": "ROPA idxalı (CSV)",
+    "importHint": "CSV sütunları: name, legal_basis, role, purpose, data_categories (\";\" ilə ayrılmış), cross_border, data_locations.",
+    "importBtn": "İdxal et",
+    "importDone": "İdxal edildi: {imported}, ötürüldü: {skipped}.",
+    "importFail": "İdxal alınmadı — faylı yoxlayın."
   },
   "iam": {
     "title": "IAM — Hesablar və Giriş",
@@ -635,7 +1089,14 @@
     "tp": {
       "human": "İnsan",
       "service": "Servis"
-    }
+    },
+    "owner": "Sahib",
+    "deprovisioning": "Deprovisioning tapşırıqları",
+    "depAccount": "Hesab",
+    "depReason": "Səbəb",
+    "depDue": "Son tarix",
+    "depCreate": "Tapşırıq yarat",
+    "depComplete": "Bağla"
   },
   "codeChanges": {
     "title": "Dəyişiklik İdarəetməsi",
@@ -647,6 +1108,8 @@
     "action": "Əməliyyat",
     "create": "Yeni dəyişiklik",
     "titlePh": "Dəyişiklik adı",
+    "asset": "Aktiv",
+    "assetNone": "— aktiv —",
     "add": "Əlavə et",
     "risks": {
       "low": "Aşağı",
@@ -672,7 +1135,34 @@
     "add": "Əlavə et",
     "global": "Qlobal",
     "custom": "Fərdi",
-    "empty": "Hələ boşdur"
+    "empty": "Hələ boşdur",
+    "slaTitle": "SLA aradan qaldırma pəncərələri",
+    "slaHint": "Ciddiliyə görə düzəliş günləri — findinq və zəiflik üçün son tarixi avtomatik təyin edir.",
+    "dueSoon": "Tezliklə pəncərəsi",
+    "slaSave": "SLA yadda saxla",
+    "slaDays": "Bütün dəyərlər gün ilədir.",
+    "sev": {
+      "critical": "Kritik",
+      "high": "Yüksək",
+      "medium": "Orta",
+      "low": "Aşağı"
+    },
+    "bizTitle": "Biznes profili",
+    "bizHint": "Hesabatlarda və Trust Center-də istifadə olunan hüquqi şəxsiyyət.",
+    "legalName": "Hüquqi ad",
+    "jurisdiction": "Yurisdiksiya",
+    "address": "Ünvan",
+    "incidentContact": "İnsident əlaqəsi",
+    "bizSave": "Profili saxla",
+    "idleTimeout": "Boşdayanma vaxtı (dəq)",
+    "idleTimeoutHint": "Fəaliyyətsizlikdən sonra avto-çıxış. 0 = söndürülüb.",
+    "defaultLocale": "Standart dil",
+    "defaultLocaleHint": "Yeni girişlər istifadəçi başqasını seçənə qədər bu dili alır.",
+    "securityContact": "Təhlükəsizlik əlaqəsi",
+    "supportAccess": "Platforma dəstəyinə icazə ver",
+    "supportAccessHint": "Platforma dəstəyi problemlərin həlli üçün hesabınıza müvəqqəti girə bilər (audit-jurnalında).",
+    "requireMfa": "Bütün iştirakçılar üçün MFA tələb et",
+    "requireMfaHint": "Təşkilat siyasəti: hər iştirakçı iki faktorlu autentifikasiyanı aktiv etməlidir."
   },
   "reports": {
     "title": "Hesabatlar",
@@ -711,7 +1201,10 @@
     "status": "Status",
     "active": "Aktiv",
     "revoked": "Ləğv edilib",
-    "revoke": "Ləğv et"
+    "revoke": "Ləğv et",
+    "apiTitle": "Açıq REST API (v1)",
+    "apiHint": "Bütün resurslara yalnız-oxu proqram girişi. X-Api-Key: <açarınız> başlığı ilə autentifikasiya.",
+    "apiResources": "Resurslar"
   },
   "notifications": {
     "title": "Bildirişlər",
@@ -723,7 +1216,18 @@
       "info": "Məlumat",
       "warning": "Xəbərdarlıq",
       "action": "Fəaliyyət"
-    }
+    },
+    "settingsTitle": "Bildiriş parametrləri",
+    "settingsEmail": "Email bildirişləri",
+    "settingsSchedule": "Çatdırılma cədvəli",
+    "schedAnytime": "İstənilən vaxt",
+    "schedWorkHours": "İş saatları (9–18)",
+    "settingsTimezone": "Saat qurşağı",
+    "settingsSave": "Yadda saxla",
+    "settingsDigest": "Uyğunluq icmalı",
+    "digestWeekly": "Həftəlik (bazar ertəsi)",
+    "digestDaily": "Gündəlik",
+    "digestOff": "Söndürülüb"
   },
   "time": {
     "title": "Vaxt uçotu",
@@ -795,7 +1299,17 @@
     "category": "Kateqoriya",
     "answerPh": "Cavab",
     "add": "Əlavə et",
-    "empty": "Qeyd tapılmadı"
+    "empty": "Qeyd tapılmadı",
+    "owner": "Sahib",
+    "ownerNone": "— təyin edilməyib —",
+    "expires": "Bitir",
+    "verified": "Təsdiqlənib",
+    "expired": "Vaxtı keçib",
+    "noExpiry": "Müddətsiz",
+    "save": "Saxla",
+    "edit": "Sahib / müddət",
+    "trustVisible": "Trust Center-də dərc et",
+    "trustPublished": "Trust Center-də"
   },
   "questionnaires": {
     "title": "Sorğular",
@@ -817,7 +1331,10 @@
     "questionPh": "Yeni sual",
     "addQuestion": "Sual əlavə et",
     "submit": "Göndər",
-    "submitHint": "Əvvəlcə bütün suallara cavab verin"
+    "submitHint": "Əvvəlcə bütün suallara cavab verin",
+    "suggested": "KB-dən təklif",
+    "match": "uyğunluq",
+    "useSuggestion": "İstifadə et"
   },
   "satisfaction": {
     "title": "Audit məmnunluğu",
@@ -923,7 +1440,10 @@
     "apiKeyEmpty": "Provayder API açarı",
     "apiKeyHint": "Şifrələnmiş saxlanılır (AES-256-GCM); bir daha göstərilmir.",
     "save": "Saxla",
-    "residencyNote": "Data (boşluqlar, cavablar, siyasətlər) seçilmiş provayderə göndərilir. Bank üçün — lokal model (şəbəkənizdə Ollama/vLLM) və ya DPA + Zero-Data-Retention olan bulud."
+    "residencyNote": "Data (boşluqlar, cavablar, siyasətlər) seçilmiş provayderə göndərilir. Bank üçün — lokal model (şəbəkənizdə Ollama/vLLM) və ya DPA + Zero-Data-Retention olan bulud.",
+    "memory": "AI Yaddaşı",
+    "memoryPh": "məs. Biz ISO 27001 üzrə fintech SaaS-ıq; findinqlər SOC komandamıza istinad etməlidir.",
+    "memoryHint": "Hər AI qaralama promptuna qarışdırılan təşkilat konteksti."
   },
   "guide": {
     "title": "Platforma bələdçisi",
@@ -972,6 +1492,16 @@
       "glossary": "GRC terminlər lüğəti.",
       "guide": "Bu bələdçi: bütün bölmələr və tur.",
       "account": "Əsas ekran: metriklər, onboarding və sürətli giriş.",
+      "my-work": "Şəxsi növbəm: findinqlər, testlər, təsdiqlər, tanışlıqlar və giriş sorğuları.",
+      "findings": "Bütün tenant üzrə findinq reyestri: lifecycle, filtrlər, SLA nişanları.",
+      "documents": "Sübut sənədləri: yükləmə, nəzarətlərə/auditlərə bağlama, endirmə.",
+      "tests": "Nəzarətlərin davamlı yoxlanışı: reyestr, icra tarixçəsi, diqqət sayğacları.",
+      "roles": "Rol şablonları və icazə matrisi; tenantın xüsusi rolları.",
+      "members": "Tenant iştirakçıları: kateqoriyalar və rol təyini.",
+      "assets": "İT aktivləri inventarı: sistemlər, verilənlər bazaları, bulud xidmətləri — sahiblər və mənbələrlə.",
+      "roadmap": "Tətbiq yol xəritəsi: fazalar, hədəf tarixlər, testlərdən irəliləyiş.",
+      "sso-settings": "Tenant üçün öz IdP-nizi (OIDC/SAML) qoşun.",
+      "security": "2FA və hesab təhlükəsizliyinizi idarə edin.",
       "auditors": "Xarici auditorların idarəsi.",
       "auditor-view": "Sübutların baxışı və verdiktlər."
     },
@@ -1178,6 +1708,52 @@
         "İnteraktiv tura başlayın",
         "«?» düyməsi — istənilən bölmədə kömək"
       ],
+      "my-work": [
+        "Findinqlərinizi və son tarixləri yoxlayın",
+        "Siyasətlərlə tanışlığı təsdiqləyin",
+        "Formadan giriş sorğusu göndərin"
+      ],
+      "findings": [
+        "Status, risk və SLA üzrə filtrləyin",
+        "Kartı açıb təyin edin və irəlilədin",
+        "Təkrar yoxlama ilə bağlayın"
+      ],
+      "documents": [
+        "Sübutu bağlama ilə yükləyin",
+        "Yenilənmə tarixini qoyun",
+        "Sahibi sətirdə dəyişin"
+      ],
+      "tests": [
+        "Gecikmiş və uğursuz sayğaclara baxın",
+        "Kartda icra tarixçəsinə baxın",
+        "Avtotestləri tələblə işə salın"
+      ],
+      "roles": [
+        "Matrisi görmək üçün rol seçin",
+        "Xüsusi rol yaradın",
+        "Onun üçün matris xanasını təyin edin"
+      ],
+      "members": ["İştirakçı kateqoriyalarını yoxlayın", "Rolu sətirdəki seçimlə dəyişin"],
+      "assets": [
+        "Aktivi əl ilə əlavə edin və ya Konnektorlar səhifəsindən idxal edin.",
+        "Bir neçə aktivi seçib ümumi teq tətbiq edin.",
+        "İnventarı auditə vermək üçün CSV ixracından istifadə edin."
+      ],
+      "roadmap": [
+        "Yol xəritəsində görünməsi üçün çərçivəni aktivləşdirin.",
+        "Hər çərçivə üçün hədəf audit tarixi təyin edin.",
+        "Nəzarət, siyasət, findinq və testlər yaxşılaşdıqca faza irəliləyişini izləyin."
+      ],
+      "sso-settings": [
+        "OIDC və ya SAML seçin və SSO-nu aktiv edin",
+        "Domen + issuer/metadata URL + client ID təyin edin",
+        "Client secret yapışdırın — şifrələnmiş saxlanılır"
+      ],
+      "security": [
+        "«2FA-nı aktiv et» düyməsini basın və QR-ı skan edin",
+        "Təsdiq üçün 6 rəqəmli kodu daxil edin",
+        "Bərpa kodlarını saxlayın — yalnız bir dəfə göstərilir"
+      ],
       "auditors": [
         "Auditoru rol ilə e-poçtla dəvət edin",
         "Əhatə üçün törəmələri seçin (və ya bütün qrup üçün boş buraxın)",
@@ -1232,6 +1808,16 @@
       "ai-settings": "Seçiminizlə AI köməkçisi: Anthropic Claude, istənilən OpenAI-uyğun provayder (GPT, Kimi, DeepSeek) və ya perimetrinizdə lokal model (Ollama/vLLM) — o zaman data infrastrukturdan çıxmır. Açar şifrəli saxlanılır və bir daha göstərilmir. AI-siz bütün köməkçi funksiyalar deterministik rejimdə işləyir.",
       "glossary": "Vahid GRC lüğəti (nəzarət, finding, RCM, DPIA, ROPA…) lokalizasiya ilə. Öz terminlərinizlə genişləndirin — komanda və audit olunanlar bir dildə danışır.",
       "guide": "Kömək mərkəzi: hər bölmənin təsviri istifadə addımları ilə, interfeys üzrə interaktiv tur və bu soraqça. Başlıqdakı «?» düyməsi olduğunuz bölmənin köməyini açır.",
+      "my-work": "«Mənim işim» sizə təyin olunan hər şeyi toplayır: findinqlər, testlər, təsdiq və tanışlıq gözləyən siyasətlər, giriş sorğuları. Əməkdaşlar girişdən sonra buraya düşür.",
+      "findings": "Reyestr bütün auditlər üzrə findinqləri risk, status və SLA ilə göstərir. Kartda — sahib təyini, mərhələlər üzrə hərəkət, bağlamazdan əvvəl təkrar yoxlama, şərhlər və tarixçə.",
+      "documents": "Sənədlər — əl ilə toplanan sübutlardır. Faylı yükləyin, nəzarətə və ya auditə bağlayın, yenilənmə tarixi qoyun, sahibini dəyişin. Endirmə avtorizə olunub.",
+      "tests": "Testlər nəzarətləri davamlı yoxlayır. Reyestrdə status, SLA və sahib; kartda — uğursuz obyektlər və sübutlarla icra tarixçəsi. Avtotestlər düymə ilə işə düşür; köhnəlmiş testlər deaktiv edilir.",
+      "roles": "Rollar resurs×əməliyyat icazə matrisini müəyyən edir. Sistem şablonları yalnız oxunur; xüsusi rollar yaradın və xanaları təyin edin.",
+      "members": "Bütün iştirakçıların siyahısı: email, kateqoriya (auditor / istifadəçi / MSP) və rol. Rol sətirdə dəyişilir — dəyişiklik jurnala düşür.",
+      "assets": "Aktiv inventarı əhatə dairəsindəki bütün İT aktivlərini göstərir — ERP sistemləri, verilənlər bazaları, şəbəkə qurğuları, tətbiqlər, bulud xidmətləri və son nöqtələr. Hər aktivin sahibi və mənbəyi görünür: əl ilə yaradılıb və ya konnektor vasitəsilə avtomatik aşkarlanıb. Aktivləri toplu şəkildə teqləmək (məs. PCI və ya SOX əhatəsini işarələmək) və bütün inventarı auditorlar üçün CSV-yə ixrac etmək olar. Aktivlər Audit Universe-ə proyeksiya olunur və risklərlə əlaqələndirilə bilər.",
+      "roadmap": "Yol xəritəsi hər aktivləşdirilmiş çərçivəni fazalı tətbiq planına çevirir — Quraşdırma, Siyasətlər, Aradan qaldırma, Audit — irəliləyiş canlı məlumatlardan hesablanır (nəzarət əhatəsi, təsdiqlənmiş siyasətlər, bağlanmış findinqlər, keçən testlər). Audit hazırlığı hədəf tarixi təyin edin və yol xəritəsi qrafikdə olub-olmadığınızı göstərir.",
+      "sso-settings": "Bu tenant üçün vahid girişi konfiqurasiya edin: OIDC və ya SAML seçin, e-poçt domenini, issuer/metadata URL, client ID və secret təyin edin. Secret şifrələnmiş saxlanılır və bir daha göstərilmir. Təşkilatınızın öz kimlik provayderi olduqda və işçilər korporativ hesab məlumatları ilə daxil olduqda istifadə edin.",
+      "security": "Şəxsi təhlükəsizlik parametrləri. İki faktorlu autentifikasiyanı (2FA) aktiv edin: QR-ı autentifikator tətbiqi ilə skan edin, kodu təsdiqləyin və birdəfəlik bərpa kodlarını saxlayın. Söndürmək üçün cari kod lazımdır.",
       "auditors": "Xarici auditorları e-poçtla dəvət edin, onları konkret törəmələrlə məhdudlaşdırın, vaxt məhdudiyyətli giriş pəncərəsi təyin edin və girişi ləğv edin. Həmçinin daxili iştirakçıları və MSP-ləri kateqoriyalar üzrə göstərir.",
       "auditor-view": "Seçilmiş audit üçün auditor görünüşü: statuslarla sübutların baxışı, raundlarla auditor qiymətləndirmələri və müştəridən sənəd tələbi (PBC)."
     }
@@ -1297,6 +1883,366 @@
     "startTour": "Tura başla",
     "openGuide": "Tam bələdçi",
     "close": "Bağla"
+  },
+  "filters": {
+    "all": "Hamısı",
+    "status": "Status",
+    "state": "Mərhələ",
+    "risk": "Xas risk",
+    "scope": "Əhatə",
+    "ownedByMe": "Mənə təyin olunub",
+    "needsMyApproval": "Mənim təsdiqimi gözləyir",
+    "type": "Növ",
+    "mode": "Rejim",
+    "tag": "Teq"
+  },
+  "findings": {
+    "title": "Findinqlər",
+    "colTitle": "Ad",
+    "colRating": "Risk",
+    "colStatus": "Status",
+    "colSla": "SLA",
+    "colOwner": "Sahib",
+    "colDue": "Son tarix",
+    "empty": "Hələ finding yoxdur",
+    "back": "Findinq siyahısına",
+    "description": "Təsvir",
+    "recommendation": "Tövsiyə",
+    "managementResponse": "Rəhbərliyin cavabı",
+    "engagement": "Audit",
+    "auditor": "Auditor",
+    "resolution": "Həll tarixi",
+    "remediatedAt": "Aradan qaldırılıb",
+    "retestResult": "Təkrar yoxlama nəticəsi",
+    "actions": "Əməliyyatlar",
+    "advance": "«{status}» statusuna keçir",
+    "retestPassed": "Təkrar yoxlama uğurlu",
+    "retestFailed": "Təkrar yoxlama uğursuz",
+    "assignTitle": "Sahib təyin et",
+    "assignBtn": "Təyin et",
+    "history": "Tarixçə",
+    "historyEmpty": "Tarixçə yoxdur",
+    "comments": "Şərhlər",
+    "commentsEmpty": "Hələ şərh yoxdur",
+    "commentPh": "Şərh yazın…",
+    "commentAdd": "Əlavə et",
+    "statuses": {
+      "identified": "Aşkarlanıb",
+      "assigned": "Təyin olunub",
+      "in_progress": "İcradadır",
+      "remediated": "Aradan qaldırılıb",
+      "pending_retest": "Təkrar yoxlama gözlənilir",
+      "closed": "Bağlanıb"
+    },
+    "ratings": {
+      "critical": "Kritik",
+      "high": "Yüksək",
+      "medium": "Orta",
+      "low": "Aşağı",
+      "not_applicable": "Tətbiq olunmur"
+    },
+    "slas": {
+      "ok": "OK",
+      "due_soon": "Vaxt yaxınlaşır",
+      "overdue": "Gecikib"
+    },
+    "templates": "Finding şablonları",
+    "templatesHint": "Preset risk və tövsiyə ilə tipik findinqlər — bir klik redaktə edilə bilən finding yaradır.",
+    "useTemplate": "Finding yarat",
+    "tasks": "Aradan qaldırma tapşırıqları",
+    "tagsTitle": "Teqlər",
+    "tagAdd": "Teq əlavə et…",
+    "tagNone": "Teq yoxdur",
+    "tagAttach": "Əlavə et"
+  },
+  "documents": {
+    "title": "Sənədlər",
+    "upload": "Sübut yüklə",
+    "uploadBtn": "Yüklə",
+    "linkTo": "Bağla",
+    "linkNone": "Bağlantısız",
+    "linkControls": "Nəzarətlər",
+    "linkEngagements": "Auditlər",
+    "renewBy": "Yenilənmə tarixi",
+    "colName": "Ad",
+    "colSize": "Ölçü",
+    "colOwner": "Sahib",
+    "colLinks": "Bağlantılar",
+    "colRenewBy": "Yenilənmə",
+    "colUploaded": "Yüklənib",
+    "ownerSave": "OK",
+    "empty": "Hələ sənəd yoxdur",
+    "evidence": "Sübut icmalı",
+    "ev": {
+      "not_ready": "Hazır deyil",
+      "ready": "Hazır",
+      "flagged": "İşarələnib",
+      "accepted": "Qəbul edilib"
+    },
+    "auditFirms": "Audit firmaları",
+    "auditFirmsHint": "Sübutları yoxlamaq üçün dəvət olunan xarici auditorlar.",
+    "firmName": "Firma adı",
+    "firmNamePh": "məs. Ernst & Young",
+    "firmEmail": "Əlaqə e-poçtu",
+    "firmAdd": "Firma əlavə et",
+    "firmDelete": "Firmanı sil",
+    "colStatus": "Status",
+    "colCategory": "Kateqoriya",
+    "colActions": "Əməllər",
+    "st": {
+      "needs_document": "Sənəd tələb olunur",
+      "draft": "Qaralama",
+      "active": "Aktiv",
+      "overdue": "Gecikib"
+    },
+    "publish": "Dərc et",
+    "uploadFile": "Yüklə",
+    "newVersion": "Yeni versiya",
+    "category": "Kateqoriya",
+    "categoryPh": "məs. siyasət, hesabat",
+    "saveDraft": "Qaralama kimi saxla",
+    "requestTitle": "Sübut tələb et",
+    "requestHint": "Gözlədiyiniz, lakin hələ olmayan sənəd üçün yer tutucu yaradın.",
+    "requestName": "Sənəd adı",
+    "requestNamePh": "məs. Q3 giriş yoxlaması",
+    "requestBtn": "Tələb et"
+  },
+  "tests": {
+    "title": "Testlər",
+    "colTitle": "Ad",
+    "colControl": "Nəzarət",
+    "colKind": "Növ",
+    "colStatus": "Status",
+    "colSla": "SLA",
+    "colOwner": "Sahib",
+    "colDue": "Son tarix",
+    "empty": "Hələ test yoxdur",
+    "back": "Test siyahısına",
+    "attnOverdue": "Gecikib",
+    "attnDueSoon": "Vaxt yaxınlaşır",
+    "attnFailing": "Uğursuz",
+    "kinds": {
+      "manual": "Əl ilə",
+      "automated": "Avtomatik"
+    },
+    "statuses": {
+      "ok": "OK",
+      "failing": "Uğursuz",
+      "needs_attention": "Diqqət tələb edir",
+      "deactivated": "Deaktiv"
+    },
+    "slas": {
+      "ok": "OK",
+      "due_soon": "Vaxt yaxınlaşır",
+      "overdue": "Gecikib"
+    },
+    "frequency": "Dövrilik",
+    "runAuto": "İndi işə sal",
+    "deactivate": "Deaktiv et",
+    "editTitle": "Testi redaktə et",
+    "editSave": "Yadda saxla",
+    "history": "İcra tarixçəsi",
+    "historyEmpty": "Hələ icra yoxdur",
+    "outcome": "Nəticə",
+    "failingEntities": "Uğursuz obyektlər",
+    "evidence": "Sübut",
+    "runAt": "İcra vaxtı",
+    "ownerNone": "— dəyişmə —",
+    "colCategory": "Kateqoriya",
+    "colStandards": "Standartlar",
+    "cats": {
+      "hr": "HR",
+      "it": "İT",
+      "automated": "Avtomatik"
+    }
+  },
+  "search": {
+    "title": "Axtarış",
+    "hint": "Yuxarıdakı sətirdə sorğu yazın — findinqlər, nəzarətlər, iş sənədləri, bilik bazası və audit proqramları üzrə axtarılır.",
+    "empty": "Heç nə tapılmadı",
+    "types": {
+      "finding": "Findinqlər",
+      "control": "Nəzarətlər",
+      "working_paper": "İş sənədləri",
+      "kb_entry": "Bilik bazası",
+      "audit_program": "Audit proqramları"
+    }
+  },
+  "comments": {
+    "title": "Şərhlər",
+    "empty": "Hələ şərh yoxdur",
+    "placeholder": "Şərh yazın…",
+    "add": "Əlavə et"
+  },
+  "roles": {
+    "title": "Rollar və icazələr",
+    "preset": "· hazır",
+    "createEn": "Yeni rol (EN)",
+    "createBtn": "Rol yarat",
+    "readonly": "yalnız oxu",
+    "cellEdit": "Xananı təyin et",
+    "cellApply": "Tətbiq et",
+    "levels": {
+      "none": "Giriş yoxdur",
+      "view": "Baxış",
+      "edit": "Redaktə"
+    }
+  },
+  "members": {
+    "title": "İştirakçılar",
+    "colName": "Ad",
+    "colEmail": "Email",
+    "colCategory": "Kateqoriya",
+    "colStatus": "Status",
+    "colRole": "Rol",
+    "roleSave": "OK",
+    "empty": "İştirakçı yoxdur",
+    "categories": {
+      "auditor": "Auditor",
+      "end_user": "İstifadəçi",
+      "msp": "MSP"
+    }
+  },
+  "myWork": {
+    "title": "Mənim işim",
+    "allDone": "Sizə heç nə təyin olunmayıb — hər şey qaydasındadır.",
+    "pendingCount": "Diqqət tələb edir: {count}",
+    "findings": "Mənim findinqlərim",
+    "tests": "Mənim testlərim",
+    "approvals": "Təsdiqimi gözləyir",
+    "attestations": "Tanışlıq üçün siyasətlər",
+    "attestBtn": "Təsdiqlə",
+    "accessRequests": "Giriş sorğularım",
+    "none": "Boşdur",
+    "reqStatuses": {
+      "pending": "Gözləyir",
+      "approved": "Təsdiqlənib",
+      "rejected": "Rədd edilib"
+    },
+    "reqSystem": "Sistem",
+    "reqJustification": "Əsaslandırma",
+    "reqSubmit": "Giriş sorğusu"
+  },
+  "assets": {
+    "title": "Aktiv İnventarı",
+    "empty": "Hələ aktiv yoxdur",
+    "create": "Yeni aktiv",
+    "namePh": "Aktiv adı",
+    "add": "Əlavə et",
+    "name": "Ad",
+    "type": "Növ",
+    "owner": "Sahib",
+    "source": "Mənbə",
+    "tags": "Teqlər",
+    "ty": {
+      "erp": "ERP",
+      "db": "Verilənlər bazası",
+      "network": "Şəbəkə",
+      "app": "Tətbiq",
+      "cloud": "Bulud",
+      "endpoint": "Son nöqtə",
+      "other": "Digər"
+    },
+    "manual": "Əl ilə",
+    "connector": "Konnektor",
+    "bulkTag": "Seçilənləri teqlə",
+    "tagPh": "məs. pci-scope",
+    "applyTag": "Teqi tətbiq et",
+    "bulkHint": "Cədvəldə aktivləri seçin, teq adını daxil edin, tətbiq edin.",
+    "exportCsv": "CSV ixrac et"
+  },
+  "tasks": {
+    "openCount": "{open} açıq · {total}",
+    "empty": "Hələ tapşırıq yoxdur",
+    "titleLabel": "Tapşırıq",
+    "titlePh": "Aradan qaldırma addımı",
+    "assignee": "İcraçı",
+    "due": "Son tarix",
+    "add": "Tapşırıq əlavə et",
+    "start": "Başla",
+    "complete": "Tamamla",
+    "delete": "Sil",
+    "st": {
+      "open": "Açıq",
+      "in_progress": "İcrada",
+      "done": "Hazır"
+    }
+  },
+  "roadmap": {
+    "title": "Yol xəritəsi",
+    "empty": "Yol xəritəsi üçün çərçivə aktivləşdirin.",
+    "overall": "Ümumi",
+    "auditReady": "Auditə hazır",
+    "onTrack": "Qrafikdə",
+    "offTrack": "Qrafikdən kənar",
+    "target": "Hədəf tarix",
+    "setTarget": "Yadda saxla",
+    "noTarget": "Hədəf yoxdur",
+    "elapsed": "vaxt keçib",
+    "ph": {
+      "setup": "Quraşdırma",
+      "policies": "Siyasətlər",
+      "remediation": "Aradan qaldırma",
+      "audit": "Audit"
+    }
+  },
+  "trustPublic": {
+    "posture": "Təhlükəsizlik vəziyyəti",
+    "requestTitle": "Tam giriş tələb et",
+    "requestHint": "Ətraflı sənədlərə giriş tələb edin. Nəzərdən keçirib şəxsi keçid verəcəyik.",
+    "email": "İş e-poçtu",
+    "company": "Şirkət",
+    "message": "Mesaj (istəyə görə)",
+    "send": "Giriş tələb et",
+    "sent": "Tələb göndərildi — e-poçtla cavab verəcəyik.",
+    "error": "Xəta baş verdi. Yenidən cəhd edin.",
+    "notFound": "Bu Trust Center mövcud deyil.",
+    "granted": "Verilmiş giriş",
+    "grantedTo": "Giriş verildi",
+    "poweredBy": "STATERA ilə",
+    "faq": "Tez-tez verilən suallar"
+  },
+  "ssoSettings": {
+    "title": "SSO (vahid giriş)",
+    "intro": "Bu tenant üçün təşkilatınızın öz kimlik provayderini (OIDC və ya SAML) qoşun.",
+    "enabled": "Tenant SSO-nu aktiv et",
+    "protocol": "Protokol",
+    "emailDomain": "E-poçt domeni",
+    "emailDomainHint": "Bu e-poçt domeni olan istifadəçilər sizin IdP-yə yönləndirilir.",
+    "entryPoint": "Issuer / metadata URL",
+    "entryPointHint": "OIDC issuer və ya SAML metadata / entry-point URL.",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "secretSet": "•••••••• (saxlanılıb)",
+    "secretEmpty": "Təyin edilməyib",
+    "secretHint": "Şifrələnmiş saxlanılır; bir daha göstərilmir. Boş → cari saxlanılır.",
+    "save": "Yadda saxla",
+    "note": "Girişin tenant IdP-lərinə yönləndirilməsi auth qatı tərəfindən tətbiq olunur; konfiqurasiya burada saxlanılır."
+  },
+  "security": {
+    "title": "Təhlükəsizlik",
+    "intro": "Hesabınızın təhlükəsizliyini idarə edin.",
+    "mfaTitle": "İki faktorlu autentifikasiya (2FA)",
+    "on": "Aktiv",
+    "enabledDesc": "2FA aktivdir — girişdə birdəfəlik kod tələb olunur.",
+    "offDesc": "İkinci faktor əlavə edin: autentifikator tətbiqi girişdə birdəfəlik kod yaradır.",
+    "enable": "2FA-nı aktiv et",
+    "scanHint": "Bu QR-ı autentifikator tətbiqində (Google Authenticator, Authy…) skan edin və 6 rəqəmli kodu daxil edin.",
+    "manualKey": "Əl açarı",
+    "codeToEnable": "6 rəqəmli kod",
+    "confirm": "Təsdiq et",
+    "badCode": "Yanlış kod — yenidən cəhd edin.",
+    "setupError": "Quruluşu başlatmaq olmadı.",
+    "enabledOk": "2FA aktivdir.",
+    "recoveryHint": "Bu bərpa kodlarını təhlükəsiz yerdə saxlayın — cihazınızı itirsəniz, hər biri bir dəfə işləyir. Yalnız indi göstərilir.",
+    "codeToDisable": "Söndürmək üçün kod",
+    "disable": "2FA-nı söndür",
+    "disabledOk": "2FA söndürüldü.",
+    "requiredTitle": "Təşkilatınız MFA tələb edir",
+    "requiredBody": "Təşkilat siyasətinə uyğun olmaq üçün aşağıda iki faktorlu autentifikasiyanı aktiv edin.",
+    "teamTitle": "Komandanın MFA komplayensi",
+    "teamCount": "{total} iştirakçıdan {enabled} MFA aktiv edib.",
+    "off": "Söndürülüb"
   },
   "auditors": {
     "title": "Auditorlar",

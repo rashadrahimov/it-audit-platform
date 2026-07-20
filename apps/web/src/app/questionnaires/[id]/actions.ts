@@ -34,6 +34,22 @@ export async function answerAction(formData: FormData): Promise<void> {
   revalidatePath(`/questionnaires/${id}`);
 }
 
+/** T-V42: один клик — применить предложенный KB-ответ (reuse через kbEntryId). */
+export async function useKbSuggestionAction(
+  id: string,
+  answerId: string,
+  kbEntryId: string,
+): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug || !kbEntryId) return;
+  await apiFetch(`/questionnaires/answers/${answerId}`, {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ kbEntryId }),
+  });
+  revalidatePath(`/questionnaires/${id}`);
+}
+
 /** Отправить опросник — все вопросы должны быть отвечены (T-083). */
 export async function submitQuestionnaireAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();

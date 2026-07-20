@@ -1,9 +1,21 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
+import { NotificationDispatchService } from '../notifications/notification-dispatch.service';
 import { DbService } from '../db/db.service';
-import { control, document, membership, test, testResult, user } from '../db/schema';
+import {
+  control,
+  controlMapping,
+  document,
+  framework,
+  frameworkRequirement,
+  membership,
+  test,
+  testResult,
+  user,
+} from '../db/schema';
+import { PRESET_TESTS } from '../seed-data/preset-tests';
 
 interface Actor {
   tenantId: string;
@@ -16,6 +28,8 @@ export interface CreateTestInput {
   controlId: string;
   titleI18n: I18nText;
   kind: 'manual' | 'automated';
+  /** T-V22: категория библиотеки — hr | it (kind=automated даёт 'automated'). */
+  category?: string;
   frequency?: string;
   dueDate?: string;
   ownerMembershipId?: string;
@@ -44,6 +58,7 @@ export class TestsService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly notificationDispatch: NotificationDispatchService,
   ) {}
 
   async create(actor: Actor, input: CreateTestInput) {
@@ -72,6 +87,8 @@ export class TestsService {
           controlId: input.controlId,
           titleI18n: input.titleI18n,
           kind: input.kind,
+          // T-V22: автотесты попадают в категорию automated
+          category: input.kind === 'automated' ? 'automated' : (input.category ?? null),
           frequency: input.frequency ?? null,
           connectorId: input.connectorId ?? null,
           checkConfig: input.checkConfig ?? null,
@@ -127,7 +144,7 @@ export class TestsService {
         .set({ status: STATUS_BY_OUTCOME[input.outcome] })
         .where(eq(test.id, testId))
         .returning();
-      return { result, before: row.status, after: updated?.status };
+      return { result, before: row.status, after: updated?.status, row };
     });
     await this.auditLogService.record({
       tenantId: actor.tenantId,
@@ -139,16 +156,81 @@ export class TestsService {
       before: { status: saved.before },
       after: { status: saved.after, outcome: input.outcome },
     });
+    // T-V19: провал теста → уведомление owner'у (in-app + email по расписанию тенанта)
+    if (input.outcome === 'fail' && saved.row.ownerMembershipId) {
+      await this.notificationDispatch.notify({
+        tenantId: actor.tenantId,
+        recipientMembershipId: saved.row.ownerMembershipId,
+        type: 'warning',
+        title: `Test failing: ${saved.row.titleI18n.en}`,
+        email: { template: 'test-failing', params: { testTitle: saved.row.titleI18n.en } },
+      });
+    }
     return saved.result;
   }
 
-  async list(tenantId: string, locale: Locale, controlId?: string) {
-    const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx
+  /**
+   * T-V22: библиотека готовых тестов — ленивый идемпотентный сид при первом
+   * просмотре списка, только если у тенанта НИКОГДА не было тестов.
+   */
+  async ensurePresetTests(tenantId: string) {
+    await this.dbService.withTenant(tenantId, async (tx) => {
+      const [row] = await tx.select({ c: sql<number>`count(*)::int` }).from(test);
+      if ((row?.c ?? 0) > 0) return;
+      // глобальные контроли видны под RLS-политикой чтения (tenant_id IS NULL OR =)
+      const refs = [...new Set(PRESET_TESTS.map((p) => p.controlRef))];
+      const controls = await tx
+        .select({ id: control.id, ref: control.ref })
+        .from(control)
+        .where(and(inArray(control.ref, refs), isNull(control.deletedAt)));
+      const byRef = new Map(controls.map((c) => [c.ref, c.id]));
+      const values = PRESET_TESTS.flatMap((p) => {
+        const controlId = byRef.get(p.controlRef);
+        if (!controlId) return [];
+        return [
+          {
+            tenantId,
+            controlId,
+            titleI18n: p.title,
+            kind: 'manual',
+            category: p.category,
+            frequency: p.frequency,
+          },
+        ];
+      });
+      if (values.length > 0) await tx.insert(test).values(values);
+    });
+  }
+
+  async list(
+    tenantId: string,
+    locale: Locale,
+    controlId?: string,
+    filters?: {
+      status?: string;
+      kind?: string;
+      slaStatus?: string;
+      ownerMembershipId?: string;
+      category?: string;
+    },
+  ) {
+    await this.ensurePresetTests(tenantId);
+    const conds = [isNull(test.deletedAt)];
+    if (controlId) conds.push(eq(test.controlId, controlId));
+    if (filters?.status) conds.push(eq(test.status, filters.status));
+    if (filters?.kind) conds.push(eq(test.kind, filters.kind));
+    if (filters?.slaStatus) conds.push(eq(test.slaStatus, filters.slaStatus));
+    if (filters?.ownerMembershipId) {
+      conds.push(eq(test.ownerMembershipId, filters.ownerMembershipId));
+    }
+    if (filters?.category) conds.push(eq(test.category, filters.category));
+    const { rows, lastFails } = await this.dbService.withTenant(tenantId, async (tx) => {
+      const rows = await tx
         .select({
           id: test.id,
           titleI18n: test.titleI18n,
           kind: test.kind,
+          category: test.category,
           frequency: test.frequency,
           status: test.status,
           slaStatus: test.slaStatus,
@@ -161,17 +243,49 @@ export class TestsService {
         .innerJoin(control, eq(test.controlId, control.id))
         .leftJoin(membership, eq(test.ownerMembershipId, membership.id))
         .leftJoin(user, eq(membership.userId, user.id))
-        .where(
-          controlId
-            ? and(isNull(test.deletedAt), eq(test.controlId, controlId))
-            : isNull(test.deletedAt),
-        )
-        .orderBy(desc(test.createdAt)),
-    );
+        .where(and(...conds))
+        .orderBy(desc(test.createdAt));
+      // T-V22: failing-счётчик последнего прогона (DISTINCT ON по test_id)
+      const ids = rows.map((r) => r.id);
+      const lastFails = new Map<string, number>();
+      if (ids.length > 0) {
+        const res = await tx.execute(sql`
+          SELECT DISTINCT ON (test_id) test_id,
+                 jsonb_array_length(failing_entities) AS failing
+          FROM test_result
+          WHERE test_id IN ${ids}
+          ORDER BY test_id, run_at DESC
+        `);
+        for (const r of res.rows as Array<{ test_id: string; failing: number }>) {
+          lastFails.set(r.test_id, Number(r.failing));
+        }
+      }
+      return { rows, lastFails };
+    });
+    // T-V22: standards — фреймворки, на которые замаплен контрол теста (глобальный маппинг)
+    const controlIds = [...new Set(rows.map((r) => r.controlId))];
+    const standardsByControl = new Map<string, string[]>();
+    if (controlIds.length > 0) {
+      const mappings = await this.dbService.db
+        .selectDistinct({
+          controlId: controlMapping.controlId,
+          frameworkName: framework.nameI18n,
+        })
+        .from(controlMapping)
+        .innerJoin(frameworkRequirement, eq(controlMapping.requirementId, frameworkRequirement.id))
+        .innerJoin(framework, eq(frameworkRequirement.frameworkId, framework.id))
+        .where(inArray(controlMapping.controlId, controlIds));
+      for (const m of mappings) {
+        const list = standardsByControl.get(m.controlId) ?? [];
+        list.push(m.frameworkName.en);
+        standardsByControl.set(m.controlId, list);
+      }
+    }
     return rows.map((row) => ({
       id: row.id,
       title: resolveLocalized(row.titleI18n, locale),
       kind: row.kind,
+      category: row.category,
       frequency: row.frequency,
       status: row.status,
       slaStatus: row.slaStatus,
@@ -179,6 +293,8 @@ export class TestsService {
       controlRef: row.controlRef,
       controlId: row.controlId,
       owner: row.owner,
+      standards: (standardsByControl.get(row.controlId) ?? []).sort(),
+      lastFailing: lastFails.get(row.id) ?? 0,
     }));
   }
 
@@ -189,28 +305,147 @@ export class TestsService {
         .from(test)
         .where(and(eq(test.id, id), isNull(test.deletedAt)));
       if (!row) throw new NotFoundException(`Тест ${id} не найден`);
+      const [ctrl] = await tx
+        .select({ ref: control.ref })
+        .from(control)
+        .where(eq(control.id, row.controlId));
+      let owner: string | null = null;
+      if (row.ownerMembershipId) {
+        const [m] = await tx
+          .select({ fullName: user.fullName })
+          .from(membership)
+          .innerJoin(user, eq(membership.userId, user.id))
+          .where(eq(membership.id, row.ownerMembershipId));
+        owner = m?.fullName ?? null;
+      }
       const results = await tx
         .select()
         .from(testResult)
         .where(eq(testResult.testId, id))
         .orderBy(desc(testResult.runAt))
         .limit(20);
-      return { row, results };
+      return { row, ctrl, owner, results };
     });
     return {
       id: data.row.id,
       title: resolveLocalized(data.row.titleI18n, locale),
       kind: data.row.kind,
+      frequency: data.row.frequency,
       status: data.row.status,
       slaStatus: data.row.slaStatus,
       dueDate: data.row.dueDate?.toISOString() ?? null,
       controlId: data.row.controlId,
+      controlRef: data.ctrl?.ref ?? null,
+      connectorId: data.row.connectorId,
+      ownerMembershipId: data.row.ownerMembershipId,
+      owner: data.owner,
       results: data.results.map((r) => ({
         runAt: r.runAt.toISOString(),
         outcome: r.outcome,
         failingEntities: r.failingEntities,
         evidenceDocumentId: r.evidenceDocumentId,
       })),
+    };
+  }
+
+  /** T-V06: правка теста (title/frequency/due/owner) из UI. */
+  async update(
+    actor: Actor,
+    id: string,
+    input: {
+      titleI18n?: I18nText;
+      frequency?: string | null;
+      dueDate?: string | null;
+      ownerMembershipId?: string | null;
+    },
+  ) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(test)
+        .where(and(eq(test.id, id), isNull(test.deletedAt)));
+      if (!row) throw new NotFoundException(`Тест ${id} не найден`);
+      const patch: Partial<typeof test.$inferInsert> = {};
+      if (input.titleI18n !== undefined) patch.titleI18n = input.titleI18n;
+      if (input.frequency !== undefined) patch.frequency = input.frequency;
+      if (input.dueDate !== undefined) {
+        patch.dueDate = input.dueDate ? new Date(input.dueDate) : null;
+      }
+      if (input.ownerMembershipId !== undefined) {
+        patch.ownerMembershipId = input.ownerMembershipId;
+      }
+      if (Object.keys(patch).length === 0) {
+        throw new BadRequestException('Нечего обновлять');
+      }
+      const [updated] = await tx.update(test).set(patch).where(eq(test.id, id)).returning();
+      return { before: row, updated };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'test.updated',
+      entityType: 'test',
+      entityId: id,
+      before: { dueDate: result.before.dueDate, frequency: result.before.frequency },
+      after: input,
+    });
+    return { id, status: result.updated?.status };
+  }
+
+  /** T-V06: деактивация — тест выпадает из мониторинга (прогоны отбиваются гардом). */
+  async deactivate(actor: Actor, id: string) {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(test)
+        .where(and(eq(test.id, id), isNull(test.deletedAt)));
+      if (!row) throw new NotFoundException(`Тест ${id} не найден`);
+      if (row.status === 'deactivated') {
+        throw new BadRequestException('Тест уже деактивирован');
+      }
+      await tx.update(test).set({ status: 'deactivated' }).where(eq(test.id, id));
+      return { before: row.status };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'test.deactivated',
+      entityType: 'test',
+      entityId: id,
+      before: { status: result.before },
+      after: { status: 'deactivated' },
+    });
+    return { id, status: 'deactivated' };
+  }
+
+  /** T-V06: блок «tests that need attention» — счётчики + краткие списки. */
+  async attention(tenantId: string, locale: Locale) {
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          id: test.id,
+          titleI18n: test.titleI18n,
+          status: test.status,
+          slaStatus: test.slaStatus,
+        })
+        .from(test)
+        .where(and(isNull(test.deletedAt), ne(test.status, 'deactivated'))),
+    );
+    const pick = (pred: (r: (typeof rows)[number]) => boolean) =>
+      rows
+        .filter(pred)
+        .slice(0, 10)
+        .map((r) => ({ id: r.id, title: resolveLocalized(r.titleI18n, locale) }));
+    const overdue = rows.filter((r) => r.slaStatus === 'overdue').length;
+    const dueSoon = rows.filter((r) => r.slaStatus === 'due_soon').length;
+    const failing = rows.filter((r) => r.status === 'failing').length;
+    return {
+      counts: { overdue, dueSoon, failing },
+      overdue: pick((r) => r.slaStatus === 'overdue'),
+      dueSoon: pick((r) => r.slaStatus === 'due_soon'),
+      failing: pick((r) => r.status === 'failing'),
     };
   }
 }

@@ -193,12 +193,23 @@ export class AuthService {
   /** Membership'ы над-тенантные (ADR-0015) — читаются без RLS-контекста. */
   async meTenants(userId: string): Promise<MeTenantsResponse> {
     const rows = await this.dbService.db
-      .select({ slug: tenant.slug, name: tenant.name, roleName: role.nameI18n })
+      .select({
+        slug: tenant.slug,
+        name: tenant.name,
+        roleName: role.nameI18n,
+        category: membership.category,
+      })
       .from(membership)
       .innerJoin(tenant, eq(membership.tenantId, tenant.id))
       .innerJoin(role, eq(membership.roleId, role.id))
       .where(and(eq(membership.userId, userId), eq(membership.status, 'active')));
-    return rows.map((row) => ({ slug: row.slug, name: row.name, role: row.roleName.en }));
+    // T-V50: category (internal|auditor) — для scoped-навигации внешнего аудитора
+    return rows.map((row) => ({
+      slug: row.slug,
+      name: row.name,
+      role: row.roleName.en,
+      category: row.category,
+    }));
   }
 
   private async registerFailedAttempt(userId: string, currentCount: number): Promise<void> {
@@ -226,6 +237,8 @@ export class AuthService {
       email: u.email,
       fullName: u.fullName,
       locale: (u.locale as MeResponse['locale']) ?? 'en',
+      // T-V52/T-V60: признак включённого MFA — для экрана /security и require-MFA policy
+      mfaEnabled: u.mfaEnabled,
     };
   }
 

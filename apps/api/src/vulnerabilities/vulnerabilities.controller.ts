@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -23,6 +24,7 @@ const createSchema = z.object({
   severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   description: z.string().optional(),
   dueDate: z.iso.datetime().optional(),
+  assetId: z.uuid().optional(),
 });
 
 @Controller('vulnerabilities')
@@ -67,8 +69,19 @@ export class VulnerabilitiesController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Реестр уязвимостей' })
-  list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId);
+  @ApiOperation({ summary: 'Реестр уязвимостей (фильтры: status/severity)' })
+  list(
+    @Req() req: TenantRequest,
+    @Query('status') status?: string,
+    @Query('severity') severity?: string,
+  ) {
+    return this.service.list(req.tenantId, { status, severity });
+  }
+
+  @Get('by-asset')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Уязвимости по активам + агрегат Asset SLA status (T-V32)' })
+  byAsset(@Req() req: TenantRequest) {
+    return this.service.byAsset(req.tenantId);
   }
 }

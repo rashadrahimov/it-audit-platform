@@ -16,12 +16,21 @@ const inputClass =
   'w-full rounded-md border border-border bg-white px-3 py-2 text-foreground ' +
   'outline-none transition-shadow duration-150 focus-visible:ring-2 focus-visible:ring-ring';
 
-function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
+function SubmitButton({
+  label,
+  pendingLabel,
+  testid,
+}: {
+  label: string;
+  pendingLabel: string;
+  testid?: string;
+}) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending}
+      data-testid={testid}
       className="w-full cursor-pointer rounded-md bg-accent px-4 py-2.5 font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-default disabled:opacity-60"
     >
       {pending ? pendingLabel : label}
@@ -157,7 +166,7 @@ export function LoginForm() {
         />
       </label>
       <ErrorAlert message={loginState.error} />
-      <SubmitButton label={t('signIn')} pendingLabel={t('signingIn')} />
+      <SubmitButton label={t('signIn')} pendingLabel={t('signingIn')} testid="login-submit" />
 
       <div className="flex items-center gap-3 py-0.5 text-xs text-secondary">
         <span className="h-px flex-1 bg-border" />

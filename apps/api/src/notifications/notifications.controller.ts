@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
+import { NotificationDispatchService } from './notification-dispatch.service';
 import { NotificationsService } from './notifications.service';
 
 const createSchema = z.object({
@@ -29,7 +30,36 @@ const createSchema = z.object({
 @ApiBearerAuth()
 @ApiHeader({ name: 'X-Tenant-Slug', required: true })
 export class NotificationsController {
-  constructor(private readonly service: NotificationsService) {}
+  constructor(
+    private readonly service: NotificationsService,
+    private readonly dispatch: NotificationDispatchService,
+  ) {}
+
+  @Get('settings')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'T-V19: настройки уведомлений тенанта (расписание/таймзона/email)' })
+  settings(@Req() req: TenantRequest) {
+    return this.dispatch.settingsOf(req.tenantId);
+  }
+
+  @Post('settings')
+  @HttpCode(200)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({
+    summary: 'T-V19: сохранить настройки уведомлений (anytime | work_hours 9–18 + TZ)',
+  })
+  saveSettings(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = z
+      .object({
+        emailEnabled: z.boolean().optional(),
+        schedule: z.enum(['anytime', 'work_hours']).optional(),
+        timezone: z.string().min(1).max(64).optional(),
+        digest: z.enum(['weekly', 'daily', 'off']).optional(),
+      })
+      .safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.dispatch.saveSettings(req.tenantId, parsed.data);
+  }
 
   @Post()
   @RequirePermission('settings', 'edit', 'edit')

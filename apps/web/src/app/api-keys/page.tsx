@@ -25,6 +25,21 @@ export default async function ApiKeysPage() {
   const res = await apiFetch('/api-keys', { headers });
   const keys: ApiKey[] = res.ok ? await res.json() : [];
 
+  // T-V37: публичный REST API v1 — все основные ресурсы (read-only, X-Api-Key)
+  const API_RESOURCES = [
+    'controls',
+    'findings',
+    'risks',
+    'vendors',
+    'policies',
+    'engagements',
+    'assets',
+    'tests',
+    'vulnerabilities',
+    'security-alerts',
+    'documents',
+  ];
+
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
@@ -92,6 +107,29 @@ export default async function ApiKeysPage() {
           </table>
         </section>
       )}
+
+      <section className="flex flex-col gap-3" data-testid="api-v1-reference">
+        <h2 className="text-sm font-semibold text-secondary">{t('apiTitle')}</h2>
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm">
+          <p className="text-xs text-secondary">{t('apiHint')}</p>
+          <pre className="overflow-x-auto rounded-md bg-muted px-3 py-2 font-mono text-xs text-foreground">
+            curl -H &quot;X-Api-Key: &lt;key&gt;&quot; https://&lt;host&gt;/api/v1/findings
+          </pre>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-secondary">{t('apiResources')}</span>
+            <div className="flex flex-wrap gap-1.5">
+              {API_RESOURCES.map((r) => (
+                <code
+                  key={r}
+                  className="rounded-md bg-muted px-2 py-0.5 font-mono text-xs text-secondary"
+                >
+                  /api/v1/{r}
+                </code>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

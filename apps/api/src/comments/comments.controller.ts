@@ -22,7 +22,7 @@ import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { comment } from '../db/schema';
+import { comment, user } from '../db/schema';
 
 const createCommentSchema = z.object({
   entityType: z.string().min(1),
@@ -79,10 +79,19 @@ export class CommentsController {
     if (!entityType || !entityId) {
       throw new BadRequestException('Нужны query entityType и entityId');
     }
-    return this.dbService.withTenant(req.tenantId, (tx) =>
+    // T-V10: + имя автора для UI-блока комментариев
+    const rows = await this.dbService.withTenant(req.tenantId, (tx) =>
       tx
-        .select()
+        .select({
+          id: comment.id,
+          entityType: comment.entityType,
+          entityId: comment.entityId,
+          body: comment.body,
+          createdAt: comment.createdAt,
+          author: user.fullName,
+        })
         .from(comment)
+        .leftJoin(user, eq(comment.authorUserId, user.id))
         .where(
           and(
             eq(comment.entityType, entityType),
@@ -92,5 +101,6 @@ export class CommentsController {
         )
         .orderBy(comment.createdAt),
     );
+    return rows.map((r) => ({ ...r, at: r.createdAt.toISOString() }));
   }
 }

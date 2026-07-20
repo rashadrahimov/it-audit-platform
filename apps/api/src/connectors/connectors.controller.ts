@@ -7,6 +7,7 @@ import {
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -30,6 +31,18 @@ const createConnectorSchema = z.object({
   capabilities: z.array(z.enum(CAPABILITIES as [string, ...string[]])).min(1),
   config: z.record(z.string(), z.unknown()).default({}),
 });
+
+const updateConnectorSchema = z
+  .object({
+    capabilities: z
+      .array(z.enum(CAPABILITIES as [string, ...string[]]))
+      .min(1)
+      .optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
+    status: z.enum(['active', 'disabled']).optional(),
+    syncIntervalMinutes: z.number().int().nullable().optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: 'Пустой patch' });
 
 @Controller('connectors')
 @UseGuards(JwtAuthGuard, PermissionGuard)
@@ -62,11 +75,35 @@ export class ConnectorsController {
     return this.connectorsService.list(req.tenantId);
   }
 
+  @Get('catalog')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'T-V38: каталог провайдеров — метаданные и поля конфига для формы' })
+  @ApiOkResponse({ description: '[{provider, label, description, capabilities, configFields}]' })
+  catalog() {
+    return this.connectorSyncService.catalog();
+  }
+
   @Get(':id')
   @RequirePermission('settings', 'view')
   @ApiOperation({ summary: 'Карточка коннектора + история sync_run' })
   detail(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
     return this.connectorsService.detail(req.tenantId, id);
+  }
+
+  @Patch(':id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({
+    summary: 'T-V38: обновить коннектор — capabilities/config(merge)/статус/расписание автосинка',
+  })
+  @ApiOkResponse({ description: 'Коннектор без секретов' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateConnectorSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.connectorsService.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
   }
 
   @Post(':id/sync')
@@ -81,6 +118,17 @@ export class ConnectorsController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
     );
+  }
+
+  @Post(':id/test')
+  @HttpCode(200)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({
+    summary: 'T-V38: тест соединения — bind/probe без записи sync_run; всегда {ok, message}',
+  })
+  @ApiOkResponse({ description: '{ok: boolean, message: string}' })
+  test(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.connectorSyncService.testConnection(req.tenantId, id);
   }
 
   @Delete(':id')

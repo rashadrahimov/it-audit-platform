@@ -20,6 +20,9 @@ import {
 import type { DemoJobEnqueued, DemoJobStatus, HeartbeatStatus } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FindingRemindersService } from './finding-reminders.service';
+import { PolicyRenewalRemindersService } from './policy-renewal-reminders.service';
+import { WeeklyDigestService } from './weekly-digest.service';
+import { DocumentSlaService } from './document-sla.service';
 import { JobsService } from './jobs.service';
 import { SlaService, type SlaRecalcResult } from './sla.service';
 
@@ -29,6 +32,9 @@ export class JobsController {
     private readonly jobsService: JobsService,
     private readonly slaService: SlaService,
     private readonly findingRemindersService: FindingRemindersService,
+    private readonly policyRenewalRemindersService: PolicyRenewalRemindersService,
+    private readonly weeklyDigestService: WeeklyDigestService,
+    private readonly documentSlaService: DocumentSlaService,
   ) {}
 
   @Post('finding-reminders')
@@ -42,6 +48,29 @@ export class JobsController {
     return this.findingRemindersService.send();
   }
 
+  @Post('policy-renewal-reminders')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Напоминания о продлении политик вручную (T-V04); планово — раз в сутки',
+  })
+  @ApiCreatedResponse({ description: '{sent}' })
+  policyRenewalReminders(): Promise<{ sent: number }> {
+    return this.policyRenewalRemindersService.send();
+  }
+
+  @Post('weekly-digest')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Дайджест комплаенса вручную (T-V20); планово — раз в сутки по настройке тенанта',
+  })
+  @ApiCreatedResponse({ description: '{tenants, emails}' })
+  weeklyDigest(): Promise<{ tenants: number; emails: number }> {
+    // ручной прогон игнорирует day-of-week: слать всем, у кого digest не off
+    return this.weeklyDigestService.send(new Date(Date.UTC(2000, 0, 3))); // понедельник
+  }
+
   @Post('sla-recalc')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -49,6 +78,18 @@ export class JobsController {
   @ApiCreatedResponse({ description: '{findings, tests} — сколько строк пересчитано' })
   slaRecalc(): Promise<SlaRecalcResult> {
     return this.slaService.recalc();
+  }
+
+  @Post('document-sla')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'SLA документов вручную (T-V02); планово — раз в сутки: renew_by истёк → overdue + письмо',
+  })
+  @ApiCreatedResponse({ description: '{overdue, emails}' })
+  documentSla(): Promise<{ overdue: number; emails: number }> {
+    return this.documentSlaService.run();
   }
 
   @Post('demo')

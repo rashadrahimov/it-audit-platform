@@ -18,7 +18,7 @@ const DAY = 86_400_000;
 
 const dbService = new DbService();
 const service = new MembershipsService(dbService, new AuditLogService(dbService));
-const rbac = new RbacService(dbService);
+const rbac = new RbacService(dbService, new AuditLogService(dbService));
 
 let tenantId: string;
 let userId: string;

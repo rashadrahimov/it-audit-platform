@@ -10,6 +10,7 @@ export interface SlaRecalcResult {
   deprovisioning: number;
   vulnerabilities: number;
   commitments: number;
+  alerts: number;
 }
 
 /**
@@ -22,16 +23,27 @@ export class SlaService {
   constructor(private readonly dbService: DbService) {}
 
   async recalc(): Promise<SlaRecalcResult> {
-    const tenants = await this.dbService.db.select({ id: tenant.id }).from(tenant);
+    // T-V32: per-tenant окно due_soon из settings.sla.dueSoonDays (fallback env)
+    const tenants = await this.dbService.db
+      .select({ id: tenant.id, settings: tenant.settings })
+      .from(tenant);
     const totals: SlaRecalcResult = {
       findings: 0,
       tests: 0,
       deprovisioning: 0,
       vulnerabilities: 0,
       commitments: 0,
+      alerts: 0,
     };
-    const dueSoon = env.slaDueSoonDays;
     for (const t of tenants) {
+      const sla =
+        t.settings && typeof t.settings === 'object'
+          ? ((t.settings as Record<string, unknown>).sla as { dueSoonDays?: number } | undefined)
+          : undefined;
+      const dueSoon =
+        typeof sla?.dueSoonDays === 'number' && sla.dueSoonDays > 0
+          ? Math.round(sla.dueSoonDays)
+          : env.slaDueSoonDays;
       await this.dbService.withTenant(t.id, async (tx) => {
         const findings = await tx.execute(sql`
           UPDATE "finding" SET "sla_status" = CASE
@@ -68,11 +80,20 @@ export class SlaService {
             ELSE 'ok' END
           WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'met'
         `);
+        // T-V40: resolution windows на алертах — открытые (не closed) с дедлайном
+        const alerts = await tx.execute(sql`
+          UPDATE "security_alert" SET "sla_status" = CASE
+            WHEN "due_date" < now() THEN 'overdue'
+            WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
+            ELSE 'ok' END
+          WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'closed'
+        `);
         totals.findings += findings.rowCount ?? 0;
         totals.tests += tests.rowCount ?? 0;
         totals.deprovisioning += deprov.rowCount ?? 0;
         totals.vulnerabilities += vulns.rowCount ?? 0;
         totals.commitments += commitments.rowCount ?? 0;
+        totals.alerts += alerts.rowCount ?? 0;
       });
     }
     return totals;

@@ -7,13 +7,21 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { i18nTextSchema } from '@it-audit/shared';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { PrivacyAssessmentsService } from './privacy-assessments.service';
@@ -25,6 +33,8 @@ const dpiaCreateSchema = z.object({
   riskLevel: z.enum(['low', 'medium', 'high']).optional(),
   necessityNote: z.string().optional(),
   mitigations: z.array(z.unknown()).optional(),
+  approverMembershipId: z.uuid().optional(),
+  reviewDate: z.string().optional(),
 });
 
 const createSchema = z.object({
@@ -38,6 +48,10 @@ const createSchema = z.object({
   retentionPeriod: z.string().optional(),
   crossBorder: z.boolean().optional(),
   ownerMembershipId: z.uuid().optional(),
+  vendorId: z.uuid().optional(),
+  dataLocations: z.array(z.string()).optional(),
+  reviewOwnerMembershipId: z.uuid().optional(),
+  reviewDate: z.string().optional(),
 });
 
 @Controller('processing-activities')
@@ -72,7 +86,9 @@ export class PrivacyController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: unknown,
   ) {
-    const parsed = z.object({ to: z.enum(['in_progress', 'completed']) }).safeParse(body ?? {});
+    const parsed = z
+      .object({ to: z.enum(['in_progress', 'pending_approval', 'completed']) })
+      .safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.dpia.transition(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
@@ -81,11 +97,25 @@ export class PrivacyController {
     );
   }
 
+  @Post('dpia/:id/approve')
+  @HttpCode(200)
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Утвердить DPIA (T-V41): только назначенный approver' })
+  approveDpia(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.dpia.approve({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id);
+  }
+
   @Get('dpia')
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Список DPIA тенанта' })
-  listDpia(@Req() req: TenantRequest) {
-    return this.dpia.list(req.tenantId);
+  @ApiOperation({
+    summary: 'Список DPIA тенанта (?needsMyApproval=true — очередь approver, T-V41)',
+  })
+  @ApiQuery({ name: 'needsMyApproval', required: false })
+  listDpia(@Req() req: TenantRequest, @Query('needsMyApproval') needsMyApproval?: string) {
+    return this.dpia.list(req.tenantId, {
+      userId: req.user.sub,
+      needsMyApproval: needsMyApproval === 'true',
+    });
   }
 
   @Get('dpia/:id')
@@ -108,6 +138,19 @@ export class PrivacyController {
     );
   }
 
+  @Post('import')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Импорт реестра ROPA из CSV (T-V55, GDPR Art.30)' })
+  importCsv(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = z.object({ csv: z.string().min(1) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.importCsv(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.csv,
+    );
+  }
+
   @Post(':id/archive')
   @HttpCode(200)
   @RequirePermission('control', 'edit', 'edit')
@@ -118,9 +161,14 @@ export class PrivacyController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Реестр операций обработки (ROPA)' })
-  list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId);
+  @ApiOperation({ summary: 'Реестр операций обработки (ROPA); фильтры: ?role=, ?status= (T-V16)' })
+  @ApiQuery({ name: 'role', required: false })
+  @ApiQuery({ name: 'status', required: false })
+  list(@Req() req: TenantRequest, @Query('role') role?: string, @Query('status') status?: string) {
+    return this.service.list(req.tenantId, {
+      role: filterParam(role, 'role'),
+      status: filterParam(status, 'status'),
+    });
   }
 
   @Get(':id')

@@ -28,6 +28,7 @@ import {
   type Locale,
 } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam, uuidFilterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { FindingsService } from './findings.service';
@@ -60,6 +61,28 @@ function parseLocale(localeQuery?: string): Locale {
 @ApiHeader({ name: 'X-Tenant-Slug', required: true })
 export class FindingsController {
   constructor(private readonly findingsService: FindingsService) {}
+
+  @Get('templates')
+  @RequirePermission('finding', 'view')
+  @ApiOperation({
+    summary: 'Библиотека шаблонов findings (T-V28): preset title/risk/recommendation',
+  })
+  templates(@Query('locale') localeQuery?: string) {
+    return this.findingsService.templates(parseLocale(localeQuery));
+  }
+
+  @Post('from-template')
+  @RequirePermission('finding', 'create', 'edit')
+  @ApiOperation({ summary: 'Создать finding из шаблона (T-V28): identified с preset-полями' })
+  @ApiCreatedResponse({ description: 'Finding в статусе identified' })
+  createFromTemplate(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = z.object({ templateKey: z.string().min(1).max(64) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.findingsService.createFromTemplate(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.templateKey,
+    );
+  }
 
   @Post()
   @RequirePermission('finding', 'create', 'edit')
@@ -127,20 +150,46 @@ export class FindingsController {
 
   @Get()
   @RequirePermission('finding', 'view')
-  @ApiOperation({ summary: 'Findings тенанта; ?engagementId= — по engagement' })
+  @ApiOperation({
+    summary:
+      'Findings тенанта; фильтры: ?engagementId=, ?status=, ?riskRating=, ?slaStatus=, ?ownerMembershipId= (T-V16)',
+  })
   @ApiQuery({ name: 'engagementId', required: false })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'riskRating', required: false })
+  @ApiQuery({ name: 'slaStatus', required: false })
+  @ApiQuery({ name: 'ownerMembershipId', required: false })
   @ApiQuery({ name: 'locale', required: false })
   @ApiOkResponse({ description: '[{id, title, riskRating, status, owner, auditor, dueDate}]' })
-  list(
+  async list(
     @Req() req: TenantRequest,
     @Query('engagementId') engagementId?: string,
+    @Query('status') status?: string,
+    @Query('riskRating') riskRating?: string,
+    @Query('slaStatus') slaStatus?: string,
+    @Query('ownerMembershipId') ownerMembershipId?: string,
+    @Query('mine') mine?: string,
+    @Query('tagId') tagId?: string,
     @Query('locale') localeQuery?: string,
   ) {
+    // T-V17: ?mine=true — очередь «Owned by me» (owner = membership текущего юзера)
+    let owner = uuidFilterParam(ownerMembershipId, 'ownerMembershipId');
+    if (mine === 'true') {
+      owner = (await this.findingsService.membershipOf(req.user.sub, req.tenantId)) ?? owner;
+      if (!owner) return [];
+    }
     return this.findingsService.list(
       req.tenantId,
       req.user.sub,
       parseLocale(localeQuery),
       engagementId,
+      {
+        status: filterParam(status, 'status'),
+        riskRating: filterParam(riskRating, 'riskRating'),
+        slaStatus: filterParam(slaStatus, 'slaStatus'),
+        ownerMembershipId: owner,
+        tagId: uuidFilterParam(tagId, 'tagId'),
+      },
     );
   }
 

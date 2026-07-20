@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
+import { alias } from 'drizzle-orm/pg-core';
 import { DbService } from '../db/db.service';
-import { account, accessRequest, deprovisioningTask, membership } from '../db/schema';
+import { account, accessRequest, deprovisioningTask, membership, user } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -98,10 +99,29 @@ export class AccessRequestsService {
   }
 
   async listRequests(tenantId: string) {
+    // T-V07: + имена requester/approver и justification для админ-таблицы
+    const requesterM = alias(membership, 'requester_m');
+    const requesterU = alias(user, 'requester_u');
+    const approverM = alias(membership, 'approver_m');
+    const approverU = alias(user, 'approver_u');
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx.select().from(accessRequest).orderBy(asc(accessRequest.createdAt)),
+      tx
+        .select({
+          id: accessRequest.id,
+          system: accessRequest.system,
+          status: accessRequest.status,
+          justification: accessRequest.justification,
+          requester: requesterU.fullName,
+          approver: approverU.fullName,
+        })
+        .from(accessRequest)
+        .leftJoin(requesterM, eq(accessRequest.requesterMembershipId, requesterM.id))
+        .leftJoin(requesterU, eq(requesterM.userId, requesterU.id))
+        .leftJoin(approverM, eq(accessRequest.approverMembershipId, approverM.id))
+        .leftJoin(approverU, eq(approverM.userId, approverU.id))
+        .orderBy(asc(accessRequest.createdAt)),
     );
-    return rows.map((r) => ({ id: r.id, system: r.system, status: r.status }));
+    return rows;
   }
 
   async createDeprovisioning(

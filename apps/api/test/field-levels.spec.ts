@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { eq, inArray } from 'drizzle-orm';
+import { AuditLogService } from '../src/audit/audit-log.service';
 import { DbService } from '../src/db/db.service';
 import { RbacService } from '../src/rbac/rbac.service';
 import { membership, role, tenant, user } from '../src/db/schema';
@@ -15,7 +16,7 @@ const email = `fl-collab-${run}@t.io`;
 const approverEmail = `fl-approver-${run}@t.io`;
 
 const dbService = new DbService();
-const rbacService = new RbacService(dbService);
+const rbacService = new RbacService(dbService, new AuditLogService(dbService));
 let tenantId: string;
 let userId: string;
 let approverUserId: string;

@@ -34,16 +34,17 @@
       "p3": "Reports, dashboards and KPIs for every subsidiary"
     },
     "or": "or",
-    "magicToggle": "Email me a sign-in link",
     "magicHint": "We'll email you a one-time link to sign in without a password.",
     "magicSend": "Send sign-in link",
-    "magicSending": "Sending…",
     "magicSent": "If an account exists for this email, a sign-in link is on its way. Check your inbox — the link is valid for a few minutes.",
-    "backToPassword": "Back to password sign-in",
     "magicTitle": "Signing you in",
+    "magicConsuming": "Completing sign-in…",
+    "magicInvalid": "This sign-in link is invalid or has expired. Request a new one.",
+    "magicToggle": "Email me a sign-in link",
+    "magicSending": "Sending…",
+    "backToPassword": "Back to password sign-in",
     "magicVerifying": "Verifying your sign-in link…",
     "magicComplete": "Complete sign-in",
-    "magicInvalid": "This sign-in link is invalid or has expired. Request a new one.",
     "backToLogin": "Back to sign-in",
     "ssoToggle": "Sign in with SSO",
     "ssoTitle": "Single sign-on",
@@ -125,6 +126,17 @@
     "aiSettings": "AI provider",
     "home": "Home",
     "guide": "Guide",
+    "findings": "Findings",
+    "documents": "Documents",
+    "tests": "Tests",
+    "searchPh": "Search…",
+    "rolesNav": "Roles",
+    "membersNav": "Members",
+    "myWorkNav": "My work",
+    "assetsNav": "Assets",
+    "roadmap": "Roadmap",
+    "ssoSettings": "SSO",
+    "security": "Security",
     "auditors": "Auditors",
     "auditorView": "Auditor view"
   },
@@ -201,6 +213,31 @@
     "risk": {
       "high": "High",
       "medium": "Medium"
+    },
+    "suggestionCreate": "Create finding",
+    "evidence": "Evidence",
+    "evidenceEmpty": "No documents linked to this audit yet.",
+    "evColName": "Document",
+    "evColType": "Type",
+    "evColOwner": "Owner",
+    "evColReview": "Review",
+    "evColSla": "Renewal",
+    "rel": {
+      "evidence": "Evidence",
+      "permanent_file": "Permanent file",
+      "attachment": "Attachment",
+      "report": "Report"
+    },
+    "review": {
+      "not_ready": "Not ready",
+      "ready": "Ready",
+      "flagged": "Flagged",
+      "accepted": "Accepted"
+    },
+    "sla": {
+      "overdue": "Overdue",
+      "soon": "Due soon",
+      "ok": "OK"
     }
   },
   "engagementStates": {
@@ -224,7 +261,19 @@
     "domain": "Domain",
     "objective": "Objective",
     "standards": "Standards",
-    "empty": "No controls yet"
+    "empty": "No controls yet",
+    "owner": "Owner",
+    "tests": "Tests",
+    "statusCol": "Status",
+    "assigned": "Assigned",
+    "unassigned": "Unassigned",
+    "withPassing": "With passing evidence",
+    "percentPassing": "% passing",
+    "st": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "retired": "Retired"
+    }
   },
   "controlDetail": {
     "back": "All controls",
@@ -250,6 +299,28 @@
       "failing": "Failing",
       "needs_attention": "Needs attention",
       "deactivated": "Deactivated"
+    },
+    "note": "Note",
+    "assign": "Assignment",
+    "assignGlobalHint": "This is a global control — saving creates a tenant adaptation with your changes.",
+    "noOwner": "No owner",
+    "statusLabel": "Status",
+    "save": "Save",
+    "st": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "retired": "Retired"
+    },
+    "access": {
+      "title": "Manage access",
+      "open": "Visible to everyone",
+      "restricted": "Restricted",
+      "member": "Member",
+      "level": "Level",
+      "view": "View",
+      "edit": "Edit",
+      "grant": "Grant",
+      "remove": "Remove"
     }
   },
   "frameworks": {
@@ -266,7 +337,39 @@
       "published": "Published",
       "draft": "Draft",
       "deprecated": "Deprecated"
-    }
+    },
+    "domain": "Domain",
+    "dom": {
+      "security": "Security",
+      "privacy": "Privacy",
+      "industry": "Industry",
+      "custom": "Custom"
+    },
+    "active": "Active",
+    "available": "Available",
+    "noActive": "No active frameworks — add one from the catalog below",
+    "addFramework": "Add framework",
+    "remove": "Remove",
+    "coverage": "Control coverage",
+    "coverageSub": "{covered} of {total} requirements mapped",
+    "evidenceCompleteness": "Evidence completeness",
+    "evidenceSub": "{n} of {total} requirements with evidence",
+    "audits": "Audits",
+    "noAudits": "No engagements touch this framework yet",
+    "checklistItems": "{n} checklist items",
+    "requirements": "Requirements",
+    "versionDiff": "Requirement changes",
+    "vsPrevious": "vs {v}",
+    "added": "added",
+    "removed": "removed",
+    "changed": "changed",
+    "newVersion": "Release new version",
+    "newVersionHint": "Creates a tenant copy with a new version; requirements and control mappings carry over, then edit and compare with a diff.",
+    "newVersionLabel": "Version",
+    "newVersionPh": "e.g. 2025",
+    "updateNotes": "Update notes",
+    "updateNotesPh": "What's changed in this revision",
+    "releaseVersion": "Release version"
   },
   "dashboard": {
     "title": "Dashboards",
@@ -292,6 +395,26 @@
     "empty": "No connectors yet",
     "sync": "Sync",
     "lastSync": "Last sync",
+    "listTitle": "Configured connectors",
+    "addTitle": "Add connector",
+    "provider": "Provider",
+    "pickProvider": "Select a provider…",
+    "capabilities": "Capabilities",
+    "create": "Create",
+    "schedule": "Schedule",
+    "everyMin": "every {n} min",
+    "manual": "Manual",
+    "test": "Test connection",
+    "testing": "Testing…",
+    "edit": "Edit",
+    "close": "Close",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this connector?",
+    "status": "Status",
+    "intervalMin": "Auto-sync interval (min)",
+    "intervalHint": "0 = manual only; minimum 5 min",
+    "configEdit": "Update config (leave blank to keep)",
+    "save": "Save",
     "statuses": {
       "active": "Active",
       "error": "Error",
@@ -311,7 +434,36 @@
       "in_review": "In review",
       "approved": "Approved",
       "archived": "Archived"
-    }
+    },
+    "approver": "Approver",
+    "expired": "Expired",
+    "back": "Back to policies",
+    "frameworks": "Frameworks",
+    "workflow": "Workflow",
+    "wfSubmit": "Submit for review",
+    "wfApprove": "Approve",
+    "wfReject": "Reject",
+    "wfArchive": "Archive",
+    "versions": "Versions",
+    "versionsEmpty": "No versions yet",
+    "changelog": "Changelog",
+    "document": "Document",
+    "download": "Download",
+    "approvedAt": "Approved",
+    "addVersion": "Add version",
+    "attestations": "Attestation",
+    "attestationsEmpty": "No attestation campaign yet",
+    "campaignPick": "Send to",
+    "campaignStart": "Start campaign",
+    "attestSelf": "Attest",
+    "attStatuses": {
+      "pending": "Pending",
+      "attested": "Attested"
+    },
+    "templates": "Policy templates",
+    "templatesHint": "Ready-made skeletons (EN/AZ/RU) — one click creates a draft policy with a markdown document as version 1.",
+    "useTemplate": "Create from template",
+    "tplCreated": "Created"
   },
   "universe": {
     "title": "Audit Universe",
@@ -340,7 +492,16 @@
       "medium": "Medium",
       "high": "High",
       "critical": "Critical"
-    }
+    },
+    "matrix": "Impact × Likelihood",
+    "impact": "Impact",
+    "likelihood": "Likelihood",
+    "topCategories": "Top risk categories",
+    "process": "Process",
+    "allProcesses": "All processes",
+    "uncategorized": "Uncategorized",
+    "risks": "risks",
+    "distribution": "Class distribution"
   },
   "plans": {
     "title": "Audit Plans",
@@ -367,7 +528,42 @@
     "title": "Chart Dashboards",
     "toAccount": "Account",
     "empty": "No dashboards yet",
-    "widgets": "widgets"
+    "widgets": "widgets",
+    "create": "New dashboard",
+    "namePh": "Dashboard name",
+    "add": "Create",
+    "slot": "Widget",
+    "metric": "Metric",
+    "chartType": "Chart",
+    "widgetTitle": "Title",
+    "back": "Dashboards",
+    "edit": "Edit dashboard",
+    "save": "Save",
+    "delete": "Delete",
+    "exportPdf": "Export PDF",
+    "m": {
+      "findings_by_status": "Findings by status",
+      "findings_by_severity": "Findings by severity",
+      "tests_by_status": "Tests by status",
+      "vendors_by_risk": "Vendors by risk",
+      "risks_by_class": "Risks by class",
+      "devices_compliance": "Device compliance",
+      "controls_total": "Controls total",
+      "tests_passing": "Tests passing (manual/automated)",
+      "documents_readiness": "Documents readiness",
+      "vendors_by_category": "Vendors by category",
+      "risks_by_treatment": "Risks by treatment",
+      "trust_requests": "Trust Center requests",
+      "questionnaires_by_status": "Questionnaires by status",
+      "commitments_by_status": "Commitments by status"
+    },
+    "ct": {
+      "bar": "Bars",
+      "pie": "Pie",
+      "donut": "Donut",
+      "number": "Number",
+      "line": "Line"
+    }
   },
   "trustCenter": {
     "title": "Trust Center",
@@ -379,7 +575,20 @@
     "published": "Published",
     "draft": "Draft",
     "accessRequests": "access requests",
-    "slug": "Public URL"
+    "slug": "Public URL",
+    "activity": "Activity",
+    "noActivity": "No activity yet.",
+    "requestsTitle": "Access requests",
+    "approve": "Approve",
+    "deny": "Deny",
+    "grantedLink": "Access link",
+    "copyHint": "Share this private link with the approved requester.",
+    "kind": {
+      "view": "Page view",
+      "access_request": "Access requested",
+      "access_granted": "Access granted",
+      "access_used": "Access link used"
+    }
   },
   "glossary": {
     "title": "Glossary",
@@ -396,7 +605,19 @@
     "capturedAt": "captured",
     "controls": "Controls",
     "risks": "Risks",
-    "findings": "Findings"
+    "findings": "Findings",
+    "create": "Create snapshot",
+    "labelPh": "Label — e.g. Q3 2026 close",
+    "createBtn": "Capture",
+    "composition": "Open findings frozen at capture",
+    "viewComposition": "Frozen composition",
+    "noOpen": "No open findings at capture.",
+    "colTitle": "Finding",
+    "colRisk": "Risk",
+    "colStatus": "Status",
+    "colDue": "Due",
+    "openVulns": "Open vulnerabilities",
+    "count": "{n} findings"
   },
   "devices": {
     "title": "Endpoint Compliance",
@@ -421,7 +642,27 @@
       "active": "Active",
       "onboarding": "Onboarding",
       "offboarded": "Offboarded"
-    }
+    },
+    "name": "Name",
+    "statusCol": "Employment",
+    "taskStatus": "Task status",
+    "actions": "Actions",
+    "noTasks": "No tasks",
+    "nOverdue": "{n} overdue",
+    "nOpen": "{n} open",
+    "complete": "Complete",
+    "to": {
+      "active": "Mark active",
+      "onboarding": "Start onboarding",
+      "offboarded": "Offboard"
+    },
+    "groups": "Groups",
+    "noGroups": "No groups yet",
+    "people": "{n} people",
+    "newGroup": "New group",
+    "groupPh": "Group name",
+    "addGroup": "Add",
+    "deleteGroup": "Delete group"
   },
   "vendors": {
     "title": "Vendor Risk",
@@ -449,7 +690,50 @@
     "residual": "Residual risk",
     "assessments": "Assessments",
     "noAssessments": "No assessments yet",
-    "statusLabel": "Status"
+    "statusLabel": "Status",
+    "securityOwner": "Security owner",
+    "edit": "Edit vendor",
+    "save": "Save",
+    "analytics": "By category",
+    "uncategorized": "Uncategorized",
+    "intake": "Intake",
+    "intakeHint": "Procurement questionnaire: what the vendor does and what data it touches.",
+    "saveIntake": "Save intake",
+    "in": {
+      "businessPurpose": "Business purpose",
+      "dataTypes": "Data types",
+      "dataClassification": "Data classification",
+      "authMethod": "Authentication",
+      "notes": "Notes"
+    },
+    "dc": {
+      "public": "Public",
+      "internal": "Internal",
+      "confidential": "Confidential",
+      "restricted": "Restricted"
+    },
+    "am": {
+      "sso": "SSO",
+      "password": "Password",
+      "api_key": "API key"
+    },
+    "assessmentType": "Type",
+    "assessmentTypePh": "e.g. SOC 2 review",
+    "due": "Due",
+    "addAssessment": "Request assessment",
+    "ast": {
+      "requested": "Requested",
+      "in_progress": "In progress",
+      "completed": "Completed"
+    },
+    "startAssessment": "Start",
+    "completeAssessment": "Complete",
+    "recommendation": "Recommendation",
+    "recommendationPh": "Conclusion / recommendation",
+    "evidence": "Evidence",
+    "evProvided": "Provided",
+    "attachDoc": "Attach document",
+    "attach": "Attach"
   },
   "workingPapers": {
     "title": "Working Papers",
@@ -464,7 +748,30 @@
       "in_review": "In review",
       "reviewed": "Reviewed",
       "signed_off": "Signed off"
-    }
+    },
+    "annotations": "Annotations",
+    "noAnnotations": "No annotations yet",
+    "kind": "Kind",
+    "anchor": "Anchor",
+    "body": "Text",
+    "createdAt": "Created",
+    "state": "State",
+    "k": {
+      "comment": "Comment",
+      "tick_mark": "Tick mark",
+      "exception": "Exception"
+    },
+    "anchorPh": "e.g. cell B12",
+    "bodyPh": "Annotation text",
+    "add": "Add",
+    "resolved": "Resolved",
+    "openState": "Open",
+    "resolve": "Resolve",
+    "delete": "Delete",
+    "exceptionReport": "Exception report",
+    "openCount": "{n} open",
+    "totalCount": "{n} total",
+    "noExceptions": "No exceptions — clean audit."
   },
   "vulnerabilities": {
     "title": "Vulnerabilities",
@@ -489,7 +796,16 @@
       "due_soon": "Due soon",
       "overdue": "Overdue"
     },
-    "action": "Action"
+    "action": "Action",
+    "fTitle": "Title",
+    "fTitlePh": "e.g. Outdated OpenSSL on web-01",
+    "asset": "Asset",
+    "assetNone": "— none —",
+    "addBtn": "Add",
+    "byAsset": "By asset (SLA status)",
+    "unassigned": "Unassigned",
+    "openOfTotal": "{open} open / {total}",
+    "statusHead": "Status"
   },
   "securityAlerts": {
     "title": "Security Alerts",
@@ -497,6 +813,27 @@
     "empty": "No alerts yet",
     "source": "Source",
     "severity": "Severity",
+    "add": "Log alert",
+    "titlePh": "Alert title",
+    "category": "Category",
+    "catNone": "— category —",
+    "asset": "Asset",
+    "assetNone": "— asset —",
+    "statusHead": "Status",
+    "slaHead": "SLA",
+    "cat": {
+      "malware": "Malware",
+      "phishing": "Phishing",
+      "vulnerability": "Vulnerability",
+      "misconfiguration": "Misconfiguration",
+      "unauthorized_access": "Unauthorized access",
+      "other": "Other"
+    },
+    "slaSt": {
+      "ok": "OK",
+      "due_soon": "Due soon",
+      "overdue": "Overdue"
+    },
     "sev": {
       "low": "Low",
       "medium": "Medium",
@@ -531,7 +868,30 @@
     "add": "Add",
     "change": "Change status",
     "slaHead": "SLA",
-    "statusHead": "Status"
+    "statusHead": "Status",
+    "tabCommitments": "Commitments",
+    "tabContracts": "Contracts",
+    "contract": "Contract",
+    "contractNone": "— none —",
+    "link": "Link",
+    "contractsTitle": "Contracts",
+    "contractName": "Contract name",
+    "contractNamePh": "e.g. MSA with Acme",
+    "counterparty": "Counterparty",
+    "endDate": "End date",
+    "addContract": "Add contract",
+    "contractsEmpty": "No contracts yet.",
+    "del": "Delete",
+    "cst": {
+      "active": "Active",
+      "expired": "Expired",
+      "terminated": "Terminated"
+    },
+    "owner": "Owner",
+    "ownerNone": "— unassigned —",
+    "due": "Due",
+    "save": "Save",
+    "editOwner": "Owner / due"
   },
   "accessReviews": {
     "title": "Access Reviews",
@@ -541,6 +901,18 @@
       "draft": "Draft",
       "in_progress": "In progress",
       "completed": "Completed"
+    },
+    "createTitle": "New campaign",
+    "createDue": "Due",
+    "createScope": "Scope (empty = all active)",
+    "createBtn": "Start UAR",
+    "back": "Back to reviews",
+    "itemAccount": "Account",
+    "itemDecision": "Decision",
+    "dec": {
+      "certify": "Certify",
+      "revoke": "Revoke",
+      "modify": "Modify"
     }
   },
   "risks": {
@@ -567,7 +939,67 @@
       "transfer": "Transfer",
       "accept": "Accept",
       "avoid": "Avoid"
-    }
+    },
+    "back": "Risk Register",
+    "description": "Description",
+    "domain": "Domain",
+    "category": "Category",
+    "owner": "Owner",
+    "noOwner": "No owner",
+    "st": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "closed": "Closed"
+    },
+    "rescore": "Rescore",
+    "scoreNow": "Current scores — inherent {ii}×{il}, residual {ri}×{rl} (impact × likelihood).",
+    "applyRescore": "Recalculate",
+    "edit": "Edit risk",
+    "save": "Save",
+    "linkedControls": "Mitigating controls",
+    "linkedEntities": "Audit universe entities",
+    "noLinks": "Nothing linked yet",
+    "linkControl": "Link control",
+    "linkEntity": "Link entity",
+    "link": "Link",
+    "deleteHint": "Deleting removes the risk from the register (history is kept).",
+    "delete": "Delete risk",
+    "matrix": "Risk matrix",
+    "saveMatrix": "Save matrix",
+    "matrixHint": "Class = impact × likelihood versus thresholds: below Medium — Low, then Medium / High / Critical. Scales set the maximum score.",
+    "library": "Risk library",
+    "libraryHint": "Common risk scenarios — add to your register in one click; the class is computed by your matrix.",
+    "addToRegister": "Add to register",
+    "inRegister": "In register",
+    "actionTracker": "Action tracker",
+    "access": {
+      "title": "Manage access",
+      "open": "Visible to everyone",
+      "restricted": "Restricted",
+      "member": "Member",
+      "level": "Level",
+      "view": "View",
+      "edit": "Edit",
+      "grant": "Grant",
+      "remove": "Remove"
+    },
+    "approval": "Approval",
+    "approver": "Approver",
+    "noApprover": "— no approver —",
+    "submitApproval": "Submit for approval",
+    "approve": "Approve",
+    "reject": "Reject",
+    "needsMyApproval": "Needs my approval",
+    "tabAll": "All",
+    "approvalQueueEmpty": "Nothing awaits your approval",
+    "appr": {
+      "none": "Not submitted",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "byTreatment": "By treatment",
+    "byClass": "By risk class"
   },
   "privacy": {
     "title": "Privacy — ROPA & DPIA",
@@ -607,8 +1039,30 @@
       "archived": "Archived",
       "draft": "Draft",
       "in_progress": "In progress",
-      "completed": "Completed"
-    }
+      "completed": "Completed",
+      "pending_approval": "Pending approval",
+      "approved": "Approved"
+    },
+    "tabAll": "All",
+    "needsApproval": "Needs my approval",
+    "purpose": "Purpose",
+    "retention": "Retention",
+    "crossBorderLabel": "Cross-border",
+    "vendor": "Vendor / processor",
+    "vendorNone": "— none —",
+    "dataLocations": "Data locations",
+    "dataLocationsPh": "EU, US (comma-separated)",
+    "reviewDate": "Review date",
+    "approver": "Approver",
+    "approverNone": "— unassigned —",
+    "submitApproval": "Submit for approval",
+    "approve": "Approve",
+    "vendorCol": "Vendor",
+    "importTitle": "Import ROPA (CSV)",
+    "importHint": "CSV columns: name, legal_basis, role, purpose, data_categories (\";\"-separated), cross_border, data_locations.",
+    "importBtn": "Import",
+    "importDone": "Imported {imported}, skipped {skipped}.",
+    "importFail": "Import failed — check the file."
   },
   "iam": {
     "title": "IAM — Accounts & Access",
@@ -635,7 +1089,14 @@
     "tp": {
       "human": "Human",
       "service": "Service"
-    }
+    },
+    "owner": "Owner",
+    "deprovisioning": "Deprovisioning tasks",
+    "depAccount": "Account",
+    "depReason": "Reason",
+    "depDue": "Due",
+    "depCreate": "Create task",
+    "depComplete": "Complete"
   },
   "codeChanges": {
     "title": "Change Management",
@@ -647,6 +1108,8 @@
     "action": "Action",
     "create": "New change",
     "titlePh": "Change title",
+    "asset": "Asset",
+    "assetNone": "— asset —",
     "add": "Add",
     "risks": {
       "low": "Low",
@@ -672,7 +1135,34 @@
     "add": "Add",
     "global": "Global",
     "custom": "Custom",
-    "empty": "Nothing yet"
+    "empty": "Nothing yet",
+    "slaTitle": "SLA remediation windows",
+    "slaHint": "Days to fix by severity — used to auto-set due dates for findings and vulnerabilities.",
+    "dueSoon": "Due-soon window",
+    "slaSave": "Save SLA",
+    "slaDays": "All values are in days.",
+    "sev": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "bizTitle": "Business profile",
+    "bizHint": "Legal identity used in reports and the Trust Center.",
+    "legalName": "Legal name",
+    "jurisdiction": "Jurisdiction",
+    "address": "Address",
+    "incidentContact": "Incident contact",
+    "bizSave": "Save profile",
+    "idleTimeout": "Idle timeout (min)",
+    "idleTimeoutHint": "Auto sign-out after inactivity. 0 = disabled.",
+    "defaultLocale": "Default language",
+    "defaultLocaleHint": "New sign-ins get this language until the user picks another.",
+    "securityContact": "Security contact",
+    "supportAccess": "Allow platform support access",
+    "supportAccessHint": "Let platform support temporarily access your account for troubleshooting (audit-logged).",
+    "requireMfa": "Require MFA for all members",
+    "requireMfaHint": "Organization policy: every member should enable two-factor authentication."
   },
   "reports": {
     "title": "Reports",
@@ -711,7 +1201,10 @@
     "status": "Status",
     "active": "Active",
     "revoked": "Revoked",
-    "revoke": "Revoke"
+    "revoke": "Revoke",
+    "apiTitle": "Public REST API (v1)",
+    "apiHint": "Read-only programmatic access to all resources. Authenticate with the header X-Api-Key: <your key>.",
+    "apiResources": "Resources"
   },
   "notifications": {
     "title": "Notifications",
@@ -723,7 +1216,18 @@
       "info": "Info",
       "warning": "Warning",
       "action": "Action"
-    }
+    },
+    "settingsTitle": "Notification settings",
+    "settingsEmail": "Email notifications",
+    "settingsSchedule": "Delivery schedule",
+    "schedAnytime": "Anytime",
+    "schedWorkHours": "Work hours (9–18)",
+    "settingsTimezone": "Timezone",
+    "settingsSave": "Save",
+    "settingsDigest": "Compliance digest",
+    "digestWeekly": "Weekly (Mondays)",
+    "digestDaily": "Daily",
+    "digestOff": "Off"
   },
   "time": {
     "title": "Time tracking",
@@ -795,7 +1299,17 @@
     "category": "Category",
     "answerPh": "Answer",
     "add": "Add",
-    "empty": "No entries found"
+    "empty": "No entries found",
+    "owner": "Owner",
+    "ownerNone": "— unassigned —",
+    "expires": "Expires",
+    "verified": "Verified",
+    "expired": "Expired",
+    "noExpiry": "No expiry",
+    "save": "Save",
+    "edit": "Edit owner / expiry",
+    "trustVisible": "Publish to Trust Center",
+    "trustPublished": "In Trust Center"
   },
   "questionnaires": {
     "title": "Questionnaires",
@@ -817,7 +1331,10 @@
     "questionPh": "New question",
     "addQuestion": "Add question",
     "submit": "Submit",
-    "submitHint": "Answer all questions first"
+    "submitHint": "Answer all questions first",
+    "suggested": "Suggested from KB",
+    "match": "match",
+    "useSuggestion": "Use this"
   },
   "satisfaction": {
     "title": "Audit satisfaction",
@@ -923,7 +1440,10 @@
     "apiKeyEmpty": "Provider API key",
     "apiKeyHint": "Stored encrypted (AES-256-GCM); never shown again.",
     "save": "Save",
-    "residencyNote": "Data (gaps, answers, policies) is sent to the chosen provider. For a bank, use a local model (Ollama/vLLM inside your network) or a cloud provider with a data-processing agreement + zero data retention."
+    "residencyNote": "Data (gaps, answers, policies) is sent to the chosen provider. For a bank, use a local model (Ollama/vLLM inside your network) or a cloud provider with a data-processing agreement + zero data retention.",
+    "memory": "AI Memory",
+    "memoryPh": "e.g. We are a fintech SaaS under ISO 27001; findings should reference our SOC team.",
+    "memoryHint": "Organization context mixed into every AI draft prompt."
   },
   "guide": {
     "title": "Platform guide",
@@ -972,6 +1492,16 @@
       "glossary": "GRC glossary.",
       "guide": "This guide: all sections explained plus the tour.",
       "account": "Home screen: metrics, onboarding and quick access.",
+      "my-work": "My personal queue: findings, tests, approvals, attestations and access requests assigned to me.",
+      "findings": "Tenant-wide register of findings with lifecycle, filters and SLA badges.",
+      "documents": "Evidence documents: upload, link to controls or audits, download.",
+      "tests": "Continuous checks of controls: registry, run history, attention counters.",
+      "roles": "Role presets and the permission matrix; custom tenant roles.",
+      "members": "Tenant members with categories and role assignment.",
+      "assets": "IT asset inventory: systems, databases, cloud services with owners and sources.",
+      "roadmap": "Implementation roadmap: phases, target dates, progress from tests.",
+      "sso-settings": "Connect your own identity provider (OIDC/SAML) per tenant.",
+      "security": "Manage your 2FA and personal account security.",
       "auditors": "Manage external auditors.",
       "auditor-view": "Review evidence and record verdicts."
     },
@@ -1170,6 +1700,52 @@
         "Start the interactive tour",
         "The “?” button gives help in any section"
       ],
+      "my-work": [
+        "Review your findings and their deadlines",
+        "Attest policies sent to you",
+        "Submit an access request from the form"
+      ],
+      "findings": [
+        "Filter by status, risk or SLA",
+        "Open a finding to assign and progress it",
+        "Confirm re-test to close"
+      ],
+      "documents": [
+        "Upload evidence with an optional link",
+        "Set renew-by for periodic refresh",
+        "Reassign the owner inline"
+      ],
+      "tests": [
+        "Watch the overdue/failing counters",
+        "Open a test for its run history",
+        "Run automated tests on demand"
+      ],
+      "roles": [
+        "Pick a role chip to see its matrix",
+        "Create a custom role",
+        "Set a matrix cell for it"
+      ],
+      "members": ["Review member categories", "Change a role via the inline select"],
+      "assets": [
+        "Add an asset manually or import from a connector on the Connectors page.",
+        "Select several assets with checkboxes and apply a shared tag.",
+        "Use Export CSV to hand the inventory to an auditor."
+      ],
+      "roadmap": [
+        "Activate a framework to see it appear on the roadmap.",
+        "Set a target audit-ready date for each framework.",
+        "Watch phase progress rise as controls, policies, findings and tests improve."
+      ],
+      "sso-settings": [
+        "Pick OIDC or SAML and enable SSO",
+        "Set email domain + issuer/metadata URL + client ID",
+        "Paste the client secret — stored encrypted"
+      ],
+      "security": [
+        "Click Enable 2FA and scan the QR with an authenticator app",
+        "Enter the 6-digit code to confirm",
+        "Save the recovery codes — shown only once"
+      ],
       "auditors": [
         "Invite an auditor by email with a role",
         "Pick subsidiaries in scope (or leave empty for the whole group)",
@@ -1224,6 +1800,16 @@
       "ai-settings": "Plug in an AI assistant of your choice: Anthropic Claude, any OpenAI-compatible provider (GPT, Kimi, DeepSeek) or a local model inside your perimeter (Ollama/vLLM) — then data never leaves your infrastructure. The key is stored encrypted and never shown again. Without AI, all assist features run in deterministic mode.",
       "glossary": "A shared GRC glossary (control, finding, RCM, DPIA, ROPA…) with localization. Extend it with your own terms — the team and auditees speak one language.",
       "guide": "The help center: every section described with usage steps, an interactive UI tour and this reference. The “?” button in the header opens help for the section you are in.",
+      "my-work": "My Work gathers everything assigned to you across the platform: findings you own, tests you maintain, policies awaiting your approval, policies to attest and your access requests. Employees land here after login.",
+      "findings": "The findings register lists every finding across audits with risk, status and SLA. Open a finding to assign an owner, move it through its lifecycle and re-test before closing; comments and history live on the card.",
+      "documents": "Documents are manual evidence. Upload a file, link it to a control or engagement, set a renew-by date and reassign the owner. Downloads are authorized and byte-exact.",
+      "tests": "Tests verify controls continuously. The registry shows status, SLA and owner; the card holds run history with failing entities and evidence. Automated tests can be run on demand; stale tests can be deactivated.",
+      "roles": "Roles define the resource×action permission matrix. System presets are read-only; create custom tenant roles and set matrix cells to none/view/edit.",
+      "members": "Members lists everyone in the tenant with email, category (auditor / end user / MSP) and role. Change a member’s role inline — the change is journaled.",
+      "assets": "The asset inventory lists every IT asset in scope — ERP systems, databases, network devices, applications, cloud services and endpoints. Each asset shows its owner and where it came from: created manually or discovered automatically through a connector. Assets can be tagged in bulk (e.g. to mark PCI or SOX scope) and the whole inventory exports to CSV for auditors. Assets are projected into the Audit Universe, so risks can be linked to them.",
+      "roadmap": "The roadmap turns each activated framework into a phased implementation plan — Setup, Policies, Remediation, Audit — with progress computed from live data (control coverage, approved policies, closed findings, passing tests). Set an audit-ready target date and the roadmap flags whether you are on or off track. Use it to see, at a glance, how close each standard is to being audit-ready.",
+      "sso-settings": "Configure single sign-on for this tenant: choose OIDC or SAML, set the email domain, issuer/metadata URL, client ID and secret. The secret is stored encrypted and never shown again. Use this when your organization runs its own identity provider and wants employees to sign in with corporate credentials.",
+      "security": "Personal security settings. Enable two-factor authentication (2FA): scan a QR with an authenticator app, confirm a code, and save one-time recovery codes. Disabling requires a current code. 2FA adds a second step at sign-in on top of your password or magic link.",
       "auditors": "Invite external auditors by email, scope them to specific subsidiaries, set a time-boxed access window, and revoke access. Also lists internal members and MSPs by category.",
       "auditor-view": "The auditor storefront for a selected audit: review evidence with statuses, record auditor assessments with rounds, and request documents from the client (PBC)."
     }
@@ -1289,6 +1875,366 @@
     "startTour": "Start tour",
     "openGuide": "Full guide",
     "close": "Close"
+  },
+  "filters": {
+    "all": "All",
+    "status": "Status",
+    "state": "Stage",
+    "risk": "Inherent risk",
+    "scope": "Scope",
+    "ownedByMe": "Owned by me",
+    "needsMyApproval": "Needs my approval",
+    "type": "Type",
+    "mode": "Mode",
+    "tag": "Tag"
+  },
+  "findings": {
+    "title": "Findings",
+    "colTitle": "Title",
+    "colRating": "Risk",
+    "colStatus": "Status",
+    "colSla": "SLA",
+    "colOwner": "Owner",
+    "colDue": "Due",
+    "empty": "No findings yet",
+    "back": "Back to findings",
+    "description": "Description",
+    "recommendation": "Recommendation",
+    "managementResponse": "Management response",
+    "engagement": "Engagement",
+    "auditor": "Auditor",
+    "resolution": "Resolution date",
+    "remediatedAt": "Remediated at",
+    "retestResult": "Re-test result",
+    "actions": "Actions",
+    "advance": "Move to “{status}”",
+    "retestPassed": "Re-test passed",
+    "retestFailed": "Re-test failed",
+    "assignTitle": "Assign owner",
+    "assignBtn": "Assign",
+    "history": "History",
+    "historyEmpty": "No history",
+    "comments": "Comments",
+    "commentsEmpty": "No comments yet",
+    "commentPh": "Write a comment…",
+    "commentAdd": "Add",
+    "statuses": {
+      "identified": "Identified",
+      "assigned": "Assigned",
+      "in_progress": "In progress",
+      "remediated": "Remediated",
+      "pending_retest": "Pending re-test",
+      "closed": "Closed"
+    },
+    "ratings": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "not_applicable": "N/A"
+    },
+    "slas": {
+      "ok": "OK",
+      "due_soon": "Due soon",
+      "overdue": "Overdue"
+    },
+    "templates": "Issue templates",
+    "templatesHint": "Common findings with preset risk and recommendation — one click creates an identified finding you can edit.",
+    "useTemplate": "Create finding",
+    "tasks": "Remediation tasks",
+    "tagsTitle": "Tags",
+    "tagAdd": "Add tag…",
+    "tagNone": "No tags",
+    "tagAttach": "Attach"
+  },
+  "documents": {
+    "title": "Documents",
+    "upload": "Upload evidence",
+    "uploadBtn": "Upload",
+    "linkTo": "Link to",
+    "linkNone": "No link",
+    "linkControls": "Controls",
+    "linkEngagements": "Engagements",
+    "renewBy": "Renew by",
+    "colName": "Name",
+    "colSize": "Size",
+    "colOwner": "Owner",
+    "colLinks": "Links",
+    "colRenewBy": "Renew by",
+    "colUploaded": "Uploaded",
+    "ownerSave": "OK",
+    "empty": "No documents yet",
+    "evidence": "Evidence review",
+    "ev": {
+      "not_ready": "Not ready",
+      "ready": "Ready",
+      "flagged": "Flagged",
+      "accepted": "Accepted"
+    },
+    "auditFirms": "Audit firms",
+    "auditFirmsHint": "External auditors invited to review evidence.",
+    "firmName": "Firm name",
+    "firmNamePh": "e.g. Ernst & Young",
+    "firmEmail": "Contact email",
+    "firmAdd": "Add firm",
+    "firmDelete": "Remove firm",
+    "colStatus": "Status",
+    "colCategory": "Category",
+    "colActions": "Actions",
+    "st": {
+      "needs_document": "Needs document",
+      "draft": "Draft",
+      "active": "Active",
+      "overdue": "Overdue"
+    },
+    "publish": "Publish",
+    "uploadFile": "Upload",
+    "newVersion": "New version",
+    "category": "Category",
+    "categoryPh": "e.g. policy, report",
+    "saveDraft": "Save as draft",
+    "requestTitle": "Request evidence",
+    "requestHint": "Create a placeholder for a document you expect but do not have yet.",
+    "requestName": "Document name",
+    "requestNamePh": "e.g. Q3 access review",
+    "requestBtn": "Request"
+  },
+  "tests": {
+    "title": "Tests",
+    "colTitle": "Name",
+    "colControl": "Control",
+    "colKind": "Type",
+    "colStatus": "Status",
+    "colSla": "SLA",
+    "colOwner": "Owner",
+    "colDue": "Due",
+    "empty": "No tests yet",
+    "back": "Back to tests",
+    "attnOverdue": "Overdue",
+    "attnDueSoon": "Due soon",
+    "attnFailing": "Failing",
+    "kinds": {
+      "manual": "Manual",
+      "automated": "Automated"
+    },
+    "statuses": {
+      "ok": "OK",
+      "failing": "Failing",
+      "needs_attention": "Needs attention",
+      "deactivated": "Deactivated"
+    },
+    "slas": {
+      "ok": "OK",
+      "due_soon": "Due soon",
+      "overdue": "Overdue"
+    },
+    "frequency": "Frequency",
+    "runAuto": "Run now",
+    "deactivate": "Deactivate",
+    "editTitle": "Edit test",
+    "editSave": "Save",
+    "history": "Run history",
+    "historyEmpty": "No runs yet",
+    "outcome": "Outcome",
+    "failingEntities": "Failing entities",
+    "evidence": "Evidence",
+    "runAt": "Run at",
+    "ownerNone": "— keep —",
+    "colCategory": "Category",
+    "colStandards": "Standards",
+    "cats": {
+      "hr": "HR",
+      "it": "IT",
+      "automated": "Automated"
+    }
+  },
+  "search": {
+    "title": "Search",
+    "hint": "Type a query in the top bar — findings, controls, working papers, knowledge base and audit programs are searched.",
+    "empty": "Nothing found",
+    "types": {
+      "finding": "Findings",
+      "control": "Controls",
+      "working_paper": "Working papers",
+      "kb_entry": "Knowledge base",
+      "audit_program": "Audit programs"
+    }
+  },
+  "comments": {
+    "title": "Comments",
+    "empty": "No comments yet",
+    "placeholder": "Write a comment…",
+    "add": "Add"
+  },
+  "roles": {
+    "title": "Roles & permissions",
+    "preset": "· preset",
+    "createEn": "New role (EN)",
+    "createBtn": "Create role",
+    "readonly": "read-only",
+    "cellEdit": "Set cell",
+    "cellApply": "Apply",
+    "levels": {
+      "none": "No access",
+      "view": "View",
+      "edit": "Edit"
+    }
+  },
+  "members": {
+    "title": "Members",
+    "colName": "Name",
+    "colEmail": "Email",
+    "colCategory": "Category",
+    "colStatus": "Status",
+    "colRole": "Role",
+    "roleSave": "OK",
+    "empty": "No members",
+    "categories": {
+      "auditor": "Auditor",
+      "end_user": "End user",
+      "msp": "MSP"
+    }
+  },
+  "myWork": {
+    "title": "My work",
+    "allDone": "Nothing assigned to you — all clear.",
+    "pendingCount": "{count} items need your attention",
+    "findings": "My findings",
+    "tests": "My tests",
+    "approvals": "Awaiting my approval",
+    "attestations": "Policies to attest",
+    "attestBtn": "Attest",
+    "accessRequests": "My access requests",
+    "none": "Nothing here",
+    "reqStatuses": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "reqSystem": "System",
+    "reqJustification": "Justification",
+    "reqSubmit": "Request access"
+  },
+  "assets": {
+    "title": "Asset Inventory",
+    "empty": "No assets yet",
+    "create": "New asset",
+    "namePh": "Asset name",
+    "add": "Add",
+    "name": "Name",
+    "type": "Type",
+    "owner": "Owner",
+    "source": "Source",
+    "tags": "Tags",
+    "ty": {
+      "erp": "ERP",
+      "db": "Database",
+      "network": "Network",
+      "app": "Application",
+      "cloud": "Cloud",
+      "endpoint": "Endpoint",
+      "other": "Other"
+    },
+    "manual": "Manual",
+    "connector": "Connector",
+    "bulkTag": "Tag selected",
+    "tagPh": "e.g. pci-scope",
+    "applyTag": "Apply tag",
+    "bulkHint": "Check assets in the table, enter a tag name, apply.",
+    "exportCsv": "Export CSV"
+  },
+  "tasks": {
+    "openCount": "{open} open · {total}",
+    "empty": "No tasks yet",
+    "titleLabel": "Task",
+    "titlePh": "Remediation step",
+    "assignee": "Assignee",
+    "due": "Due",
+    "add": "Add task",
+    "start": "Start",
+    "complete": "Complete",
+    "delete": "Delete",
+    "st": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "done": "Done"
+    }
+  },
+  "roadmap": {
+    "title": "Roadmap",
+    "empty": "Activate a framework to build its roadmap.",
+    "overall": "Overall",
+    "auditReady": "Audit-ready",
+    "onTrack": "On track",
+    "offTrack": "Off track",
+    "target": "Target date",
+    "setTarget": "Save",
+    "noTarget": "No target set",
+    "elapsed": "time elapsed",
+    "ph": {
+      "setup": "Setup",
+      "policies": "Policies",
+      "remediation": "Remediation",
+      "audit": "Audit"
+    }
+  },
+  "trustPublic": {
+    "posture": "Security posture",
+    "requestTitle": "Request full access",
+    "requestHint": "Request access to detailed documentation. We will review and grant a private link.",
+    "email": "Work email",
+    "company": "Company",
+    "message": "Message (optional)",
+    "send": "Request access",
+    "sent": "Request sent — you will hear from us by email.",
+    "error": "Something went wrong. Try again.",
+    "notFound": "This Trust Center is not available.",
+    "granted": "Granted access",
+    "grantedTo": "Access granted to",
+    "poweredBy": "Powered by STATERA",
+    "faq": "Frequently asked questions"
+  },
+  "ssoSettings": {
+    "title": "SSO (Single Sign-On)",
+    "intro": "Connect your organization's own identity provider (OIDC or SAML) for this tenant.",
+    "enabled": "Enable tenant SSO",
+    "protocol": "Protocol",
+    "emailDomain": "Email domain",
+    "emailDomainHint": "Users with this email domain are routed to your IdP.",
+    "entryPoint": "Issuer / metadata URL",
+    "entryPointHint": "OIDC issuer or SAML metadata / entry-point URL.",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "secretSet": "•••••••• (stored)",
+    "secretEmpty": "Not set",
+    "secretHint": "Stored encrypted; never shown again. Leave blank to keep.",
+    "save": "Save",
+    "note": "Login-flow routing to per-tenant IdPs is applied by the auth layer; configuration is stored here."
+  },
+  "security": {
+    "title": "Security",
+    "intro": "Manage your personal account security.",
+    "mfaTitle": "Two-factor authentication (2FA)",
+    "on": "On",
+    "enabledDesc": "2FA is enabled — a one-time code is required at sign-in.",
+    "offDesc": "Add a second factor: an authenticator app generates a one-time code at sign-in.",
+    "enable": "Enable 2FA",
+    "scanHint": "Scan this QR in your authenticator app (Google Authenticator, Authy…), then enter the 6-digit code.",
+    "manualKey": "Manual key",
+    "codeToEnable": "6-digit code",
+    "confirm": "Confirm",
+    "badCode": "Invalid code — try again.",
+    "setupError": "Could not start setup.",
+    "enabledOk": "2FA is now enabled.",
+    "recoveryHint": "Save these recovery codes somewhere safe — each works once if you lose your device. Shown only now.",
+    "codeToDisable": "Code to disable",
+    "disable": "Disable 2FA",
+    "disabledOk": "2FA disabled.",
+    "requiredTitle": "Your organization requires MFA",
+    "requiredBody": "Enable two-factor authentication below to comply with your organization policy.",
+    "teamTitle": "Team MFA compliance",
+    "teamCount": "{enabled} of {total} members have MFA enabled.",
+    "off": "Off"
   },
   "auditors": {
     "title": "Auditors",

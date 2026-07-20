@@ -1,10 +1,30 @@
-import { BadRequestException, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import type { PermissionDto, RoleWithMatrix } from '@it-audit/shared';
+import { z } from 'zod';
+import { i18nTextSchema, type PermissionDto, type RoleWithMatrix } from '@it-audit/shared';
 import { JwtAuthGuard, type AuthenticatedRequest } from '../auth/jwt-auth.guard';
-import { PermissionGuard } from './permission.guard';
+import { PermissionGuard, type TenantRequest } from './permission.guard';
 import { RequirePermission } from './require-permission.decorator';
 import { RbacService } from './rbac.service';
+
+const createRoleSchema = z.object({ nameI18n: i18nTextSchema });
+const setCellSchema = z.object({
+  resource: z.string().min(1),
+  action: z.string().min(1),
+  level: z.enum(['none', 'view', 'edit']),
+});
 
 @Controller('rbac')
 @UseGuards(JwtAuthGuard)
@@ -62,5 +82,40 @@ export class RbacController {
   @ApiOkResponse({ description: 'Роли и их матрицы' })
   roles(@Query('tenantSlug') tenantSlug?: string): Promise<RoleWithMatrix[]> {
     return this.rbacService.roles(tenantSlug);
+  }
+
+  @Post('roles')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-V05: создать кастомную роль тенанта' })
+  @ApiHeader({ name: 'X-Tenant-Slug', required: true })
+  createRole(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = createRoleSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.rbacService.createRole(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.nameI18n,
+    );
+  }
+
+  @Patch('roles/:id/cells')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-V05: выставить ячейку матрицы (только кастомные роли)' })
+  @ApiHeader({ name: 'X-Tenant-Slug', required: true })
+  setCell(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = setCellSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.rbacService.setCell(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.resource,
+      parsed.data.action,
+      parsed.data.level,
+    );
   }
 }

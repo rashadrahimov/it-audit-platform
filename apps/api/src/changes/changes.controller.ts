@@ -7,12 +7,20 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { ChangesService } from './changes.service';
@@ -21,6 +29,7 @@ const createSchema = z.object({
   title: z.string().min(1),
   type: z.string().optional(),
   risk: z.enum(['low', 'medium', 'high']).optional(),
+  assetId: z.uuid().optional(),
   approverMembershipId: z.uuid().optional(),
 });
 
@@ -66,8 +75,22 @@ export class ChangesController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Изменения тенанта' })
-  list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId);
+  @ApiOperation({
+    summary: 'Изменения тенанта; фильтры: ?status=, ?type=, ?assetId= (T-V16/T-V40)',
+  })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'type', required: false })
+  @ApiQuery({ name: 'assetId', required: false })
+  list(
+    @Req() req: TenantRequest,
+    @Query('status') status?: string,
+    @Query('type') type?: string,
+    @Query('assetId') assetId?: string,
+  ) {
+    return this.service.list(req.tenantId, {
+      status: filterParam(status, 'status'),
+      type: filterParam(type, 'type'),
+      assetId: filterParam(assetId, 'assetId'),
+    });
   }
 }

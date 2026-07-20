@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -41,6 +43,18 @@ const createRiskSchema = z.object({
   treatment: z.enum(['mitigate', 'transfer', 'accept', 'avoid']).optional(),
   ownerMembershipId: z.uuid().optional(),
   subsidiaryId: z.uuid().optional(),
+});
+
+// T-V12: частичное редактирование карточки риска (скоринг — отдельным rescore)
+const updateRiskSchema = z.object({
+  titleI18n: i18nTextSchema.optional(),
+  descriptionI18n: i18nTextSchema.optional(),
+  domain: z.string().nullable().optional(),
+  category: z.string().nullable().optional(),
+  treatment: z.enum(['mitigate', 'transfer', 'accept', 'avoid']).nullable().optional(),
+  status: z.enum(['open', 'in_progress', 'closed']).optional(),
+  ownerMembershipId: z.uuid().nullable().optional(),
+  approverMembershipId: z.uuid().nullable().optional(),
 });
 
 const matrixSchema = z.object({
@@ -168,6 +182,107 @@ export class RisksController {
     return this.service.heatmap(req.tenantId);
   }
 
+  @Get('matrix')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Текущая матрица рисков (T-V12): шкалы и пороги классов' })
+  @ApiOkResponse({ description: '{impactScale, likelihoodScale, thresholds}' })
+  getMatrix(@Req() req: TenantRequest) {
+    return this.service.getMatrix(req.tenantId);
+  }
+
+  @Get('heatmap-matrix')
+  @RequirePermission('control', 'view')
+  @ApiOperation({
+    summary:
+      'Матрица impact×likelihood (T-V35): ?mode=inherent|residual, ?nodeId= срез по процессу',
+  })
+  @ApiQuery({ name: 'mode', required: false })
+  @ApiQuery({ name: 'nodeId', required: false })
+  @ApiQuery({ name: 'locale', required: false })
+  heatmapMatrix(
+    @Req() req: TenantRequest,
+    @Query('mode') mode?: string,
+    @Query('nodeId') nodeId?: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    const validNode = nodeId && /^[0-9a-f-]{36}$/i.test(nodeId) ? nodeId : undefined;
+    return this.service.heatmapMatrix(req.tenantId, parseLocale(localeQuery), {
+      mode,
+      nodeId: validNode,
+    });
+  }
+
+  @Get('library')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Библиотека risk-сценариев (T-V23): глобальный каталог + added' })
+  @ApiQuery({ name: 'locale', required: false })
+  library(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
+    return this.service.library(req.tenantId, parseLocale(localeQuery));
+  }
+
+  @Post('library/:id/add')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: '«Add to register» (T-V23): сценарий → реестр тенанта' })
+  addFromLibrary(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.addFromLibrary(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
+  }
+
+  @Patch(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Редактировать риск (T-V12): treatment/статус/owner/атрибуты' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateRiskSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    if (Object.keys(parsed.data).length === 0) {
+      throw new BadRequestException('Нужно хотя бы одно поле');
+    }
+    return this.service.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Delete(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Удалить риск (T-V12): soft delete' })
+  remove(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.remove({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id);
+  }
+
+  @Post(':id/submit-approval')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Отправить риск на согласование (T-V57): approval_status → pending' })
+  submitApproval(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.submitForApproval(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+    );
+  }
+
+  @Post(':id/approve')
+  @HttpCode(200)
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Решение по согласованию (T-V57): только approver — approved|rejected' })
+  decideApproval(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ decision: z.enum(['approved', 'rejected']) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.decideApproval(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.decision,
+    );
+  }
+
   @Get(':id/controls')
   @RequirePermission('control', 'view')
   @ApiOperation({ summary: 'Митигирующие контроли риска' })
@@ -177,10 +292,17 @@ export class RisksController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Реестр рисков' })
+  @ApiOperation({ summary: 'Реестр рисков (?needsMyApproval=true — очередь согласующего, T-V57)' })
   @ApiQuery({ name: 'locale', required: false })
-  list(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
-    return this.service.list(req.tenantId, parseLocale(localeQuery));
+  @ApiQuery({ name: 'needsMyApproval', required: false })
+  list(
+    @Req() req: TenantRequest,
+    @Query('locale') localeQuery?: string,
+    @Query('needsMyApproval') needsMyApproval?: string,
+  ) {
+    return this.service.list(req.tenantId, parseLocale(localeQuery), req.user.sub, {
+      needsMyApproval: needsMyApproval === 'true',
+    });
   }
 
   @Get(':id')
@@ -191,6 +313,6 @@ export class RisksController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('locale') localeQuery?: string,
   ) {
-    return this.service.detail(req.tenantId, id, parseLocale(localeQuery));
+    return this.service.detail(req.tenantId, id, parseLocale(localeQuery), req.user.sub);
   }
 }

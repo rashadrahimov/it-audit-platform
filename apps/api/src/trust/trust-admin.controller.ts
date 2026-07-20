@@ -78,6 +78,13 @@ export class TrustAdminController {
     return this.service.listAccessRequests(req.tenantId);
   }
 
+  @Get('activity')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'Лента активности Trust Center (T-V30): просмотры/запросы/выдача' })
+  activity(@Req() req: TenantRequest) {
+    return this.service.activity(req.tenantId);
+  }
+
   @Post('access-requests/:id/decision')
   @HttpCode(200)
   @RequirePermission('settings', 'edit', 'edit')

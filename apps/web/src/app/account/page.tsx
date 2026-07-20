@@ -89,6 +89,15 @@ export default async function AccountPage() {
   const [t, tenantSlug] = await Promise.all([getTranslations('account'), getActiveTenantSlug()]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
+  // T-V18: employee-лендинг — без админ-прав (settings.view=none) домом становится My Work
+  if (tenantSlug) {
+    const check = await apiFetch('/rbac/check?resource=settings&action=view', { headers });
+    if (check.ok) {
+      const { canView } = (await check.json()) as { canView: boolean };
+      if (!canView) redirect('/my-work');
+    }
+  }
+
   const [engagements, controls, frameworks, onbRes] = await Promise.all([
     countOf('/engagements', headers),
     countOf('/controls', headers),

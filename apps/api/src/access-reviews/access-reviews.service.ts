@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { account, accessReview, accessReviewItem, membership } from '../db/schema';
+import { accessReview, accessReviewItem, account, finding, membership } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -84,6 +84,28 @@ export class AccessReviewsService {
           .update(account)
           .set({ status: 'deactivated', deactivatedInSource: sql`now()` })
           .where(eq(account.id, row.accountId));
+        // T-V08: revoke порождает finding (оживлён задел item.finding_id из T-055)
+        const [acc] = await tx
+          .select({ identifier: account.identifier })
+          .from(account)
+          .where(eq(account.id, row.accountId));
+        const [created] = await tx
+          .insert(finding)
+          .values({
+            tenantId: actor.tenantId,
+            titleI18n: {
+              en: `Access revoked during UAR: ${acc?.identifier ?? row.accountId}`,
+              ru: `Доступ отозван при UAR: ${acc?.identifier ?? row.accountId}`,
+            },
+            riskRating: 'medium',
+          })
+          .returning({ id: finding.id });
+        if (created) {
+          await tx
+            .update(accessReviewItem)
+            .set({ findingId: created.id })
+            .where(eq(accessReviewItem.id, itemId));
+        }
       }
       // все пункты решены → кампания completed
       const pending = await tx

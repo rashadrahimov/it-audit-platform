@@ -30,6 +30,7 @@ import {
   type Locale,
 } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { filterParam, uuidFilterParam } from '../list-filters';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import { EngagementsService } from './engagements.service';
@@ -196,13 +197,16 @@ export class EngagementsController {
   @RequirePermission('engagement', 'view')
   @ApiOperation({
     summary:
-      'Список engagement’ов тенанта (?auditTypeCode — фильтр; ?archived=true — только архив)',
+      'Список engagement’ов тенанта (?auditTypeCode, ?state=, ?mode=, ?subsidiaryId= — фильтры T-V16/T-V44; ?archived=true — только архив)',
   })
   list(
     @Req() req: TenantRequest,
     @Query('locale') localeQuery?: string,
     @Query('auditTypeCode') auditTypeCode?: string,
     @Query('archived') archived?: string,
+    @Query('state') state?: string,
+    @Query('mode') mode?: string,
+    @Query('subsidiaryId') subsidiaryId?: string,
   ) {
     return this.engagementsService.list(
       req.tenantId,
@@ -210,6 +214,11 @@ export class EngagementsController {
       parseLocale(localeQuery),
       auditTypeCode,
       archived === 'true',
+      {
+        state: filterParam(state, 'state'),
+        mode: filterParam(mode, 'mode'),
+        subsidiaryId: uuidFilterParam(subsidiaryId, 'subsidiaryId'),
+      },
     );
   }
 

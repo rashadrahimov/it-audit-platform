@@ -337,6 +337,7 @@ export class EngagementsService {
     locale: Locale,
     auditTypeCode?: string,
     archived = false,
+    filters?: { state?: string; subsidiaryId?: string; mode?: string },
   ) {
     // T-111: внешний аудитор со scope видит engagement'ы только своих дочек.
     const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
@@ -349,6 +350,9 @@ export class EngagementsService {
         conds.push(scope.length === 0 ? sql`false` : inArray(engagement.subsidiaryId, scope));
       }
       if (auditTypeCode) conds.push(eq(auditType.code, auditTypeCode));
+      if (filters?.state) conds.push(eq(engagement.state, filters.state));
+      if (filters?.mode) conds.push(eq(engagement.mode, filters.mode));
+      if (filters?.subsidiaryId) conds.push(eq(engagement.subsidiaryId, filters.subsidiaryId));
       return tx
         .select({
           id: engagement.id,

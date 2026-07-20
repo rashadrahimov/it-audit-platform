@@ -13,6 +13,12 @@ interface Change {
   type: string | null;
   risk: string | null;
   status: Status;
+  assetId: string | null;
+  assetName: string | null;
+}
+interface AssetOpt {
+  id: string;
+  name: string;
 }
 
 const STATUS_TONE: Record<Status, string> = {
@@ -42,8 +48,12 @@ export default async function CodeChangesPage() {
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const res = await apiFetch('/changes', { headers });
+  const [res, assetsRes] = await Promise.all([
+    apiFetch('/changes', { headers }),
+    apiFetch('/assets', { headers }),
+  ]);
   const changes: Change[] = res.ok ? await res.json() : [];
+  const assets: AssetOpt[] = assetsRes.ok ? await assetsRes.json() : [];
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
@@ -62,6 +72,14 @@ export default async function CodeChangesPage() {
           {RISKS.map((r) => (
             <option key={r} value={r}>
               {t(`risks.${r}`)}
+            </option>
+          ))}
+        </select>
+        <select name="assetId" defaultValue="" className={inputCls} aria-label={t('asset')}>
+          <option value="">{t('assetNone')}</option>
+          {assets.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name}
             </option>
           ))}
         </select>
@@ -84,6 +102,7 @@ export default async function CodeChangesPage() {
               <tr className="border-b border-border text-secondary">
                 <th className="px-4 py-3 font-medium">{t('title')}</th>
                 <th className="px-4 py-3 font-medium">{t('type')}</th>
+                <th className="px-4 py-3 font-medium">{t('asset')}</th>
                 <th className="px-4 py-3 font-medium">{t('status')}</th>
                 <th className="px-4 py-3 font-medium">{t('action')}</th>
               </tr>
@@ -93,6 +112,7 @@ export default async function CodeChangesPage() {
                 <tr key={c.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-medium text-foreground">{c.title}</td>
                   <td className="px-4 py-3 text-secondary">{c.type ?? '—'}</td>
+                  <td className="px-4 py-3 text-secondary">{c.assetName ?? '—'}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[c.status]}`}

@@ -31,6 +31,18 @@ export async function getActiveTenantSlug(): Promise<string | null> {
   }
 }
 
+/** T-V50: category membership в активном тенанте (internal|auditor) — для scoped-nav. */
+export async function getActiveTenantCategory(): Promise<string> {
+  try {
+    const res = await apiFetch('/auth/me/tenants');
+    if (!res.ok) return 'internal';
+    const parsed = meTenantsResponseSchema.safeParse(await res.json());
+    return parsed.success ? (parsed.data[0]?.category ?? 'internal') : 'internal';
+  } catch {
+    return 'internal';
+  }
+}
+
 /** Текущий юзер по cookie; null — не залогинен/токен истёк. */
 export async function getSessionUser(): Promise<MeResponse | null> {
   const store = await cookies();

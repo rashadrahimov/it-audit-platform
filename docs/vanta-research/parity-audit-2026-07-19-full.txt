@@ -1,0 +1,487 @@
+Всего разделов: 19
+
+=== [tests] Tests (движок непрерывных проверок)
+    full 1/15 | partial 9 | stub 2 | missing 3
+    наши: /controls/[id] (секция «Тесты»), /dashboards (виджет tests_by_status), /connectors; API-модули apps/api/src/tests, apps/api/src/jobs (sla-recalc, auto-test-run)
+    [MISSING] Блок «Tests that need attention»: счётчики Overdue / Needs remediation (no SLA) / Due soon
+              → Блока/эндпоинта «tests needing attention» и счётчиков Overdue/Due soon по тестам нет ни в API, ни в UI; sla_status тестов лишь пересчитывается фоном и отдаётся полем списка.
+    [MISSING] Категории тестов: Human resources / Information technology / Automated
+              → Тематической таксономии категорий (HR/IT) не существует; техническое поле kind (manual/automated) покрывает лишь признак автоматизации, не категорию.
+    [MISSING] Библиотека преднастроенных тестов out-of-the-box (у Vanta сотни готовых проверок под фреймворки)
+              → Каталога готовых тестов нет; в seed один демонстрационный автотест, остальное создаётся вручную через API.
+    [STUB   ] Фильтры реестра тестов: Category, Framework, Control, Integration, Owner, Type, Status, Rollout
+              → Из восьми фильтров есть только фильтр по контролу; ни статус, ни owner, ни kind, ни коннектор, ни фреймворк, ни категория, ни rollout не фильтруются.
+    [STUB   ] Управление жизненным циклом теста: деактивация (rollout/deactivated), редактирование
+              → Половина жизненного цикла (модель + enforcement deactivated) реально работает, поэтому не «missing», а stub; но эндпоинта деактивации/редактирования нет, стадий rollout нет вообще.
+    [PARTIAL] Дашборд Tests: сводка passing X/Y с разбивкой Automated / Documents
+              → Только группировка tests_by_status в конфигурируемых чартах/снапшотах/трендах; выделенного дашборда Tests с процентом passing X/Y и разбивкой Automated vs Documents нет.
+    [PARTIAL] Реестр тестов таблицей: Name, Owner, Status, Failing entities, Due date, Frameworks — отдельный экран
+              → Отдельного экрана /tests нет; единственный UI — секция в карточке контроля с 3 колонками, без due date, SLA, failing entities и frameworks.
+    [PARTIAL] Автоматический сбор доказательств из интеграций: тест дёргает коннектор, сверяет записи с правилом, непрерывный цикл
+              → Цикл коннектор→правило→test_result→статус замкнут и крутится по расписанию, но провайдер один (LDAP; device_compliant читает локальную таблицу device) и правил два — несопоставимо с десятками интеграц
+    [PARTIAL] Failing entities: список конкретных сущностей, проваливших тест (напр. «10 Jira Accounts»)
+              → Данные собираются и доступны через GET /tests/:id, но в web нигде не отображаются — ни счётчиком, ни списком.
+    [PARTIAL] Маппинг одного теста на несколько фреймворков (колонка Frameworks: APRA, HIPAA, CMMC…)
+              → Прямой связи test↔framework нет; фреймворки не отдаются в выдаче тестов и не показываются рядом с тестами — только бейджи standards у самого контрола.
+    [PARTIAL] SLA и due date на тестах с авто-статусами Overdue / Due soon (фоновой пересчёт)
+              → Порог due_soon — глобальная env-переменная, а не настройка тенанта; sla_status теста не показан ни на одном экране (в карточке контроля поле приходит из API, но не выводится).
+    [PARTIAL] Owner на тесте + уведомления owner'у о провалах тестов (Settings → Notifications)
+              → Owner назначается и показывается, но никаких уведомлений (email или in-app) о провале/просрочке теста не существует — ни шаблона, ни джобы, ни вызова NotificationsService из tests.
+    [PARTIAL] Карточка теста с историей прогонов (когда, outcome, что провалилось, evidence)
+              → История прогонов доступна только через API; в web нет ни страницы, ни drawer теста — пользователь историю увидеть не может.
+    [PARTIAL] Привязка документа-доказательства к прогону теста (Mapped elements: Tests + Documents как evidence контрола)
+              → Связь прогон↔документ есть только на уровне API; в UI карточки контроля документы-доказательства рядом с тестами единым блоком не показываются.
+
+=== [frameworks] Compliance → Frameworks
+    full 0/10 | partial 3 | stub 2 | missing 5
+    наши: /frameworks (apps/web/src/app/frameworks/page.tsx), api-модуль frameworks (list, requirements, coverage), маппинг на контроли в controls
+    [MISSING] Табы Active / Available / Update notes (каталог: активные vs доступные к подключению фреймворки)
+              → Подтверждено: понятия «активирован у тенанта vs доступен в каталоге» нет (isGlobal — это происхождение строки, не активация), табов нет, Update notes нет.
+    [MISSING] «Add framework» — подключение/добавление фреймворка из каталога
+              → Подтверждено: ни POST/активации в API (включая публичный api-v1), ни UI-кнопки; фреймворки создаются только сидом. Адаптации тенанта (sourceFrameworkId) ни одним эндпоинтом не создаются.
+    [MISSING] Evidence completeness % (доля требований с собранными доказательствами: tests/documents)
+              → Метрика подтверждённо отсутствует: доля требований с доказательствами нигде не считается и не показывается. Уточнение к формулировке gap: связи документов с фреймворками/контролями (documentLink entit
+    [MISSING] Домены фреймворков (Security, Data protection) — классификация и фильтрация
+              → Подтверждено: у фреймворка нет domain ни в схеме, ни в API, ни в UI. Существующий controlDomain — домены контролей, не фреймворков — не опровергает утверждение.
+    [MISSING] Связь фреймворка с аудит-окном (колонка Audit ends)
+              → Подтверждено: прямой связи engagement↔framework нет, дата окончания аудита per framework нигде не хранится и не показывается. Транзитивный путь через чеклист→контроль→маппинг существует, но фичей «Aud
+    [STUB   ] Таблица фреймворков (Framework name, Evidence completeness %, Control completeness %, Audit ends, Status, Domain)
+              → Подтверждено: из 6 вантовских колонок есть только Name и Status. Нет Evidence completeness %, Control completeness %, Audit ends, Domain; нет фильтров/сортировок; строки некликабельны. Другой, более б
+    [STUB   ] Версионирование фреймворков: upgrade на новую версию с tracked changes / update notes
+              → Подтверждено: только текстовое поле version и статусы. Воркфлоу апгрейда, diff между версиями, update notes и миграции маппингов нет — в комментарии схемы это лишь план EP-FWK.
+    [PARTIAL] Control completeness % (доля требований фреймворка, покрытых контролями)
+              → Подтверждено: API-метрика есть (T-079), но ни один web-экран (включая dashboards) её не вызывает и не показывает; считается только факт маппинга контроля, без статуса/прохождения контролей.
+    [PARTIAL] Широкая библиотека готовых фреймворков (у Vanta 23 active + 48 available: PCI DSS, SOC 2, GDPR, NIST AI RMF, UK Cyber Es
+              → Подтверждено partial. Уточнение: требований на фреймворк 2-16 (а не 3-5): у COBIT/NIST CSF/HIPAA всего по 2, у CBAR — 16 доменов. Всё равно демо-объём вместо полного текста стандартов, каталог 8 проти
+    [PARTIAL] Иерархия Framework → Requirements → Controls → Tests/Documents (детальный вид фреймворка с деревом требований)
+              → Цепочка глубже, чем заявлено: на уровне данных она полная — Framework→Requirement (frameworkRequirement) → Control (controlMapping) → Test (test.controlId) и Document (documentLink к control/framework
+
+=== [controls] Compliance → Controls
+    full 3/13 | partial 5 | stub 2 | missing 3
+    наши: web: /controls, /controls/[id]; api: controls, tests, comments, documents, control-kpis, custom-fields, rbac, search
+    [MISSING] Assignment-донат и сводка покрытия (Unassigned/Assigned/Needs reassignment, «X% of controls have passing evidence»)
+              → Подтверждено: нет ни доната по назначенности owner (unassigned/assigned/needs reassignment нигде не считается), ни метрики «% контролей с passing evidence». Ближайшие аналоги — framework coverage (дру
+    [MISSING] Фильтры списка контролей: Frameworks, Owner, Domain, Source, Framework code, Status
+              → Ни одного фильтра ни в API, ни в UI раздела контролей; есть лишь глобальный поиск по ref/objective.
+    [MISSING] Manage access — RBAC на уровне отдельного контроля
+              → Есть только тенантная ролевая матрица (control:view/edit) и field-permissions по типу сущности; per-entity ACL и кнопки Manage access нет ни в API, ни в UI, ни в схеме БД.
+    [STUB   ] Назначение owner контроля (assignable owner из карточки)
+              → Поле в схеме есть и owner отображается, но назначить нельзя: нет PATCH/assign-эндпоинта и нет UI — owner ставится только сидом. Статуса «needs reassignment» нет.
+    [STUB   ] Статусная модель контроля (Status в таблице/фильтрах, needs reassignment)
+              → Поле status существует и отдаётся API, но в UI нигде не отображается; переходов/воркфлоу смены статуса нет (ни одного update контрола в коде), статусов назначенности (needs reassignment) нет.
+    [PARTIAL] Таблица контролей: ID, Control (название+описание), Owner, Frameworks, Tests (счётчик 0/2)
+              → Нет колонок Owner и Tests-счётчика — list-эндпоинт их не отдаёт; описания (question/guidance) под названием в таблице нет.
+    [PARTIAL] Карточка контроля (drawer): описание, ID, Source, Domain, Owner, Note, guidance
+              → Нет поля Note (аннотации существуют, но только для рабочих документов), и карточка полностью read-only: в controls.controller.ts ни одного POST/PATCH, в роуте нет actions.ts.
+    [PARTIAL] Mapped elements: Tests контроля (Control 1→N Test, статусы, прогоны, авто-тесты)
+              → API полноценный, но UI read-only: нет создания/управления тестом с экрана и нет web-роута карточки теста.
+    [PARTIAL] Mapped elements: Documents (доказательства-документы, привязанные к контролю)
+              → API умеет линковать документ к контролю, но карточка контроля документы не показывает; UI документов отсутствует во всём web-приложении, не только в разделе контролей.
+    [PARTIAL] Таб Comments на контроле
+              → API создания/чтения есть и карточка комментарии показывает, но формы добавления в UI контроля нет — только просмотр.
+
+=== [policies] Compliance → Policies
+    full 0/9 | partial 6 | stub 0 | missing 3
+    наши: apps/web/src/app/policies/page.tsx (роут /policies), api-модуль apps/api/src/policies (policies.controller.ts, policies.service.ts, attestations.service.ts)
+    [MISSING] Табы очередей согласования: All / Needs my approval / Needs approval / Needs reassignment
+              → Подтверждено: очередей-представлений нет ни в API, ни в UI; понятие reassignment отсутствует во всём репозитории.
+    [MISSING] Фильтры списка: Overall status, Latest version, Approver, Framework, Source
+              → Подтверждено: query-фильтров в GET /policies нет, фильтр-контролов в UI нет.
+    [MISSING] Готовые шаблоны политик (библиотека policy templates от Vanta)
+              → Подтверждено: библиотеки шаблонов политик нет нигде — ни в seed-data, ни в knowledge-base, ни под другим именем.
+    [PARTIAL] Реестр политик — таблица с колонками Name, Overall status, Renew by, Latest version, Approver, Approval status, Personne
+              → Подтверждено: в таблице только Name/Owner/Renew by/Status. Нет колонок Approver, Approval status, Latest version, Personnel acceptance; UI read-only — создание/редактирование только через POST /polici
+    [PARTIAL] Версионирование политик (версии с документом-содержимым, changelog, фиксация утверждённой версии)
+              → Подтверждено: API-версионирование полное, но в вебе версии нигде не отображаются (нет detail-страницы), статуса версии «Expired» нет.
+    [PARTIAL] Renew by — срок продления политики со статусом просрочки (Expired / Needs remediation)
+              → Подтверждено: дата хранится и отображается, но вычисляемого статуса просрочки нет, job/напоминаний по сроку нет — дата чисто информационная.
+    [PARTIAL] Approver workflow — согласование политики назначенным approver'ом (draft → in_review → approved → archived, approve/reje
+              → Подтверждено: серверная статусная машина полная, но в UI кнопок workflow нет вообще; approver единственный, счётчика Approval status 1/1 нет.
+    [PARTIAL] Personnel acceptance (attestation) — рассылка approved-политики сотрудникам, подтверждение ознакомления, трекинг кто при
+              → Подтверждено: API-кампания/подтверждение/трекинг есть, но в вебе ничего — ни кнопки подтверждения, ни доната acceptance, ни экрана трекинга.
+    [PARTIAL] Маппинг политик на фреймворки (колонка/фильтр Framework)
+              → Подтверждено: frameworkIds лишь хранится и отдаётся в detail; резолва в названия, колонки/фильтра в UI и обратной связи «фреймворк → политики» нет.
+
+=== [documents] Compliance → Documents (ручные доказательства)
+    full 0/13 | partial 3 | stub 3 | missing 7
+    наши: веб-экрана нет (роут /documents отсутствует в apps/web); API: apps/api/src/documents (DocumentsController/Service), apps/api/src/files (S3-хранилище); привязки документов потребляю
+    [MISSING] Центральный реестр документов — таблица с колонками Name (+категория), Owner, Overall status, Renew by, Framework
+              → Нет ни общего списка документов тенанта в API, ни экрана-реестра в вебе; per-entity список не возвращает owner и framework
+    [MISSING] Тогглы-фильтры реестра: All / Owned by me / Needs document / Draft
+              → Понятий «Owned by me», «Needs document», «Draft» для документов нет ни в API, ни в UI
+    [MISSING] «Needs document» — плейсхолдер ожидаемого доказательства до загрузки файла (напр. «Proof of completed access review»)
+              → Документ существует только вместе с файлом; заготовок ожидаемых доказательств с owner и сроком нет
+    [MISSING] Draft-состояние документа (черновик до публикации)
+              → Черновиков и перехода draft → published для документов нет ни в схеме, ни в API
+    [MISSING] Категоризация документов (метка вида «Engineering · Vulnerability management»)
+              → Ни поля категории, ни возможности навесить тег на документ
+    [MISSING] Уведомления owner'ам документов о просрочке/необходимости обновления (Notifications для Test/Document/Control owners)
+              → Джобы по document.renewBy и уведомлений владельцам документов нет; механизм напоминаний покрывает только findings
+    [MISSING] Метрика готовности документов на дашборде (Documents 29/633)
+              → Счётчика покрытия ручными доказательствами нет ни в метриках API, ни на веб-дашборде
+    [STUB   ] Owner документа — назначаемый ответственный за доказательство
+              → Owner фиксируется автоматически как загрузивший; переназначения нет, наружу поле не отдаётся и не показывается
+    [STUB   ] Overall status документа с авто-вычислением Overdue по сроку
+              → Поле status никогда не пересчитывается и всегда 'active'; SLA-джоба в проекте есть, но документы ею не покрыты
+    [STUB   ] Версионирование документа (новая версия при обновлении доказательства)
+              → Колонки version/prevVersionId мертвы: перезагрузки доказательства новой версией нет; версионирование реализовано только для политик
+    [PARTIAL] Загрузка и хранение документа-доказательства (multipart, S3, sha256, авторизованное скачивание, audit trail)
+              → API-слой полный, но веб ни разу не вызывает /documents: нет ни формы загрузки, ни отображения документов ни на одном экране
+    [PARTIAL] Renew by (cadence) — дата, к которой доказательство нужно обновить
+              → Дата хранится, но воркфлоу продления, напоминаний и влияния просрочки нет; в UI не видна
+    [PARTIAL] Маппинг документа на фреймворки/контролы — документ как evidence в Mapped elements контрола
+              → Привязки работают на API и читаются в 4 модулях, но модуль controls и экран контрола документы не отдают/не показывают
+
+=== [audits] Compliance → Audits + Auditor View
+    full 2/10 | partial 6 | stub 0 | missing 2
+    наши: web: /engagements, /engagements/[id], /working-papers, /audit-programs; api: engagements, findings, documents, working-papers, audit-programs, rbac, memberships, invites, jobs (SLA
+    [MISSING] Audit firm как сущность + онбординг «Add your auditor» (приглашение внешней аудиторской фирмы)
+              → Подтверждено: сущности аудиторской фирмы нет ни в schema.ts, ни в миграциях. Onboarding-модуль — это чеклист настройки тенанта (T-046), не «Add your auditor». В web вообще нет UI приглашений (grep inv
+    [MISSING] Auditor View — ОТДЕЛЬНЫЙ scoped-интерфейс внешнего аудитора со своим навбаром (Evidence, Controls, Framework, Risk, Vend
+              → Подтверждено: навигация одна на всех, не режется ни по роли, ни по категории membership, ни по permission-матрице; отдельного лейаута/роутов для аудитора нет (trust-center — портал для проспектов, не 
+    [PARTIAL] Список аудитов Active/Completed с фильтрами (Audit firm, Framework, Status, Audit type)
+              → Подтверждено: в UI лишь переключатель Активные/Архив; фильтров по audit firm/framework/status/type на экране нет. В API auditTypeCode-фильтр есть, но web его не использует; фильтров по framework и ста
+    [PARTIAL] Evidence tracker — статусная модель готовности доказательств (Not ready for audit / Flagged by auditor / Ready for audit
+              → Подтверждено: lifecycle готовности evidence (Not ready/Ready/Flagged/Accepted) отсутствует — есть лишь самооценка респондента (compliant/partially/non_compliant/not_applicable) и pending/answered у пу
+    [PARTIAL] Таблица evidence: Evidence, Type, Last updated, Owner, Auditor Assessment, кнопка Update evidence (загрузка/обновление д
+              → Подтверждено: documents-API полноценный (версии, sha256, renewBy, привязки evidence), но в web нет ни экрана документов, ни таблицы evidence в карточке аудита — из UI нельзя загрузить/обновить/посмотр
+    [PARTIAL] Auditor Assessment — аудитор ревьюит ответы/доказательства и выставляет оценку (finding)
+              → Подтверждено: ревью существует только в форме finding (с авто-предложениями по гэпам); поля «оценка аудитора» (accepted/flagged) на самом response/checklist_item/document нет нигде в схеме. Annotation
+    [PARTIAL] View SLAs — SLA-статусы по evidence в контексте аудита
+              → Подтверждено: SLA-движок не покрывает evidence/документы/пункты чеклиста — у них нет sla_status, джоба их не пересчитывает (renewBy у document никакой джобой не проверяется), и в engagement-UI нет экр
+    [PARTIAL] Auditors как отдельная категория пользователей с точечной выдачей доступа (scoped access)
+              → Подтверждено, гэп даже чуть глубже заявленного: category нигде не участвует в логике доступа и не задаётся при инвайте, роли Auditor среди пресетов нет, механизм доступа к конкретному engagement отсут
+
+=== [issues] Compliance → Issues (findings)
+    full 1/13 | partial 9 | stub 0 | missing 3
+    наши: engagements/[id] (секция findings), snapshots, reports, dashboard; API: findings, snapshots (dashboards), comments, jobs (SLA/напоминания)
+    [MISSING] Быстрые фильтры (All/Open/Closed/Owned by me) и фильтры Status/Severity/Source/Owner/Template/Due date
+              → Фильтрации findings по статусу/severity/owner/due date/источнику нет ни в API, ни в UI; представления «Owned by me» нет
+    [MISSING] Шаблоны issue (колонка Template, преднастроенные issue-шаблоны)
+              → Сущности issue-шаблона нет ни в схеме, ни в API, ни в UI; ближайшие «шаблоны» в системе относятся к чеклистам аудита и опросникам
+    [MISSING] Таб Tasks — задачи ремедиации, связанные с issues
+              → Сущности задачи ремедиации нет; декомпозировать ремедиацию finding'а на задачи нечем (commitments и deprovisioning_task — другие домены)
+    [PARTIAL] Центральный реестр Issues — таблица с колонками Issue/Controls/Template/Status/Severity/Owner/Due date
+              → API тенант-wide реестра есть, но отдельного экрана /findings нет: таблица живёт только в карточке engagement и не выводит даже Status/Control/SLA, которые API отдаёт; Template отсутствует и в модели
+    [PARTIAL] Статусная модель и воркфлоу закрытия issue (Open/Closed lifecycle)
+              → Lifecycle в API полнее Vanta (6 статусов + re-test), но в UI нет ни карточки finding, ни кнопок смены статуса — воркфлоу доступен только через API
+    [PARTIAL] Назначение owner'а с уведомлением владельцу
+              → API полный (назначение + email владельцу + audit log), но в UI формы назначения нет — только колонка Owner в read-only таблице engagement'а
+    [PARTIAL] Due date + SLA-статусы issue (Overdue / Due soon) и напоминания о дедлайне
+              → Бэкенд полный (джоба пересчёта SLA + напоминания обеим сторонам), но slaStatus finding'а в UI не отображается, хотя API его отдаёт в list и detail
+    [PARTIAL] Создание issue из источника (Source: гэпы чеклиста/провалившие проверки) — авто-черновики
+              → Глубже, чем «stub»: связка с источником есть на уровне данных (checklistItemId/responseId у finding) и создание из гэпа возможно через API, плюс отдельный AI-endpoint генерации черновика. Не хватает U
+    [PARTIAL] Таб Snapshots — снимки состояния issues на дату
+              → Снапшоты замораживают только агрегированные счётчики (findings_by_status/severity), а не список findings с полями — восстановить состав открытых issues на дату нельзя
+    [PARTIAL] Комментарии к issue
+              → API комментариев полностью подходит для findings (полиморфный), но карточки finding в вебе нет — оставить/прочитать комментарий к finding'у негде
+    [PARTIAL] History / audit trail по issue
+              → Все действия по finding'у пишутся в hash-chain audit log, но endpoint'а и UI «история конкретного finding'а» нет — лог достаётся только целиком через verify-chain/syslog
+    [PARTIAL] Issues в отчётности: преднастроенный Issues report + экспорт
+              → Глубже, чем заявлено: динамика issues во времени реально есть (страница /trends по снапшотам + API /reports/trend), а чарт-разрезы по severity/status собираются в кастомных дашбордах. Остаётся верным:
+
+=== [reports] Reports (чарт-дашборды)
+    full 0/9 | partial 7 | stub 0 | missing 2
+    наши: apps/web: /dashboards, /reports, /dashboard, /trends, /snapshots, /kpi; apps/api: dashboards (+snapshots), reports, reports-export
+    [MISSING] Преднастроенные отчёты-шаблоны из коробки (готовые наборы чартов без ручной сборки)
+              → Нет ни одного преднастроенного отчёта: seed/онбординг не создают дашборды-шаблоны, пользователь начинает с пустого списка и должен собирать каждый отчёт сам через API.
+    [MISSING] Customer trust report (чарты по trust center, опросникам, обязательствам)
+              → Полностью отсутствует: в каталоге метрик дашбордов нет ничего из домена customer trust (просмотры Trust Center, access requests, questionnaires, commitments), отчёт собрать не из чего.
+    [PARTIAL] Раздел Reports: каталог отчётов-дашбордов с рендером чартов на живых данных
+              → Все дашборды выводятся одной общей лентой на /dashboards — нет каталога с переходом на отдельную страницу конкретного отчёта, нет описаний/превью отчётов как у Vanta.
+    [PARTIAL] Program overview report (сводка программы: Tests, Risk, Controls и др. домены)
+              → Метрики по tests/risks/controls/findings есть и их можно собрать в дашборд, но готового отчёта «Program overview» нет; наш /dashboard — своя групповая сводка (engagements+findings), без tests/risks.
+    [PARTIAL] Issues report (чарты по findings: статусы, severity)
+              → Обе ключевые метрики findings есть в каталоге, но преднастроенного отчёта «Issues report» нет — нужно вручную создавать дашборд POST-запросом; нет разрезов по owner/due date/SLA.
+    [PARTIAL] Vendors report (чарты по вендорам: риск, категории)
+              → Есть только одна вендор-метрика (по inherent risk); нет метрик по категориям, статусам assessments, residual risk; готового отчёта «Vendors report» нет.
+    [PARTIAL] Разные типы чартов (bar/pie/donut/number/line) для виджетов
+              → chartType валидируется и хранится, но UI игнорирует его — любой виджет рисуется горизонтальными барами; pie/donut/number/line на странице дашбордов не реализованы (линия есть только на отдельной /tren
+    [PARTIAL] Конфигурируемые дашборды: создание/редактирование набора виджетов из каталога метрик (B9)
+              → Создание работает только через API — на /dashboards нет UI-конструктора (нет формы создания, выбора метрик/типов чартов); в API нет PATCH/DELETE — дашборд нельзя переименовать, изменить набор виджетов
+    [PARTIAL] Экспорт отчётов/дашбордов (B9: «с экспортом»)
+              → Экспорт сырых данных (findings/risks/controls CSV/XML) и engagement-отчёта (5 форматов) есть, но сам чарт-дашборд экспортировать нельзя — нет PDF/изображения дашборда с чартами.
+
+=== [trust] Customer trust (Trust Center, Questionnaires, Commitments, KB, Activity)
+    full 0/11 | partial 6 | stub 1 | missing 4
+    наши: /trust-center, /questionnaires, /questionnaires/[id], /knowledge-base, /commitments (web); API: trust (admin /trust-center + публичный /trust/:slug), questionnaires, kb, commitment
+    [MISSING] KB — Customer visibility (Requestable): управление видимостью записей/документов для Trust Center
+              → Полностью отсутствует: в kb_entry нет поля видимости, нет никакой связи knowledge base с Trust Center (items Trust Center — отдельная таблица trust_center_item без связи с KB).
+    [MISSING] Commitments — таб Contracts (реестр контрактов, извлечение/синк обязательств из контрактов)
+              → Сущности «контракт» нет вообще — у commitment есть только текстовое поле source. Нет загрузки контрактов, нет извлечения обязательств из них, нет таба Contracts.
+    [MISSING] Activity — лог просмотров публичного Trust Center (Viewer, Location, Action, Details, Date) + Export + AI insights
+              → Полностью отсутствует: publicView в apps/api/src/trust/trust.service.ts не записывает просмотры (audit log пишет только configure/access-request), таблицы просмотров в схеме нет, экрана Activity нет, 
+    [MISSING] Customer trust — Overview (дашборд раздела / Customer trust report)
+              → Нет ни сводного экрана раздела Customer trust, ни преднастроенного отчёта «Customer trust report» — grep по dashboards/reports упоминаний trust не находит.
+    [STUB   ] Questionnaire Automation — AI auto-suggest ответов (RAG по политикам + прошлым ответам, «Generated by AI»)
+              → Сути фичи Vanta нет: никаких AI/RAG-подсказок и авто-матчинга вопрос→ответ. Есть лишь ручное переиспользование KB-записи по kbEntryId через API, причём в веб-UI ([id]/page.tsx, actions.ts) даже выбор 
+    [PARTIAL] Trust Center — публичный портал security-posture по URL/slug (просмотр compliance-статуса без логина)
+              → Публичный портал существует только как JSON-эндпоинт API — публичной веб-страницы нет (роута /trust/[slug] в apps/web/src/app не существует). Items — это просто label+category, без реальных compliance
+    [PARTIAL] Trust Center — админ-управление (Edit: настройка slug/title/intro/публичность, публикация items постуры)
+              → API-CRUD полный (upsert настройки, добавление items framework/control/document/other, admin-вид), но веб-экран read-only: нет форм настройки, добавления/снятия items — только просмотр. Нет «Give acces
+    [PARTIAL] Trust Center — Access requests: публичный запрос доступа к документам + approve/deny воркфлоу (pending requests)
+              → Полный API-воркфлоу есть, но в вебе показан только счётчик запросов (trust-center/page.tsx) — нет таблицы запросов и кнопок approve/deny. Approve ничего фактически не выдаёт: нет ссылки/токена на закр
+    [PARTIAL] Knowledge base — хранилище security-документации (Name, Owner, Expiration status/date, Last updated)
+              → У нас KB — это Q&A-пары для опросников, а не хранилище документов: нет Owner, нет Expiration status (Verified) и Expiration date, нет колонки Last updated в UI, нет прикрепления файлов-документов, нет
+    [PARTIAL] Questionnaires — реестр входящих security-опросников (список, статусная модель, детальная с вопросами/ответами, submit)
+              → Ядро есть (draft→submitted, вопросы, ответы, UI список+деталка), но нет: импорта файла опросника (Excel/portal-ссылка), owner и due date, фильтров, связи «Active questionnaires» с Trust Center.
+    [PARTIAL] Commitments — трекер контрактных обязательств (статус met/at_risk/breached, SLA, owner, cadence, due date)
+              → Реестр со статусами и авто-SLA есть. Не хватает: due date и owner не выводятся в UI-таблице, нет редактирования/деталки обязательства, нет синка обязательств из контрактов.
+
+=== [risk] Risk (Overview, Register, Library, Action tracker)
+    full 0/11 | partial 6 | stub 1 | missing 4
+    наши: /risks, /risk-heatmap, /dashboards (виджет risks_by_class); API-модули: risks (risks.controller, risk-assessments.controller)
+    [MISSING] Approval-workflow риска (Approved vs Not approved, approver)
+              → Полностью отсутствует воркфлоу согласования: approver_membership_id есть только в схеме БД, ни один эндпоинт его не принимает, нет действия approve, статусная модель риска — только дефолтный 'open' бе
+    [MISSING] Top risk categories (топ категорий рисков на Overview)
+              → Поле category есть в модели и API, но не выводится в UI, нет агрегата/виджета «топ категорий», нет справочника категорий рисков
+    [MISSING] Risk library: курируемый каталог преднастроенных risk scenarios по категориям с «Add to register»
+              → Библиотеки рисков нет вообще: ни глобального каталога сценариев, ни seed-данных (seed есть только для контролей), ни действия «Add to register»; source_risk_id — неиспользуемая колонка. В бэклоге явно
+    [MISSING] Action tracker → таб Tasks: задачи ремедиации по approved-рискам (Task, Due date, Assignee, Status, Source)
+              → Сущности «задача» нет в системе вовсе (в схеме только deprovisioning_task для IAM), экрана Action tracker нет; findings-трекер существует, но с рисками не связан — комментарий в apps/api/src/db/schema
+    [STUB   ] Risk Overview дашборд: чарт «Number of risks by treatment type» (с разрезом Approved/Not approved) + донаты Task status 
+              → Единственный риск-виджет — бар-чарт risks_by_class в общих дашбордах; нет агрегата и чарта по treatment type, нет разреза Approved/Not approved, нет донатов статусов задач и контролей, связанных с рис
+    [PARTIAL] Risk register: таблица рисков (title, inherent/residual класс, treatment, status) + создание риска
+              → Список и создание есть, но нет карточки риска в UI (API detail есть, экрана нет), нет редактирования/удаления риска вообще (в API только rescore, нет PATCH/DELETE), в таблице нет колонок owner/категор
+    [PARTIAL] Скоринг inherent/residual по impact×likelihood с конфигурируемой матрицей порогов
+              → Ядро работает end-to-end (ввод скоров при создании → класс по матрице тенанта), но пересчёт скоров после создания и настройка матрицы — только API, без UI; UI жёстко даёт шкалу 1-5, хотя API поддержив
+    [PARTIAL] Treatment types (Accept/Avoid/Mitigate/Transfer/None)
+              → 4 типа + null (аналог None) задаются при создании и видны в таблице, но treatment нельзя изменить после создания (нет update-эндпоинта), нет понятия «treatment complete», от которого у Vanta зависит в
+    [PARTIAL] Current risk heat map: матрица impact×likelihood с числами и цветом, residual если treatment complete иначе inherent
+              → Наш «heat map» — не матрица impact×likelihood, а распределение по 4 классам (low/medium/high/critical) двумя строками inherent/residual; нет настоящих ячеек I×L, нет правила «residual если treatment c
+    [PARTIAL] Action tracker → таб Controls: контроли, связанные с рисками (RCM)
+              → M:N связь risk↔control реализована в API (привязка с дедупом, audit_log), но UI для привязки и просмотра нет, нет сводного экрана-трекера по всем рискам, нет фильтра «только approved-риски» и статусов
+    [PARTIAL] Привязка рисков к бизнес-процессам/активам universe (risk ranking map for business processes)
+              → API-связь risk↔auditable_entity есть (T-066), но UI отсутствует, и heat map/реестр не режутся по процессам — «ranking map по бизнес-процессам», которую хочет клиент, из этого пока не собрать
+
+=== [vendors] Vendors (TPRM)
+    full 0/10 | partial 5 | stub 4 | missing 1
+    наши: /vendors, /vendors/[id] (web); api-модуль vendors (vendors.controller.ts); виджет vendors_by_risk в api-модуле dashboards
+    [MISSING] Vendor Discovery: автообнаружение вендоров из интеграций с предложенным inherent risk
+              → Полностью отсутствует: модуль connectors есть (apps/api/src/connectors/), но единственный провайдер — LDAP для personnel; capability «Vendor procurement» и создание кандидатов-вендоров из интеграций н
+    [STUB   ] Категории вендоров (+ аналитика by category)
+              → Категория — свободное текстовое поле, задаётся только через API (в UI-форме создания поля нет); нет справочника категорий (в config-lists только audit_opinion); нет доната/аналитики by category
+    [STUB   ] Vendors Overview: assessments progress (Overdue/Due soon/In progress), vendors by inherent risk score, by category
+              → Отдельной overview-страницы вендоров нет; есть только один метрик-виджет «вендоры по inherent risk» в общем модуле dashboards; нет прогресса по assessments (Overdue/Due soon/In progress), нет разбивки
+    [STUB   ] Настраиваемая intake-форма вендора («Edit intake form»)
+              → Intake — сырое jsonb-поле, принимаемое только через API при создании; нет UI заполнения формы, нет редактора/конструктора intake-формы, карточка вендора [id]/page.tsx поле intake даже не отображает
+    [STUB   ] Security owner вендора
+              → Поле есть в БД и принимается при создании через API, но нигде не отображается (list и detail его не возвращают), не задаётся из UI и не редактируется
+    [PARTIAL] Реестр вендоров: таблица с name, категорией, inherent/residual risk, assessment status, security owner
+              → В таблице только name/category/inherent risk/status: нет колонок residual risk, security owner, assessment status; нет поиска, сортировки и фильтров; нет PATCH-эндпоинта — вендора нельзя отредактирова
+    [PARTIAL] Procurement-статусы: lifecycle Procurement→Active→Archived с табами Procurement/Active/Archived/All
+              → Статусная модель и переходы реализованы полностью (UI+API+audit log), но нет табов/фильтрации списка по статусу — все вендоры в одном плоском списке
+    [PARTIAL] Inherent/residual risk скоринг вендора (Critical/High/Medium/Low)
+              → Из UI задаётся только inherent risk при создании; residual risk принимается только через API POST и не редактируется после создания (нет PATCH); нет пересчёта residual по итогам assessment
+    [PARTIAL] Assessments (security reviews): Type, State (requested→in_progress→completed), Due date, Owner, Recommendation
+              → API-воркфлоу полный (создание, переходы requested→in_progress→completed, recommendation при завершении, audit log), но UI read-only: в карточке вендора видны только type и state, не отображаются recom
+    [PARTIAL] Evidence request / evidence status у assessment (документы вендора)
+              → Привязка документов и авто-статус evidence «provided» работают на API-уровне, но в UI карточки вендора документы и evidence status не показываются и не прикрепляются; нет воркфлоу «Evidence request» —
+
+=== [privacy] Privacy (Data inventory ROPA + DPIA)
+    full 1/10 | partial 4 | stub 1 | missing 4
+    наши: /privacy (apps/web/src/app/privacy/page.tsx); API: /processing-activities и /processing-activities/dpia (apps/api/src/privacy); смежный /processes (apps/api/src/processes)
+    [MISSING] Связи записи ROPA: Vendors, Data locations, Business functions
+              → Нет связи с модулем vendors (recipients — свободный jsonb, из UI не заполняется); поля Data locations нет вообще (только boolean crossBorder); модуль processes существует, но с processing_activity не 
+    [MISSING] Импорт существующего ROPA (CSV/Excel)
+              → Нет никакого импорта записей обработки — ни endpoint'а, ни UI; модуль migration с processing_activity не работает
+    [MISSING] Approval-workflow DPIA + таб «Needs my approval»
+              → Approval-механики нет вообще: ни назначения approver'а, ни действия approve/reject, ни персональной очереди «требует моего утверждения»
+    [MISSING] Фильтры и табы списков (ROPA: статус/роль; DPIA: All / Needs my approval, тип/статус/owner/review date)
+              → Оба списка — плоские ul без единого фильтра, таба, поиска или сортировки
+    [STUB   ] Review status / owner / cadence — периодический пересмотр записей ROPA
+              → Owner есть только как поле в API/БД — в UI не назначается и не показывается; review status и review cadence отсутствуют вообще (reviewCadence есть только в commitments); статус active/archived — не ре
+    [PARTIAL] Реестр processing activities (ROPA, GDPR Art.30): таблица записей обработки с Purpose, legal basis, категориями данных/с
+              → Модель богатая (purpose, legalBasis, dataCategories, dataSubjects, recipients, retentionPeriod, crossBorder, owner), но UI-форма создаёт только name+legalBasis+role; список показывает лишь имя/basis/r
+    [PARTIAL] Табы «Data you control» / «Data you process for others» (разделение controller vs processor)
+              → Роль controller/processor/joint есть в модели и выводится текстом, но в UI один плоский список — нет табов или фильтрации по роли
+    [PARTIAL] DPIA: создание privacy-оценки на processing activity (risk level, necessity, mitigations, документы)
+              → Есть create/list/get с привязкой к операции обработки и документами через document_link, но нет owner, типа оценки и review date (у Vanta — колонки списка); нет обновления DPIA после создания; UI-форм
+    [PARTIAL] DPIA статусный воркфлоу (статусная модель оценки)
+              → Только линейный draft→in_progress→completed; нет стадии согласования/утверждения и роли approver, нет отклонения/возврата
+
+=== [assets] Assets (Inventory, Code changes, Vulnerabilities, Security alerts)
+    full 1/12 | partial 6 | stub 1 | missing 4
+    наши: web: /universe, /vulnerabilities, /code-changes, /security-alerts, /connectors; api: assets, universe, vulnerabilities, changes, security-alerts, tags, jobs (SLA), reports-export
+    [MISSING] Vuln-табы: Findings by asset / by vulnerability / Deactivated / History; связь уязвимость↔актив
+              → Связи уязвимости с активом нет вовсе, поэтому нет ни группировки by asset, ни by vulnerability; нет табов Deactivated/History — только плоский список.
+    [MISSING] Asset scan coverage by source (покрытие активов сканированием по источникам)
+              → Метрики покрытия сканированием нет нигде — ни в API, ни в UI; без связи актив↔сканер/уязвимость её не из чего построить.
+    [MISSING] Code changes: авто-мониторинг merged PR из кодовых баз с фильтрами Source/Repository/Date/Status
+              → VCS-коннектора и автоимпорта PR нет; в таблице code_change нет полей source/repository/merged_at; фильтров нет — суть фичи Vanta (пассивный сбор доказательств ревью PR) отсутствует целиком.
+    [MISSING] Security alerts табы: Open / Deactivated / By category / By asset / History
+              → Нет табов и группировок: нет категории алерта, нет связи алерт↔актив, нет деактивации и истории — только общий список со статус-бейджами.
+    [STUB   ] Export инвентаря и bulk-теги на активы
+              → Тег вешается только по одному через API (POST /tags/:id/link), bulk-тегирования и UI тегов на активах нет; экспорт CSV/XML покрывает только findings/risks/controls — выгрузки инвентаря активов нет.
+    [PARTIAL] Реестр активов (Inventory): таблица Service/Identifier, Region/Account, Description, Owner
+              → API есть (create/list/get, тип, owner, attrs jsonb), но веб-экрана инвентаря нет вообще — ни одна страница не дергает GET /assets; /universe показывает лишь дерево узлов с бейджами kind без owner/типа
+    [PARTIAL] Авто-обнаружение активов из cloud/MDM/интеграций (compute, K8s, git-репозитории, data warehouses и т.п.)
+              → Механизм импорта есть, но единственный реальный провайдер — LDAP с capabilities personnel+access (apps/api/src/connectors/providers/ldap.provider.ts): ни одного cloud/MDM/K8s/VCS-источника с capabilit
+    [PARTIAL] Vulnerability management: реестр уязвимостей (CVE, severity, статус, due date) с lifecycle-воркфлоу
+              → Создание уязвимости только через API — на веб-странице нет формы (actions.ts содержит один transition). Импорта от сканеров нет: capability 'vulns' объявлена в списке, но ни один провайдер её не реали
+    [PARTIAL] SLA-статусы уязвимостей (Overdue / Due soon / Due later / OK) с автопересчётом
+              → SLA считается от вручную заданного due_date с одним глобальным порогом из env (slaDueSoonDays) — нет first-class настройки SLA per-severity/per-tenant (аналога Settings→SLAs), нет авто-выставления due
+    [PARTIAL] Change management: реестр изменений со статусной моделью и согласованием
+              → Есть ручной реестр и approval-воркфлоу (в этой части даже глубже Vanta), но список плоский: нет фильтров Source/Repository/Date/Status, нет привязки изменения к репозиторию/системе/активу, наполнение 
+    [PARTIAL] Security alerts: приём алертов от CSPM-инструментов с окнами резолюции (resolution windows)
+              → Алерты только вручную через POST (connectorId — просто ссылка): ингеста из CSPM/posture-коннекторов нет. Resolution windows отсутствуют — в таблице security_alert нет due_date/sla_status, SLA-джоба ал
+
+=== [personnel] Personnel (People, Computers, Access/IAM)
+    full 0/11 | partial 6 | stub 1 | missing 4
+    наши: web: /personnel, /devices, /iam, /access-reviews; api: personnel, devices, accounts, access-requests (+ /deprovisioning-tasks), access-reviews
+    [MISSING] Onboarding/offboarding security-задачи по сотруднику (Task status: No tasks / N Overdue / Complete, Last reminder)
+              → Сущности «security-задача сотрудника» нет вообще: есть лишь поле employmentStatus без чеклистов onboarding/offboarding-задач, их статусов, дедлайнов и напоминаний
+    [MISSING] Быстрые фильтры People (All / Overdue / Due soon / Offboarding) и табы People / Groups
+              → На странице персонала нет ни одного фильтра и ни одного таба — просто общий список
+    [MISSING] Personnel reminders — расписание напоминаний / weekly digest незакрытых security-задач
+              → Механизм напоминаний существует только для findings; digest по персональным security-задачам отсутствует (как и сами задачи), колонки Last reminder нет
+    [MISSING] Персональные представления: My work / My security tasks / My access requests
+              → Ролевых лендингов сотрудника нет: ни роута /my-*, ни фильтрации «моё» — все экраны IAM/personnel общие админские списки
+    [STUB   ] Groups (группы = департаменты: Engineering, Sales, Default group)
+              → Таблица department существует, сидируется и участвует в групповом агрегате, personnel.create принимает departmentId — но нет CRUD-API департаментов, нет таба/экрана Groups, департамент не отдаётся lis
+    [PARTIAL] People-директория из HRIS/IdP-синка (Name+email, Employment status, unit/position, источник)
+              → API умеет импорт из коннектора (capability personnel, upsert по external_id), ручное заведение и смену статуса, но UI — read-only плоская таблица: нет кнопок создания/импорта, нет детальной карточки с
+    [PARTIAL] Computers: endpoint compliance через MDM — проверки PW/HD/AV/SL по устройству, OS, source, compliance-статус
+              → Ядро есть (4 проверки, пересчёт compliance, импорт из MDM-коннектора, ручное заведение, автотест device_compliant), но: нет табов Monitored/Unmonitored, нет колонки Last check и Monitoring source в UI
+    [PARTIAL] Access → Accounts: аккаунты из интеграций с Owner, Groups, Type, Status, MFA-статус, Created/Deactivated + «Assign accou
+              → Импорт из коннектора, ручное заведение, деактивация и таблица (identifier, type, MFA, status) есть; но назначения owner нет ни в API, ни в UI (поле ownerMembershipId в схеме мёртвое), groups/owner/дат
+    [PARTIAL] Access → Requests: JIT-запросы доступа с approver-workflow (pending → approved/rejected)
+              → API-воркфлоу полный (self-service подача, назначенный approver, approve/reject, audit-log), в UI есть approve/reject; но формы подачи запроса в UI нет, justification/requester/approver в списке не пок
+    [PARTIAL] Access → Reviews: UAR-кампании (scope из аккаунтов, решения reviewer certify/revoke/modify, revoke → деактивация)
+              → API-воркфлоу UAR полный, но UI — плоский список кампаний со статусом: нет создания кампании, нет детальной страницы с пунктами и кнопками certify/revoke/modify (решения только через API); поле finding
+    [PARTIAL] Access → Deprovisioning tasks: задачи отзыва доступа с due date и SLA-статусом
+              → API есть (создание, закрытие с деактивацией аккаунта, список открытых с SLA), SLA считается джобой; но UI отсутствует полностью — на /iam депровижнинг-задачи не показываются; задачи не создаются автом
+
+=== [integrations] Integrations (коннекторы)
+    full 2/14 | partial 7 | stub 4 | missing 1
+    наши: web: /connectors; api: connectors (+ импорт-эндпоинты в assets, personnel, accounts, devices и автотесты в tests)
+    [MISSING] Vendor procurement capability: discovery вендоров из интеграций
+              → В apps/api/src/vendors нет ни одной ссылки на коннекторы; capability для вендоров нет даже в белом списке CAPABILITIES — авто-обнаружение вендоров отсутствует полностью
+    [STUB   ] Configure scope — настройка объёма синка интеграции
+              → Scope задаётся только один раз в конфиге при создании через API; нет эндпоинта редактирования конфига (PATCH отсутствует в connectors.controller.ts) и нет UI настройки scope
+    [STUB   ] Manage — управление подключением (обновить креды, переподключить, отключить)
+              → Есть только удаление и только через API (в UI нет кнопки); нет обновления кредов, переподключения, теста соединения
+    [STUB   ] Task tracking / Task creation capability (тикет-системы, напр. Jira)
+              → Capability существует только как значение enum — нет ни провайдера тикет-системы, ни потребителя (двусторонней связи с findings/задачами нет)
+    [STUB   ] Vulnerabilities capability: питание vuln-модуля данными сканеров
+              → Capability есть только в enum; в apps/api/src/vulnerabilities нет импорта из коннекторов — уязвимости заводятся без связи с интеграциями
+    [PARTIAL] Каталог интеграций и подключение нового инструмента (сотни провайдеров, OAuth/креды)
+              → Подключение только через API-вызов — в UI (apps/web/src/app/connectors/page.tsx) нет формы создания коннектора и нет каталога доступных провайдеров; реальный провайдер один (LDAP), у Vanta — сотни
+    [PARTIAL] Статусная модель Connected/Errors с счётчиками и фильтрами по статусу
+              → Статус active/error есть и виден бейджем, но нет вкладок/счётчиков «Connected (N) / Errors (N)» и фильтрации списка по статусу
+    [PARTIAL] Sync-движок: прогоны синхронизации с историей (outcome/stats/error), ручной запуск
+              → API-ядро полноценное, но в UI нет карточки коннектора с историей прогонов — виден только lastSyncAt
+    [PARTIAL] Непрерывный автоматический синк по расписанию (continuous monitoring)
+              → По расписанию гоняются только автотесты (они дёргают collectRecords ежечасно); сам sync коннектора и импорты в персонал/активы/аккаунты — только вручную, repeatable-джобы синка нет
+    [PARTIAL] Inventory capability: авто-обнаружение активов и устройств из интеграций
+              → Импорт идемпотентный и рабочий, но триггер только API-вызовом — в UI страниц universe/devices нет кнопки импорта, авто-расписания нет; облачных провайдеров (AWS/Azure/K8s) нет, только LDAP
+    [PARTIAL] Personnel capability: синк персонала из HRIS/IdP
+              → Импорт только API-вызовом, без UI-кнопки и расписания; провайдер один (LDAP/AD), Entra/HRIS-коннекторов нет
+    [PARTIAL] Access capability: синк аккаунтов для access governance (IAM/access reviews)
+              → Импорт аккаунтов только API-вызовом; MFA-статус/группы из LDAP-провайдера не извлекаются (провайдер отдаёт только uid/cn/mail)
+
+=== [mywork] My work / My security tasks / My access requests
+    full 0/11 | partial 5 | stub 0 | missing 6
+    наши: /iam (админ-вью запросов доступа), /notifications, /account (домашний экран), /personnel, /policies; api: access-requests, notifications, policies/attestations
+    [MISSING] My work — агрегированный персональный лендинг «назначено мне / action needed» (мои tests, issues, documents, policies в 
+              → Нет ни экрана, ни API-агрегации «мои items». Домашний /account (apps/web/src/app/account/page.tsx) — орг-метрики + onboarding-чеклист тенанта; /dashboard (apps/web/src/app/dashboard/page.tsx) — группо
+    [MISSING] Роль-специфичные лендинги (employee-портал vs админ: сотрудник видит только своё)
+              → Все авторизованные попадают на один /account (redirect в apps/web/src/app/page.tsx:31), контент не зависит от роли. Employee-портал в бэклоге помечен «UI-атомом при надобности» (EP-PERS) и не сделан.
+    [MISSING] My security tasks — личный список security-задач сотрудника (onboarding/offboarding) со статусной моделью No tasks / N O
+              → Сущности персональной security-задачи нет вовсе: в apps/api/src/db/schema.ts из задач только deprovisioning_task. У персонала хранится лишь employmentStatus (active/onboarding/offboarded); колонки Tas
+    [MISSING] Напоминания по персональным задачам: Personnel reminders digest (по расписанию), Last reminder на человека, bulk reminde
+              → Есть только джоба напоминаний по просроченным findings (owner + аудитор). Дайджеста незакрытых security-задач сотрудника нет (самих задач нет), поля «last reminder» на человеке нет, кнопки bulk remind
+    [MISSING] Трекинг «моих» запросов доступа — личный список со статусами (pending/approved/rejected)
+              → GET /access-requests отдаёт ВСЕ запросы тенанта, требует админский permission settings.view и не умеет фильтровать по requester; страница /iam — админская. Личного представления «мои запросы и их стат
+    [MISSING] Кросс-модульные быстрые фильтры «Owned by me» / «Needs my approval» (Issues, Documents, Policies, Privacy assessments)
+              → Ни один список (policies, engagements, findings, privacy) не имеет фильтра по текущему пользователю — ни в UI (grep по «Owned by me/мои/Needs my» в apps/web/src — пусто), ни owner-параметра в list-энд
+    [PARTIAL] Приём политик (policy acceptance/attestation) как персональная задача сотрудника
+              → API полный (кампания с email-рассылкой, self-подтверждение, трекинг кто подтвердил), но в вебе attestation-UI нет совсем: apps/web/src/app/policies/page.tsx — плоский список политик без кнопки «подтве
+    [PARTIAL] My access requests — self-service подача запроса доступа (система + обоснование + approver)
+              → API POST /access-requests есть (system, justification, approverMembershipId; permission control.view — т.е. доступен рядовому сотруднику), но в вебе формы подачи нет: из UI вызывается только decision 
+    [PARTIAL] Approval-workflow запросов доступа: approve/reject, решает назначенный approver
+              → Ядро есть: статусы pending/approved/rejected, POST :id/decision с проверкой «решает только назначенный approver», кнопки Approve/Reject на /iam, audit log. Не хватает: в списке не видно ни requester, 
+    [PARTIAL] Deprovisioning tasks — задачи отзыва доступа при offboarding, с SLA-статусом
+              → API полный: создание, закрытие (автоматически деактивирует аккаунт), список открытых со slaStatus, SLA пересчитывается джобой. Веб-UI нет вообще (grep «deprovisioning» по apps/web/src — пусто): ни спи
+    [PARTIAL] Персональная лента action-needed уведомлений (личные in-app уведомления с unread-счётчиком)
+              → Личный список уведомлений (типы info/warning/action, unread-бейдж, mark read) есть — UI + API per-user. Но уведомления создаются только ручным POST /notifications: NotificationsService никем не инжект
+
+=== [roadmap] Roadmap (guided onboarding)
+    full 2/10 | partial 1 | stub 0 | missing 7
+    наши: account (виджет «Шаги внедрения» на домашнем дашборде); api-модуль onboarding (GET /onboarding)
+    [MISSING] Guided-переходы: каждый шаг — actionable, ведёт к целевому действию/экрану
+              → Шаги чеклиста — плоский текст без ссылок на целевые экраны (пригласить команду → /iam, создать аудит → /engagements и т.д.) и без описаний, guided-навигации нет
+    [MISSING] Фазовая структура плана: Initial setup → Policies & Personnel → Test remediation → Audit (группировка шагов в последоват
+              → Шаги — плоский список из 6 позиций без группировки в фазы; фаз «Политики», «Ремедиация», «Аудит» в onboarding нет
+    [MISSING] Даты фаз/шагов roadmap (таймлайн внедрения с планируемыми датами)
+              → У onboarding-шагов нет ни планируемых, ни фактических дат; вехи с датами есть только у отдельного аудита (engagement milestones), не у плана внедрения тенанта
+    [MISSING] Audit ready date — прогнозная дата готовности к аудиту/соответствию
+              → Понятие прогнозной даты готовности отсутствует во всём коде (grep по audit ready/readyDate пуст)
+    [MISSING] Статус On track / Off track для плана внедрения
+              → Статуса on/off track у onboarding нет; onTrack существует только в control-kpis (apps/api/src/control-kpis/on-track.ts) — это KPI контролей, к roadmap не относится
+    [MISSING] Привязка roadmap к конкретному фреймворку (план соответствия SOC 2 Type II и т.п.)
+              → Onboarding-чеклист один на тенант и generic; выбора фреймворка и per-framework плана достижения соответствия нет
+    [MISSING] % пройденных тестов как метрика готовности roadmap (прогресс от passing автотестов)
+              → Прогресс считается по 6 onboarding-шагам, а не по доле passing тестов/evidence фреймворка; связи onboarding ↔ tests нет
+    [PARTIAL] Отдельный раздел Roadmap в навигации (полноэкранный getting-started экран)
+              → Roadmap существует только как виджет на домашнем дашборде /account; отдельного роута /roadmap с полноэкранным планом внедрения нет
+
+=== [settings] Settings (Notifications, Roles/RBAC-матрица, Login/SSO, AI, Tags, Developer console, SLAs, Information, Language)
+    full 1/16 | partial 11 | stub 1 | missing 3
+    наши: config, notifications, api-keys, ai-settings, field-permissions, login; api-модули: rbac, auth (oidc/saml/ldap/mfa), users, invites, memberships, tags, api-v1, email, jobs, config-
+    [MISSING] Personnel reminders: еженедельный email-digest незакрытых security-задач сотрудника (Every Monday / weekday)
+              → Дайджеста нет: ни сводного письма по открытым задачам сотрудника, ни настройки периодичности (Monday/weekday), ни самих per-person security-задач как источника.
+    [MISSING] Login: passwordless вход по magic link
+              → Magic-link флоу отсутствует полностью: нет ни эндпоинта запроса ссылки, ни токена одноразового входа, ни UI.
+    [MISSING] Login and security → Security: настройка idle session timeout, support access, incident contacts
+              → Настройки idle-таймаута нет (есть лишь фиксированное истечение JWT из env, без idle-логики и не per-tenant); support access и incident contacts отсутствуют полностью, экрана Security нет.
+    [STUB   ] Information: бизнес-профиль организации (юр. имя, юрисдикция, адрес) как вход для применимых контролей
+              → Экрана Information и API нет; business_profile — «мёртвая» jsonb-колонка на дочке: не редактируется через UI/API, нигде не читается; tenant-уровневых полей (юр. имя, юрисдикция, адрес) нет; вывод прим
+    [PARTIAL] Notifications: расписание уведомлений владельцам Test/Document/Control о провалах (Anytime / рабочие часы 9-18 + таймзон
+              → Есть in-app центр уведомлений и письма (invite, finding-assigned, finding-reminder, аттестации политик), но нет экрана Settings→Notifications: расписание (anytime/рабочие часы), таймзона и каналы не н
+    [PARTIAL] Roles: преднастроенные роли-пресеты (Collaborator, Editor, Admin, View-only Admin, Trust Collaborator, Auditors)
+              → 7 системных пресетов с полными матрицами сидятся и отдаются по API, но экрана Settings→Roles нет (роли видны только в селекторе field-permissions); создать/изменить кастомную роль тенанта нельзя ни че
+    [PARTIAL] Permission details: матрица «действие × роль» (No access / Edit / View only) + enforcement
+              → Модель resource×action×level и enforcement гвардами на всех контроллерах есть, матрица читается через GET /rbac/roles и /rbac/permissions, но UI-экрана матрицы нет и редактировать ячейки (поменять уро
+    [PARTIAL] User permissions: список пользователей с ролью (dropdown) и 3 категории — Your organization / Auditors / MSP
+              → Нет админ-экрана управления пользователями; смена роли существующего участника отсутствует и в API, и в UI; колонка membership.category есть в БД (default 'auditor'), но значения org/auditors/MSP нигд
+    [PARTIAL] SSO: OIDC + SAML + LDAP с JIT-провижинингом пользователей
+              → Три SSO-протокола работают на уровне API с JIT-созданием юзера, но IdP настраивается только env-переменными деплоя (один провайдер на инсталляцию, не per-tenant экран «подключить Google Workspace»); н
+    [PARTIAL] MFA (TOTP): setup/enable/verify/disable + recovery-коды + второй шаг логина
+              → API-цикл MFA полный и второй шаг входа есть в web, но нет self-service экрана включения MFA (QR/секрет) — включить можно только прямыми API-вызовами; нет политики «требовать MFA для всех» на уровне те
+    [PARTIAL] User provisioning: авто-создание аккаунтов и авто-деактивация уволенных/неактивных
+              → JIT-провижининг, invite-флоу, ручная и авто-деактивация неактивных есть; но деактивация не связана с офбордингом: смена personnel-статуса на offboarded (apps/api/src/personnel/personnel.service.ts) не
+    [PARTIAL] AI: тумблер включения ИИ per-tenant + Memory (память об организации)
+              → Тумблер даже шире Vanta (per-tenant выбор провайдера/модели/ключа, выключен по умолчанию, детерминированный fallback — ADR-0004), но AI Memory (накопленная память об организации, редактируемая в настр
+    [PARTIAL] Developer console / API: управление API-ключами + публичный REST API + документация
+              → Ключи (генерация/список/отзыв, lastUsedAt) — полный UI+API, Swagger есть; но публичный версионированный API под ключом покрывает единственный эндпоинт GET /api/v1/controls — остальные ресурсы (finding
+    [PARTIAL] Tags: справочник тегов + навешивание на сущности
+              → Создание тегов и attach/detach по API есть, UI — только создание/список в config; в интерфейсе сущностей навешивание тегов и фильтрация по тегам отсутствуют; удаления/переименования тега нет ни в UI, 
+    [PARTIAL] Settings → SLAs: first-class настройка SLA (окна ремедиации, статусы Overdue/Due soon сквозь модули)
+              → SLA-статусы (ok/due_soon/overdue) сквозные по 5 сущностям и видны в UI (закрывает B15 частично), но экрана настройки SLA нет: окно due-soon — один глобальный env-параметр деплоя, per-tenant и per-seve
+
+=== [crosscut] Сквозное: SLA, snapshots, поиск, комментарии, email, группа компаний
+    full 1/11 | partial 8 | stub 1 | missing 1
+    наши: snapshots, trends, reports (сравнение снапшотов), notifications, dashboard (групповой агрегат), vulnerabilities, commitments, controls/[id] (comments+history); API-модули: jobs (SL
+    [MISSING] Security alerts: resolution windows (SLA на алертах)
+              → В apps/api/src/security-alerts/security-alerts.service.ts у алертов нет due_date/sla_status и никакого расчёта окон резолюции — SLA-механика на алерты не распространена.
+    [STUB   ] First-class настройка SLA (аналог Settings → Monitoring → SLAs): per-tenant окна, SLA-политики по severity
+              → Настройка существует только как одна env-переменная на весь инстанс (окно due_soon в днях). Нет per-tenant конфигурации, нет SLA-политик по severity (у Vanta окна ремедиации зависят от критичности), н
+    [PARTIAL] SLA-поля с авто-статусами (ok / due_soon / overdue) на findings, tests, задачах депровижнинга, vulnerabilities, commitme
+              → Движок полный (часовая джоба пересчёта по due_date на 5 сущностях), но в UI SLA-статус отображается только на страницах vulnerabilities и commitments; в списках findings (engagements/[id]) и tests (co
+    [PARTIAL] Vulnerabilities: Asset SLA status (Overdue / Due soon / Due later / OK) с ремедиацией по SLA
+              → SLA-бейдж есть на каждой уязвимости, но нет агрегата «Asset SLA status» по активам (донат/сводка как у Vanta), нет статуса Due later (только ok/due_soon/overdue) и нет фильтра по SLA-статусу.
+    [PARTIAL] Снапшоты состояния на дату (Issues → Snapshots, B10: доказуемость «как было на дату аудита»)
+              → Замораживаются только агрегированные метрики (counts: controls_total, risks_by_class, findings_by_status и т.п.), а не полное состояние списка findings/сущностей на дату, как Snapshots у Vanta. Создан
+    [PARTIAL] Глобальный кросс-сущностный поиск
+              → API ищет по 5 типам (findings, controls, working papers, KB-записи, audit programs) через ILIKE-подстроку, по 5 хитов на тип. Но в вебе UI поиска нет вообще — ни строки поиска, ни командной палитры в 
+    [PARTIAL] Комментарии на сущностях (полиморфные, как Comments-таб в drawer контрола Vanta)
+              → API полиморфный (любая сущность), но в UI комментарии только читаются и только на карточке контрола — формы добавления нет нигде; на findings и других сущностях комментарии в UI не выведены. Нет редак
+    [PARTIAL] Аннотации рабочих документов (comment / tick_mark / exception + отчёт по exceptions)
+              → Только API-слой: в working-papers UI аннотации никак не отображаются и не создаются (визуальный рендерер отложен как [!] по ADR-0017).
+    [PARTIAL] Email-уведомления: письма owner'ам о событиях и приближении дедлайнов, мультиязычные шаблоны
+              → Нет настройки расписания уведомлений (у Vanta Settings→Notifications: Anytime / рабочие часы 9-18 в таймзоне), нет еженедельного digest'а (Personnel reminders «Every Monday»), нет писем о провалах Tes
+    [PARTIAL] In-app центр уведомлений (список, unread-счётчик, отметить прочитанным)
+              → Экран и API работают, но ни одно событие платформы не создаёт уведомления автоматически — NotificationsService не инжектится ни в один другой модуль, записи появляются только через ручной POST /notifi
+
+ИТОГО по фичам: {'missing': 67, 'stub': 24, 'partial': 113, 'full': 15} всего: 219

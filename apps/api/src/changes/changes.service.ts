@@ -7,7 +7,7 @@ import {
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { codeChange, membership } from '../db/schema';
+import { asset, codeChange, membership } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -30,7 +30,13 @@ export class ChangesService {
 
   async create(
     actor: Actor,
-    input: { title: string; type?: string; risk?: string; approverMembershipId?: string },
+    input: {
+      title: string;
+      type?: string;
+      risk?: string;
+      assetId?: string;
+      approverMembershipId?: string;
+    },
   ) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [me] = await tx
@@ -44,6 +50,7 @@ export class ChangesService {
           title: input.title,
           type: input.type ?? null,
           risk: input.risk ?? null,
+          assetId: input.assetId ?? null,
           requesterMembershipId: me?.id ?? null,
           approverMembershipId: input.approverMembershipId ?? null,
         })
@@ -106,12 +113,25 @@ export class ChangesService {
     return result;
   }
 
-  async list(tenantId: string) {
+  async list(tenantId: string, filters?: { status?: string; type?: string; assetId?: string }) {
+    const conds = [isNull(codeChange.deletedAt)];
+    if (filters?.status) conds.push(eq(codeChange.status, filters.status));
+    if (filters?.type) conds.push(eq(codeChange.type, filters.type));
+    if (filters?.assetId) conds.push(eq(codeChange.assetId, filters.assetId));
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
-        .select()
+        .select({
+          id: codeChange.id,
+          title: codeChange.title,
+          type: codeChange.type,
+          risk: codeChange.risk,
+          status: codeChange.status,
+          assetId: codeChange.assetId,
+          assetName: asset.name,
+        })
         .from(codeChange)
-        .where(isNull(codeChange.deletedAt))
+        .leftJoin(asset, eq(asset.id, codeChange.assetId))
+        .where(and(...conds))
         .orderBy(desc(codeChange.createdAt)),
     );
     return rows.map((c) => ({
@@ -120,6 +140,8 @@ export class ChangesService {
       type: c.type,
       risk: c.risk,
       status: c.status,
+      assetId: c.assetId,
+      assetName: c.assetName,
     }));
   }
 }
