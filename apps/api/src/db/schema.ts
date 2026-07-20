@@ -279,6 +279,10 @@ export const framework = pgTable(
     /** T-V25: домен каталога — security | privacy | industry | custom. */
     domain: text('domain'),
     sourceFrameworkId: uuid('source_framework_id').references((): AnyPgColumn => framework.id),
+    /** T-V46: предыдущая версия этого же стандарта (для diff требований). */
+    previousVersionId: uuid('previous_version_id').references((): AnyPgColumn => framework.id),
+    /** T-V46: заметки к выпуску новой версии (tracked changes). */
+    updateNotes: text('update_notes'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },

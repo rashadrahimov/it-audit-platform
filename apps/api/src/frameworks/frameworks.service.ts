@@ -32,6 +32,8 @@ export interface FrameworkListItem {
   /** T-V25: активирован ли тенантом (null — тенант-контекст не передан). */
   isActive: boolean | null;
   sourceFrameworkId: string | null;
+  /** T-V46: предыдущая версия (если это версия-потомок). */
+  previousVersionId: string | null;
 }
 
 /**
@@ -84,7 +86,154 @@ export class FrameworksService {
       isGlobal: row.tenantId === null,
       isActive: activeIds === null ? null : activeIds.has(row.id),
       sourceFrameworkId: row.sourceFrameworkId,
+      previousVersionId: row.previousVersionId,
     }));
+  }
+
+  /**
+   * T-V46: новая версия фреймворка — тенантная копия (tenant_id set) с новым
+   * version + update notes; требования копируются, control-маппинги переносятся
+   * на требования с тем же ref (tracked-changes через diff).
+   */
+  async newVersion(actor: Actor, sourceId: string, input: { version: string; notes?: string }) {
+    const src = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [fw] = await tx
+        .select()
+        .from(framework)
+        .where(and(eq(framework.id, sourceId), isNull(framework.deletedAt)));
+      if (!fw) throw new NotFoundException(`Фреймворк ${sourceId} не найден`);
+      const reqs = await tx
+        .select()
+        .from(frameworkRequirement)
+        .where(eq(frameworkRequirement.frameworkId, sourceId));
+      return { fw, reqs };
+    });
+    if (src.fw.version === input.version) {
+      throw new BadRequestException('Новая версия должна отличаться от текущей');
+    }
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .insert(framework)
+        .values({
+          tenantId: actor.tenantId,
+          nameI18n: src.fw.nameI18n,
+          version: input.version,
+          domain: src.fw.domain,
+          previousVersionId: sourceId,
+          updateNotes: input.notes ?? null,
+        })
+        .returning();
+      if (!row) throw new Error('Версия фреймворка не создалась');
+      // копия требований + карта ref → новый requirement.id
+      const refToNewId = new Map<string, string>();
+      for (const r of src.reqs) {
+        const [nr] = await tx
+          .insert(frameworkRequirement)
+          .values({
+            frameworkId: row.id,
+            ref: r.ref,
+            titleI18n: r.titleI18n,
+            textI18n: r.textI18n,
+            parentId: null,
+          })
+          .returning({ id: frameworkRequirement.id });
+        refToNewId.set(r.ref, nr!.id);
+      }
+      // перенос control-маппингов: старое требование → новое с тем же ref
+      const srcReqIds = src.reqs.map((r) => r.id);
+      let migrated = 0;
+      if (srcReqIds.length > 0) {
+        const oldMappings = await tx
+          .select({ controlId: controlMapping.controlId, ref: frameworkRequirement.ref })
+          .from(controlMapping)
+          .innerJoin(
+            frameworkRequirement,
+            eq(controlMapping.requirementId, frameworkRequirement.id),
+          )
+          .where(inArray(controlMapping.requirementId, srcReqIds));
+        for (const m of oldMappings) {
+          const newReqId = refToNewId.get(m.ref);
+          if (!newReqId) continue;
+          const [ins] = await tx
+            .insert(controlMapping)
+            .values({ controlId: m.controlId, requirementId: newReqId })
+            .onConflictDoNothing()
+            .returning({ id: controlMapping.id });
+          if (ins) migrated += 1;
+        }
+      }
+      return { id: row.id, requirements: refToNewId.size, migratedMappings: migrated };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'framework.versioned',
+      entityType: 'framework',
+      entityId: created.id,
+      after: { version: input.version, from: sourceId, migratedMappings: created.migratedMappings },
+    });
+    return created;
+  }
+
+  /** T-V46: diff требований этой версии против предыдущей (added/removed/changed). */
+  async diff(tenantId: string, frameworkId: string, locale: Locale) {
+    const data = await this.dbService.withTenant(tenantId, async (tx) => {
+      const [fw] = await tx
+        .select()
+        .from(framework)
+        .where(and(eq(framework.id, frameworkId), isNull(framework.deletedAt)));
+      if (!fw) throw new NotFoundException(`Фреймворк ${frameworkId} не найден`);
+      if (!fw.previousVersionId) return { fw, current: [], previous: [], prevFw: null };
+      const [prevFw] = await tx
+        .select()
+        .from(framework)
+        .where(eq(framework.id, fw.previousVersionId));
+      const current = await tx
+        .select()
+        .from(frameworkRequirement)
+        .where(eq(frameworkRequirement.frameworkId, frameworkId));
+      const previous = await tx
+        .select()
+        .from(frameworkRequirement)
+        .where(eq(frameworkRequirement.frameworkId, fw.previousVersionId));
+      return { fw, current, previous, prevFw };
+    });
+    if (!data.fw.previousVersionId) {
+      return {
+        hasPrevious: false,
+        updateNotes: data.fw.updateNotes,
+        added: [],
+        removed: [],
+        changed: [],
+      };
+    }
+    const curByRef = new Map(data.current.map((r) => [r.ref, r]));
+    const prevByRef = new Map(data.previous.map((r) => [r.ref, r]));
+    const added = data.current
+      .filter((r) => !prevByRef.has(r.ref))
+      .map((r) => ({ ref: r.ref, title: resolveLocalized(r.titleI18n, locale) }));
+    const removed = data.previous
+      .filter((r) => !curByRef.has(r.ref))
+      .map((r) => ({ ref: r.ref, title: resolveLocalized(r.titleI18n, locale) }));
+    const changed = data.current
+      .filter((r) => {
+        const prev = prevByRef.get(r.ref);
+        return prev && prev.titleI18n.en !== r.titleI18n.en;
+      })
+      .map((r) => ({
+        ref: r.ref,
+        title: resolveLocalized(r.titleI18n, locale),
+        was: resolveLocalized(prevByRef.get(r.ref)!.titleI18n, locale),
+      }));
+    return {
+      hasPrevious: true,
+      previousVersion: data.prevFw?.version ?? null,
+      updateNotes: data.fw.updateNotes,
+      added,
+      removed,
+      changed,
+    };
   }
 
   /** T-V25: активировать фреймворк для тенанта («Add framework» в каталоге). */
@@ -136,23 +285,43 @@ export class FrameworksService {
     return { frameworkId, active: false };
   }
 
+  /**
+   * Читалка под нужным контекстом: с tenantSlug — под RLS тенанта (видит его
+   * версии-адаптации, T-V46), иначе plain db (только глобальные строки).
+   */
+  private async readCtx<T>(
+    tenantSlug: string | undefined,
+    fn: (db: Pick<typeof this.dbService.db, 'select'>) => Promise<T>,
+  ): Promise<T> {
+    if (!tenantSlug) return fn(this.dbService.db);
+    const [found] = await this.dbService.db
+      .select({ id: tenant.id })
+      .from(tenant)
+      .where(eq(tenant.slug, tenantSlug));
+    if (!found) throw new BadRequestException(`Тенант «${tenantSlug}» не найден`);
+    return this.dbService.withTenant(found.id, fn);
+  }
+
   /** Дерево требований фреймворка (T-078). parent_id — иерархия (клиент строит дерево). */
-  async requirements(frameworkId: string, locale: Locale) {
-    const [fw] = await this.dbService.db
-      .select({
-        id: framework.id,
-        nameI18n: framework.nameI18n,
-        version: framework.version,
-        domain: framework.domain,
-      })
-      .from(framework)
-      .where(and(eq(framework.id, frameworkId), isNull(framework.deletedAt)));
-    if (!fw) throw new NotFoundException(`Фреймворк ${frameworkId} не найден`);
-    const reqs = await this.dbService.db
-      .select()
-      .from(frameworkRequirement)
-      .where(eq(frameworkRequirement.frameworkId, frameworkId))
-      .orderBy(asc(frameworkRequirement.ref));
+  async requirements(frameworkId: string, locale: Locale, tenantSlug?: string) {
+    const { fw, reqs } = await this.readCtx(tenantSlug, async (db) => {
+      const [fw] = await db
+        .select({
+          id: framework.id,
+          nameI18n: framework.nameI18n,
+          version: framework.version,
+          domain: framework.domain,
+        })
+        .from(framework)
+        .where(and(eq(framework.id, frameworkId), isNull(framework.deletedAt)));
+      if (!fw) throw new NotFoundException(`Фреймворк ${frameworkId} не найден`);
+      const reqs = await db
+        .select()
+        .from(frameworkRequirement)
+        .where(eq(frameworkRequirement.frameworkId, frameworkId))
+        .orderBy(asc(frameworkRequirement.ref));
+      return { fw, reqs };
+    });
     return {
       id: fw.id,
       name: resolveLocalized(fw.nameI18n, locale),
@@ -168,21 +337,24 @@ export class FrameworksService {
   }
 
   /** Покрытие требований фреймворка замапленными контролями (T-079). Vanta-метрика framework coverage. */
-  async coverage(frameworkId: string) {
-    const [fw] = await this.dbService.db
-      .select({ id: framework.id, nameI18n: framework.nameI18n })
-      .from(framework)
-      .where(and(eq(framework.id, frameworkId), isNull(framework.deletedAt)));
-    if (!fw) throw new NotFoundException(`Фреймворк ${frameworkId} не найден`);
-    // requirement + признак наличия хотя бы одного маппинга контроля
-    const reqs = await this.dbService.db
-      .select({
-        ref: frameworkRequirement.ref,
-        mappingId: controlMapping.id,
-      })
-      .from(frameworkRequirement)
-      .leftJoin(controlMapping, eq(controlMapping.requirementId, frameworkRequirement.id))
-      .where(eq(frameworkRequirement.frameworkId, frameworkId));
+  async coverage(frameworkId: string, tenantSlug?: string) {
+    const { fw, reqs } = await this.readCtx(tenantSlug, async (db) => {
+      const [fw] = await db
+        .select({ id: framework.id, nameI18n: framework.nameI18n })
+        .from(framework)
+        .where(and(eq(framework.id, frameworkId), isNull(framework.deletedAt)));
+      if (!fw) throw new NotFoundException(`Фреймворк ${frameworkId} не найден`);
+      // requirement + признак наличия хотя бы одного маппинга контроля
+      const reqs = await db
+        .select({
+          ref: frameworkRequirement.ref,
+          mappingId: controlMapping.id,
+        })
+        .from(frameworkRequirement)
+        .leftJoin(controlMapping, eq(controlMapping.requirementId, frameworkRequirement.id))
+        .where(eq(frameworkRequirement.frameworkId, frameworkId));
+      return { fw, reqs };
+    });
     const covered = new Set<string>();
     const all = new Set<string>();
     for (const r of reqs) {

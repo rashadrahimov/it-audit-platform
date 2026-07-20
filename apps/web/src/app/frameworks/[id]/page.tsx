@@ -3,7 +3,11 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
-import { activateFrameworkAction, deactivateFrameworkAction } from '../actions';
+import {
+  activateFrameworkAction,
+  deactivateFrameworkAction,
+  newFrameworkVersionAction,
+} from '../actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +42,14 @@ interface AuditRow {
   state: string;
   items: number;
 }
+interface Diff {
+  hasPrevious: boolean;
+  previousVersion?: string | null;
+  updateNotes: string | null;
+  added: Array<{ ref: string; title: string }>;
+  removed: Array<{ ref: string; title: string }>;
+  changed: Array<{ ref: string; title: string; was: string }>;
+}
 
 interface ReqNode extends Requirement {
   children: ReqNode[];
@@ -68,15 +80,18 @@ export default async function FrameworkDetailPage({ params }: { params: Promise<
   if (!tenantSlug) redirect('/account');
   const headers = { 'X-Tenant-Slug': tenantSlug };
 
-  const res = await apiFetch(`/frameworks/${id}/requirements?locale=${locale}`);
+  const res = await apiFetch(
+    `/frameworks/${id}/requirements?locale=${locale}&tenantSlug=${tenantSlug}`,
+  );
   if (!res.ok) redirect('/frameworks');
   const fw: FrameworkDetail = await res.json();
 
-  const [covRes, evRes, auditsRes, listRes] = await Promise.all([
-    apiFetch(`/frameworks/${id}/coverage`),
+  const [covRes, evRes, auditsRes, listRes, diffRes] = await Promise.all([
+    apiFetch(`/frameworks/${id}/coverage?tenantSlug=${tenantSlug}`),
     apiFetch(`/frameworks/${id}/evidence`, { headers }),
     apiFetch(`/frameworks/${id}/audits?locale=${locale}`, { headers }),
     apiFetch(`/frameworks?locale=${locale}&tenantSlug=${tenantSlug}`),
+    apiFetch(`/frameworks/${id}/diff?locale=${locale}`, { headers }),
   ]);
   const coverage: Coverage | null = covRes.ok ? await covRes.json() : null;
   const evidence: Evidence | null = evRes.ok ? await evRes.json() : null;
@@ -85,6 +100,7 @@ export default async function FrameworkDetailPage({ params }: { params: Promise<
     ? await listRes.json()
     : [];
   const isActive = catalog.find((f) => f.id === id)?.isActive === true;
+  const diff: Diff | null = diffRes.ok ? await diffRes.json() : null;
 
   const tree = buildTree(fw.requirements);
 
@@ -212,6 +228,100 @@ export default async function FrameworkDetailPage({ params }: { params: Promise<
             ))}
           </ul>
         )}
+      </section>
+
+      {diff?.hasPrevious && (
+        <section
+          className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+          data-testid="fw-diff"
+        >
+          <h2 className="text-sm font-semibold text-primary">
+            {t('versionDiff')}
+            {diff.previousVersion && (
+              <span className="ml-2 text-xs font-normal text-secondary">
+                {t('vsPrevious', { v: diff.previousVersion })}
+              </span>
+            )}
+          </h2>
+          {diff.updateNotes && (
+            <p className="rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground">
+              {diff.updateNotes}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 font-medium text-emerald-700 tabular-nums">
+              +{diff.added.length} {t('added')}
+            </span>
+            <span className="rounded-full bg-red-100 px-2.5 py-0.5 font-medium text-red-700 tabular-nums">
+              −{diff.removed.length} {t('removed')}
+            </span>
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 font-medium text-amber-700 tabular-nums">
+              ~{diff.changed.length} {t('changed')}
+            </span>
+          </div>
+          {(diff.added.length > 0 || diff.removed.length > 0 || diff.changed.length > 0) && (
+            <ul className="flex flex-col gap-1 text-sm">
+              {diff.added.map((r) => (
+                <li key={`a-${r.ref}`} className="flex gap-2">
+                  <span className="font-mono text-xs text-emerald-700">+ {r.ref}</span>
+                  <span className="text-foreground">{r.title}</span>
+                </li>
+              ))}
+              {diff.removed.map((r) => (
+                <li key={`r-${r.ref}`} className="flex gap-2">
+                  <span className="font-mono text-xs text-red-700">− {r.ref}</span>
+                  <span className="text-secondary line-through">{r.title}</span>
+                </li>
+              ))}
+              {diff.changed.map((r) => (
+                <li key={`c-${r.ref}`} className="flex flex-col">
+                  <span className="flex gap-2">
+                    <span className="font-mono text-xs text-amber-700">~ {r.ref}</span>
+                    <span className="text-foreground">{r.title}</span>
+                  </span>
+                  <span className="ml-6 text-xs text-secondary line-through">{r.was}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      <section
+        className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+        data-testid="fw-new-version"
+      >
+        <h2 className="text-sm font-semibold text-primary">{t('newVersion')}</h2>
+        <p className="text-xs text-secondary">{t('newVersionHint')}</p>
+        <form
+          action={newFrameworkVersionAction.bind(null, fw.id)}
+          className="flex flex-wrap items-end gap-3"
+        >
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-secondary">{t('newVersionLabel')}</span>
+            <input
+              name="version"
+              required
+              placeholder={t('newVersionPh')}
+              className="rounded-md border border-border px-2 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            />
+          </label>
+          <label className="flex min-w-48 flex-1 flex-col gap-1 text-sm">
+            <span className="font-medium text-secondary">{t('updateNotes')}</span>
+            <input
+              name="notes"
+              placeholder={t('updateNotesPh')}
+              className="rounded-md border border-border px-2 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            />
+          </label>
+          <button
+            type="submit"
+            data-testid="fw-version-submit"
+            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-on-primary transition-colors duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t('releaseVersion')}
+          </button>
+        </form>
       </section>
 
       <section

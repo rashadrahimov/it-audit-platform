@@ -498,6 +498,20 @@
       "when": 1784504742247,
       "tag": "0070_risk-library",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1784506616397,
+      "tag": "0071_framework-versioning",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1784506617397,
+      "tag": "0072_control-mapping-tenant-fw",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
@@ -12,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { z } from 'zod';
 import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
@@ -48,16 +50,22 @@ export class FrameworksController {
   @Get(':id/requirements')
   @ApiOperation({ summary: 'Дерево требований фреймворка (T-078, EP-FWK)' })
   @ApiQuery({ name: 'locale', required: false })
+  @ApiQuery({ name: 'tenantSlug', required: false })
   @ApiOkResponse({ description: '{id, name, version, requirements:[{id, ref, title, parentId}]}' })
-  requirements(@Param('id', ParseUUIDPipe) id: string, @Query('locale') localeQuery?: string) {
-    return this.frameworksService.requirements(id, parseLocale(localeQuery));
+  requirements(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') localeQuery?: string,
+    @Query('tenantSlug') tenantSlug?: string,
+  ) {
+    return this.frameworksService.requirements(id, parseLocale(localeQuery), tenantSlug);
   }
 
   @Get(':id/coverage')
   @ApiOperation({ summary: 'Покрытие требований замапленными контролями (T-079, EP-FWK)' })
+  @ApiQuery({ name: 'tenantSlug', required: false })
   @ApiOkResponse({ description: '{frameworkId, total, covered, percent, uncovered:[ref]}' })
-  coverage(@Param('id', ParseUUIDPipe) id: string) {
-    return this.frameworksService.coverage(id);
+  coverage(@Param('id', ParseUUIDPipe) id: string, @Query('tenantSlug') tenantSlug?: string) {
+    return this.frameworksService.coverage(id, tenantSlug);
   }
 
   @Post(':id/activate')
@@ -106,5 +114,39 @@ export class FrameworksController {
     @Query('locale') localeQuery?: string,
   ) {
     return this.frameworksService.audits(req.tenantId, id, parseLocale(localeQuery));
+  }
+
+  @Post(':id/new-version')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiHeader({ name: 'X-Tenant-Slug', required: true })
+  @ApiOperation({ summary: 'Новая версия фреймворка (T-V46): копия + перенос маппингов' })
+  newVersion(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z
+      .object({ version: z.string().min(1).max(64), notes: z.string().max(2000).optional() })
+      .safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.frameworksService.newVersion(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Get(':id/diff')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('control', 'view')
+  @ApiHeader({ name: 'X-Tenant-Slug', required: true })
+  @ApiOperation({ summary: 'Diff требований против предыдущей версии (T-V46)' })
+  diff(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    return this.frameworksService.diff(req.tenantId, id, parseLocale(localeQuery));
   }
 }

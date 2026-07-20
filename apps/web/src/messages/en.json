@@ -285,7 +285,19 @@
     "audits": "Audits",
     "noAudits": "No engagements touch this framework yet",
     "checklistItems": "{n} checklist items",
-    "requirements": "Requirements"
+    "requirements": "Requirements",
+    "versionDiff": "Requirement changes",
+    "vsPrevious": "vs {v}",
+    "added": "added",
+    "removed": "removed",
+    "changed": "changed",
+    "newVersion": "Release new version",
+    "newVersionHint": "Creates a tenant copy with a new version; requirements and control mappings carry over, then edit and compare with a diff.",
+    "newVersionLabel": "Version",
+    "newVersionPh": "e.g. 2025",
+    "updateNotes": "Update notes",
+    "updateNotesPh": "What's changed in this revision",
+    "releaseVersion": "Release version"
   },
   "dashboard": {
     "title": "Dashboards",

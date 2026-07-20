@@ -285,7 +285,19 @@
     "audits": "Auditlər",
     "noAudits": "Bu freymvorka toxunan audit hələ yoxdur",
     "checklistItems": "{n} çeklist bəndi",
-    "requirements": "Tələblər"
+    "requirements": "Tələblər",
+    "versionDiff": "Tələb dəyişiklikləri",
+    "vsPrevious": "{v} ilə müqayisə",
+    "added": "əlavə",
+    "removed": "silinib",
+    "changed": "dəyişib",
+    "newVersion": "Yeni versiya buraxın",
+    "newVersionHint": "Yeni versiya ilə tenant kopyası yaradır; tələblər və kontrol maplemeləri köçürülür, sonra redaktə edib diff ilə müqayisə edin.",
+    "newVersionLabel": "Versiya",
+    "newVersionPh": "məs. 2025",
+    "updateNotes": "Yeniləmə qeydləri",
+    "updateNotesPh": "Bu revizioyada nə dəyişib",
+    "releaseVersion": "Versiya buraxın"
   },
   "dashboard": {
     "title": "İdarə panelləri",
