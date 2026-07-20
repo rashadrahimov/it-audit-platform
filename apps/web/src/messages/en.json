@@ -109,7 +109,8 @@
     "membersNav": "Members",
     "myWorkNav": "My work",
     "assetsNav": "Assets",
-    "roadmap": "Roadmap"
+    "roadmap": "Roadmap",
+    "ssoSettings": "SSO"
   },
   "engagements": {
     "title": "Engagements",
@@ -1421,7 +1422,8 @@
       "roles": "Role presets and the permission matrix; custom tenant roles.",
       "members": "Tenant members with categories and role assignment.",
       "assets": "IT asset inventory: systems, databases, cloud services with owners and sources.",
-      "roadmap": "Implementation roadmap: phases, target dates, progress from tests."
+      "roadmap": "Implementation roadmap: phases, target dates, progress from tests.",
+      "sso-settings": "Connect your own identity provider (OIDC/SAML) per tenant."
     },
     "details": {
       "account": [
@@ -1653,6 +1655,11 @@
         "Activate a framework to see it appear on the roadmap.",
         "Set a target audit-ready date for each framework.",
         "Watch phase progress rise as controls, policies, findings and tests improve."
+      ],
+      "sso-settings": [
+        "Pick OIDC or SAML and enable SSO",
+        "Set email domain + issuer/metadata URL + client ID",
+        "Paste the client secret — stored encrypted"
       ]
     },
     "long": {
@@ -1705,7 +1712,8 @@
       "roles": "Roles define the resource×action permission matrix. System presets are read-only; create custom tenant roles and set matrix cells to none/view/edit.",
       "members": "Members lists everyone in the tenant with email, category (auditor / end user / MSP) and role. Change a member’s role inline — the change is journaled.",
       "assets": "The asset inventory lists every IT asset in scope — ERP systems, databases, network devices, applications, cloud services and endpoints. Each asset shows its owner and where it came from: created manually or discovered automatically through a connector. Assets can be tagged in bulk (e.g. to mark PCI or SOX scope) and the whole inventory exports to CSV for auditors. Assets are projected into the Audit Universe, so risks can be linked to them.",
-      "roadmap": "The roadmap turns each activated framework into a phased implementation plan — Setup, Policies, Remediation, Audit — with progress computed from live data (control coverage, approved policies, closed findings, passing tests). Set an audit-ready target date and the roadmap flags whether you are on or off track. Use it to see, at a glance, how close each standard is to being audit-ready."
+      "roadmap": "The roadmap turns each activated framework into a phased implementation plan — Setup, Policies, Remediation, Audit — with progress computed from live data (control coverage, approved policies, closed findings, passing tests). Set an audit-ready target date and the roadmap flags whether you are on or off track. Use it to see, at a glance, how close each standard is to being audit-ready.",
+      "sso-settings": "Configure single sign-on for this tenant: choose OIDC or SAML, set the email domain, issuer/metadata URL, client ID and secret. The secret is stored encrypted and never shown again. Use this when your organization runs its own identity provider and wants employees to sign in with corporate credentials."
     }
   },
   "tour": {
@@ -2086,5 +2094,22 @@
     "granted": "Granted access",
     "grantedTo": "Access granted to",
     "poweredBy": "Powered by STATERA"
+  },
+  "ssoSettings": {
+    "title": "SSO (Single Sign-On)",
+    "intro": "Connect your organization's own identity provider (OIDC or SAML) for this tenant.",
+    "enabled": "Enable tenant SSO",
+    "protocol": "Protocol",
+    "emailDomain": "Email domain",
+    "emailDomainHint": "Users with this email domain are routed to your IdP.",
+    "entryPoint": "Issuer / metadata URL",
+    "entryPointHint": "OIDC issuer or SAML metadata / entry-point URL.",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "secretSet": "•••••••• (stored)",
+    "secretEmpty": "Not set",
+    "secretHint": "Stored encrypted; never shown again. Leave blank to keep.",
+    "save": "Save",
+    "note": "Login-flow routing to per-tenant IdPs is applied by the auth layer; configuration is stored here."
   }
 }

@@ -109,7 +109,8 @@
     "membersNav": "İştirakçılar",
     "myWorkNav": "Mənim işim",
     "assetsNav": "Aktivlər",
-    "roadmap": "Yol xəritəsi"
+    "roadmap": "Yol xəritəsi",
+    "ssoSettings": "SSO"
   },
   "engagements": {
     "title": "Auditlər",
@@ -1421,7 +1422,8 @@
       "roles": "Rol şablonları və icazə matrisi; tenantın xüsusi rolları.",
       "members": "Tenant iştirakçıları: kateqoriyalar və rol təyini.",
       "assets": "İT aktivləri inventarı: sistemlər, verilənlər bazaları, bulud xidmətləri — sahiblər və mənbələrlə.",
-      "roadmap": "Tətbiq yol xəritəsi: fazalar, hədəf tarixlər, testlərdən irəliləyiş."
+      "roadmap": "Tətbiq yol xəritəsi: fazalar, hədəf tarixlər, testlərdən irəliləyiş.",
+      "sso-settings": "Tenant üçün öz IdP-nizi (OIDC/SAML) qoşun."
     },
     "details": {
       "account": [
@@ -1661,6 +1663,11 @@
         "Yol xəritəsində görünməsi üçün çərçivəni aktivləşdirin.",
         "Hər çərçivə üçün hədəf audit tarixi təyin edin.",
         "Nəzarət, siyasət, findinq və testlər yaxşılaşdıqca faza irəliləyişini izləyin."
+      ],
+      "sso-settings": [
+        "OIDC və ya SAML seçin və SSO-nu aktiv edin",
+        "Domen + issuer/metadata URL + client ID təyin edin",
+        "Client secret yapışdırın — şifrələnmiş saxlanılır"
       ]
     },
     "long": {
@@ -1713,7 +1720,8 @@
       "roles": "Rollar resurs×əməliyyat icazə matrisini müəyyən edir. Sistem şablonları yalnız oxunur; xüsusi rollar yaradın və xanaları təyin edin.",
       "members": "Bütün iştirakçıların siyahısı: email, kateqoriya (auditor / istifadəçi / MSP) və rol. Rol sətirdə dəyişilir — dəyişiklik jurnala düşür.",
       "assets": "Aktiv inventarı əhatə dairəsindəki bütün İT aktivlərini göstərir — ERP sistemləri, verilənlər bazaları, şəbəkə qurğuları, tətbiqlər, bulud xidmətləri və son nöqtələr. Hər aktivin sahibi və mənbəyi görünür: əl ilə yaradılıb və ya konnektor vasitəsilə avtomatik aşkarlanıb. Aktivləri toplu şəkildə teqləmək (məs. PCI və ya SOX əhatəsini işarələmək) və bütün inventarı auditorlar üçün CSV-yə ixrac etmək olar. Aktivlər Audit Universe-ə proyeksiya olunur və risklərlə əlaqələndirilə bilər.",
-      "roadmap": "Yol xəritəsi hər aktivləşdirilmiş çərçivəni fazalı tətbiq planına çevirir — Quraşdırma, Siyasətlər, Aradan qaldırma, Audit — irəliləyiş canlı məlumatlardan hesablanır (nəzarət əhatəsi, təsdiqlənmiş siyasətlər, bağlanmış findinqlər, keçən testlər). Audit hazırlığı hədəf tarixi təyin edin və yol xəritəsi qrafikdə olub-olmadığınızı göstərir."
+      "roadmap": "Yol xəritəsi hər aktivləşdirilmiş çərçivəni fazalı tətbiq planına çevirir — Quraşdırma, Siyasətlər, Aradan qaldırma, Audit — irəliləyiş canlı məlumatlardan hesablanır (nəzarət əhatəsi, təsdiqlənmiş siyasətlər, bağlanmış findinqlər, keçən testlər). Audit hazırlığı hədəf tarixi təyin edin və yol xəritəsi qrafikdə olub-olmadığınızı göstərir.",
+      "sso-settings": "Bu tenant üçün vahid girişi konfiqurasiya edin: OIDC və ya SAML seçin, e-poçt domenini, issuer/metadata URL, client ID və secret təyin edin. Secret şifrələnmiş saxlanılır və bir daha göstərilmir. Təşkilatınızın öz kimlik provayderi olduqda və işçilər korporativ hesab məlumatları ilə daxil olduqda istifadə edin."
     }
   },
   "tour": {
@@ -2094,5 +2102,22 @@
     "granted": "Verilmiş giriş",
     "grantedTo": "Giriş verildi",
     "poweredBy": "STATERA ilə"
+  },
+  "ssoSettings": {
+    "title": "SSO (vahid giriş)",
+    "intro": "Bu tenant üçün təşkilatınızın öz kimlik provayderini (OIDC və ya SAML) qoşun.",
+    "enabled": "Tenant SSO-nu aktiv et",
+    "protocol": "Protokol",
+    "emailDomain": "E-poçt domeni",
+    "emailDomainHint": "Bu e-poçt domeni olan istifadəçilər sizin IdP-yə yönləndirilir.",
+    "entryPoint": "Issuer / metadata URL",
+    "entryPointHint": "OIDC issuer və ya SAML metadata / entry-point URL.",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "secretSet": "•••••••• (saxlanılıb)",
+    "secretEmpty": "Təyin edilməyib",
+    "secretHint": "Şifrələnmiş saxlanılır; bir daha göstərilmir. Boş → cari saxlanılır.",
+    "save": "Yadda saxla",
+    "note": "Girişin tenant IdP-lərinə yönləndirilməsi auth qatı tərəfindən tətbiq olunur; konfiqurasiya burada saxlanılır."
   }
 }

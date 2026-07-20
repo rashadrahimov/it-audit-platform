@@ -90,6 +90,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/notifications', testid: 'go-notifications', label: 'notifications' },
       { href: '/migration', testid: 'go-migration', label: 'migration' },
       { href: '/ai-settings', testid: 'go-ai-settings', label: 'aiSettings' },
+      { href: '/sso-settings', testid: 'go-sso-settings', label: 'ssoSettings' },
       { href: '/glossary', testid: 'go-glossary', label: 'glossary' },
       { href: '/guide', testid: 'go-guide', label: 'guide' },
     ],

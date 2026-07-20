@@ -56,6 +56,7 @@ import { ReportsModule } from './reports/reports.module';
 import { ReportsExportModule } from './reports-export/reports-export.module';
 import { RisksModule } from './risks/risks.module';
 import { EntityAclModule } from './entity-acl/entity-acl.module';
+import { SsoConfigModule } from './sso-config/sso-config.module';
 import { AuditFirmsModule } from './audit-firms/audit-firms.module';
 import { SlaConfigModule } from './sla-config/sla-config.module';
 import { RoadmapModule } from './roadmap/roadmap.module';
@@ -131,6 +132,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     ReportsExportModule,
     RisksModule,
     EntityAclModule,
+    SsoConfigModule,
     TasksModule,
     AuditFirmsModule,
     SlaConfigModule,
