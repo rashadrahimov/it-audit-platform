@@ -140,4 +140,23 @@ describe('MagicLinkService', () => {
     expect(mfaChallengeResponseSchema.safeParse(res).success).toBe(true);
     await dbService.db.update(user).set({ mfaEnabled: false }).where(eq(user.id, userId));
   });
+
+  it('сбой отправки письма не роняет request (202-семантика, без оракула)', async () => {
+    const throwing = new MagicLinkService(
+      dbService,
+      new EmailService({
+        send: async () => {
+          throw new Error('smtp down');
+        },
+      }),
+      auditLogService,
+      authService,
+    );
+    await expect(throwing.request({ email })).resolves.toBeUndefined();
+    const active = await dbService.db
+      .select()
+      .from(magicLinkToken)
+      .where(and(eq(magicLinkToken.userId, userId), isNull(magicLinkToken.consumedAt)));
+    expect(active.length).toBeGreaterThanOrEqual(1);
+  });
 });

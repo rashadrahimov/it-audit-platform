@@ -52,10 +52,19 @@ export class MagicLinkService {
 
     const magicUrl = `${env.appUrl}/login/magic?token=${token}`;
     const locale: Locale = input.locale ?? (found.locale as Locale) ?? 'en';
-    await this.emailService.sendTemplate('magic-link', locale, email, {
-      magicUrl,
-      minutes: String(env.magicLinkTtlMinutes),
-    });
+    // Сбой отправки не роняет запрос: наружу всё равно 202 (иначе 500 у реального
+    // аккаунта против 202 у выдуманного = оракул существования). Логируем для ops.
+    try {
+      await this.emailService.sendTemplate('magic-link', locale, email, {
+        magicUrl,
+        minutes: String(env.magicLinkTtlMinutes),
+      });
+    } catch (error) {
+      console.error(
+        'magic-link письмо не отправлено:',
+        error instanceof Error ? error.message : error,
+      );
+    }
     await this.auditLogService.recordAuthEvent({
       userId: found.id,
       event: 'magic_link_requested',
