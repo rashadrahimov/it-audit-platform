@@ -483,6 +483,35 @@ export const engagementMilestone = pgTable(
 );
 
 /**
+ * T-116 (GEN-08/SCH-02, data-model §5): состав аудит-команды на engagement с
+ * ролью. Роль ограничивает права по стадиям (наша добавка D2: иерархия
+ * assessor/reviewer/approver). Стаффинг по часам — отдельно в resource_allocation.
+ */
+export const engagementMember = pgTable(
+  'engagement_member',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    engagementId: uuid('engagement_id')
+      .notNull()
+      .references(() => engagement.id, { onDelete: 'cascade' }),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id),
+    /** lead | assessor | reviewer | approver | observer */
+    engagementRole: text('engagement_role').notNull(),
+    /** Переопределение прав по стадиям: {stage: 'read-only'|'hidden'|'edit'}. */
+    stagePermissions: jsonb('stage_permissions').$type<Record<string, string> | null>(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('engagement_member_unique_idx').on(table.engagementId, table.membershipId),
+  ],
+);
+
+/**
  * Пункт чеклиста engagement'а (T-036) — СНАПШОТ контроля на момент включения
  * (data-model §10.1): текст копируется, правка библиотеки не меняет выпущенные
  * отчёты. control_id — только origin-ссылка.

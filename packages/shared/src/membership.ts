@@ -45,3 +45,21 @@ export type EvidenceReviewStatus = z.infer<typeof evidenceReviewStatusSchema>;
 export const auditorVerdictSchema = z.enum(['satisfactory', 'exception', 'not_applicable']);
 
 export type AuditorVerdict = z.infer<typeof auditorVerdictSchema>;
+
+/**
+ * Роль участника на engagement (T-116, data-model §5, добавка D2) — иерархия
+ * аудит-команды. lead/approver вправе утверждать (выпуск отчёта); assessor/
+ * reviewer/observer — нет.
+ */
+export const engagementRoleSchema = z.enum([
+  'lead',
+  'assessor',
+  'reviewer',
+  'approver',
+  'observer',
+]);
+
+export type EngagementRole = z.infer<typeof engagementRoleSchema>;
+
+/** Роли, которым разрешено утверждение/выпуск отчёта на engagement (T-116). */
+export const ENGAGEMENT_APPROVER_ROLES: EngagementRole[] = ['lead', 'approver'];

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -23,6 +24,7 @@ import { z } from 'zod';
 import {
   complianceStatusSchema,
   DEFAULT_LOCALE,
+  engagementRoleSchema,
   i18nTextSchema,
   localeSchema,
   type Locale,
@@ -47,6 +49,12 @@ const createEngagementSchema = z.object({
 const transitionSchema = z.object({ to: z.string().min(1) });
 
 const addChecklistSchema = z.object({ controlIds: z.array(z.uuid()).min(1) });
+
+const memberSchema = z.object({
+  membershipId: z.uuid(),
+  engagementRole: engagementRoleSchema,
+  stagePermissions: z.record(z.string(), z.string()).nullable().optional(),
+});
 
 const saveResponseSchema = z.object({
   text: z.string().min(1),
@@ -116,6 +124,48 @@ export class EngagementsController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data.controlIds,
+    );
+  }
+
+  @Post(':id/members')
+  @RequirePermission('engagement', 'edit', 'edit')
+  @ApiOperation({ summary: 'Состав команды (T-116): назначить участника с ролью' })
+  @ApiCreatedResponse({ description: '{id, engagementRole}' })
+  assignMember(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = memberSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.engagementsService.assignMember(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Get(':id/members')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({ summary: 'Состав команды engagement (T-116)' })
+  @ApiOkResponse({ description: '[{id, membershipId, engagementRole, fullName, email}]' })
+  listMembers(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.engagementsService.listMembers(req.tenantId, id);
+  }
+
+  @Delete(':id/members/:memberId')
+  @RequirePermission('engagement', 'edit', 'edit')
+  @ApiOperation({ summary: 'Снять участника с engagement (T-116)' })
+  @ApiOkResponse({ description: '{id}' })
+  removeMember(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
+  ) {
+    return this.engagementsService.removeMember(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      memberId,
     );
   }
 
