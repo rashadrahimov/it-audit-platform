@@ -117,7 +117,8 @@
     "myWorkNav": "Mənim işim",
     "assetsNav": "Aktivlər",
     "roadmap": "Yol xəritəsi",
-    "ssoSettings": "SSO"
+    "ssoSettings": "SSO",
+    "security": "Təhlükəsizlik"
   },
   "engagements": {
     "title": "Auditlər",
@@ -1432,7 +1433,8 @@
       "members": "Tenant iştirakçıları: kateqoriyalar və rol təyini.",
       "assets": "İT aktivləri inventarı: sistemlər, verilənlər bazaları, bulud xidmətləri — sahiblər və mənbələrlə.",
       "roadmap": "Tətbiq yol xəritəsi: fazalar, hədəf tarixlər, testlərdən irəliləyiş.",
-      "sso-settings": "Tenant üçün öz IdP-nizi (OIDC/SAML) qoşun."
+      "sso-settings": "Tenant üçün öz IdP-nizi (OIDC/SAML) qoşun.",
+      "security": "2FA və hesab təhlükəsizliyinizi idarə edin."
     },
     "details": {
       "account": [
@@ -1677,6 +1679,11 @@
         "OIDC və ya SAML seçin və SSO-nu aktiv edin",
         "Domen + issuer/metadata URL + client ID təyin edin",
         "Client secret yapışdırın — şifrələnmiş saxlanılır"
+      ],
+      "security": [
+        "«2FA-nı aktiv et» düyməsini basın və QR-ı skan edin",
+        "Təsdiq üçün 6 rəqəmli kodu daxil edin",
+        "Bərpa kodlarını saxlayın — yalnız bir dəfə göstərilir"
       ]
     },
     "long": {
@@ -1730,7 +1737,8 @@
       "members": "Bütün iştirakçıların siyahısı: email, kateqoriya (auditor / istifadəçi / MSP) və rol. Rol sətirdə dəyişilir — dəyişiklik jurnala düşür.",
       "assets": "Aktiv inventarı əhatə dairəsindəki bütün İT aktivlərini göstərir — ERP sistemləri, verilənlər bazaları, şəbəkə qurğuları, tətbiqlər, bulud xidmətləri və son nöqtələr. Hər aktivin sahibi və mənbəyi görünür: əl ilə yaradılıb və ya konnektor vasitəsilə avtomatik aşkarlanıb. Aktivləri toplu şəkildə teqləmək (məs. PCI və ya SOX əhatəsini işarələmək) və bütün inventarı auditorlar üçün CSV-yə ixrac etmək olar. Aktivlər Audit Universe-ə proyeksiya olunur və risklərlə əlaqələndirilə bilər.",
       "roadmap": "Yol xəritəsi hər aktivləşdirilmiş çərçivəni fazalı tətbiq planına çevirir — Quraşdırma, Siyasətlər, Aradan qaldırma, Audit — irəliləyiş canlı məlumatlardan hesablanır (nəzarət əhatəsi, təsdiqlənmiş siyasətlər, bağlanmış findinqlər, keçən testlər). Audit hazırlığı hədəf tarixi təyin edin və yol xəritəsi qrafikdə olub-olmadığınızı göstərir.",
-      "sso-settings": "Bu tenant üçün vahid girişi konfiqurasiya edin: OIDC və ya SAML seçin, e-poçt domenini, issuer/metadata URL, client ID və secret təyin edin. Secret şifrələnmiş saxlanılır və bir daha göstərilmir. Təşkilatınızın öz kimlik provayderi olduqda və işçilər korporativ hesab məlumatları ilə daxil olduqda istifadə edin."
+      "sso-settings": "Bu tenant üçün vahid girişi konfiqurasiya edin: OIDC və ya SAML seçin, e-poçt domenini, issuer/metadata URL, client ID və secret təyin edin. Secret şifrələnmiş saxlanılır və bir daha göstərilmir. Təşkilatınızın öz kimlik provayderi olduqda və işçilər korporativ hesab məlumatları ilə daxil olduqda istifadə edin.",
+      "security": "Şəxsi təhlükəsizlik parametrləri. İki faktorlu autentifikasiyanı (2FA) aktiv edin: QR-ı autentifikator tətbiqi ilə skan edin, kodu təsdiqləyin və birdəfəlik bərpa kodlarını saxlayın. Söndürmək üçün cari kod lazımdır."
     }
   },
   "tour": {
@@ -2128,5 +2136,25 @@
     "secretHint": "Şifrələnmiş saxlanılır; bir daha göstərilmir. Boş → cari saxlanılır.",
     "save": "Yadda saxla",
     "note": "Girişin tenant IdP-lərinə yönləndirilməsi auth qatı tərəfindən tətbiq olunur; konfiqurasiya burada saxlanılır."
+  },
+  "security": {
+    "title": "Təhlükəsizlik",
+    "intro": "Hesabınızın təhlükəsizliyini idarə edin.",
+    "mfaTitle": "İki faktorlu autentifikasiya (2FA)",
+    "on": "Aktiv",
+    "enabledDesc": "2FA aktivdir — girişdə birdəfəlik kod tələb olunur.",
+    "offDesc": "İkinci faktor əlavə edin: autentifikator tətbiqi girişdə birdəfəlik kod yaradır.",
+    "enable": "2FA-nı aktiv et",
+    "scanHint": "Bu QR-ı autentifikator tətbiqində (Google Authenticator, Authy…) skan edin və 6 rəqəmli kodu daxil edin.",
+    "manualKey": "Əl açarı",
+    "codeToEnable": "6 rəqəmli kod",
+    "confirm": "Təsdiq et",
+    "badCode": "Yanlış kod — yenidən cəhd edin.",
+    "setupError": "Quruluşu başlatmaq olmadı.",
+    "enabledOk": "2FA aktivdir.",
+    "recoveryHint": "Bu bərpa kodlarını təhlükəsiz yerdə saxlayın — cihazınızı itirsəniz, hər biri bir dəfə işləyir. Yalnız indi göstərilir.",
+    "codeToDisable": "Söndürmək üçün kod",
+    "disable": "2FA-nı söndür",
+    "disabledOk": "2FA söndürüldü."
   }
 }

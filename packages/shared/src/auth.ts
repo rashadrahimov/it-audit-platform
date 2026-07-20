@@ -93,6 +93,8 @@ export const meResponseSchema = z.object({
   email: z.email(),
   fullName: z.string(),
   locale: localeSchema,
+  /** T-V52: включён ли у пользователя MFA — для self-service экрана /security. */
+  mfaEnabled: z.boolean().default(false),
 });
 
 /** Тенанты юзера (T-032): контекст для UI до полноценного переключателя. */

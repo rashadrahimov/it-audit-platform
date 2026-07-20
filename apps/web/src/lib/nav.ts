@@ -14,6 +14,7 @@ export const NAV_GROUPS: NavGroup[] = [
     group: 'overview',
     items: [
       { href: '/my-work', testid: 'go-my-work', label: 'myWorkNav' },
+      { href: '/security', testid: 'go-security', label: 'security' },
       { href: '/dashboard', testid: 'go-dashboard', label: 'dashboard' },
       { href: '/dashboards', testid: 'go-dashboards-charts', label: 'chartDashboards' },
       { href: '/reports', testid: 'go-reports', label: 'reports' },

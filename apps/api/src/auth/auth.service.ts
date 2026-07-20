@@ -237,6 +237,7 @@ export class AuthService {
       email: u.email,
       fullName: u.fullName,
       locale: (u.locale as MeResponse['locale']) ?? 'en',
+      mfaEnabled: u.mfaEnabled,
     };
   }
 

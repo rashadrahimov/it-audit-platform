@@ -117,7 +117,8 @@
     "myWorkNav": "My work",
     "assetsNav": "Assets",
     "roadmap": "Roadmap",
-    "ssoSettings": "SSO"
+    "ssoSettings": "SSO",
+    "security": "Security"
   },
   "engagements": {
     "title": "Engagements",
@@ -1432,7 +1433,8 @@
       "members": "Tenant members with categories and role assignment.",
       "assets": "IT asset inventory: systems, databases, cloud services with owners and sources.",
       "roadmap": "Implementation roadmap: phases, target dates, progress from tests.",
-      "sso-settings": "Connect your own identity provider (OIDC/SAML) per tenant."
+      "sso-settings": "Connect your own identity provider (OIDC/SAML) per tenant.",
+      "security": "Manage your 2FA and personal account security."
     },
     "details": {
       "account": [
@@ -1669,6 +1671,11 @@
         "Pick OIDC or SAML and enable SSO",
         "Set email domain + issuer/metadata URL + client ID",
         "Paste the client secret — stored encrypted"
+      ],
+      "security": [
+        "Click Enable 2FA and scan the QR with an authenticator app",
+        "Enter the 6-digit code to confirm",
+        "Save the recovery codes — shown only once"
       ]
     },
     "long": {
@@ -1722,7 +1729,8 @@
       "members": "Members lists everyone in the tenant with email, category (auditor / end user / MSP) and role. Change a member’s role inline — the change is journaled.",
       "assets": "The asset inventory lists every IT asset in scope — ERP systems, databases, network devices, applications, cloud services and endpoints. Each asset shows its owner and where it came from: created manually or discovered automatically through a connector. Assets can be tagged in bulk (e.g. to mark PCI or SOX scope) and the whole inventory exports to CSV for auditors. Assets are projected into the Audit Universe, so risks can be linked to them.",
       "roadmap": "The roadmap turns each activated framework into a phased implementation plan — Setup, Policies, Remediation, Audit — with progress computed from live data (control coverage, approved policies, closed findings, passing tests). Set an audit-ready target date and the roadmap flags whether you are on or off track. Use it to see, at a glance, how close each standard is to being audit-ready.",
-      "sso-settings": "Configure single sign-on for this tenant: choose OIDC or SAML, set the email domain, issuer/metadata URL, client ID and secret. The secret is stored encrypted and never shown again. Use this when your organization runs its own identity provider and wants employees to sign in with corporate credentials."
+      "sso-settings": "Configure single sign-on for this tenant: choose OIDC or SAML, set the email domain, issuer/metadata URL, client ID and secret. The secret is stored encrypted and never shown again. Use this when your organization runs its own identity provider and wants employees to sign in with corporate credentials.",
+      "security": "Personal security settings. Enable two-factor authentication (2FA): scan a QR with an authenticator app, confirm a code, and save one-time recovery codes. Disabling requires a current code. 2FA adds a second step at sign-in on top of your password or magic link."
     }
   },
   "tour": {
@@ -2120,5 +2128,25 @@
     "secretHint": "Stored encrypted; never shown again. Leave blank to keep.",
     "save": "Save",
     "note": "Login-flow routing to per-tenant IdPs is applied by the auth layer; configuration is stored here."
+  },
+  "security": {
+    "title": "Security",
+    "intro": "Manage your personal account security.",
+    "mfaTitle": "Two-factor authentication (2FA)",
+    "on": "On",
+    "enabledDesc": "2FA is enabled — a one-time code is required at sign-in.",
+    "offDesc": "Add a second factor: an authenticator app generates a one-time code at sign-in.",
+    "enable": "Enable 2FA",
+    "scanHint": "Scan this QR in your authenticator app (Google Authenticator, Authy…), then enter the 6-digit code.",
+    "manualKey": "Manual key",
+    "codeToEnable": "6-digit code",
+    "confirm": "Confirm",
+    "badCode": "Invalid code — try again.",
+    "setupError": "Could not start setup.",
+    "enabledOk": "2FA is now enabled.",
+    "recoveryHint": "Save these recovery codes somewhere safe — each works once if you lose your device. Shown only now.",
+    "codeToDisable": "Code to disable",
+    "disable": "Disable 2FA",
+    "disabledOk": "2FA disabled."
   }
 }
