@@ -142,7 +142,14 @@
     "modes": {
       "formal": "Formal",
       "light": "Yüngül"
-    }
+    },
+    "createTitle": "Audit yarat",
+    "titlePh": "məs. Ümumi İT nəzarətləri 2026",
+    "none": "—",
+    "periodStart": "Dövr başı",
+    "periodEnd": "Dövr sonu",
+    "createSubmit": "Yarat",
+    "createError": "Yaradıla bilmədi"
   },
   "engagementDetail": {
     "back": "Bütün auditlər",

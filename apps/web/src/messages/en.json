@@ -142,7 +142,14 @@
     "modes": {
       "formal": "Formal",
       "light": "Light"
-    }
+    },
+    "createTitle": "Create engagement",
+    "titlePh": "e.g. IT General Controls 2026",
+    "none": "—",
+    "periodStart": "Period from",
+    "periodEnd": "Period to",
+    "createSubmit": "Create",
+    "createError": "Could not create"
   },
   "engagementDetail": {
     "back": "All engagements",

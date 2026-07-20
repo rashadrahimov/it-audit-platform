@@ -142,7 +142,14 @@
     "modes": {
       "formal": "Формальный",
       "light": "Облегчённый"
-    }
+    },
+    "createTitle": "Создать аудит",
+    "titlePh": "напр. Общие ИТ-контроли 2026",
+    "none": "—",
+    "periodStart": "Период с",
+    "periodEnd": "Период по",
+    "createSubmit": "Создать",
+    "createError": "Не удалось создать"
   },
   "engagementDetail": {
     "back": "Все аудиты",
