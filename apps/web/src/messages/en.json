@@ -1531,11 +1531,7 @@
         "Repeat after changes",
         "Compare two snapshots before/after"
       ],
-      "trends": [
-        "Pick a metric group",
-        "Watch the trend direction",
-        "React to degradations"
-      ],
+      "trends": ["Pick a metric group", "Watch the trend direction", "React to degradations"],
       "kpi": [
         "Set a KPI on a control: target and direction",
         "Record measurements",
@@ -1551,11 +1547,7 @@
         "Adapt the wording per subsidiary",
         "Add controls to audit checklists"
       ],
-      "policies": [
-        "Upload a policy",
-        "Publish new versions",
-        "Track employee acknowledgement"
-      ],
+      "policies": ["Upload a policy", "Publish new versions", "Track employee acknowledgement"],
       "commitments": [
         "Register a contractual commitment",
         "Update status: met / at risk / breached",
@@ -1581,11 +1573,7 @@
         "Send it for review",
         "Sign off; annotations and exceptions inside"
       ],
-      "plans": [
-        "Draft the annual plan",
-        "Spread audits across periods",
-        "Track plan execution"
-      ],
+      "plans": ["Draft the annual plan", "Spread audits across periods", "Track plan execution"],
       "allocations": [
         "Assign an auditor to an engagement",
         "Set planned hours",
@@ -1706,11 +1694,7 @@
         "Paste the key — stored encrypted",
         "Without AI the deterministic mode works"
       ],
-      "glossary": [
-        "Search for a term",
-        "Add your own terms",
-        "Keep a shared language in the team"
-      ],
+      "glossary": ["Search for a term", "Add your own terms", "Keep a shared language in the team"],
       "guide": [
         "Read the section descriptions",
         "Start the interactive tour",
@@ -1741,10 +1725,7 @@
         "Create a custom role",
         "Set a matrix cell for it"
       ],
-      "members": [
-        "Review member categories",
-        "Change a role via the inline select"
-      ],
+      "members": ["Review member categories", "Change a role via the inline select"],
       "assets": [
         "Add an asset manually or import from a connector on the Connectors page.",
         "Select several assets with checkboxes and apply a shared tag.",
