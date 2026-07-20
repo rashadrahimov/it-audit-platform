@@ -17,7 +17,7 @@ import {
   membership,
   response,
 } from '../db/schema';
-import { resolveAuditorScope } from '../rbac/auditor-scope';
+import { resolveActorCategory, resolveAuditorScope } from '../rbac/auditor-scope';
 import { FileStorageService, type StoredObject } from '../files/file-storage.service';
 
 /** Известные цели привязки; целостность полиморфизма — на уровне сервиса (data-model §10.5). */
@@ -238,7 +238,7 @@ export class DocumentsService {
     linkId: string,
     reviewStatus: EvidenceReviewStatus,
   ) {
-    const category = await this.actorCategory(actor.tenantId, actor.userId);
+    const category = await resolveActorCategory(this.dbService, actor.tenantId, actor.userId);
     if (category !== 'auditor' && category !== 'external_auditor') {
       throw new ForbiddenException('Ревьюить доказательства может только аудитор');
     }
@@ -282,21 +282,6 @@ export class DocumentsService {
       after: { reviewStatus },
     });
     return { id: linkId, reviewStatus };
-  }
-
-  /** Категория активного membership актора в тенанте (для auditor-gate). */
-  private async actorCategory(tenantId: string, userId: string): Promise<string | null> {
-    const [m] = await this.dbService.db
-      .select({ category: membership.category })
-      .from(membership)
-      .where(
-        and(
-          eq(membership.userId, userId),
-          eq(membership.tenantId, tenantId),
-          eq(membership.status, 'active'),
-        ),
-      );
-    return m?.category ?? null;
   }
 
   /** Авторизованное скачивание: метаданные под RLS, тело — из S3. */

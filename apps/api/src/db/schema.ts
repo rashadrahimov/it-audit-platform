@@ -537,6 +537,34 @@ export const documentLink = pgTable(
 );
 
 /**
+ * T-113: аудиторская оценка (Auditor Assessment) — вердикт аудитора по пункту
+ * аудита (checklist_item/finding), ОТДЕЛЬНО от самооценки auditee
+ * (response.compliance_status). Append-only лог раундов (round растёт на цель).
+ */
+export const auditorAssessment = pgTable(
+  'auditor_assessment',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    /** checklist_item | finding — пункт аудита, который оценивает аудитор. */
+    targetType: text('target_type').notNull(),
+    targetId: uuid('target_id').notNull(),
+    assessorMembershipId: uuid('assessor_membership_id')
+      .notNull()
+      .references(() => membership.id),
+    /** satisfactory | exception | not_applicable — вердикт аудитора. */
+    verdict: text('verdict').notNull(),
+    note: text('note'),
+    /** Номер раунда оценки по этой цели (растёт при каждой новой оценке). */
+    round: integer('round').notNull().default(1),
+    ...timestamps,
+  },
+  (table) => [index('auditor_assessment_target_idx').on(table.targetType, table.targetId)],
+);
+
+/**
  * Test — проверка контроля (T-033, ADR-0010): Control 1→N Test; ручные сейчас,
  * автоматические получат connector_id/check_config с EP-INT. sla_status статичен
  * до джобы T-043. status: ok/failing/needs_attention/deactivated.

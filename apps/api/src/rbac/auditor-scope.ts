@@ -28,3 +28,25 @@ export async function resolveAuditorScope(
   if (!me || me.category !== 'external_auditor') return null;
   return me.scope ?? null;
 }
+
+/**
+ * Категория активного membership актора в тенанте (для auditor-gate: ревьюит/
+ * оценивает только аудитор). null = нет активного membership.
+ */
+export async function resolveActorCategory(
+  dbService: DbService,
+  tenantId: string,
+  userId: string,
+): Promise<string | null> {
+  const [m] = await dbService.db
+    .select({ category: membership.category })
+    .from(membership)
+    .where(
+      and(
+        eq(membership.userId, userId),
+        eq(membership.tenantId, tenantId),
+        eq(membership.status, 'active'),
+      ),
+    );
+  return m?.category ?? null;
+}

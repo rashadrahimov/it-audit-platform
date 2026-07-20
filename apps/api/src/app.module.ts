@@ -11,6 +11,7 @@ import { AssetsModule } from './assets/assets.module';
 import { AuditModule } from './audit/audit.module';
 import { AuditProgramsModule } from './audit-programs/audit-programs.module';
 import { AuditTypesModule } from './audit-types/audit-types.module';
+import { AuditorAssessmentsModule } from './auditor-assessments/auditor-assessments.module';
 import { AuthModule } from './auth/auth.module';
 import { ChangesModule } from './changes/changes.module';
 import { CommentsModule } from './comments/comments.module';
@@ -81,6 +82,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     AuditModule,
     AuditProgramsModule,
     AuditTypesModule,
+    AuditorAssessmentsModule,
     AuthModule,
     ChangesModule,
     CommentsModule,

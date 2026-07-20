@@ -34,3 +34,14 @@ export const evidenceReviewStatusSchema = z.enum([
 ]);
 
 export type EvidenceReviewStatus = z.infer<typeof evidenceReviewStatusSchema>;
+
+/**
+ * Вердикт аудиторской оценки (T-113, Auditor Assessment) — судейское заключение
+ * аудитора по пункту аудита, отдельно от самооценки auditee:
+ * - satisfactory — доказательства подтверждают контроль;
+ * - exception — выявлено отклонение (обычно → finding);
+ * - not_applicable — неприменимо.
+ */
+export const auditorVerdictSchema = z.enum(['satisfactory', 'exception', 'not_applicable']);
+
+export type AuditorVerdict = z.infer<typeof auditorVerdictSchema>;
