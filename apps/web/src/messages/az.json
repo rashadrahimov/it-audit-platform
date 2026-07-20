@@ -1303,7 +1303,10 @@
     "apiKeyEmpty": "Provayder API açarı",
     "apiKeyHint": "Şifrələnmiş saxlanılır (AES-256-GCM); bir daha göstərilmir.",
     "save": "Saxla",
-    "residencyNote": "Data (boşluqlar, cavablar, siyasətlər) seçilmiş provayderə göndərilir. Bank üçün — lokal model (şəbəkənizdə Ollama/vLLM) və ya DPA + Zero-Data-Retention olan bulud."
+    "residencyNote": "Data (boşluqlar, cavablar, siyasətlər) seçilmiş provayderə göndərilir. Bank üçün — lokal model (şəbəkənizdə Ollama/vLLM) və ya DPA + Zero-Data-Retention olan bulud.",
+    "memory": "AI Yaddaşı",
+    "memoryPh": "məs. Biz ISO 27001 üzrə fintech SaaS-ıq; findinqlər SOC komandamıza istinad etməlidir.",
+    "memoryHint": "Hər AI qaralama promptuna qarışdırılan təşkilat konteksti."
   },
   "guide": {
     "title": "Platforma bələdçisi",

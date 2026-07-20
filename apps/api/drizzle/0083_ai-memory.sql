@@ -1,0 +1,1 @@
+ALTER TABLE "tenant_ai_config" ADD COLUMN "memory" text;

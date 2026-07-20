@@ -12,6 +12,7 @@ export interface TenantAiConfigView {
   baseUrl: string | null;
   model: string | null;
   hasKey: boolean;
+  memory: string | null;
 }
 
 export interface SetTenantAiConfig {
@@ -20,6 +21,8 @@ export interface SetTenantAiConfig {
   model?: string;
   /** Пустой/отсутствует на update → оставить существующий ключ. */
   apiKey?: string;
+  /** T-V36b: AI Memory — контекст тенанта в промпт. */
+  memory?: string;
 }
 
 /**
@@ -76,6 +79,7 @@ export class AiService {
       baseUrl: row?.baseUrl ?? null,
       model: row?.model ?? null,
       hasKey: Boolean(row?.apiKeyEncrypted),
+      memory: row?.memory ?? null,
     };
   }
 
@@ -90,6 +94,7 @@ export class AiService {
       baseUrl: input.baseUrl ?? null,
       model: input.model ?? null,
       apiKeyEncrypted,
+      memory: input.memory !== undefined ? input.memory || null : (existing?.memory ?? null),
     };
     await this.db.withTenant(tenantId, (tx) =>
       existing
@@ -126,9 +131,14 @@ export class AiService {
     return this.run(this.envConfig(), system, user);
   }
 
-  /** Текст по эффективному конфигу тенанта (override → env). */
+  /** Текст по эффективному конфигу тенанта (override → env); AI Memory подмешивается в system. */
   async draftTextForTenant(tenantId: string, system: string, user: string): Promise<string | null> {
-    return this.run(await this.resolveTenantConfig(tenantId), system, user);
+    const row = await this.readRow(tenantId);
+    const memory = row?.memory?.trim();
+    const systemWithMemory = memory
+      ? `${system}\n\nOrganization context (AI Memory):\n${memory}`
+      : system;
+    return this.run(await this.resolveTenantConfig(tenantId), systemWithMemory, user);
   }
 
   /** Общий путь: вызвать провайдера, при ошибке — залогировать и вернуть null (fallback). */

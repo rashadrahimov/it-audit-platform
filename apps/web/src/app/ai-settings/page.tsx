@@ -10,6 +10,7 @@ interface TenantAiConfig {
   baseUrl: string | null;
   model: string | null;
   hasKey: boolean;
+  memory: string | null;
 }
 interface AiStatus {
   enabled: boolean;
@@ -34,7 +35,7 @@ export default async function AiSettingsPage() {
   ]);
   const cfg: TenantAiConfig = cfgRes.ok
     ? await cfgRes.json()
-    : { provider: 'none', baseUrl: null, model: null, hasKey: false };
+    : { provider: 'none', baseUrl: null, model: null, hasKey: false, memory: null };
   const status: AiStatus = statusRes.ok
     ? await statusRes.json()
     : { enabled: false, provider: 'none', model: null };
@@ -107,6 +108,19 @@ export default async function AiSettingsPage() {
             className={`${inputCls} font-mono`}
           />
           <span className="text-[11px] text-secondary">{t('apiKeyHint')}</span>
+        </label>
+
+        <label className="flex flex-col gap-1 text-xs text-secondary">
+          {t('memory')}
+          <textarea
+            name="memory"
+            rows={4}
+            defaultValue={cfg.memory ?? ''}
+            data-testid="ai-memory"
+            placeholder={t('memoryPh')}
+            className={inputCls}
+          />
+          <span className="text-[11px] text-secondary">{t('memoryHint')}</span>
         </label>
 
         <button

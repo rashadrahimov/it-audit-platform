@@ -12,7 +12,9 @@ export async function saveAiConfigAction(formData: FormData): Promise<void> {
   const model = String(formData.get('model') ?? '').trim();
   const apiKey = String(formData.get('apiKey') ?? '').trim();
 
-  const body: Record<string, string> = { provider };
+  const memory = String(formData.get('memory') ?? '').trim();
+
+  const body: Record<string, string> = { provider, memory };
   if (baseUrl) body.baseUrl = baseUrl;
   if (model) body.model = model;
   if (apiKey) body.apiKey = apiKey;

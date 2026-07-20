@@ -27,6 +27,7 @@ const configSchema = z.object({
   baseUrl: z.string().optional(),
   model: z.string().optional(),
   apiKey: z.string().optional(),
+  memory: z.string().max(4000).optional(),
 });
 
 /** Ассист-эндпоинты поверх LLM (EP-AI, T-H21/H22/H23). ИИ выключен по умолчанию → детерминированный fallback. */

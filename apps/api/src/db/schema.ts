@@ -1614,6 +1614,8 @@ export const tenantAiConfig = pgTable('tenant_ai_config', {
   model: text('model'),
   /** {apiKey} зашифрованный (encryptConfig); null = ключ не задан. */
   apiKeyEncrypted: text('api_key_encrypted'),
+  /** T-V36b: AI Memory — контекст тенанта, подмешивается в system-промпт. */
+  memory: text('memory'),
   ...timestamps,
 });
 
