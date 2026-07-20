@@ -1,0 +1,50 @@
+name: Deploy (prod)
+
+# Ручной деплой прод-хоста по SSH (T-H41). GH-раннер имеет прямой сетевой доступ
+# к серверу. Креды — из секретов репозитория (Settings → Secrets and variables →
+# Actions), в git их нет. Триггер — вручную (workflow_dispatch); при желании можно
+# добавить `push: branches: [main]` для авто-деплоя после мержа.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref для выкатки на сервере (по умолчанию main)'
+        required: false
+        default: 'main'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_REF: ${{ github.event.inputs.ref }}
+        run: |
+          set -euo pipefail
+          miss=0
+          [ -n "$DEPLOY_SSH_KEY" ] || { echo "::error::секрет DEPLOY_SSH_KEY не задан"; miss=1; }
+          [ -n "$DEPLOY_HOST" ]    || { echo "::error::секрет DEPLOY_HOST не задан (напр. 78.47.51.200)"; miss=1; }
+          [ -n "$DEPLOY_PATH" ]    || { echo "::error::секрет DEPLOY_PATH не задан (каталог репо на сервере)"; miss=1; }
+          [ "$miss" = 0 ] || { echo "Добавь недостающие секреты в Settings → Secrets → Actions и перезапусти."; exit 1; }
+
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          user="${DEPLOY_USER:-root}"
+          ref="${DEPLOY_REF:-main}"
+
+          ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/deploy_key "$user@$DEPLOY_HOST" bash -se <<REMOTE
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          git fetch origin "$ref"
+          git checkout "$ref"
+          git pull --ff-only origin "$ref"
+          docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+          echo '--- migrate logs ---'
+          docker compose -f docker-compose.prod.yml --env-file .env.prod logs migrate --tail=20 || true
+          echo '--- services ---'
+          docker compose -f docker-compose.prod.yml --env-file .env.prod ps
+          REMOTE
