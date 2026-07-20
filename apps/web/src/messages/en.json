@@ -1114,7 +1114,10 @@
     "status": "Status",
     "active": "Active",
     "revoked": "Revoked",
-    "revoke": "Revoke"
+    "revoke": "Revoke",
+    "apiTitle": "Public REST API (v1)",
+    "apiHint": "Read-only programmatic access to all resources. Authenticate with the header X-Api-Key: <your key>.",
+    "apiResources": "Resources"
   },
   "notifications": {
     "title": "Notifications",

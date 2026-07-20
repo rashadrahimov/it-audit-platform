@@ -1114,7 +1114,10 @@
     "status": "Статус",
     "active": "Активен",
     "revoked": "Отозван",
-    "revoke": "Отозвать"
+    "revoke": "Отозвать",
+    "apiTitle": "Публичный REST API (v1)",
+    "apiHint": "Read-only программный доступ ко всем ресурсам. Аутентификация заголовком X-Api-Key: <ваш ключ>.",
+    "apiResources": "Ресурсы"
   },
   "notifications": {
     "title": "Уведомления",

@@ -1114,7 +1114,10 @@
     "status": "Status",
     "active": "Aktiv",
     "revoked": "Ləğv edilib",
-    "revoke": "Ləğv et"
+    "revoke": "Ləğv et",
+    "apiTitle": "Açıq REST API (v1)",
+    "apiHint": "Bütün resurslara yalnız-oxu proqram girişi. X-Api-Key: <açarınız> başlığı ilə autentifikasiya.",
+    "apiResources": "Resurslar"
   },
   "notifications": {
     "title": "Bildirişlər",
