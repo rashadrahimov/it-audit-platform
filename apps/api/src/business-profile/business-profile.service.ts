@@ -13,10 +13,14 @@ export interface BusinessProfile {
   jurisdiction: string;
   address: string;
   incidentContact: string;
+  /** T-V58: контакт по безопасности (security.txt / vuln-disclosure). */
+  securityContact: string;
   /** T-V36c: авто-логаут при простое, минуты (0 = выключено). */
   idleTimeoutMin: number;
   /** T-V36f: локаль тенанта по умолчанию — ставится в cookie при логине. */
   defaultLocale: Locale;
+  /** T-V58: разрешить временный доступ поддержки платформы к аккаунту (audit-trail). */
+  supportAccess: boolean;
 }
 
 export const EMPTY_PROFILE: BusinessProfile = {
@@ -24,12 +28,20 @@ export const EMPTY_PROFILE: BusinessProfile = {
   jurisdiction: '',
   address: '',
   incidentContact: '',
+  securityContact: '',
   idleTimeoutMin: 0,
   defaultLocale: DEFAULT_LOCALE,
+  supportAccess: false,
 };
 
-type TextField = 'legalName' | 'jurisdiction' | 'address' | 'incidentContact';
-const TEXT_FIELDS: TextField[] = ['legalName', 'jurisdiction', 'address', 'incidentContact'];
+type TextField = 'legalName' | 'jurisdiction' | 'address' | 'incidentContact' | 'securityContact';
+const TEXT_FIELDS: TextField[] = [
+  'legalName',
+  'jurisdiction',
+  'address',
+  'incidentContact',
+  'securityContact',
+];
 
 @Injectable()
 export class BusinessProfileService {
@@ -61,6 +73,7 @@ export class BusinessProfileService {
     if (typeof input.idleTimeoutMin === 'number' && Number.isFinite(input.idleTimeoutMin)) {
       merged.idleTimeoutMin = Math.min(1440, Math.max(0, Math.round(input.idleTimeoutMin)));
     }
+    if (typeof input.supportAccess === 'boolean') merged.supportAccess = input.supportAccess;
     const locale = localeSchema.safeParse(input.defaultLocale);
     if (locale.success) merged.defaultLocale = locale.data;
     await this.dbService.db

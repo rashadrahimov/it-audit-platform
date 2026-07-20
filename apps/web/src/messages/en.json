@@ -1128,7 +1128,10 @@
     "idleTimeout": "Idle timeout (min)",
     "idleTimeoutHint": "Auto sign-out after inactivity. 0 = disabled.",
     "defaultLocale": "Default language",
-    "defaultLocaleHint": "New sign-ins get this language until the user picks another."
+    "defaultLocaleHint": "New sign-ins get this language until the user picks another.",
+    "securityContact": "Security contact",
+    "supportAccess": "Allow platform support access",
+    "supportAccessHint": "Let platform support temporarily access your account for troubleshooting (audit-logged)."
   },
   "reports": {
     "title": "Reports",

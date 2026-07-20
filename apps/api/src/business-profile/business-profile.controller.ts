@@ -11,8 +11,10 @@ const saveSchema = z.object({
   jurisdiction: z.string().max(500).optional(),
   address: z.string().max(500).optional(),
   incidentContact: z.string().max(500).optional(),
+  securityContact: z.string().max(500).optional(),
   idleTimeoutMin: z.number().int().min(0).max(1440).optional(),
   defaultLocale: z.enum(['en', 'az', 'ru']).optional(),
+  supportAccess: z.boolean().optional(),
 });
 
 @Controller('business-profile')

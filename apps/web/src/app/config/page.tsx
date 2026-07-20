@@ -35,16 +35,20 @@ interface BusinessProfile {
   jurisdiction: string;
   address: string;
   incidentContact: string;
+  securityContact: string;
   idleTimeoutMin: number;
   defaultLocale: 'en' | 'az' | 'ru';
+  supportAccess: boolean;
 }
 const EMPTY_PROFILE: BusinessProfile = {
   legalName: '',
   jurisdiction: '',
   address: '',
   incidentContact: '',
+  securityContact: '',
   idleTimeoutMin: 0,
   defaultLocale: 'en',
+  supportAccess: false,
 };
 
 const inputCls =
@@ -85,7 +89,9 @@ export default async function ConfigPage() {
           data-testid="business-profile-form"
           className="grid gap-3 rounded-xl border border-border bg-white p-4 shadow-sm sm:grid-cols-2"
         >
-          {(['legalName', 'jurisdiction', 'address', 'incidentContact'] as const).map((f) => (
+          {(
+            ['legalName', 'jurisdiction', 'address', 'incidentContact', 'securityContact'] as const
+          ).map((f) => (
             <label key={f} className="flex flex-col gap-1 text-sm">
               <span className="text-xs font-medium text-secondary">{t(f)}</span>
               <input name={f} defaultValue={biz[f]} className={inputCls} />
@@ -117,6 +123,19 @@ export default async function ConfigPage() {
               <option value="ru">Русский</option>
             </select>
             <span className="text-[11px] text-secondary">{t('defaultLocaleHint')}</span>
+          </label>
+          <label className="flex items-start gap-2 text-sm sm:col-span-2">
+            <input
+              type="checkbox"
+              name="supportAccess"
+              defaultChecked={biz.supportAccess}
+              data-testid="support-access"
+              className="mt-0.5 h-4 w-4 rounded border-border text-accent focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <span className="flex flex-col">
+              <span className="text-xs font-medium text-secondary">{t('supportAccess')}</span>
+              <span className="text-[11px] text-secondary">{t('supportAccessHint')}</span>
+            </span>
           </label>
           <button
             type="submit"

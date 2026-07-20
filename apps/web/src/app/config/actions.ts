@@ -22,14 +22,22 @@ export async function createTagAction(formData: FormData): Promise<void> {
 export async function saveBusinessProfileAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
   if (!tenantSlug) return;
-  const body: Record<string, string | number> = {};
-  for (const key of ['legalName', 'jurisdiction', 'address', 'incidentContact'] as const) {
+  const body: Record<string, string | number | boolean> = {};
+  for (const key of [
+    'legalName',
+    'jurisdiction',
+    'address',
+    'incidentContact',
+    'securityContact',
+  ] as const) {
     body[key] = String(formData.get(key) ?? '').trim();
   }
   const idle = Number(formData.get('idleTimeoutMin'));
   if (Number.isFinite(idle)) body.idleTimeoutMin = Math.min(1440, Math.max(0, Math.round(idle)));
   const dl = String(formData.get('defaultLocale') ?? '').trim();
   if (dl === 'en' || dl === 'az' || dl === 'ru') body.defaultLocale = dl;
+  // checkbox: присутствует только когда отмечен
+  body.supportAccess = formData.get('supportAccess') != null;
   await apiFetch('/business-profile', {
     method: 'PUT',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
