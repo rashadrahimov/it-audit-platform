@@ -77,6 +77,7 @@ export function AppShell({
   labels,
   tour,
   help,
+  idleTimeoutMin = 0,
   children,
 }: {
   groups: NavGroup[];
@@ -84,10 +85,28 @@ export function AppShell({
   labels: Labels;
   tour: { steps: TourStep[]; labels: TourLabels };
   help: { entries: Record<string, HelpEntry>; labels: HelpLabels };
+  idleTimeoutMin?: number;
   children: ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  // T-V36c: авто-логаут при простое (per-tenant idleTimeoutMin, 0 = выкл)
+  useEffect(() => {
+    if (!idleTimeoutMin || idleTimeoutMin <= 0) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => void logoutAction(), idleTimeoutMin * 60_000);
+    };
+    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [idleTimeoutMin]);
   const [tourSignal, setTourSignal] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
   // справочник: запись по текущему разделу (первый сегмент пути; '' → account)

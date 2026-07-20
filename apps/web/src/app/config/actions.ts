@@ -22,10 +22,12 @@ export async function createTagAction(formData: FormData): Promise<void> {
 export async function saveBusinessProfileAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
   if (!tenantSlug) return;
-  const body: Record<string, string> = {};
+  const body: Record<string, string | number> = {};
   for (const key of ['legalName', 'jurisdiction', 'address', 'incidentContact'] as const) {
     body[key] = String(formData.get(key) ?? '').trim();
   }
+  const idle = Number(formData.get('idleTimeoutMin'));
+  if (Number.isFinite(idle)) body.idleTimeoutMin = Math.min(1440, Math.max(0, Math.round(idle)));
   await apiFetch('/business-profile', {
     method: 'PUT',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },

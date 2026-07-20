@@ -35,12 +35,14 @@ interface BusinessProfile {
   jurisdiction: string;
   address: string;
   incidentContact: string;
+  idleTimeoutMin: number;
 }
 const EMPTY_PROFILE: BusinessProfile = {
   legalName: '',
   jurisdiction: '',
   address: '',
   incidentContact: '',
+  idleTimeoutMin: 0,
 };
 
 const inputCls =
@@ -87,6 +89,19 @@ export default async function ConfigPage() {
               <input name={f} defaultValue={biz[f]} className={inputCls} />
             </label>
           ))}
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-xs font-medium text-secondary">{t('idleTimeout')}</span>
+            <input
+              name="idleTimeoutMin"
+              type="number"
+              min={0}
+              max={1440}
+              defaultValue={biz.idleTimeoutMin}
+              data-testid="idle-timeout"
+              className={inputCls}
+            />
+            <span className="text-[11px] text-secondary">{t('idleTimeoutHint')}</span>
+          </label>
           <button
             type="submit"
             data-testid="business-profile-save"

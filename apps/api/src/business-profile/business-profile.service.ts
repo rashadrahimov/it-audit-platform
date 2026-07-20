@@ -12,6 +12,8 @@ export interface BusinessProfile {
   jurisdiction: string;
   address: string;
   incidentContact: string;
+  /** T-V36c: авто-логаут при простое, минуты (0 = выключено). */
+  idleTimeoutMin: number;
 }
 
 export const EMPTY_PROFILE: BusinessProfile = {
@@ -19,14 +21,11 @@ export const EMPTY_PROFILE: BusinessProfile = {
   jurisdiction: '',
   address: '',
   incidentContact: '',
+  idleTimeoutMin: 0,
 };
 
-const FIELDS: Array<keyof BusinessProfile> = [
-  'legalName',
-  'jurisdiction',
-  'address',
-  'incidentContact',
-];
+type TextField = 'legalName' | 'jurisdiction' | 'address' | 'incidentContact';
+const TEXT_FIELDS: TextField[] = ['legalName', 'jurisdiction', 'address', 'incidentContact'];
 
 @Injectable()
 export class BusinessProfileService {
@@ -51,9 +50,12 @@ export class BusinessProfileService {
     const settings = (t?.settings ?? {}) as Record<string, unknown>;
     const current = this.extract(settings);
     const merged: BusinessProfile = { ...current };
-    for (const key of FIELDS) {
+    for (const key of TEXT_FIELDS) {
       const v = input[key];
       if (typeof v === 'string') merged[key] = v.slice(0, 500);
+    }
+    if (typeof input.idleTimeoutMin === 'number' && Number.isFinite(input.idleTimeoutMin)) {
+      merged.idleTimeoutMin = Math.min(1440, Math.max(0, Math.round(input.idleTimeoutMin)));
     }
     await this.dbService.db
       .update(tenant)

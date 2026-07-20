@@ -4,7 +4,7 @@ import { Plus_Jakarta_Sans } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { AppShell } from '@/components/app-shell';
-import { getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { NAV_GROUPS } from '@/lib/nav';
 import './globals.css';
 
@@ -27,6 +27,14 @@ async function Shell({ children }: { children: ReactNode }) {
     getTranslations('help'),
     getActiveTenantSlug(),
   ]);
+  // T-V36c: per-tenant idle timeout для авто-логаута в app-shell
+  let idleTimeoutMin = 0;
+  if (tenantSlug) {
+    const bizRes = await apiFetch('/business-profile', {
+      headers: { 'X-Tenant-Slug': tenantSlug },
+    });
+    if (bizRes.ok) idleTimeoutMin = Number((await bizRes.json()).idleTimeoutMin) || 0;
+  }
   const groups = NAV_GROUPS.map((g) => ({
     group: g.group,
     label: t(`nav.${g.group}`),
@@ -110,6 +118,7 @@ async function Shell({ children }: { children: ReactNode }) {
           close: tHelp('close'),
         },
       }}
+      idleTimeoutMin={idleTimeoutMin}
     >
       {children}
     </AppShell>

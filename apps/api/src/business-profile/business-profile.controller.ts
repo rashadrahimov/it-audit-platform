@@ -11,6 +11,7 @@ const saveSchema = z.object({
   jurisdiction: z.string().max(500).optional(),
   address: z.string().max(500).optional(),
   incidentContact: z.string().max(500).optional(),
+  idleTimeoutMin: z.number().int().min(0).max(1440).optional(),
 });
 
 @Controller('business-profile')

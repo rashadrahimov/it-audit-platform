@@ -1030,7 +1030,9 @@
     "jurisdiction": "Yurisdiksiya",
     "address": "Ünvan",
     "incidentContact": "İnsident əlaqəsi",
-    "bizSave": "Profili saxla"
+    "bizSave": "Profili saxla",
+    "idleTimeout": "Boşdayanma vaxtı (dəq)",
+    "idleTimeoutHint": "Fəaliyyətsizlikdən sonra avto-çıxış. 0 = söndürülüb."
   },
   "reports": {
     "title": "Hesabatlar",

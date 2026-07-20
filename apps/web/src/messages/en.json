@@ -1030,7 +1030,9 @@
     "jurisdiction": "Jurisdiction",
     "address": "Address",
     "incidentContact": "Incident contact",
-    "bizSave": "Save profile"
+    "bizSave": "Save profile",
+    "idleTimeout": "Idle timeout (min)",
+    "idleTimeoutHint": "Auto sign-out after inactivity. 0 = disabled."
   },
   "reports": {
     "title": "Reports",
