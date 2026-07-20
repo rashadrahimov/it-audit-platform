@@ -1652,7 +1652,21 @@
     "colRenewBy": "Обновить к",
     "colUploaded": "Загружен",
     "ownerSave": "ОК",
-    "empty": "Документов пока нет"
+    "empty": "Документов пока нет",
+    "evidence": "Ревью evidence",
+    "ev": {
+      "not_ready": "Не готово",
+      "ready": "Готово",
+      "flagged": "Помечено",
+      "accepted": "Принято"
+    },
+    "auditFirms": "Аудиторские фирмы",
+    "auditFirmsHint": "Внешние аудиторы, приглашённые ревьюить доказательства.",
+    "firmName": "Название фирмы",
+    "firmNamePh": "напр. Ernst & Young",
+    "firmEmail": "Контактный email",
+    "firmAdd": "Добавить фирму",
+    "firmDelete": "Удалить фирму"
   },
   "tests": {
     "title": "Тесты",

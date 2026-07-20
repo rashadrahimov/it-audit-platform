@@ -1313,6 +1313,47 @@ export const tagLink = pgTable(
   (table) => [uniqueIndex('tag_link_triple_idx').on(table.tagId, table.entityType, table.entityId)],
 );
 
+/** Аудиторская фирма (T-V29): реестр внешних аудиторов, приглашаемых в тенант. */
+export const auditFirm = pgTable(
+  'audit_firm',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    name: text('name').notNull(),
+    contactEmail: text('contact_email'),
+    note: text('note'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [index('audit_firm_tenant_idx').on(table.tenantId)],
+);
+
+/**
+ * Evidence review (T-V29): полиморфный статус ревью доказательства аудитором —
+ * (entity_type, entity_id) → not_ready|ready|flagged|accepted + заметка.
+ */
+export const evidenceReview = pgTable(
+  'evidence_review',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    status: text('status').notNull().default('not_ready'),
+    note: text('note'),
+    reviewedByMembershipId: uuid('reviewed_by_membership_id').references(() => membership.id),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('evidence_review_entity_idx').on(table.tenantId, table.entityType, table.entityId),
+  ],
+);
+
 /**
  * Задача ремедиации (T-V27): полиморфная (entity_type, entity_id) —
  * finding/risk/control/vendor и т.п. Декомпозиция ремедиации на шаги с

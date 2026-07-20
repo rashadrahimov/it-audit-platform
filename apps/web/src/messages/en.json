@@ -1644,7 +1644,21 @@
     "colRenewBy": "Renew by",
     "colUploaded": "Uploaded",
     "ownerSave": "OK",
-    "empty": "No documents yet"
+    "empty": "No documents yet",
+    "evidence": "Evidence review",
+    "ev": {
+      "not_ready": "Not ready",
+      "ready": "Ready",
+      "flagged": "Flagged",
+      "accepted": "Accepted"
+    },
+    "auditFirms": "Audit firms",
+    "auditFirmsHint": "External auditors invited to review evidence.",
+    "firmName": "Firm name",
+    "firmNamePh": "e.g. Ernst & Young",
+    "firmEmail": "Contact email",
+    "firmAdd": "Add firm",
+    "firmDelete": "Remove firm"
   },
   "tests": {
     "title": "Tests",

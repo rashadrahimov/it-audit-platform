@@ -1652,7 +1652,21 @@
     "colRenewBy": "Yenilənmə",
     "colUploaded": "Yüklənib",
     "ownerSave": "OK",
-    "empty": "Hələ sənəd yoxdur"
+    "empty": "Hələ sənəd yoxdur",
+    "evidence": "Sübut icmalı",
+    "ev": {
+      "not_ready": "Hazır deyil",
+      "ready": "Hazır",
+      "flagged": "İşarələnib",
+      "accepted": "Qəbul edilib"
+    },
+    "auditFirms": "Audit firmaları",
+    "auditFirmsHint": "Sübutları yoxlamaq üçün dəvət olunan xarici auditorlar.",
+    "firmName": "Firma adı",
+    "firmNamePh": "məs. Ernst & Young",
+    "firmEmail": "Əlaqə e-poçtu",
+    "firmAdd": "Firma əlavə et",
+    "firmDelete": "Firmanı sil"
   },
   "tests": {
     "title": "Testlər",
