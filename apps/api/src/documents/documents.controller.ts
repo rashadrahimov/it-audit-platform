@@ -119,7 +119,7 @@ export class DocumentsController {
     if (!entityType || !entityId) {
       throw new BadRequestException('Нужны entityType и entityId');
     }
-    return this.documentsService.listFor(req.tenantId, entityType, entityId);
+    return this.documentsService.listFor(req.tenantId, req.user.sub, entityType, entityId);
   }
 
   @Get(':id/content')

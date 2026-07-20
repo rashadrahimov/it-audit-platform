@@ -156,6 +156,7 @@ export class EngagementsController {
   ) {
     return this.engagementsService.list(
       req.tenantId,
+      req.user.sub,
       parseLocale(localeQuery),
       auditTypeCode,
       archived === 'true',

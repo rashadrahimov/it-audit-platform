@@ -17,6 +17,7 @@ import {
   user,
 } from '../db/schema';
 import type { ComplianceStatus } from '@it-audit/shared';
+import { resolveAuditorScope } from '../rbac/auditor-scope';
 import { suggestFindings } from './finding-suggest';
 import {
   allowedTransitions,
@@ -280,12 +281,23 @@ export class EngagementsService {
   }
 
   /** ENG-08: активный список исключает архивные (archivedAt); archived=true — только архивные. */
-  async list(tenantId: string, locale: Locale, auditTypeCode?: string, archived = false) {
+  async list(
+    tenantId: string,
+    userId: string,
+    locale: Locale,
+    auditTypeCode?: string,
+    archived = false,
+  ) {
+    // T-111: внешний аудитор со scope видит engagement'ы только своих дочек.
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
     const rows = await this.dbService.withTenant(tenantId, (tx) => {
       const conds = [
         isNull(engagement.deletedAt),
         archived ? isNotNull(engagement.archivedAt) : isNull(engagement.archivedAt),
       ];
+      if (scope !== null) {
+        conds.push(scope.length === 0 ? sql`false` : inArray(engagement.subsidiaryId, scope));
+      }
       if (auditTypeCode) conds.push(eq(auditType.code, auditTypeCode));
       return tx
         .select({

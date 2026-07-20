@@ -3,7 +3,15 @@ import { createHash, randomUUID } from 'node:crypto';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { document, documentLink, membership } from '../db/schema';
+import {
+  checklistItem,
+  document,
+  documentLink,
+  engagement,
+  membership,
+  response,
+} from '../db/schema';
+import { resolveAuditorScope } from '../rbac/auditor-scope';
 import { FileStorageService, type StoredObject } from '../files/file-storage.service';
 
 /** Известные цели привязки; целостность полиморфизма — на уровне сервиса (data-model §10.5). */
@@ -120,7 +128,65 @@ export class DocumentsService {
   }
 
   /** Документы сущности (через привязки), новые сверху. */
-  async listFor(tenantId: string, entityType: string, entityId: string) {
+  /**
+   * T-111: дочка сущности, к которой привязан документ, — для scoped Auditor View.
+   * Прослеживает evidence-путь response→checklist_item→engagement→subsidiary.
+   * Возвращает null для глобальных/библиотечных целей (control/framework/…) —
+   * их скоуп не режет; для несуществующей сущности — тоже null.
+   */
+  private async entitySubsidiary(
+    tenantId: string,
+    entityType: string,
+    entityId: string,
+  ): Promise<{ subsidiaryId: string | null; subsidiaryBound: boolean }> {
+    if (entityType === 'subsidiary') return { subsidiaryId: entityId, subsidiaryBound: true };
+    if (entityType === 'engagement') {
+      const [e] = await this.dbService.withTenant(tenantId, (tx) =>
+        tx
+          .select({ s: engagement.subsidiaryId })
+          .from(engagement)
+          .where(eq(engagement.id, entityId)),
+      );
+      return { subsidiaryId: e?.s ?? null, subsidiaryBound: true };
+    }
+    if (entityType === 'checklist_item') {
+      const [ci] = await this.dbService.withTenant(tenantId, (tx) =>
+        tx
+          .select({ s: engagement.subsidiaryId })
+          .from(checklistItem)
+          .innerJoin(engagement, eq(checklistItem.engagementId, engagement.id))
+          .where(eq(checklistItem.id, entityId)),
+      );
+      return { subsidiaryId: ci?.s ?? null, subsidiaryBound: true };
+    }
+    if (entityType === 'response') {
+      const [r] = await this.dbService.withTenant(tenantId, (tx) =>
+        tx
+          .select({ s: engagement.subsidiaryId })
+          .from(response)
+          .innerJoin(checklistItem, eq(response.checklistItemId, checklistItem.id))
+          .innerJoin(engagement, eq(checklistItem.engagementId, engagement.id))
+          .where(eq(response.id, entityId)),
+      );
+      return { subsidiaryId: r?.s ?? null, subsidiaryBound: true };
+    }
+    // control/framework/policy/… — не привязаны к дочке: библиотека/глобальные.
+    return { subsidiaryId: null, subsidiaryBound: false };
+  }
+
+  async listFor(tenantId: string, userId: string, entityType: string, entityId: string) {
+    // T-111: внешний аудитор со scope не видит документы сущностей вне своих дочек.
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
+    if (scope !== null) {
+      const { subsidiaryId, subsidiaryBound } = await this.entitySubsidiary(
+        tenantId,
+        entityType,
+        entityId,
+      );
+      if (subsidiaryBound && (subsidiaryId === null || !scope.includes(subsidiaryId))) {
+        return [];
+      }
+    }
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
