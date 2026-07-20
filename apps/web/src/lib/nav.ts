@@ -96,3 +96,21 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
+
+/**
+ * T-V50 (ADR-0022): scoped-навигация внешнего аудитора (membership.category='auditor').
+ * Решение Рашада (20.07): аудитор видит аудит-работу + read-only комплаенс-базу
+ * (controls/frameworks/policies/documents), risk и third-party контекст, активы/уязвимости;
+ * скрыты группа Organization & settings целиком и IAM-разделы (/iam, /access-reviews).
+ */
+const AUDITOR_HIDDEN_GROUPS = new Set(['org']);
+const AUDITOR_HIDDEN_HREFS = new Set(['/iam', '/access-reviews']);
+
+/** Отфильтровать навигацию под category (internal → полная; auditor → scoped). */
+export function navForCategory(category: string): NavGroup[] {
+  if (category !== 'auditor') return NAV_GROUPS;
+  return NAV_GROUPS.filter((g) => !AUDITOR_HIDDEN_GROUPS.has(g.group)).map((g) => ({
+    group: g.group,
+    items: g.items.filter((it) => !AUDITOR_HIDDEN_HREFS.has(it.href)),
+  }));
+}

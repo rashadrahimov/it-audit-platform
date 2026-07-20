@@ -85,6 +85,8 @@ export const meTenantsResponseSchema = z.array(
     slug: z.string(),
     name: z.string(),
     role: z.string(),
+    /** T-V50: internal | auditor — auditor получает scoped-навигацию. */
+    category: z.string().default('internal'),
   }),
 );
 

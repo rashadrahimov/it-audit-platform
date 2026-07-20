@@ -1,0 +1,1 @@
+ALTER TABLE "membership" ALTER COLUMN "category" SET DEFAULT 'auditor';

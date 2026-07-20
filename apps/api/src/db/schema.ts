@@ -155,7 +155,8 @@ export const membership = pgTable(
     roleId: uuid('role_id')
       .notNull()
       .references(() => role.id),
-    category: text('category').notNull().default('auditor'),
+    /** T-V50: internal (сотрудник тенанта) | auditor (внешний аудитор — scoped-nav). */
+    category: text('category').notNull().default('internal'),
     isAuditSeat: boolean('is_audit_seat').notNull().default(false),
     invitedBy: uuid('invited_by'),
     status: text('status').notNull().default('active'),

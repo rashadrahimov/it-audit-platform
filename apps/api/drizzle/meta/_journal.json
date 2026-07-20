@@ -610,6 +610,13 @@
       "when": 1784532744130,
       "tag": "0086_entity-acl",
       "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "7",
+      "when": 1784535714509,
+      "tag": "0087_membership-category-default",
+      "breakpoints": true
     }
   ]
 }

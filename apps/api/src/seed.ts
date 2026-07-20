@@ -485,19 +485,23 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       fullName: 'Demo Admin',
       password: 'Demo-Admin-2026',
       roleEn: 'Admin',
+      category: 'internal',
     },
     {
       email: 'collaborator@demo.io',
       fullName: 'Demo Collaborator',
       password: 'Demo-Collab-2026',
       roleEn: 'Collaborator',
+      category: 'internal',
     },
     {
       // T-052: approver политик — роль Approver (settings.view, но не settings.edit)
+      // T-V50: демо-внешний аудитор — category=auditor → scoped-навигация
       email: 'approver@demo.io',
       fullName: 'Demo Approver',
       password: 'Demo-Approver-2026',
       roleEn: 'Approver',
+      category: 'auditor',
     },
   ];
   const systemRoles = await db.select().from(role).where(eq(role.isSystem, true));
@@ -518,11 +522,22 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
     if (!seededUser) throw new Error(`Демо-юзер ${demo.email} не найден после вставки`);
     await db
       .insert(membership)
-      .values({ userId: seededUser.id, tenantId, roleId: presetRole.id, isAuditSeat: true })
+      .values({
+        userId: seededUser.id,
+        tenantId,
+        roleId: presetRole.id,
+        isAuditSeat: true,
+        category: demo.category,
+      })
       .onConflictDoNothing();
+    // T-V50: нормализуем category и на уже засеянных БД (insert выше — no-op при конфликте)
+    await db
+      .update(membership)
+      .set({ category: demo.category })
+      .where(and(eq(membership.userId, seededUser.id), eq(membership.tenantId, tenantId)));
   }
   console.log(
-    '✓ Демо-юзеры: admin@demo.io (Admin), collaborator@demo.io (Collaborator), approver@demo.io (Approver)',
+    '✓ Демо-юзеры: admin@demo.io (Admin/internal), collaborator@demo.io (Collaborator/internal), approver@demo.io (Approver/auditor — демо scoped-nav)',
   );
 }
 
