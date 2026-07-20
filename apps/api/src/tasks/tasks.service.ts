@@ -10,8 +10,8 @@ interface Actor {
   ip?: string;
 }
 
-/** Полиморфные сущности, к которым крепятся задачи ремедиации (T-V27). */
-const TASKABLE = new Set(['finding', 'risk', 'control', 'vendor', 'policy']);
+/** Полиморфные сущности, к которым крепятся задачи (T-V27; personnel — T-V26). */
+const TASKABLE = new Set(['finding', 'risk', 'control', 'vendor', 'policy', 'personnel']);
 
 export interface CreateTaskInput {
   entityType: string;
@@ -149,6 +149,41 @@ export class TasksService {
       after: { taskId: id, status: updated.status },
     });
     return { id: updated.id, status: updated.status };
+  }
+
+  /**
+   * T-V26: массово создать задачи-чеклист для сущности (on/offboarding).
+   * Внутри уже открытой транзакции тенанта — вызывается из PersonnelService.
+   */
+  async seedForEntity(
+    tx: Parameters<Parameters<DbService['withTenant']>[1]>[0],
+    tenantId: string,
+    entityType: string,
+    entityId: string,
+    titles: string[],
+    dueDate?: Date | null,
+  ) {
+    if (titles.length === 0) return 0;
+    await tx.insert(task).values(
+      titles.map((title) => ({
+        tenantId,
+        entityType,
+        entityId,
+        title,
+        dueDate: dueDate ?? null,
+      })),
+    );
+    return titles.length;
+  }
+
+  /** T-V26: сводка задач сущности — open/overdue/total (для «Task status»). */
+  summarize(rows: Array<{ status: string; dueDate: Date | null }>, now: Date) {
+    const total = rows.length;
+    const open = rows.filter((r) => r.status !== 'done').length;
+    const overdue = rows.filter(
+      (r) => r.status !== 'done' && r.dueDate !== null && r.dueDate < now,
+    ).length;
+    return { total, open, overdue };
   }
 
   async remove(actor: Actor, id: string) {

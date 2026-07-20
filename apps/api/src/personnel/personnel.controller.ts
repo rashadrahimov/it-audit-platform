@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -89,6 +91,52 @@ export class PersonnelController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data.status,
+    );
+  }
+
+  @Get('departments')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({ summary: 'Департаменты тенанта (T-V26, Groups): + счётчик людей' })
+  listDepartments(@Req() req: TenantRequest) {
+    return this.service.listDepartments(req.tenantId);
+  }
+
+  @Post('departments')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Создать департамент (T-V26)' })
+  createDepartment(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = z.object({ name: z.string().min(1).max(200) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.createDepartment(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.name.trim(),
+    );
+  }
+
+  @Patch('departments/:id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Переименовать департамент (T-V26)' })
+  renameDepartment(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ name: z.string().min(1).max(200) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.renameDepartment(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.name.trim(),
+    );
+  }
+
+  @Delete('departments/:id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Удалить департамент (T-V26): сотрудники отвязываются' })
+  deleteDepartment(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.deleteDepartment(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
     );
   }
 

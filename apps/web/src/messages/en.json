@@ -516,7 +516,27 @@
       "active": "Active",
       "onboarding": "Onboarding",
       "offboarded": "Offboarded"
-    }
+    },
+    "name": "Name",
+    "statusCol": "Employment",
+    "taskStatus": "Task status",
+    "actions": "Actions",
+    "noTasks": "No tasks",
+    "nOverdue": "{n} overdue",
+    "nOpen": "{n} open",
+    "complete": "Complete",
+    "to": {
+      "active": "Mark active",
+      "onboarding": "Start onboarding",
+      "offboarded": "Offboard"
+    },
+    "groups": "Groups",
+    "noGroups": "No groups yet",
+    "people": "{n} people",
+    "newGroup": "New group",
+    "groupPh": "Group name",
+    "addGroup": "Add",
+    "deleteGroup": "Delete group"
   },
   "vendors": {
     "title": "Vendor Risk",

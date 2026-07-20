@@ -516,7 +516,27 @@
       "active": "Активен",
       "onboarding": "Онбординг",
       "offboarded": "Уволен"
-    }
+    },
+    "name": "Имя",
+    "statusCol": "Занятость",
+    "taskStatus": "Статус задач",
+    "actions": "Действия",
+    "noTasks": "Нет задач",
+    "nOverdue": "{n} просрочено",
+    "nOpen": "{n} открыто",
+    "complete": "Завершено",
+    "to": {
+      "active": "Сделать активным",
+      "onboarding": "Начать онбординг",
+      "offboarded": "Офбординг"
+    },
+    "groups": "Группы",
+    "noGroups": "Пока нет групп",
+    "people": "{n} чел.",
+    "newGroup": "Новая группа",
+    "groupPh": "Название группы",
+    "addGroup": "Добавить",
+    "deleteGroup": "Удалить группу"
   },
   "vendors": {
     "title": "Риск вендоров",
