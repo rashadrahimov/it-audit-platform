@@ -184,6 +184,12 @@ const PRESET_ROLES: Array<{
     name: { en: 'Approver', az: 'Təsdiqləyici', ru: 'Утверждающий' },
     level: (resource, action) => (action === 'approve' ? 'edit' : 'view'),
   },
+  {
+    // T-107 (EP-AUDITOR-RELATIONSHIP): внешний аудитор — scoped read-only.
+    // view на engagement/finding/control/report, никакого settings и никакого edit.
+    name: { en: 'External Auditor', az: 'Xarici Auditor', ru: 'Внешний аудитор' },
+    level: (resource) => (resource === 'settings' ? 'none' : 'view'),
+  },
 ];
 
 export async function seedPresetRoles(catalog: (typeof permission.$inferSelect)[]): Promise<void> {

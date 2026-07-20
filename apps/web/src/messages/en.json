@@ -124,7 +124,9 @@
     "migration": "Import checklist",
     "aiSettings": "AI provider",
     "home": "Home",
-    "guide": "Guide"
+    "guide": "Guide",
+    "auditors": "Auditors",
+    "auditorView": "Auditor view"
   },
   "engagements": {
     "title": "Engagements",
@@ -140,7 +142,14 @@
     "modes": {
       "formal": "Formal",
       "light": "Light"
-    }
+    },
+    "createTitle": "Create engagement",
+    "titlePh": "e.g. IT General Controls 2026",
+    "none": "—",
+    "periodStart": "Period from",
+    "periodEnd": "Period to",
+    "createSubmit": "Create",
+    "createError": "Could not create"
   },
   "engagementDetail": {
     "back": "All engagements",
@@ -962,7 +971,9 @@
       "ai-settings": "Choose the AI provider: Claude, GPT, Kimi or a local model.",
       "glossary": "GRC glossary.",
       "guide": "This guide: all sections explained plus the tour.",
-      "account": "Home screen: metrics, onboarding and quick access."
+      "account": "Home screen: metrics, onboarding and quick access.",
+      "auditors": "Manage external auditors.",
+      "auditor-view": "Review evidence and record verdicts."
     },
     "details": {
       "account": [
@@ -1158,6 +1169,16 @@
         "Read the section descriptions",
         "Start the interactive tour",
         "The “?” button gives help in any section"
+      ],
+      "auditors": [
+        "Invite an auditor by email with a role",
+        "Pick subsidiaries in scope (or leave empty for the whole group)",
+        "Set an access window and revoke access when done"
+      ],
+      "auditor-view": [
+        "Select an audit",
+        "Review evidence and set a status; record a verdict per finding",
+        "Request documents and accept what the client provides"
       ]
     },
     "long": {
@@ -1202,7 +1223,9 @@
       "migration": "Historical data migration: upload a past-years Excel checklist, the platform parses the structure (preview before import) and creates controls with domains in your library. The import is idempotent — re-uploading creates no duplicates.",
       "ai-settings": "Plug in an AI assistant of your choice: Anthropic Claude, any OpenAI-compatible provider (GPT, Kimi, DeepSeek) or a local model inside your perimeter (Ollama/vLLM) — then data never leaves your infrastructure. The key is stored encrypted and never shown again. Without AI, all assist features run in deterministic mode.",
       "glossary": "A shared GRC glossary (control, finding, RCM, DPIA, ROPA…) with localization. Extend it with your own terms — the team and auditees speak one language.",
-      "guide": "The help center: every section described with usage steps, an interactive UI tour and this reference. The “?” button in the header opens help for the section you are in."
+      "guide": "The help center: every section described with usage steps, an interactive UI tour and this reference. The “?” button in the header opens help for the section you are in.",
+      "auditors": "Invite external auditors by email, scope them to specific subsidiaries, set a time-boxed access window, and revoke access. Also lists internal members and MSPs by category.",
+      "auditor-view": "The auditor storefront for a selected audit: review evidence with statuses, record auditor assessments with rounds, and request documents from the client (PBC)."
     }
   },
   "tour": {
@@ -1266,5 +1289,90 @@
     "startTour": "Start tour",
     "openGuide": "Full guide",
     "close": "Close"
+  },
+  "auditors": {
+    "title": "Auditors",
+    "subtitle": "Invite external auditors, scope them to subsidiaries, set access windows, and revoke access.",
+    "addAuditor": "Add your auditor",
+    "email": "Email",
+    "emailPh": "auditor@firm.com",
+    "role": "Role",
+    "scope": "Subsidiaries in scope",
+    "scopeHint": "Leave empty to grant access to the whole group.",
+    "invite": "Send invite",
+    "invited": "Invited",
+    "inviteError": "Could not invite",
+    "externalAuditors": "External auditors",
+    "noExternal": "No external auditors yet",
+    "accessFrom": "Access from",
+    "accessUntil": "Access until",
+    "saveWindow": "Save window",
+    "windowHint": "Empty = no time limit",
+    "revoke": "Revoke",
+    "roster": "Organization & MSP",
+    "empty": "No members yet",
+    "name": "Name",
+    "category": "Category",
+    "status": "Status",
+    "allSubsidiaries": "All subsidiaries",
+    "noSubsidiaries": "No subsidiaries",
+    "st": {
+      "active": "Active",
+      "invited": "Invited",
+      "revoked": "Revoked"
+    },
+    "cat": {
+      "auditor": "Internal auditor",
+      "respondent": "Respondent",
+      "msp": "MSP",
+      "external_auditor": "External auditor"
+    }
+  },
+  "auditorView": {
+    "title": "Auditor view",
+    "subtitle": "Review evidence, record assessments, and request documents from the client for an audit.",
+    "noEngagements": "No audits yet",
+    "selectEngagement": "Select an audit",
+    "requestList": "Document requests",
+    "openCount": "{n} open",
+    "reqTitle": "Request",
+    "reqTitlePh": "e.g. Access review report",
+    "assignee": "Assignee",
+    "anyone": "Anyone",
+    "createRequest": "Request",
+    "created": "Request created",
+    "reqError": "Could not create request",
+    "noRequests": "No requests yet",
+    "status": "Status",
+    "accept": "Accept",
+    "req": {
+      "requested": "Requested",
+      "provided": "Provided",
+      "accepted": "Accepted"
+    },
+    "evidenceTracker": "Evidence tracker",
+    "noEvidence": "No evidence attached",
+    "evidence": "Evidence",
+    "reviewStatus": "Review status",
+    "setStatus": "Set status",
+    "rev": {
+      "not_ready": "Not ready",
+      "ready": "Ready",
+      "accepted": "Accepted",
+      "flagged": "Flagged",
+      "not_applicable": "N/A"
+    },
+    "assessments": "Auditor assessments",
+    "noFindings": "No findings yet",
+    "notAssessed": "Not assessed",
+    "round": "Round {n}",
+    "notePh": "Note (optional)",
+    "addVerdict": "Add verdict",
+    "assessError": "Could not add",
+    "verdict": {
+      "satisfactory": "Satisfactory",
+      "exception": "Exception",
+      "not_applicable": "N/A"
+    }
   }
 }

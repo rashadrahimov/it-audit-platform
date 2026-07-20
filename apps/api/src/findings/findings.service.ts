@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import {
   localeSchema,
   resolveLocalized,
@@ -17,6 +17,7 @@ import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { EmailService } from '../email/email.service';
 import { RbacService } from '../rbac/rbac.service';
+import { resolveAuditorScope } from '../rbac/auditor-scope';
 import { maskFields, rejectedWriteFields } from '../rbac/field-policy';
 import {
   checklistItem,
@@ -320,11 +321,14 @@ export class FindingsService {
     return result.updated;
   }
 
-  async list(tenantId: string, locale: Locale, engagementId?: string) {
+  async list(tenantId: string, userId: string, locale: Locale, engagementId?: string) {
     const ownerMembership = alias(membership, 'owner_membership');
     const ownerUser = alias(user, 'owner_user');
     const auditorMembership = alias(membership, 'auditor_membership');
     const auditorUser = alias(user, 'auditor_user');
+    // T-111: внешний аудитор со scope видит только findings своих дочек
+    // (через engagement.subsidiary_id); standalone-findings (без engagement) — скрыты.
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
@@ -345,9 +349,21 @@ export class FindingsService {
         .leftJoin(auditorMembership, eq(finding.auditorMembershipId, auditorMembership.id))
         .leftJoin(auditorUser, eq(auditorMembership.userId, auditorUser.id))
         .where(
-          engagementId
-            ? and(isNull(finding.deletedAt), eq(finding.engagementId, engagementId))
-            : isNull(finding.deletedAt),
+          and(
+            isNull(finding.deletedAt),
+            engagementId ? eq(finding.engagementId, engagementId) : undefined,
+            scope !== null
+              ? scope.length === 0
+                ? sql`false`
+                : inArray(
+                    finding.engagementId,
+                    tx
+                      .select({ id: engagement.id })
+                      .from(engagement)
+                      .where(inArray(engagement.subsidiaryId, scope)),
+                  )
+              : undefined,
+          ),
         )
         .orderBy(desc(finding.createdAt)),
     );
@@ -373,6 +389,25 @@ export class FindingsService {
         .where(and(eq(finding.id, id), isNull(finding.deletedAt))),
     );
     if (!row) throw new NotFoundException(`Finding ${id} не найден`);
+    // T-122: чтение по ID режется auditor-scope так же, как список (T-111).
+    // Дочка finding'а — через engagement; standalone (без engagement) для
+    // scoped-аудитора скрыт (как в списке).
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
+    if (scope !== null) {
+      const subId = row.engagementId
+        ? ((
+            await this.dbService.withTenant(tenantId, (tx) =>
+              tx
+                .select({ s: engagement.subsidiaryId })
+                .from(engagement)
+                .where(eq(engagement.id, row.engagementId!)),
+            )
+          )[0]?.s ?? null)
+        : null;
+      if (subId === null || !scope.includes(subId)) {
+        throw new NotFoundException(`Finding ${id} не найден`);
+      }
+    }
     const dto = {
       id: row.id,
       title: resolveLocalized(row.titleI18n, locale),

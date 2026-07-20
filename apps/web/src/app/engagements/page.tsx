@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
+import { NewEngagementForm } from './new-engagement-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,14 @@ interface EngagementRow {
   state: string;
   subsidiary: string;
   auditType: string | null;
+}
+interface Subsidiary {
+  id: string;
+  name: string;
+}
+interface AuditType {
+  code: string;
+  name: string;
 }
 
 /** Список engagement'ов (T-035; ENG-08: переключатель Активные/Архив). */
@@ -34,11 +43,18 @@ export default async function EngagementsPage({
   const archived = sp.archived === 'true';
 
   let engagements: EngagementRow[] = [];
+  let subsidiaries: Subsidiary[] = [];
+  let auditTypes: AuditType[] = [];
   if (tenantSlug) {
-    const res = await apiFetch(`/engagements?locale=${locale}${archived ? '&archived=true' : ''}`, {
-      headers: { 'X-Tenant-Slug': tenantSlug },
-    });
-    engagements = res.ok ? await res.json() : [];
+    const headers = { 'X-Tenant-Slug': tenantSlug };
+    const [eRes, sRes, aRes] = await Promise.all([
+      apiFetch(`/engagements?locale=${locale}${archived ? '&archived=true' : ''}`, { headers }),
+      apiFetch(`/subsidiaries?locale=${locale}`, { headers }),
+      apiFetch(`/audit-types?locale=${locale}`, { headers }),
+    ]);
+    engagements = eRes.ok ? await eRes.json() : [];
+    subsidiaries = sRes.ok ? await sRes.json() : [];
+    auditTypes = aRes.ok ? await aRes.json() : [];
   }
 
   const tabCls = (on: boolean) =>
@@ -59,6 +75,27 @@ export default async function EngagementsPage({
           {t('viewArchived')}
         </Link>
       </nav>
+      {!archived && (
+        <NewEngagementForm
+          subsidiaries={subsidiaries}
+          auditTypes={auditTypes}
+          labels={{
+            create: t('createTitle'),
+            title: t('name'),
+            titlePh: t('titlePh'),
+            subsidiary: t('subsidiary'),
+            auditType: t('auditType'),
+            none: t('none'),
+            mode: t('mode'),
+            formal: t('modes.formal'),
+            light: t('modes.light'),
+            periodStart: t('periodStart'),
+            periodEnd: t('periodEnd'),
+            submit: t('createSubmit'),
+            error: t('createError'),
+          }}
+        />
+      )}
       <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
         <table className="w-full text-left text-sm" data-testid="engagements-table">
           <thead>

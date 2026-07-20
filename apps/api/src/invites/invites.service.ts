@@ -1,12 +1,12 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { and, eq } from 'drizzle-orm';
-import type { Locale } from '@it-audit/shared';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
+import type { Locale, MembershipCategory } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { PasswordService } from '../auth/password.service';
 import { DEFAULT_PASSWORD_POLICY, validatePassword } from '../auth/password-policy';
 import { DbService } from '../db/db.service';
-import { membership, tenant, user } from '../db/schema';
+import { membership, subsidiary, tenant, user } from '../db/schema';
 import { EmailService } from '../email/email.service';
 import { LicenseService } from '../license/license.service';
 import { env } from '../env';
@@ -22,6 +22,10 @@ export interface InviteInput {
   roleId: string;
   isAuditSeat: boolean;
   locale: Locale;
+  /** T-108: сторона участника; external_auditor → scoped-доступ (EP-AUDITOR-RELATIONSHIP). */
+  category?: MembershipCategory;
+  /** T-108: NULL/пусто = вся группа; массив subsidiary_id = аудитор видит только эти дочки. */
+  subsidiaryScope?: string[] | null;
 }
 
 export interface InviteActor {
@@ -49,6 +53,21 @@ export class InvitesService {
       .where(eq(tenant.id, tenantId));
     if (!foundTenant) throw new BadRequestException('Тенант не найден');
 
+    // T-108: scope — только реальные (не удалённые) дочки тенанта.
+    const scope = input.subsidiaryScope ?? null;
+    if (scope && scope.length > 0) {
+      const found = await this.dbService.withTenant(tenantId, (tx) =>
+        tx
+          .select({ id: subsidiary.id })
+          .from(subsidiary)
+          .where(and(inArray(subsidiary.id, scope), isNull(subsidiary.deletedAt))),
+      );
+      if (found.length !== new Set(scope).size) {
+        throw new BadRequestException('subsidiaryScope содержит неизвестные дочки тенанта');
+      }
+    }
+    const category: MembershipCategory = input.category ?? 'auditor';
+
     // Юзер мог существовать (другой тенант) — тогда только membership
     await this.dbService.db
       .insert(user)
@@ -64,6 +83,8 @@ export class InvitesService {
         tenantId,
         roleId: input.roleId,
         isAuditSeat: input.isAuditSeat,
+        category,
+        subsidiaryScope: scope,
         invitedBy: actor.userId,
         status: 'invited',
       })
@@ -91,7 +112,13 @@ export class InvitesService {
       action: 'membership.granted',
       entityType: 'membership',
       entityId: inserted[0]?.id,
-      after: { userId: invited.id, roleId: input.roleId, isAuditSeat: input.isAuditSeat },
+      after: {
+        userId: invited.id,
+        roleId: input.roleId,
+        isAuditSeat: input.isAuditSeat,
+        category,
+        subsidiaryScope: scope,
+      },
     });
 
     return { userId: invited.id, warnings: await this.licenseService.quotaWarnings(tenantId) };

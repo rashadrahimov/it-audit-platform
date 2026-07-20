@@ -136,7 +136,12 @@ export class FindingsController {
     @Query('engagementId') engagementId?: string,
     @Query('locale') localeQuery?: string,
   ) {
-    return this.findingsService.list(req.tenantId, parseLocale(localeQuery), engagementId);
+    return this.findingsService.list(
+      req.tenantId,
+      req.user.sub,
+      parseLocale(localeQuery),
+      engagementId,
+    );
   }
 
   @Get(':id')

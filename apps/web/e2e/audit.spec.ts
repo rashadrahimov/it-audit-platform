@@ -46,6 +46,8 @@ const ROUTES = [
   '/connectors',
   '/config',
   '/field-permissions',
+  '/auditors',
+  '/auditor-view',
   '/api-keys',
   '/notifications',
   '/migration',

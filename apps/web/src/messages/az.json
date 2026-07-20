@@ -124,7 +124,9 @@
     "migration": "Çeklist idxalı",
     "aiSettings": "AI provayderi",
     "home": "Əsas",
-    "guide": "Bələdçi"
+    "guide": "Bələdçi",
+    "auditors": "Auditorlar",
+    "auditorView": "Auditor görünüşü"
   },
   "engagements": {
     "title": "Auditlər",
@@ -140,7 +142,14 @@
     "modes": {
       "formal": "Formal",
       "light": "Yüngül"
-    }
+    },
+    "createTitle": "Audit yarat",
+    "titlePh": "məs. Ümumi İT nəzarətləri 2026",
+    "none": "—",
+    "periodStart": "Dövr başı",
+    "periodEnd": "Dövr sonu",
+    "createSubmit": "Yarat",
+    "createError": "Yaradıla bilmədi"
   },
   "engagementDetail": {
     "back": "Bütün auditlər",
@@ -962,7 +971,9 @@
       "ai-settings": "AI provayderi: Claude, GPT, Kimi və ya lokal model.",
       "glossary": "GRC terminlər lüğəti.",
       "guide": "Bu bələdçi: bütün bölmələr və tur.",
-      "account": "Əsas ekran: metriklər, onboarding və sürətli giriş."
+      "account": "Əsas ekran: metriklər, onboarding və sürətli giriş.",
+      "auditors": "Xarici auditorların idarəsi.",
+      "auditor-view": "Sübutların baxışı və verdiktlər."
     },
     "details": {
       "account": [
@@ -1166,6 +1177,16 @@
         "Bölmə təsvirlərini oxuyun",
         "İnteraktiv tura başlayın",
         "«?» düyməsi — istənilən bölmədə kömək"
+      ],
+      "auditors": [
+        "Auditoru rol ilə e-poçtla dəvət edin",
+        "Əhatə üçün törəmələri seçin (və ya bütün qrup üçün boş buraxın)",
+        "Giriş pəncərəsi təyin edin və bitəndə girişi ləğv edin"
+      ],
+      "auditor-view": [
+        "Audit seçin",
+        "Sübutları nəzərdən keçirin və status təyin edin; tapıntı üzrə verdikt qeyd edin",
+        "Sənəd tələb edin və müştərinin təqdim etdiyini qəbul edin"
       ]
     },
     "long": {
@@ -1210,7 +1231,9 @@
       "migration": "Tarixi datanın köçürülməsi: keçmiş illərin Excel çeklistini yükləyin, platforma strukturu ayırır (idxaldan əvvəl önizləmə) və kitabxananızda domenlərlə nəzarətlər yaradır. İdxal idempotentdir — təkrar yükləmə dublikat yaratmır.",
       "ai-settings": "Seçiminizlə AI köməkçisi: Anthropic Claude, istənilən OpenAI-uyğun provayder (GPT, Kimi, DeepSeek) və ya perimetrinizdə lokal model (Ollama/vLLM) — o zaman data infrastrukturdan çıxmır. Açar şifrəli saxlanılır və bir daha göstərilmir. AI-siz bütün köməkçi funksiyalar deterministik rejimdə işləyir.",
       "glossary": "Vahid GRC lüğəti (nəzarət, finding, RCM, DPIA, ROPA…) lokalizasiya ilə. Öz terminlərinizlə genişləndirin — komanda və audit olunanlar bir dildə danışır.",
-      "guide": "Kömək mərkəzi: hər bölmənin təsviri istifadə addımları ilə, interfeys üzrə interaktiv tur və bu soraqça. Başlıqdakı «?» düyməsi olduğunuz bölmənin köməyini açır."
+      "guide": "Kömək mərkəzi: hər bölmənin təsviri istifadə addımları ilə, interfeys üzrə interaktiv tur və bu soraqça. Başlıqdakı «?» düyməsi olduğunuz bölmənin köməyini açır.",
+      "auditors": "Xarici auditorları e-poçtla dəvət edin, onları konkret törəmələrlə məhdudlaşdırın, vaxt məhdudiyyətli giriş pəncərəsi təyin edin və girişi ləğv edin. Həmçinin daxili iştirakçıları və MSP-ləri kateqoriyalar üzrə göstərir.",
+      "auditor-view": "Seçilmiş audit üçün auditor görünüşü: statuslarla sübutların baxışı, raundlarla auditor qiymətləndirmələri və müştəridən sənəd tələbi (PBC)."
     }
   },
   "tour": {
@@ -1274,5 +1297,90 @@
     "startTour": "Tura başla",
     "openGuide": "Tam bələdçi",
     "close": "Bağla"
+  },
+  "auditors": {
+    "title": "Auditorlar",
+    "subtitle": "Xarici auditorları dəvət edin, onları törəmə şirkətlərlə məhdudlaşdırın, giriş pəncərəsi təyin edin və girişi ləğv edin.",
+    "addAuditor": "Auditor əlavə et",
+    "email": "E-poçt",
+    "emailPh": "auditor@firm.com",
+    "role": "Rol",
+    "scope": "Əhatə olunan törəmələr",
+    "scopeHint": "Boş buraxsanız — bütün qrupa giriş.",
+    "invite": "Dəvət göndər",
+    "invited": "Dəvət olundu",
+    "inviteError": "Dəvət alınmadı",
+    "externalAuditors": "Xarici auditorlar",
+    "noExternal": "Hələ xarici auditor yoxdur",
+    "accessFrom": "Girişin başlanğıcı",
+    "accessUntil": "Girişin sonu",
+    "saveWindow": "Pəncərəni saxla",
+    "windowHint": "Boş = vaxt limiti yoxdur",
+    "revoke": "Ləğv et",
+    "roster": "Təşkilat və MSP",
+    "empty": "Hələ iştirakçı yoxdur",
+    "name": "Ad",
+    "category": "Kateqoriya",
+    "status": "Status",
+    "allSubsidiaries": "Bütün törəmələr",
+    "noSubsidiaries": "Törəmə yoxdur",
+    "st": {
+      "active": "Aktiv",
+      "invited": "Dəvət olundu",
+      "revoked": "Ləğv edilib"
+    },
+    "cat": {
+      "auditor": "Daxili auditor",
+      "respondent": "Respondent",
+      "msp": "MSP",
+      "external_auditor": "Xarici auditor"
+    }
+  },
+  "auditorView": {
+    "title": "Auditor görünüşü",
+    "subtitle": "Sübutları nəzərdən keçirin, qiymətləndirmələri qeyd edin və audit üçün müştəridən sənəd tələb edin.",
+    "noEngagements": "Hələ audit yoxdur",
+    "selectEngagement": "Audit seçin",
+    "requestList": "Sənəd tələbləri",
+    "openCount": "açıq: {n}",
+    "reqTitle": "Tələb",
+    "reqTitlePh": "məs. Giriş baxışı hesabatı",
+    "assignee": "Məsul",
+    "anyone": "İstənilən",
+    "createRequest": "Tələb et",
+    "created": "Tələb yaradıldı",
+    "reqError": "Tələb yaradıla bilmədi",
+    "noRequests": "Hələ tələb yoxdur",
+    "status": "Status",
+    "accept": "Qəbul et",
+    "req": {
+      "requested": "Tələb olunub",
+      "provided": "Təqdim edilib",
+      "accepted": "Qəbul edilib"
+    },
+    "evidenceTracker": "Sübut izləyicisi",
+    "noEvidence": "Sübut əlavə edilməyib",
+    "evidence": "Sübut",
+    "reviewStatus": "Baxış statusu",
+    "setStatus": "Status təyin et",
+    "rev": {
+      "not_ready": "Hazır deyil",
+      "ready": "Hazır",
+      "accepted": "Qəbul edilib",
+      "flagged": "Qaytarılıb",
+      "not_applicable": "Tətbiq edilmir"
+    },
+    "assessments": "Auditor qiymətləndirmələri",
+    "noFindings": "Hələ tapıntı yoxdur",
+    "notAssessed": "Qiymətləndirilməyib",
+    "round": "Raund {n}",
+    "notePh": "Qeyd (istəyə görə)",
+    "addVerdict": "Verdikt əlavə et",
+    "assessError": "Əlavə edilə bilmədi",
+    "verdict": {
+      "satisfactory": "Qənaətbəxş",
+      "exception": "Kənarlaşma",
+      "not_applicable": "Tətbiq edilmir"
+    }
   }
 }
