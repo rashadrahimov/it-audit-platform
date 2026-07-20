@@ -194,9 +194,9 @@
       "non_compliant": "Не соответствует",
       "not_applicable": "Неприменимо"
     },
-    "findings": "Findings",
+    "findings": "Замечания",
     "findingsEmpty": "Findings пока нет",
-    "findingTitle": "Finding",
+    "findingTitle": "Замечание",
     "findingRating": "Риск",
     "findingOwner": "Владелец",
     "findingDue": "Дедлайн",
@@ -249,7 +249,7 @@
     "management_response": "Ответ менеджмента",
     "approval": "Утверждение",
     "report_issued": "Отчёт выпущен",
-    "follow_up": "Follow-up",
+    "follow_up": "Пост-контроль",
     "closed": "Закрыт",
     "paused": "Пауза",
     "archived": "Архив"
@@ -268,7 +268,7 @@
     "assigned": "Назначены",
     "unassigned": "Без владельца",
     "withPassing": "С passing-evidence",
-    "percentPassing": "% passing",
+    "percentPassing": "% прохождения",
     "st": {
       "active": "Активен",
       "inactive": "Неактивен",
@@ -612,12 +612,12 @@
     "composition": "Открытые findings, замороженные на дату",
     "viewComposition": "Замороженный состав",
     "noOpen": "На момент фиксации открытых findings нет.",
-    "colTitle": "Finding",
+    "colTitle": "Замечание",
     "colRisk": "Риск",
     "colStatus": "Статус",
     "colDue": "Срок",
     "openVulns": "Открытые уязвимости",
-    "count": "{n} findings"
+    "count": "{n} замечаний"
   },
   "devices": {
     "title": "Соответствие устройств",
@@ -691,7 +691,7 @@
     "assessments": "Оценки",
     "noAssessments": "Пока нет оценок",
     "statusLabel": "Статус",
-    "securityOwner": "Security owner",
+    "securityOwner": "Ответственный за безопасность",
     "edit": "Редактировать вендора",
     "save": "Сохранить",
     "analytics": "По категориям",
@@ -730,7 +730,7 @@
     "completeAssessment": "Завершить",
     "recommendation": "Рекомендация",
     "recommendationPh": "Вывод / рекомендация",
-    "evidence": "Evidence",
+    "evidence": "Доказательства",
     "evProvided": "Предоставлен",
     "attachDoc": "Прикрепить документ",
     "attach": "Прикрепить"
@@ -759,7 +759,7 @@
     "k": {
       "comment": "Комментарий",
       "tick_mark": "Отметка",
-      "exception": "Exception"
+      "exception": "Исключение"
     },
     "anchorPh": "напр. ячейка B12",
     "bodyPh": "Текст аннотации",
@@ -1431,7 +1431,7 @@
       "anthropic": "Anthropic Claude",
       "openai_compat": "OpenAI-совместимый (GPT / Kimi / DeepSeek / Ollama / vLLM)"
     },
-    "baseUrl": "Base URL",
+    "baseUrl": "Базовый URL",
     "baseUrlHint": "OpenAI-совместимый endpoint с /v1 (напр. https://api.moonshot.cn/v1 или http://ollama:11434/v1). Для облака Anthropic — пусто.",
     "model": "Модель",
     "modelHint": "anthropic: claude-*; OpenAI-совместимые: gpt-4o, kimi-k2, deepseek-chat, …",
@@ -1874,7 +1874,10 @@
         "t": "Профиль",
         "d": "Ваш аккаунт и кнопка выхода — внизу панели."
       }
-    }
+    },
+    "hideAsk": "Показывать тур при следующем входе?",
+    "hideYes": "Да, показывать",
+    "hideNo": "Нет, скрыть"
   },
   "help": {
     "title": "Справочник",
@@ -2279,7 +2282,8 @@
       "auditor": "Внутренний аудитор",
       "respondent": "Респондент",
       "msp": "MSP",
-      "external_auditor": "Внешний аудитор"
+      "external_auditor": "Внешний аудитор",
+      "internal": "Внутренний"
     }
   },
   "auditorView": {

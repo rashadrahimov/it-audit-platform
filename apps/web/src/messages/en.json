@@ -1866,7 +1866,10 @@
         "t": "Profile",
         "d": "Your account and the sign-out button live at the bottom of the panel."
       }
-    }
+    },
+    "hideAsk": "Show this tour on next login?",
+    "hideYes": "Yes, keep showing",
+    "hideNo": "No, hide it"
   },
   "help": {
     "title": "Reference",
@@ -2271,7 +2274,8 @@
       "auditor": "Internal auditor",
       "respondent": "Respondent",
       "msp": "MSP",
-      "external_auditor": "External auditor"
+      "external_auditor": "External auditor",
+      "internal": "Internal"
     }
   },
   "auditorView": {

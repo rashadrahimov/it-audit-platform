@@ -467,7 +467,7 @@ export class DocumentsService {
     reviewStatus: EvidenceReviewStatus,
   ) {
     const category = await resolveActorCategory(this.dbService, actor.tenantId, actor.userId);
-    if (category !== 'auditor' && category !== 'external_auditor') {
+    if (category !== 'auditor' && category !== 'internal' && category !== 'external_auditor') {
       throw new ForbiddenException('Ревьюить доказательства может только аудитор');
     }
     const [link] = await this.dbService.withTenant(actor.tenantId, (tx) =>

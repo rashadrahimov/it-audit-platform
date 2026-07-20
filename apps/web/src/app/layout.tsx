@@ -113,6 +113,9 @@ async function Shell({ children }: { children: ReactNode }) {
           done: tTour('done'),
           stepOf: tTour('stepOf', { i: '{i}', n: '{n}' }),
           openGuide: tTour('openGuide'),
+          hideAsk: tTour('hideAsk'),
+          hideYes: tTour('hideYes'),
+          hideNo: tTour('hideNo'),
         },
       }}
       help={{

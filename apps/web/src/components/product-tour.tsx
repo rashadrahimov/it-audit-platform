@@ -19,9 +19,14 @@ export interface TourLabels {
   done: string;
   stepOf: string; // '{i} из {n}'
   openGuide: string;
+  hideAsk: string; // «Показывать тур при следующем входе?»
+  hideYes: string; // «Да, показывать»
+  hideNo: string; // «Нет, скрыть»
 }
 
-const DONE_KEY = 'iap-tour-done';
+// Постоянный отказ (только по явному выбору пользователя). Пока флага нет —
+// предложение тура показывается при КАЖДОМ входе (на /account).
+const HIDE_KEY = 'iap-tour-hide';
 const PAD = 6;
 
 interface Rect {
@@ -34,7 +39,9 @@ interface Rect {
 /**
  * Интерактивный тур по платформе (T-H34): spotlight-подсветка элементов + тултип с шагами.
  * Без внешних библиотек (on-prem). Запуск: кнопка «?» в топ-баре, /account?tour=1,
- * или автопредложение при первом входе (localStorage). Только desktop (шаги — в сайдбаре).
+ * или автопредложение ПРИ КАЖДОМ входе (на /account), пока пользователь не выберет
+ * «больше не показывать». При закрытии тура/предложения — спрашиваем, показывать ли впредь.
+ * Только desktop (шаги — в сайдбаре).
  */
 export function ProductTour({
   steps,
@@ -52,16 +59,30 @@ export function ProductTour({
   const [rect, setRect] = useState<Rect | null>(null);
   const [visibleSteps, setVisibleSteps] = useState<TourStep[]>(steps);
   const [offer, setOffer] = useState(false);
+  const [confirmHide, setConfirmHide] = useState(false);
 
-  const finish = useCallback(() => {
+  const closeAll = useCallback(() => {
     setIdx(null);
     setOffer(false);
+    setConfirmHide(false);
+  }, []);
+
+  // Любое закрытие тура/предложения — сперва спрашиваем, показывать ли впредь.
+  const askHide = useCallback(() => {
+    setIdx(null);
+    setOffer(false);
+    setConfirmHide(true);
+  }, []);
+
+  // «Нет, скрыть» — запомнить отказ навсегда.
+  const hideForever = useCallback(() => {
     try {
-      localStorage.setItem(DONE_KEY, '1');
+      localStorage.setItem(HIDE_KEY, '1');
     } catch {
       /* приватный режим */
     }
-  }, []);
+    closeAll();
+  }, [closeAll]);
 
   const begin = useCallback(() => {
     // берём только реально видимые цели (mobile прячет сайдбар — там тур не идёт)
@@ -72,6 +93,7 @@ export function ProductTour({
     if (vis.length === 0) return;
     setVisibleSteps(vis);
     setOffer(false);
+    setConfirmHide(false);
     setIdx(0);
   }, [steps]);
 
@@ -89,10 +111,10 @@ export function ProductTour({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // автопредложение при первом входе (desktop)
+  // автопредложение при КАЖДОМ входе на /account (desktop), пока не скрыто навсегда
   useEffect(() => {
     try {
-      if (pathname === '/account' && !localStorage.getItem(DONE_KEY) && window.innerWidth >= 768) {
+      if (pathname === '/account' && !localStorage.getItem(HIDE_KEY) && window.innerWidth >= 768) {
         setOffer(true);
       }
     } catch {
@@ -129,18 +151,48 @@ export function ProductTour({
     };
   }, [idx, visibleSteps]);
 
-  // Esc — выход
+  // Esc — выход (с вопросом «показывать ли впредь»)
   useEffect(() => {
     if (idx === null) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') finish();
+      if (e.key === 'Escape') askHide();
       if (e.key === 'ArrowRight')
         setIdx((i) => (i !== null && i < visibleSteps.length - 1 ? i + 1 : i));
       if (e.key === 'ArrowLeft') setIdx((i) => (i !== null && i > 0 ? i - 1 : i));
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [idx, visibleSteps.length, finish]);
+  }, [idx, visibleSteps.length, askHide]);
+
+  // --- подтверждение «показывать ли впредь» (при любом закрытии) ---
+  if (confirmHide) {
+    return (
+      <div
+        data-testid="tour-confirm-hide"
+        className="fixed right-5 bottom-5 z-[70] flex w-80 flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-lg"
+      >
+        <p className="text-sm font-semibold text-foreground">{labels.hideAsk}</p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            data-testid="tour-keep-showing"
+            onClick={closeAll}
+            className="cursor-pointer rounded-md bg-accent px-3.5 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {labels.hideYes}
+          </button>
+          <button
+            type="button"
+            data-testid="tour-hide-forever"
+            onClick={hideForever}
+            className="cursor-pointer rounded-md border border-border px-3.5 py-1.5 text-xs font-medium text-secondary transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {labels.hideNo}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // --- автопредложение ---
   if (idx === null) {
@@ -163,7 +215,8 @@ export function ProductTour({
           </button>
           <button
             type="button"
-            onClick={finish}
+            data-testid="tour-offer-later"
+            onClick={askHide}
             className="cursor-pointer rounded-md border border-border px-3.5 py-1.5 text-xs font-medium text-secondary transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             {labels.later}
@@ -241,7 +294,7 @@ export function ProductTour({
           <button
             type="button"
             data-testid="tour-next"
-            onClick={() => (last ? finish() : setIdx(idx + 1))}
+            onClick={() => (last ? askHide() : setIdx(idx + 1))}
             className="cursor-pointer rounded-md bg-accent px-3.5 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             {last ? labels.done : labels.next}
@@ -249,7 +302,7 @@ export function ProductTour({
           {!last && (
             <button
               type="button"
-              onClick={finish}
+              onClick={askHide}
               className="ml-auto cursor-pointer px-2 py-1.5 text-xs font-medium text-secondary transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               {labels.skip}
