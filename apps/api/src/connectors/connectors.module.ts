@@ -5,6 +5,7 @@ import { ConnectorAutoSyncService } from './connector-autosync.service';
 import { ConnectorSyncService } from './connector-sync.service';
 import { ConnectorsController } from './connectors.controller';
 import { ConnectorsService } from './connectors.service';
+import { HttpJsonConnectorProvider } from './providers/http-json.provider';
 import { LdapConnectorProvider } from './providers/ldap.provider';
 import { ManualConnectorProvider } from './providers/manual.provider';
 
@@ -17,6 +18,7 @@ import { ManualConnectorProvider } from './providers/manual.provider';
     ConnectorAutoSyncService,
     LdapConnectorProvider,
     ManualConnectorProvider,
+    HttpJsonConnectorProvider,
   ],
   exports: [ConnectorsService, ConnectorSyncService, ConnectorAutoSyncService],
 })

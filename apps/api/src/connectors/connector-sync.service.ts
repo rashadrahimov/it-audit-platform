@@ -5,6 +5,7 @@ import { DbService } from '../db/db.service';
 import { connector, syncRun } from '../db/schema';
 import { decryptConfig } from './config-crypto';
 import type { ConnectorProvider, SyncResult, TestConnectionResult } from './connector-provider';
+import { HttpJsonConnectorProvider } from './providers/http-json.provider';
 import { LdapConnectorProvider } from './providers/ldap.provider';
 import { ManualConnectorProvider } from './providers/manual.provider';
 
@@ -28,8 +29,9 @@ export class ConnectorSyncService {
     private readonly auditLogService: AuditLogService,
     ldap: LdapConnectorProvider,
     manual: ManualConnectorProvider,
+    httpJson: HttpJsonConnectorProvider,
   ) {
-    for (const p of [ldap, manual]) this.providers.set(p.provider, p);
+    for (const p of [ldap, manual, httpJson]) this.providers.set(p.provider, p);
   }
 
   /** T-V38: каталог провайдеров — метаданные для формы создания/редактирования в UI. */

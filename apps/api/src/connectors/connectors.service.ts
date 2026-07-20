@@ -28,8 +28,20 @@ export interface UpdateConnectorInput {
   syncIntervalMinutes?: number | null;
 }
 
-/** Известные capability коннектора (ADR-0011). */
-export const CAPABILITIES = ['access', 'inventory', 'personnel', 'evidence', 'vulns', 'tasks'];
+/**
+ * Известные capability коннектора (ADR-0011). T-V39: + discovery (авто-обнаружение
+ * вендоров) и code (изменения кода из VCS) — новые категории провайдеров.
+ */
+export const CAPABILITIES = [
+  'access',
+  'inventory',
+  'personnel',
+  'evidence',
+  'vulns',
+  'tasks',
+  'discovery',
+  'code',
+];
 
 /** Коннекторы (T-048, ADR-0011): CRUD + история sync_run. Конфиг наружу не отдаётся. */
 @Injectable()
