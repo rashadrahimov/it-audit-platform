@@ -20,7 +20,7 @@ import {
  * DoD T-114 (EP-AUDITOR-RELATIONSHIP): request list / PBC. Аудитор создаёт запрос
  * (→ уведомление auditee), auditee прикладывает документ (provided → уведомление
  * аудитору), аудитор принимает (accepted); счётчик открытых; scope/auditor-гейты.
- * Интеграционный: инфра + миграции (0070) + `pnpm seed`.
+ * Интеграционный: инфра + миграции (0069) + `pnpm seed`.
  */
 const run = Date.now();
 const emails = {

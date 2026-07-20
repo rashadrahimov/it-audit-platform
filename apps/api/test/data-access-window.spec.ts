@@ -9,7 +9,7 @@ import { membership, role, tenant, user } from '../src/db/schema';
 /**
  * DoD T-110 (EP-AUDITOR-RELATIONSHIP): окно доступа (data access date).
  * Вне окна resolveAccess отказывает; NULL-границы = бессрочно; from>until → 400.
- * Интеграционный: инфра + миграции (0067) + `pnpm seed` (пресет External Auditor).
+ * Интеграционный: инфра + миграции (0069) + `pnpm seed` (пресет External Auditor).
  */
 const run = Date.now();
 const slug = `data-access-${run}`;

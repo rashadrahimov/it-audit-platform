@@ -1,1 +1,0 @@
-ALTER TABLE "document_link" ADD COLUMN "review_status" text DEFAULT 'not_ready' NOT NULL;

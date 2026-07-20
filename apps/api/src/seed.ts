@@ -34,6 +34,7 @@ import {
   permission,
   role,
   rolePermission,
+  ssoConfig,
   subsidiary,
   tenant,
   test,
@@ -137,6 +138,7 @@ async function seedPostgres(): Promise<void> {
     await seedDemoControlAdaptation(db, demoTenant.id);
     await seedDemoConnector(db, demoTenant.id);
     await seedDemoAutoTest(db, demoTenant.id);
+    await seedDemoSsoConfig(db, demoTenant.id);
   } finally {
     await client.end().catch(() => {});
   }
@@ -985,6 +987,25 @@ async function seedDemoConnector(db: NodePgDatabase, tenantId: string): Promise<
     });
   });
   console.log('✓ Демо-коннектор LDAP (personnel, тестовый openldap) (idempotent)');
+}
+
+/** Демо SSO-конфиг (V49): домен demo.io → OIDC-провайдер (тот же Keycloak, что и env). */
+async function seedDemoSsoConfig(db: NodePgDatabase, tenantId: string): Promise<void> {
+  // sso_config над-тенантная (без RLS) — set_config не нужен; идемпотентно по домену.
+  await db
+    .insert(ssoConfig)
+    .values({
+      tenantId,
+      emailDomain: 'demo.io',
+      method: 'oidc',
+      providerLabel: 'Keycloak (demo)',
+      issuerUrl: env.oidcIssuerUrl,
+      clientId: env.oidcClientId,
+      secretEncrypted: encryptConfig({ secret: env.oidcClientSecret }),
+      enabled: true,
+    })
+    .onConflictDoNothing({ target: ssoConfig.emailDomain });
+  console.log('✓ Демо SSO-конфиг (demo.io → OIDC/Keycloak) (idempotent)');
 }
 
 /** Демо-автотест (T-050): на демо-LDAP-коннекторе, правило «у всех аккаунтов есть email». */

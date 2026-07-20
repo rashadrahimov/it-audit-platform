@@ -13,6 +13,7 @@ import { AuditProgramsModule } from './audit-programs/audit-programs.module';
 import { AuditTypesModule } from './audit-types/audit-types.module';
 import { AuditorAssessmentsModule } from './auditor-assessments/auditor-assessments.module';
 import { AuthModule } from './auth/auth.module';
+import { SsoConfigModule } from './auth/sso-config.module';
 import { ChangesModule } from './changes/changes.module';
 import { CommentsModule } from './comments/comments.module';
 import { CommitmentsModule } from './commitments/commitments.module';
@@ -85,6 +86,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     AuditTypesModule,
     AuditorAssessmentsModule,
     AuthModule,
+    SsoConfigModule,
     ChangesModule,
     CommentsModule,
     CommitmentsModule,

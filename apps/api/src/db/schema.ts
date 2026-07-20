@@ -249,6 +249,57 @@ export const authEvent = pgTable(
   (table) => [index('auth_event_user_at_idx').on(table.userId, table.at)],
 );
 
+/**
+ * Magic-link токены (passwordless-вход): над-тенантные, как user/auth_event —
+ * запрос приходит на этапе логина, до установления tenant-контекста, поэтому без RLS.
+ * Храним только sha256-хеш токена (утечка БД не даёт рабочих ссылок); одноразовость —
+ * через consumed_at, ограничение жизни — expires_at.
+ */
+export const magicLinkToken = pgTable(
+  'magic_link_token',
+  {
+    id: id(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    requestedIp: text('requested_ip'),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('magic_link_token_hash_idx').on(table.tokenHash),
+    index('magic_link_token_user_idx').on(table.userId),
+  ],
+);
+
+/**
+ * Per-tenant SSO-конфиг (V49, ADR-0021): маршрутизация логина на IdP тенанта по
+ * домену e-mail (home-realm discovery). Над-тенантная, без RLS — читается на этапе
+ * логина до tenant-контекста (как user/membership); изоляция тенантов — в CRUD-коде
+ * по tenant_id из guard. Домен уникален глобально. Client secret — AES-256-GCM.
+ */
+export const ssoConfig = pgTable(
+  'sso_config',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id, { onDelete: 'cascade' }),
+    emailDomain: text('email_domain').notNull().unique(),
+    method: text('method').notNull(),
+    providerLabel: text('provider_label').notNull(),
+    issuerUrl: text('issuer_url'),
+    clientId: text('client_id'),
+    secretEncrypted: text('secret_encrypted'),
+    metadataUrl: text('metadata_url'),
+    enabled: boolean('enabled').notNull().default(true),
+    ...timestamps,
+  },
+  (table) => [index('sso_config_tenant_idx').on(table.tenantId)],
+);
+
 /** Полиморфные комментарии (T-023): entity_type+entity_id, soft-delete. */
 export const comment = pgTable(
   'comment',

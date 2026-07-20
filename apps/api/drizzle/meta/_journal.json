@@ -474,29 +474,22 @@
     {
       "idx": 67,
       "version": "7",
-      "when": 1784545281048,
-      "tag": "0067_membership-data-access",
+      "when": 1784537669072,
+      "tag": "0067_magic-link-token",
       "breakpoints": true
     },
     {
       "idx": 68,
       "version": "7",
-      "when": 1784545954688,
-      "tag": "0068_document-link-review",
+      "when": 1784539912522,
+      "tag": "0068_sso-config",
       "breakpoints": true
     },
     {
       "idx": 69,
       "version": "7",
-      "when": 1784546810760,
-      "tag": "0069_auditor-assessment",
-      "breakpoints": true
-    },
-    {
-      "idx": 70,
-      "version": "7",
-      "when": 1784547373592,
-      "tag": "0070_evidence-request",
+      "when": 1784548003666,
+      "tag": "0069_auditor-relationship",
       "breakpoints": true
     }
   ]
