@@ -470,6 +470,20 @@
       "when": 1784452681485,
       "tag": "0066_tenant-ai-config",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1784537669072,
+      "tag": "0067_magic-link-token",
+      "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1784539912522,
+      "tag": "0068_sso-config",
+      "breakpoints": true
     }
   ]
 }

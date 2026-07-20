@@ -15,5 +15,10 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
     headless: true,
+    // Позволяет указать заранее установленный chromium (напр. в managed-окружении,
+    // где нет пиннутого playwright-браузера). Не задан → стандартное поведение.
+    launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE }
+      : {},
   },
 });

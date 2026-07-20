@@ -8,6 +8,7 @@ import {
   loginResponseSchema,
   mfaChallengeResponseSchema,
 } from '@it-audit/shared';
+import { getCurrentLocale } from '@/lib/locale';
 import { SESSION_COOKIE } from '@/lib/session';
 
 const API_URL = process.env.API_URL ?? 'http://localhost:3001';
@@ -89,6 +90,75 @@ export async function mfaVerifyAction(
   const parsed = authTokenResponseSchema.safeParse(await response.json());
   if (!parsed.success) return { error: t('apiUnreachable'), mfaToken };
   await setSessionCookie(parsed.data.accessToken, parsed.data.expiresInSeconds);
+  redirect('/account');
+}
+
+/** Состояние формы запроса magic-link: письмо отправлено и/или ошибка сети. */
+export interface MagicRequestState {
+  sent?: boolean;
+  error?: string;
+}
+
+/** Запрос passwordless-ссылки. Успех «тихий» — существование аккаунта не раскрываем. */
+export async function magicLinkRequestAction(
+  _prev: MagicRequestState,
+  formData: FormData,
+): Promise<MagicRequestState> {
+  const t = await getTranslations('auth');
+  const email = String(formData.get('email') ?? '');
+  const locale = await getCurrentLocale();
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}/auth/magic-link/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, locale }),
+      cache: 'no-store',
+    });
+  } catch {
+    return { error: t('apiUnreachable') };
+  }
+  if (!response.ok) return { error: t('apiUnreachable') };
+  return { sent: true };
+}
+
+/** Состояние обмена magic-link на сессию: активный MFA-челлендж и/или ошибка. */
+export interface MagicConsumeState {
+  mfaToken?: string;
+  error?: string;
+}
+
+/** Обмен ссылки на сессию. Токен → cookie+redirect; MFA-аккаунт → второй шаг. */
+export async function magicConsumeAction(
+  _prev: MagicConsumeState,
+  formData: FormData,
+): Promise<MagicConsumeState> {
+  const t = await getTranslations('auth');
+  const token = String(formData.get('token') ?? '');
+  if (!token) return { error: t('magicInvalid') };
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}/auth/magic-link/consume`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+      cache: 'no-store',
+    });
+  } catch {
+    return { error: t('apiUnreachable') };
+  }
+  if (!response.ok) return { error: t('magicInvalid') };
+
+  const parsed = loginResponseSchema.safeParse(await response.json());
+  if (!parsed.success) return { error: t('apiUnreachable') };
+
+  const mfa = mfaChallengeResponseSchema.safeParse(parsed.data);
+  if (mfa.success) return { mfaToken: mfa.data.mfaToken };
+
+  const token2 = authTokenResponseSchema.parse(parsed.data);
+  await setSessionCookie(token2.accessToken, token2.expiresInSeconds);
   redirect('/account');
 }
 
