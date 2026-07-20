@@ -283,6 +283,17 @@
       "active": "Aktiv",
       "inactive": "Qeyri-aktiv",
       "retired": "Ləğv edilib"
+    },
+    "access": {
+      "title": "Girişi idarə et",
+      "open": "Hamıya görünür",
+      "restricted": "Məhdud",
+      "member": "İştirakçı",
+      "level": "Səviyyə",
+      "view": "Baxış",
+      "edit": "Redaktə",
+      "grant": "Ver",
+      "remove": "Sil"
     }
   },
   "frameworks": {

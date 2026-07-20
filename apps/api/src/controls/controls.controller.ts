@@ -49,15 +49,21 @@ export class ControlsController {
   @ApiQuery({ name: 'locale', required: false, description: 'en|az|ru; дефолт en' })
   @ApiOkResponse({ description: '[{ref, domain, objective, question, standards[]}]' })
   list(
+    @Req() req: TenantRequest,
     @Query('tenantSlug') tenantSlug?: string,
     @Query('domainCode') domainCode?: string,
     @Query('q') q?: string,
     @Query('locale') localeQuery?: string,
   ): Promise<ControlListItem[]> {
-    return this.controlsService.list(tenantSlug, parseLocale(localeQuery), {
-      domainCode: filterParam(domainCode, 'domainCode'),
-      q: q && q.length <= 128 ? q : undefined,
-    });
+    return this.controlsService.list(
+      tenantSlug,
+      parseLocale(localeQuery),
+      {
+        domainCode: filterParam(domainCode, 'domainCode'),
+        q: q && q.length <= 128 ? q : undefined,
+      },
+      req.user?.sub,
+    );
   }
 
   @Get('summary')
@@ -68,7 +74,7 @@ export class ControlsController {
   summary(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
     const slug = req.headers['x-tenant-slug'];
     if (typeof slug !== 'string' || !slug) throw new BadRequestException('Нужен X-Tenant-Slug');
-    return this.controlsService.summary(slug, parseLocale(localeQuery));
+    return this.controlsService.summary(slug, parseLocale(localeQuery), req.user?.sub);
   }
 
   @Patch(':id')
@@ -100,10 +106,11 @@ export class ControlsController {
       '{ref, domain, objective, question, guidance, owner, standards[], history[], comments[]}',
   })
   detail(
+    @Req() req: TenantRequest,
     @Param('id', ParseUUIDPipe) id: string,
     @Query('tenantSlug') tenantSlug?: string,
     @Query('locale') localeQuery?: string,
   ): Promise<ControlDetail> {
-    return this.controlsService.detail(id, tenantSlug, parseLocale(localeQuery));
+    return this.controlsService.detail(id, tenantSlug, parseLocale(localeQuery), req.user?.sub);
   }
 }

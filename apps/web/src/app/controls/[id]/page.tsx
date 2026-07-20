@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { CommentsSection } from '@/components/comments-section';
+import { ManageAccessSection, type AclGrantRow } from '@/components/manage-access-section';
 import { updateControlAction } from '../actions';
 
 export const dynamic = 'force-dynamic';
@@ -71,18 +72,23 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
   if (!res.ok) throw new Error(`API /controls/${id}: ${res.status}`);
   const control: ControlDetail = await res.json();
 
-  // тесты контроля (T-033) + участники для owner-формы: под тенант-контекстом
+  // тесты контроля (T-033) + участники для owner-формы + ACL-гранты: под тенант-контекстом
   let tests: ControlTest[] = [];
   let members: Member[] = [];
+  let aclGrants: AclGrantRow[] = [];
   if (tenantSlug) {
-    const [tRes, mRes] = await Promise.all([
+    const [tRes, mRes, aclRes] = await Promise.all([
       apiFetch(`/tests?controlId=${id}&locale=${locale}`, {
         headers: { 'X-Tenant-Slug': tenantSlug },
       }),
       apiFetch(`/memberships?locale=${locale}`, { headers: { 'X-Tenant-Slug': tenantSlug } }),
+      apiFetch(`/entity-acl?entityType=control&entityId=${id}`, {
+        headers: { 'X-Tenant-Slug': tenantSlug },
+      }),
     ]);
     if (tRes.ok) tests = await tRes.json();
     if (mRes.ok) members = await mRes.json();
+    if (aclRes.ok) aclGrants = await aclRes.json();
   }
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
@@ -187,6 +193,28 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
             </button>
           </form>
         </section>
+      )}
+
+      {tenantSlug && members.length > 0 && (
+        <ManageAccessSection
+          entityType="control"
+          entityId={control.id}
+          path={`/controls/${control.id}`}
+          grants={aclGrants}
+          members={members}
+          testid="control-access"
+          labels={{
+            title: t('access.title'),
+            openHint: t('access.open'),
+            restrictedHint: t('access.restricted'),
+            member: t('access.member'),
+            level: t('access.level'),
+            view: t('access.view'),
+            edit: t('access.edit'),
+            grant: t('access.grant'),
+            remove: t('access.remove'),
+          }}
+        />
       )}
 
       <section className="rounded-xl border border-border bg-white p-6 shadow-sm">

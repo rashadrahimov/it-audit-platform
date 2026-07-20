@@ -1,8 +1,14 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
+import { EntityAclService } from '../entity-acl/entity-acl.service';
 import {
   auditLog,
   comment,
@@ -57,10 +63,16 @@ export class ControlsService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly entityAcl: EntityAclService,
   ) {}
 
   /** Карточка контроля (T-032): поля + owner + стандарты + history + comments одним ответом. */
-  async detail(id: string, tenantSlug: string | undefined, locale: Locale): Promise<ControlDetail> {
+  async detail(
+    id: string,
+    tenantSlug: string | undefined,
+    locale: Locale,
+    userId?: string,
+  ): Promise<ControlDetail> {
     const collect = async (db: Pick<typeof this.dbService.db, 'select'>) => {
       const [row] = await db
         .select()
@@ -121,6 +133,7 @@ export class ControlsService {
     };
 
     let data;
+    let tenantId: string | undefined;
     if (!tenantSlug) {
       data = await collect(this.dbService.db);
     } else {
@@ -129,7 +142,21 @@ export class ControlsService {
         .from(tenant)
         .where(eq(tenant.slug, tenantSlug));
       if (!found) throw new BadRequestException(`Тенант «${tenantSlug}» не найден`);
+      tenantId = found.id;
       data = await this.dbService.withTenant(found.id, collect);
+    }
+
+    // T-V56: per-entity ACL — 403, если контроль ограничен и доступа нет (только в тенант-контексте)
+    if (tenantId && userId) {
+      const actor = await this.entityAcl.resolveActor(tenantId, userId);
+      const access = await this.entityAcl.access(
+        { tenantId, membershipId: actor.membershipId, isAdmin: actor.isAdmin },
+        'control',
+        data.row.id,
+        data.row.ownerMembershipId,
+      );
+      if (!access.canView)
+        throw new ForbiddenException('Нет доступа к этому контролю (Manage access)');
     }
 
     const actorIds = [...new Set(data.history.map((h) => h.actorUserId).filter(Boolean))];
@@ -183,6 +210,7 @@ export class ControlsService {
     tenantSlug: string | undefined,
     locale: Locale,
     filters?: { domainCode?: string; q?: string },
+    userId?: string,
   ): Promise<ControlListItem[]> {
     const collect = async (db: Pick<typeof this.dbService.db, 'select'>) => {
       const controls = await db
@@ -195,6 +223,7 @@ export class ControlsService {
           objectiveI18n: control.objectiveI18n,
           questionI18n: control.questionI18n,
           status: control.status,
+          ownerMembershipId: control.ownerMembershipId,
           ownerName: user.fullName,
         })
         .from(control)
@@ -222,6 +251,7 @@ export class ControlsService {
     };
 
     let data;
+    let tenantId: string | undefined;
     if (!tenantSlug) {
       data = await collect(this.dbService.db);
     } else {
@@ -230,7 +260,19 @@ export class ControlsService {
         .from(tenant)
         .where(eq(tenant.slug, tenantSlug));
       if (!found) throw new BadRequestException(`Тенант «${tenantSlug}» не найден`);
+      tenantId = found.id;
       data = await this.dbService.withTenant(found.id, collect);
+    }
+
+    // T-V56: per-entity ACL — скрыть ограниченные контроли без доступа (только в тенант-контексте)
+    let visible: Set<string> | null = null;
+    if (tenantId && userId) {
+      const actor = await this.entityAcl.resolveActor(tenantId, userId);
+      visible = await this.entityAcl.filterVisible(
+        { tenantId, membershipId: actor.membershipId, isAdmin: actor.isAdmin },
+        'control',
+        data.controls.map((c) => ({ id: c.id, ownerMembershipId: c.ownerMembershipId })),
+      );
     }
 
     const domainById = new Map(data.domains.map((d) => [d.id, d]));
@@ -241,7 +283,10 @@ export class ControlsService {
       if (tr.status === 'ok') acc.passing += 1;
       testsByControl.set(tr.controlId, acc);
     }
-    const items = data.controls.map((row) => {
+    const visibleControls = visible
+      ? data.controls.filter((c) => visible.has(c.id))
+      : data.controls;
+    const items = visibleControls.map((row) => {
       const domain = domainById.get(row.domainId);
       const tests = testsByControl.get(row.id) ?? { total: 0, passing: 0 };
       return {
@@ -276,8 +321,8 @@ export class ControlsService {
   }
 
   /** T-V45: сводка назначений и % контролей с passing-тестами (дедуп по ref: адаптация > global). */
-  async summary(tenantSlug: string, locale: Locale) {
-    const items = await this.list(tenantSlug, locale);
+  async summary(tenantSlug: string, locale: Locale, userId?: string) {
+    const items = await this.list(tenantSlug, locale, undefined, userId);
     // дедуп по ref — тенантная адаптация (не global) перекрывает глобальный оригинал
     const byRef = new Map<string, (typeof items)[number]>();
     for (const c of items) {

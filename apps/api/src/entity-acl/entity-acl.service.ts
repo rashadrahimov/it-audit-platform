@@ -11,8 +11,8 @@ interface Actor {
   ip?: string;
 }
 
-/** Сущности, поддерживающие per-entity ACL (T-V48). Расширяемо по мере раскатки. */
-export const ACL_ENTITY_TYPES = ['risk'] as const;
+/** Сущности, поддерживающие per-entity ACL (T-V48, T-V56 +control). Расширяемо по мере раскатки. */
+export const ACL_ENTITY_TYPES = ['risk', 'control'] as const;
 export type AclEntityType = (typeof ACL_ENTITY_TYPES)[number];
 
 /**

@@ -283,6 +283,17 @@
       "active": "Active",
       "inactive": "Inactive",
       "retired": "Retired"
+    },
+    "access": {
+      "title": "Manage access",
+      "open": "Visible to everyone",
+      "restricted": "Restricted",
+      "member": "Member",
+      "level": "Level",
+      "view": "View",
+      "edit": "Edit",
+      "grant": "Grant",
+      "remove": "Remove"
     }
   },
   "frameworks": {
