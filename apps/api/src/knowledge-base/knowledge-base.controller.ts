@@ -32,6 +32,7 @@ const createSchema = z.object({
   tags: z.array(z.unknown()).optional(),
   ownerMembershipId: z.uuid().optional(),
   expiresAt: z.string().optional(),
+  trustVisible: z.boolean().optional(),
 });
 
 const updateSchema = z.object({
@@ -40,6 +41,7 @@ const updateSchema = z.object({
   category: z.string().nullable().optional(),
   ownerMembershipId: z.uuid().nullable().optional(),
   expiresAt: z.string().nullable().optional(),
+  trustVisible: z.boolean().optional(),
 });
 
 @Controller('kb')

@@ -1215,6 +1215,8 @@ export const kbEntry = pgTable(
     /** T-V43: владелец и срок годности KB-ответа (verified пока не истёк). */
     ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
     expiresAt: timestamp('expires_at', { withTimezone: true }),
+    /** T-V54: опубликовать ответ как публичный FAQ в Trust Center (KB→Trust visibility). */
+    trustVisible: boolean('trust_visible').notNull().default(false),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },

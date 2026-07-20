@@ -1242,7 +1242,9 @@
     "expired": "Vaxtı keçib",
     "noExpiry": "Müddətsiz",
     "save": "Saxla",
-    "edit": "Sahib / müddət"
+    "edit": "Sahib / müddət",
+    "trustVisible": "Trust Center-də dərc et",
+    "trustPublished": "Trust Center-də"
   },
   "questionnaires": {
     "title": "Sorğular",
@@ -2118,7 +2120,8 @@
     "notFound": "Bu Trust Center mövcud deyil.",
     "granted": "Verilmiş giriş",
     "grantedTo": "Giriş verildi",
-    "poweredBy": "STATERA ilə"
+    "poweredBy": "STATERA ilə",
+    "faq": "Tez-tez verilən suallar"
   },
   "ssoSettings": {
     "title": "SSO (vahid giriş)",

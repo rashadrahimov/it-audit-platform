@@ -1242,7 +1242,9 @@
     "expired": "Expired",
     "noExpiry": "No expiry",
     "save": "Save",
-    "edit": "Edit owner / expiry"
+    "edit": "Edit owner / expiry",
+    "trustVisible": "Publish to Trust Center",
+    "trustPublished": "In Trust Center"
   },
   "questionnaires": {
     "title": "Questionnaires",
@@ -2110,7 +2112,8 @@
     "notFound": "This Trust Center is not available.",
     "granted": "Granted access",
     "grantedTo": "Access granted to",
-    "poweredBy": "Powered by STATERA"
+    "poweredBy": "Powered by STATERA",
+    "faq": "Frequently asked questions"
   },
   "ssoSettings": {
     "title": "SSO (Single Sign-On)",

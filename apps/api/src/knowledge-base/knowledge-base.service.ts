@@ -26,6 +26,7 @@ export class KnowledgeBaseService {
       tags?: unknown[];
       ownerMembershipId?: string;
       expiresAt?: string;
+      trustVisible?: boolean;
     },
   ) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
@@ -39,6 +40,7 @@ export class KnowledgeBaseService {
           tags: input.tags ?? [],
           ownerMembershipId: input.ownerMembershipId ?? null,
           expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+          trustVisible: input.trustVisible ?? false,
         })
         .returning();
       if (!row) throw new Error('KB-запись не создалась');
@@ -72,6 +74,7 @@ export class KnowledgeBaseService {
           category: kbEntry.category,
           expiresAt: kbEntry.expiresAt,
           ownerMembershipId: kbEntry.ownerMembershipId,
+          trustVisible: kbEntry.trustVisible,
           owner: user.fullName,
         })
         .from(kbEntry)
@@ -91,6 +94,8 @@ export class KnowledgeBaseService {
       expiresAt: r.expiresAt?.toISOString() ?? null,
       // T-V43: verified — ответ актуален (нет срока или срок в будущем); expired — истёк
       verified: !r.expiresAt || r.expiresAt.getTime() > now,
+      // T-V54: опубликован ли ответ как публичный FAQ в Trust Center
+      trustVisible: r.trustVisible,
     }));
   }
 
@@ -104,6 +109,7 @@ export class KnowledgeBaseService {
       category?: string | null;
       ownerMembershipId?: string | null;
       expiresAt?: string | null;
+      trustVisible?: boolean;
     },
   ) {
     const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
@@ -120,6 +126,7 @@ export class KnowledgeBaseService {
       if (input.expiresAt !== undefined) {
         patch.expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
       }
+      if (input.trustVisible !== undefined) patch.trustVisible = input.trustVisible;
       if (Object.keys(patch).length === 0) throw new BadRequestException('Нечего обновлять');
       const [res] = await tx.update(kbEntry).set(patch).where(eq(kbEntry.id, id)).returning();
       return res!;

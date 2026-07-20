@@ -617,6 +617,13 @@
       "when": 1784535714509,
       "tag": "0087_membership-category-default",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1784542403932,
+      "tag": "0088_kb-trust-visible",
+      "breakpoints": true
     }
   ]
 }

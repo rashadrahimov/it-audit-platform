@@ -17,6 +17,7 @@ interface KbEntry {
   ownerMembershipId: string | null;
   expiresAt: string | null;
   verified: boolean;
+  trustVisible: boolean;
 }
 interface Member {
   id: string;
@@ -149,6 +150,14 @@ export default async function KnowledgeBasePage({
                 >
                   {e.verified ? t('verified') : t('expired')}
                 </span>
+                {e.trustVisible && (
+                  <span
+                    data-testid={`kb-trust-badge-${e.id}`}
+                    className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700"
+                  >
+                    {t('trustPublished')}
+                  </span>
+                )}
               </span>
               <p className="text-sm text-secondary">{e.answer}</p>
               <div className="flex flex-wrap items-center gap-2 text-xs text-secondary">
@@ -189,6 +198,16 @@ export default async function KnowledgeBasePage({
                     defaultValue={e.expiresAt ? e.expiresAt.slice(0, 10) : ''}
                     className={inputCls}
                   />
+                  <label className="flex items-center gap-1.5 text-xs text-secondary">
+                    <input
+                      type="checkbox"
+                      name="trustVisible"
+                      defaultChecked={e.trustVisible}
+                      data-testid={`kb-trust-${e.id}`}
+                      className="h-4 w-4 rounded border-border text-accent focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    {t('trustVisible')}
+                  </label>
                   <button
                     type="submit"
                     data-testid={`kb-save-${e.id}`}

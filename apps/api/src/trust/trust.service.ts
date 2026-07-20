@@ -3,7 +3,13 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { trustActivity, trustAccessRequest, trustCenter, trustCenterItem } from '../db/schema';
+import {
+  kbEntry,
+  trustActivity,
+  trustAccessRequest,
+  trustCenter,
+  trustCenterItem,
+} from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -131,16 +137,39 @@ export class TrustService {
         ),
       );
     if (!tc) throw new NotFoundException('Trust Center не найден или не опубликован');
-    const items = await this.dbService.withTenant(tc.tenantId, async (tx) => {
+    const { items, faq } = await this.dbService.withTenant(tc.tenantId, async (tx) => {
       const rows = await tx
         .select({ label: trustCenterItem.label, category: trustCenterItem.category })
         .from(trustCenterItem)
         .where(and(eq(trustCenterItem.trustCenterId, tc.id), eq(trustCenterItem.published, true)));
+      // T-V54: публичный FAQ из knowledge base (trust_visible), актуальные (не истёкшие) ответы
+      const faqRows = await this.publishedFaq(tx);
       // T-V30: логируем публичный просмотр
       await tx.insert(trustActivity).values({ trustCenterId: tc.id, kind: 'view' });
-      return rows;
+      return { items: rows, faq: faqRows };
     });
-    return { slug: tc.slug, title: tc.title, intro: tc.intro, items };
+    return { slug: tc.slug, title: tc.title, intro: tc.intro, items, faq };
+  }
+
+  /**
+   * T-V54: опубликованные KB-ответы для публичного FAQ Trust Center. Только trust_visible,
+   * не удалённые и актуальные (без срока или срок в будущем — не показываем протухшие ответы).
+   */
+  private async publishedFaq(tx: Pick<typeof this.dbService.db, 'select'>) {
+    const rows = await tx
+      .select({
+        question: kbEntry.question,
+        answer: kbEntry.answer,
+        category: kbEntry.category,
+        expiresAt: kbEntry.expiresAt,
+      })
+      .from(kbEntry)
+      .where(and(eq(kbEntry.trustVisible, true), isNull(kbEntry.deletedAt)))
+      .orderBy(desc(kbEntry.createdAt));
+    const now = Date.now();
+    return rows
+      .filter((r) => !r.expiresAt || r.expiresAt.getTime() > now)
+      .map((r) => ({ question: r.question, answer: r.answer, category: r.category }));
   }
 
   /**
@@ -178,14 +207,15 @@ export class TrustService {
         })
         .from(trustCenterItem)
         .where(and(eq(trustCenterItem.trustCenterId, tc.id), eq(trustCenterItem.published, true)));
+      const faq = await this.publishedFaq(tx);
       await tx.insert(trustActivity).values({
         trustCenterId: tc.id,
         kind: 'access_used',
         detail: req.email,
       });
-      return { email: req.email, items };
+      return { email: req.email, items, faq };
     });
-    return { title: tc.title, grantedTo: data.email, items: data.items };
+    return { title: tc.title, grantedTo: data.email, items: data.items, faq: data.faq };
   }
 
   /** T-V30: лента активности Trust Center (админ). */

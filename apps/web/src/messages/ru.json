@@ -1242,7 +1242,9 @@
     "expired": "Просрочен",
     "noExpiry": "Без срока",
     "save": "Сохранить",
-    "edit": "Владелец / срок"
+    "edit": "Владелец / срок",
+    "trustVisible": "Опубликовать в Trust Center",
+    "trustPublished": "В Trust Center"
   },
   "questionnaires": {
     "title": "Опросники",
@@ -2118,7 +2120,8 @@
     "notFound": "Этот Trust Center недоступен.",
     "granted": "Выданный доступ",
     "grantedTo": "Доступ выдан",
-    "poweredBy": "На платформе STATERA"
+    "poweredBy": "На платформе STATERA",
+    "faq": "Частые вопросы"
   },
   "ssoSettings": {
     "title": "SSO (единый вход)",

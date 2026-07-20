@@ -10,16 +10,23 @@ interface Item {
   label: string;
   category: string;
 }
+interface Faq {
+  question: string;
+  answer: string;
+  category: string | null;
+}
 interface PublicView {
   slug: string;
   title: string;
   intro: string | null;
   items: Item[];
+  faq: Faq[];
 }
 interface GrantedView {
   title: string;
   grantedTo: string;
   items: Item[];
+  faq: Faq[];
 }
 
 /** ПУБЛИЧНАЯ страница Trust Center (T-V30): постура + запрос доступа + granted-вид по токену. */
@@ -55,6 +62,7 @@ export default async function TrustPublicPage({
           </p>
           <ItemList items={g.items} />
         </div>
+        <FaqList faq={g.faq} heading={t('faq')} />
       </Shell>
     );
   }
@@ -89,7 +97,33 @@ export default async function TrustPublicPage({
           />
         </div>
       </div>
+      <FaqList faq={data.faq} heading={t('faq')} />
     </Shell>
+  );
+}
+
+/** T-V54: публичный FAQ Trust Center из опубликованных KB-ответов. */
+function FaqList({ faq, heading }: { faq: Faq[]; heading: string }) {
+  if (faq.length === 0) return null;
+  return (
+    <section className="rounded-xl bg-white/10 p-5" data-testid="trust-public-faq">
+      <p className="text-xs font-medium tracking-wide text-white/60 uppercase">{heading}</p>
+      <ul className="mt-3 flex flex-col gap-3">
+        {faq.map((f, i) => (
+          <li key={`${f.question}-${i}`} className="rounded-lg bg-white/5 px-3 py-2.5">
+            <p className="flex items-center gap-2 text-sm font-medium text-white">
+              {f.question}
+              {f.category && (
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/70">
+                  {f.category}
+                </span>
+              )}
+            </p>
+            <p className="mt-1 text-sm text-white/70">{f.answer}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

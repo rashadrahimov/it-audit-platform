@@ -27,18 +27,21 @@ export async function createKbAction(formData: FormData): Promise<void> {
   revalidatePath('/knowledge-base');
 }
 
-/** T-V43: правка KB-записи — owner и срок годности. */
+/** T-V43: правка KB-записи — owner и срок годности. T-V54: публикация в Trust Center. */
 export async function updateKbAction(id: string, formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
   if (!tenantSlug) return;
   const ownerMembershipId = String(formData.get('ownerMembershipId') ?? '').trim();
   const expiresAt = String(formData.get('expiresAt') ?? '').trim();
+  // checkbox: присутствует в форме только когда отмечен
+  const trustVisible = formData.get('trustVisible') != null;
   await apiFetch(`/kb/${id}`, {
     method: 'PATCH',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       ownerMembershipId: ownerMembershipId || null,
       expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+      trustVisible,
     }),
   });
   revalidatePath('/knowledge-base');
