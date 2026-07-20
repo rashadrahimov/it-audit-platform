@@ -575,6 +575,13 @@
       "when": 1784515010391,
       "tag": "0081_privacy-depth",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1784516058389,
+      "tag": "0082_kb-owner-expiry",
+      "breakpoints": true
     }
   ]
 }

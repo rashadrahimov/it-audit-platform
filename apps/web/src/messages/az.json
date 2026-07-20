@@ -798,7 +798,12 @@
       "active": "Aktiv",
       "expired": "Bitib",
       "terminated": "Ləğv edilib"
-    }
+    },
+    "owner": "Sahib",
+    "ownerNone": "— təyin edilməyib —",
+    "due": "Son tarix",
+    "save": "Saxla",
+    "editOwner": "Sahib / son tarix"
   },
   "accessReviews": {
     "title": "Giriş Baxışları",
@@ -1152,7 +1157,15 @@
     "category": "Kateqoriya",
     "answerPh": "Cavab",
     "add": "Əlavə et",
-    "empty": "Qeyd tapılmadı"
+    "empty": "Qeyd tapılmadı",
+    "owner": "Sahib",
+    "ownerNone": "— təyin edilməyib —",
+    "expires": "Bitir",
+    "verified": "Təsdiqlənib",
+    "expired": "Vaxtı keçib",
+    "noExpiry": "Müddətsiz",
+    "save": "Saxla",
+    "edit": "Sahib / müddət"
   },
   "questionnaires": {
     "title": "Sorğular",

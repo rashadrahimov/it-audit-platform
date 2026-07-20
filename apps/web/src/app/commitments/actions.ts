@@ -56,6 +56,23 @@ export async function createContractAction(formData: FormData): Promise<void> {
   revalidatePath('/commitments');
 }
 
+/** T-V43: правка обязательства — owner и срок. */
+export async function setCommitmentDetailsAction(id: string, formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const ownerMembershipId = String(formData.get('ownerMembershipId') ?? '').trim();
+  const dueDate = String(formData.get('dueDate') ?? '').trim();
+  await apiFetch(`/commitments/${id}`, {
+    method: 'PATCH',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ownerMembershipId: ownerMembershipId || null,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+    }),
+  });
+  revalidatePath('/commitments');
+}
+
 /** T-V31: удалить контракт. */
 export async function deleteContractAction(id: string): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();

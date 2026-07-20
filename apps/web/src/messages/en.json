@@ -798,7 +798,12 @@
       "active": "Active",
       "expired": "Expired",
       "terminated": "Terminated"
-    }
+    },
+    "owner": "Owner",
+    "ownerNone": "— unassigned —",
+    "due": "Due",
+    "save": "Save",
+    "editOwner": "Owner / due"
   },
   "accessReviews": {
     "title": "Access Reviews",
@@ -1152,7 +1157,15 @@
     "category": "Category",
     "answerPh": "Answer",
     "add": "Add",
-    "empty": "No entries found"
+    "empty": "No entries found",
+    "owner": "Owner",
+    "ownerNone": "— unassigned —",
+    "expires": "Expires",
+    "verified": "Verified",
+    "expired": "Expired",
+    "noExpiry": "No expiry",
+    "save": "Save",
+    "edit": "Edit owner / expiry"
   },
   "questionnaires": {
     "title": "Questionnaires",

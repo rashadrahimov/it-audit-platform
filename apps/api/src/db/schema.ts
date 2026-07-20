@@ -1207,6 +1207,9 @@ export const kbEntry = pgTable(
     answer: text('answer').notNull(),
     category: text('category'),
     tags: jsonb('tags').notNull().default([]),
+    /** T-V43: владелец и срок годности KB-ответа (verified пока не истёк). */
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },

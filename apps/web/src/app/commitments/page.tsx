@@ -7,8 +7,10 @@ import {
   createContractAction,
   deleteContractAction,
   setCommitmentContractAction,
+  setCommitmentDetailsAction,
   setCommitmentStatusAction,
 } from './actions';
+import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +27,12 @@ interface Commitment {
   dueDate: string | null;
   contractId: string | null;
   contractName: string | null;
+  owner: string | null;
+  ownerMembershipId: string | null;
+}
+interface Member {
+  id: string;
+  fullName: string;
 }
 interface Contract {
   id: string;
@@ -53,20 +61,23 @@ export default async function CommitmentsPage({
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug, sp] = await Promise.all([
+  const [t, locale, tenantSlug, sp] = await Promise.all([
     getTranslations('commitments'),
+    getCurrentLocale(),
     getActiveTenantSlug(),
     searchParams,
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
   const tab = sp.tab === 'contracts' ? 'contracts' : 'commitments';
 
-  const [cRes, ctRes] = await Promise.all([
+  const [cRes, ctRes, memRes] = await Promise.all([
     apiFetch('/commitments', { headers }),
     apiFetch('/contracts', { headers }),
+    apiFetch(`/memberships?locale=${locale}`, { headers }),
   ]);
   const commitments: Commitment[] = cRes.ok ? await cRes.json() : [];
   const contracts: Contract[] = ctRes.ok ? await ctRes.json() : [];
+  const members: Member[] = memRes.ok ? await memRes.json() : [];
 
   const tabCls = (on: boolean) =>
     `rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
@@ -224,6 +235,7 @@ export default async function CommitmentsPage({
                   <tr className="border-b border-border text-secondary">
                     <th className="px-4 py-3 font-medium">{t('title')}</th>
                     <th className="px-4 py-3 font-medium">{t('contract')}</th>
+                    <th className="px-4 py-3 font-medium">{t('editOwner')}</th>
                     <th className="px-4 py-3 font-medium">{t('statusHead')}</th>
                     <th className="px-4 py-3 font-medium">{t('slaHead')}</th>
                     <th className="px-4 py-3 font-medium">{t('change')}</th>
@@ -256,6 +268,38 @@ export default async function CommitmentsPage({
                             className="rounded-md border border-border px-1.5 py-1 text-xs text-secondary transition-colors duration-150 hover:bg-muted"
                           >
                             {t('link')}
+                          </button>
+                        </form>
+                      </td>
+                      <td className="px-4 py-3">
+                        <form
+                          action={setCommitmentDetailsAction.bind(null, c.id)}
+                          className="flex items-center gap-1.5"
+                          data-testid={`commitment-details-${c.id}`}
+                        >
+                          <select
+                            name="ownerMembershipId"
+                            defaultValue={c.ownerMembershipId ?? ''}
+                            className="rounded-md border border-border bg-white px-1.5 py-1 text-xs text-foreground"
+                          >
+                            <option value="">{t('ownerNone')}</option>
+                            {members.map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.fullName}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            type="date"
+                            name="dueDate"
+                            defaultValue={c.dueDate ? c.dueDate.slice(0, 10) : ''}
+                            className="rounded-md border border-border bg-white px-1 py-1 text-xs text-foreground"
+                          />
+                          <button
+                            type="submit"
+                            className="rounded-md border border-border px-1.5 py-1 text-xs text-secondary transition-colors duration-150 hover:bg-muted"
+                          >
+                            {t('save')}
                           </button>
                         </form>
                       </td>

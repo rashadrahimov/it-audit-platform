@@ -3,6 +3,10 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -26,6 +30,16 @@ const createSchema = z.object({
   answer: z.string().min(1),
   category: z.string().optional(),
   tags: z.array(z.unknown()).optional(),
+  ownerMembershipId: z.uuid().optional(),
+  expiresAt: z.string().optional(),
+});
+
+const updateSchema = z.object({
+  question: z.string().min(1).optional(),
+  answer: z.string().min(1).optional(),
+  category: z.string().nullable().optional(),
+  ownerMembershipId: z.uuid().nullable().optional(),
+  expiresAt: z.string().nullable().optional(),
 });
 
 @Controller('kb')
@@ -44,6 +58,20 @@ export class KnowledgeBaseController {
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.create(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data,
+    );
+  }
+
+  @Patch(':id')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Правка KB-записи (T-V43): owner, срок, текст' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
       parsed.data,
     );
   }

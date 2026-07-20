@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -82,6 +83,24 @@ export class CommitmentsController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data.contractId,
+    );
+  }
+
+  @Patch(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Правка обязательства (T-V43): owner и срок' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = z
+      .object({
+        ownerMembershipId: z.uuid().nullable().optional(),
+        dueDate: z.string().nullable().optional(),
+      })
+      .safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
     );
   }
 
