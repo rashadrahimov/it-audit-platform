@@ -470,6 +470,13 @@
       "when": 1784452681485,
       "tag": "0066_tenant-ai-config",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1784545281048,
+      "tag": "0067_membership-data-access",
+      "breakpoints": true
     }
   ]
 }

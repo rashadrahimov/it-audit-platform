@@ -54,11 +54,16 @@ export class MembershipsService {
     }));
   }
 
-  /** T-109: сменить роль и/или scoped-доступ участника (grant access из видео). */
+  /** T-109/T-110: сменить роль, scoped-доступ и/или окно доступа участника (grant access). */
   async update(
     actor: Actor,
     membershipId: string,
-    input: { roleId?: string; subsidiaryScope?: string[] | null },
+    input: {
+      roleId?: string;
+      subsidiaryScope?: string[] | null;
+      dataAccessFrom?: Date | null;
+      dataAccessUntil?: Date | null;
+    },
   ) {
     const m = await this.load(actor.tenantId, membershipId);
 
@@ -83,9 +88,18 @@ export class MembershipsService {
       await this.assertScopeSubsidiaries(actor.tenantId, subsidiaryScope);
     }
 
+    // T-110: окно доступа (NULL-граница = бессрочно с этой стороны).
+    const dataAccessFrom =
+      input.dataAccessFrom !== undefined ? input.dataAccessFrom : m.dataAccessFrom;
+    const dataAccessUntil =
+      input.dataAccessUntil !== undefined ? input.dataAccessUntil : m.dataAccessUntil;
+    if (dataAccessFrom && dataAccessUntil && dataAccessFrom > dataAccessUntil) {
+      throw new BadRequestException('dataAccessFrom позже dataAccessUntil');
+    }
+
     await this.dbService.db
       .update(membership)
-      .set({ roleId, subsidiaryScope })
+      .set({ roleId, subsidiaryScope, dataAccessFrom, dataAccessUntil })
       .where(eq(membership.id, membershipId));
 
     await this.auditLogService.record({
@@ -95,10 +109,15 @@ export class MembershipsService {
       action: 'membership.updated',
       entityType: 'membership',
       entityId: membershipId,
-      before: { roleId: m.roleId, subsidiaryScope: m.subsidiaryScope },
-      after: { roleId, subsidiaryScope },
+      before: {
+        roleId: m.roleId,
+        subsidiaryScope: m.subsidiaryScope,
+        dataAccessFrom: m.dataAccessFrom,
+        dataAccessUntil: m.dataAccessUntil,
+      },
+      after: { roleId, subsidiaryScope, dataAccessFrom, dataAccessUntil },
     });
-    return { id: membershipId, roleId, subsidiaryScope };
+    return { id: membershipId, roleId, subsidiaryScope, dataAccessFrom, dataAccessUntil };
   }
 
   /** T-109: отозвать доступ (soft — status=revoked; resolveAccess пускает только active). */

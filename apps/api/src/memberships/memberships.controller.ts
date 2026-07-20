@@ -30,10 +30,21 @@ const updateSchema = z
   .object({
     roleId: z.uuid().optional(),
     subsidiaryScope: z.array(z.uuid()).nullable().optional(),
+    // T-110: окно доступа (ISO-время; null = снять границу).
+    dataAccessFrom: z.iso.datetime({ offset: true }).nullable().optional(),
+    dataAccessUntil: z.iso.datetime({ offset: true }).nullable().optional(),
   })
-  .refine((d) => d.roleId !== undefined || d.subsidiaryScope !== undefined, {
-    message: 'Нужно указать roleId и/или subsidiaryScope',
-  });
+  .refine(
+    (d) =>
+      d.roleId !== undefined ||
+      d.subsidiaryScope !== undefined ||
+      d.dataAccessFrom !== undefined ||
+      d.dataAccessUntil !== undefined,
+    { message: 'Нужно указать roleId, subsidiaryScope и/или окно доступа' },
+  );
+
+const toDate = (v: string | null | undefined): Date | null | undefined =>
+  v === undefined ? undefined : v === null ? null : new Date(v);
 
 @Controller('memberships')
 @UseGuards(JwtAuthGuard, PermissionGuard)
@@ -57,11 +68,12 @@ export class MembershipsController {
   update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
     const parsed = updateSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
-    return this.service.update(
-      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
-      id,
-      parsed.data,
-    );
+    return this.service.update({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id, {
+      roleId: parsed.data.roleId,
+      subsidiaryScope: parsed.data.subsidiaryScope,
+      dataAccessFrom: toDate(parsed.data.dataAccessFrom),
+      dataAccessUntil: toDate(parsed.data.dataAccessUntil),
+    });
   }
 
   @Delete(':id')

@@ -163,6 +163,13 @@ export const membership = pgTable(
     subsidiaryScope: jsonb('subsidiary_scope').$type<string[] | null>(),
     /** T-044: департамент member'а (unit придёт с CRUD оргструктуры). */
     departmentId: uuid('department_id'),
+    /**
+     * T-110: окно доступа (time-boxed) — когда участник (внешний аудитор) реально
+     * имеет доступ, отдельно от аудируемого периода engagement. NULL = без границы
+     * (бессрочно). Вне окна resolveAccess отказывает.
+     */
+    dataAccessFrom: timestamp('data_access_from', { withTimezone: true }),
+    dataAccessUntil: timestamp('data_access_until', { withTimezone: true }),
     ...timestamps,
   },
   (table) => [uniqueIndex('membership_user_tenant_idx').on(table.userId, table.tenantId)],

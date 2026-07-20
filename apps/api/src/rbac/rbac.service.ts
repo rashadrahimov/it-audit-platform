@@ -51,6 +51,15 @@ export class RbacService {
       );
     if (!member) return { allowed: false, level: 'none', tenantId: foundTenant.id };
 
+    // T-110: доступ вне окна data-access закрыт (time-boxed доступ внешнего аудитора).
+    const now = new Date();
+    if (
+      (member.dataAccessFrom && now < member.dataAccessFrom) ||
+      (member.dataAccessUntil && now > member.dataAccessUntil)
+    ) {
+      return { allowed: false, level: 'none', tenantId: foundTenant.id };
+    }
+
     const level = await this.dbService.withTenant(foundTenant.id, async (tx) => {
       const [cell] = await tx
         .select({ level: rolePermission.level })
