@@ -1581,7 +1581,11 @@
         "Baxışa göndərin",
         "İmzalayın; annotasiyalar daxildədir"
       ],
-      "plans": ["İllik plan tərtib edin", "Auditləri dövrlərə bölün", "İcranı izləyin"],
+      "plans": [
+        "İllik plan tərtib edin",
+        "Auditləri dövrlərə bölün",
+        "İcranı izləyin"
+      ],
       "allocations": [
         "Auditoru auditə təyin edin",
         "Plan saatlarını göstərin",
@@ -1597,7 +1601,11 @@
         "Qiymətləndirmələri toplayın",
         "Prosesi təkmilləşdirin"
       ],
-      "risks": ["Risk qeyd edin", "Ehtimal və təsiri qiymətləndirin", "Sahib və plan təyin edin"],
+      "risks": [
+        "Risk qeyd edin",
+        "Ehtimal və təsiri qiymətləndirin",
+        "Sahib və plan təyin edin"
+      ],
       "risk-heatmap": [
         "5×5 xəritəni açın",
         "Qırmızı zona prioritetdir",
@@ -1733,7 +1741,10 @@
         "Xüsusi rol yaradın",
         "Onun üçün matris xanasını təyin edin"
       ],
-      "members": ["İştirakçı kateqoriyalarını yoxlayın", "Rolu sətirdəki seçimlə dəyişin"],
+      "members": [
+        "İştirakçı kateqoriyalarını yoxlayın",
+        "Rolu sətirdəki seçimlə dəyişin"
+      ],
       "assets": [
         "Aktivi əl ilə əlavə edin və ya Konnektorlar səhifəsindən idxal edin.",
         "Bir neçə aktivi seçib ümumi teq tətbiq edin.",
@@ -2282,7 +2293,8 @@
       "auditor": "Daxili auditor",
       "respondent": "Respondent",
       "msp": "MSP",
-      "external_auditor": "Xarici auditor"
+      "external_auditor": "Xarici auditor",
+      "internal": "Daxili"
     }
   },
   "auditorView": {

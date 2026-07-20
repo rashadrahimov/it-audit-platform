@@ -175,7 +175,7 @@ export class EvidenceRequestsService {
 
   private async assertAuditor(actor: Actor): Promise<void> {
     const category = await resolveActorCategory(this.dbService, actor.tenantId, actor.userId);
-    if (category !== 'auditor' && category !== 'external_auditor') {
+    if (category !== 'auditor' && category !== 'internal' && category !== 'external_auditor') {
       throw new ForbiddenException('Запрос доказательства ведёт только аудитор');
     }
   }
