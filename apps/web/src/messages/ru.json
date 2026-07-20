@@ -694,7 +694,16 @@
       "due_soon": "Скоро срок",
       "overdue": "Просрочено"
     },
-    "action": "Действие"
+    "action": "Действие",
+    "fTitle": "Название",
+    "fTitlePh": "напр. Устаревший OpenSSL на web-01",
+    "asset": "Актив",
+    "assetNone": "— нет —",
+    "addBtn": "Добавить",
+    "byAsset": "По активам (SLA-статус)",
+    "unassigned": "Без актива",
+    "openOfTotal": "{open} откр. / {total}",
+    "statusHead": "Статус"
   },
   "securityAlerts": {
     "title": "Оповещения ИБ",
@@ -928,7 +937,18 @@
     "add": "Добавить",
     "global": "Глобальный",
     "custom": "Свой",
-    "empty": "Пока пусто"
+    "empty": "Пока пусто",
+    "slaTitle": "SLA-окна ремедиации",
+    "slaHint": "Дни на устранение по severity — используются для авто-дедлайнов findings и уязвимостей.",
+    "dueSoon": "Окно «скоро»",
+    "slaSave": "Сохранить SLA",
+    "slaDays": "Все значения — в днях.",
+    "sev": {
+      "critical": "Критический",
+      "high": "Высокий",
+      "medium": "Средний",
+      "low": "Низкий"
+    }
   },
   "reports": {
     "title": "Отчёты",

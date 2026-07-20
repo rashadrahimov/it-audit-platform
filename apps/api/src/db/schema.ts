@@ -1004,6 +1004,8 @@ export const vulnerability = pgTable(
       .references(() => tenant.id),
     accountId: uuid('account_id'),
     connectorId: uuid('connector_id'),
+    /** T-V32: связь уязвимость↔актив для группировки и Asset SLA status. */
+    assetId: uuid('asset_id').references((): AnyPgColumn => asset.id),
     cve: text('cve'),
     title: text('title').notNull(),
     description: text('description'),
@@ -1015,7 +1017,10 @@ export const vulnerability = pgTable(
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
-  (table) => [index('vulnerability_tenant_idx').on(table.tenantId)],
+  (table) => [
+    index('vulnerability_tenant_idx').on(table.tenantId),
+    index('vulnerability_asset_idx').on(table.assetId),
+  ],
 );
 
 /** Change management (T-063, B13): изменение с approval-workflow requested→approved→deployed. */

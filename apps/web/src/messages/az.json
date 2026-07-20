@@ -694,7 +694,16 @@
       "due_soon": "Vaxtı yaxınlaşır",
       "overdue": "Gecikib"
     },
-    "action": "Əməliyyat"
+    "action": "Əməliyyat",
+    "fTitle": "Başlıq",
+    "fTitlePh": "məs. web-01-də köhnə OpenSSL",
+    "asset": "Aktiv",
+    "assetNone": "— yoxdur —",
+    "addBtn": "Əlavə et",
+    "byAsset": "Aktivlərə görə (SLA statusu)",
+    "unassigned": "Təyin edilməyib",
+    "openOfTotal": "{open} açıq / {total}",
+    "statusHead": "Status"
   },
   "securityAlerts": {
     "title": "Təhlükəsizlik Bildirişləri",
@@ -928,7 +937,18 @@
     "add": "Əlavə et",
     "global": "Qlobal",
     "custom": "Fərdi",
-    "empty": "Hələ boşdur"
+    "empty": "Hələ boşdur",
+    "slaTitle": "SLA aradan qaldırma pəncərələri",
+    "slaHint": "Ciddiliyə görə düzəliş günləri — findinq və zəiflik üçün son tarixi avtomatik təyin edir.",
+    "dueSoon": "Tezliklə pəncərəsi",
+    "slaSave": "SLA yadda saxla",
+    "slaDays": "Bütün dəyərlər gün ilədir.",
+    "sev": {
+      "critical": "Kritik",
+      "high": "Yüksək",
+      "medium": "Orta",
+      "low": "Aşağı"
+    }
   },
   "reports": {
     "title": "Hesabatlar",

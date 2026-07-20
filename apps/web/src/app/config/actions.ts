@@ -18,6 +18,23 @@ export async function createTagAction(formData: FormData): Promise<void> {
   revalidatePath('/config');
 }
 
+/** T-V32: сохранить SLA-окна ремедиации тенанта по severity (+ окно due_soon). */
+export async function saveSlaConfigAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const body: Record<string, number> = {};
+  for (const key of ['critical', 'high', 'medium', 'low', 'dueSoonDays'] as const) {
+    const n = Number(formData.get(key));
+    if (Number.isFinite(n) && n > 0) body[key] = Math.round(n);
+  }
+  await apiFetch('/sla-config', {
+    method: 'PUT',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  revalidatePath('/config');
+}
+
 /** Завести кастомный тип аудита (T-084). nameI18n — одинаковое имя на все локали. */
 export async function createAuditTypeAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();

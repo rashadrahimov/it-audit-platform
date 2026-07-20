@@ -22,7 +22,10 @@ export class SlaService {
   constructor(private readonly dbService: DbService) {}
 
   async recalc(): Promise<SlaRecalcResult> {
-    const tenants = await this.dbService.db.select({ id: tenant.id }).from(tenant);
+    // T-V32: per-tenant окно due_soon из settings.sla.dueSoonDays (fallback env)
+    const tenants = await this.dbService.db
+      .select({ id: tenant.id, settings: tenant.settings })
+      .from(tenant);
     const totals: SlaRecalcResult = {
       findings: 0,
       tests: 0,
@@ -30,8 +33,15 @@ export class SlaService {
       vulnerabilities: 0,
       commitments: 0,
     };
-    const dueSoon = env.slaDueSoonDays;
     for (const t of tenants) {
+      const sla =
+        t.settings && typeof t.settings === 'object'
+          ? ((t.settings as Record<string, unknown>).sla as { dueSoonDays?: number } | undefined)
+          : undefined;
+      const dueSoon =
+        typeof sla?.dueSoonDays === 'number' && sla.dueSoonDays > 0
+          ? Math.round(sla.dueSoonDays)
+          : env.slaDueSoonDays;
       await this.dbService.withTenant(t.id, async (tx) => {
         const findings = await tx.execute(sql`
           UPDATE "finding" SET "sla_status" = CASE

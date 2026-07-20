@@ -533,6 +533,13 @@
       "when": 1784510406613,
       "tag": "0075_documents-lifecycle",
       "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1784511358250,
+      "tag": "0076_vulnerability-asset",
+      "breakpoints": true
     }
   ]
 }

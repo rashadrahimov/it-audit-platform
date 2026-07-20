@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
-import { createAuditTypeAction, createTagAction } from './actions';
+import { createAuditTypeAction, createTagAction, saveSlaConfigAction } from './actions';
 import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +17,14 @@ interface AuditType {
   name: string;
   isGlobal: boolean;
 }
+interface SlaWindows {
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  dueSoonDays: number;
+}
+const DEFAULT_SLA: SlaWindows = { critical: 7, high: 30, medium: 90, low: 180, dueSoonDays: 7 };
 
 const inputCls =
   'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
@@ -30,12 +38,14 @@ export default async function ConfigPage() {
   const [t, tenantSlug] = await Promise.all([getTranslations('config'), getActiveTenantSlug()]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const [typesRes, tagsRes] = await Promise.all([
+  const [typesRes, tagsRes, slaRes] = await Promise.all([
     apiFetch('/audit-types', { headers }),
     apiFetch('/tags', { headers }),
+    apiFetch('/sla-config', { headers }),
   ]);
   const types: AuditType[] = typesRes.ok ? await typesRes.json() : [];
   const tags: Tag[] = tagsRes.ok ? await tagsRes.json() : [];
+  const sla: SlaWindows = slaRes.ok ? await slaRes.json() : DEFAULT_SLA;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 p-6 pt-12">
@@ -74,6 +84,46 @@ export default async function ConfigPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* SLA-окна ремедиации (T-V32) */}
+      <section className="flex flex-col gap-3" data-testid="sla-config">
+        <h2 className="text-sm font-semibold text-secondary">{t('slaTitle')}</h2>
+        <p className="text-xs text-secondary">{t('slaHint')}</p>
+        <form
+          action={saveSlaConfigAction}
+          data-testid="sla-config-form"
+          className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+        >
+          {(['critical', 'high', 'medium', 'low'] as const).map((sev) => (
+            <label key={sev} className="flex w-24 flex-col gap-1 text-sm">
+              <span className="font-medium text-secondary">{t(`sev.${sev}`)}</span>
+              <input
+                name={sev}
+                type="number"
+                min={1}
+                max={3650}
+                defaultValue={sla[sev]}
+                className={inputCls}
+              />
+            </label>
+          ))}
+          <label className="flex w-28 flex-col gap-1 text-sm">
+            <span className="font-medium text-secondary">{t('dueSoon')}</span>
+            <input
+              name="dueSoonDays"
+              type="number"
+              min={1}
+              max={3650}
+              defaultValue={sla.dueSoonDays}
+              className={inputCls}
+            />
+          </label>
+          <button type="submit" data-testid="sla-config-save" className={btnCls}>
+            {t('slaSave')}
+          </button>
+        </form>
+        <p className="text-xs text-secondary">{t('slaDays')}</p>
       </section>
 
       {/* Теги */}

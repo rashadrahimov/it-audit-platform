@@ -18,6 +18,7 @@ import { NotificationDispatchService } from '../notifications/notification-dispa
 import { DbService } from '../db/db.service';
 import { EmailService } from '../email/email.service';
 import { RbacService } from '../rbac/rbac.service';
+import { dueDateFor, SlaConfigService } from '../sla-config/sla-config.service';
 import { maskFields, rejectedWriteFields } from '../rbac/field-policy';
 import { FINDING_TEMPLATES } from '../seed-data/finding-templates';
 import {
@@ -76,6 +77,7 @@ export class FindingsService {
     private readonly emailService: EmailService,
     private readonly rbacService: RbacService,
     private readonly notificationDispatch: NotificationDispatchService,
+    private readonly slaConfig: SlaConfigService,
   ) {}
 
   /**
@@ -127,6 +129,9 @@ export class FindingsService {
       input as unknown as Record<string, unknown>,
       'finding',
     );
+    // T-V32: авто-дедлайн по SLA-окну риск-рейтинга, если due не задан вручную
+    const windows = await this.slaConfig.configOf(actor.tenantId);
+    const dueDate = input.dueDate ? new Date(input.dueDate) : dueDateFor(windows, input.riskRating);
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       // все привязки опциональны (standalone), но заданные должны существовать
       if (input.engagementId) {
@@ -183,7 +188,7 @@ export class FindingsService {
           recommendationI18n: input.recommendationI18n ?? null,
           ownerMembershipId: input.ownerMembershipId ?? null,
           auditorMembershipId: input.auditorMembershipId ?? null,
-          dueDate: input.dueDate ? new Date(input.dueDate) : null,
+          dueDate,
           managementResponse: input.managementResponse ?? null,
         })
         .returning();

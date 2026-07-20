@@ -694,7 +694,16 @@
       "due_soon": "Due soon",
       "overdue": "Overdue"
     },
-    "action": "Action"
+    "action": "Action",
+    "fTitle": "Title",
+    "fTitlePh": "e.g. Outdated OpenSSL on web-01",
+    "asset": "Asset",
+    "assetNone": "— none —",
+    "addBtn": "Add",
+    "byAsset": "By asset (SLA status)",
+    "unassigned": "Unassigned",
+    "openOfTotal": "{open} open / {total}",
+    "statusHead": "Status"
   },
   "securityAlerts": {
     "title": "Security Alerts",
@@ -928,7 +937,18 @@
     "add": "Add",
     "global": "Global",
     "custom": "Custom",
-    "empty": "Nothing yet"
+    "empty": "Nothing yet",
+    "slaTitle": "SLA remediation windows",
+    "slaHint": "Days to fix by severity — used to auto-set due dates for findings and vulnerabilities.",
+    "dueSoon": "Due-soon window",
+    "slaSave": "Save SLA",
+    "slaDays": "All values are in days.",
+    "sev": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    }
   },
   "reports": {
     "title": "Reports",

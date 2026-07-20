@@ -23,6 +23,7 @@ const createSchema = z.object({
   severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   description: z.string().optional(),
   dueDate: z.iso.datetime().optional(),
+  assetId: z.uuid().optional(),
 });
 
 @Controller('vulnerabilities')
@@ -70,5 +71,12 @@ export class VulnerabilitiesController {
   @ApiOperation({ summary: 'Реестр уязвимостей' })
   list(@Req() req: TenantRequest) {
     return this.service.list(req.tenantId);
+  }
+
+  @Get('by-asset')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Уязвимости по активам + агрегат Asset SLA status (T-V32)' })
+  byAsset(@Req() req: TenantRequest) {
+    return this.service.byAsset(req.tenantId);
   }
 }
