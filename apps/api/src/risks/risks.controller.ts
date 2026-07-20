@@ -265,7 +265,7 @@ export class RisksController {
   @ApiOperation({ summary: 'Реестр рисков' })
   @ApiQuery({ name: 'locale', required: false })
   list(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
-    return this.service.list(req.tenantId, parseLocale(localeQuery));
+    return this.service.list(req.tenantId, parseLocale(localeQuery), req.user.sub);
   }
 
   @Get(':id')
@@ -276,6 +276,6 @@ export class RisksController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('locale') localeQuery?: string,
   ) {
-    return this.service.detail(req.tenantId, id, parseLocale(localeQuery));
+    return this.service.detail(req.tenantId, id, parseLocale(localeQuery), req.user.sub);
   }
 }

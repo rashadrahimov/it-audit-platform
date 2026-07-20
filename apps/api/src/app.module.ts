@@ -55,6 +55,7 @@ import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
 import { ReportsExportModule } from './reports-export/reports-export.module';
 import { RisksModule } from './risks/risks.module';
+import { EntityAclModule } from './entity-acl/entity-acl.module';
 import { AuditFirmsModule } from './audit-firms/audit-firms.module';
 import { SlaConfigModule } from './sla-config/sla-config.module';
 import { RoadmapModule } from './roadmap/roadmap.module';
@@ -129,6 +130,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     ReportsModule,
     ReportsExportModule,
     RisksModule,
+    EntityAclModule,
     TasksModule,
     AuditFirmsModule,
     SlaConfigModule,

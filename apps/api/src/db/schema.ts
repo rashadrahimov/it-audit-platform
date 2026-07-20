@@ -1371,6 +1371,34 @@ export const tagLink = pgTable(
   (table) => [uniqueIndex('tag_link_triple_idx').on(table.tagId, table.entityType, table.entityId)],
 );
 
+/**
+ * T-V48 (ADR-0021): per-entity ACL «Manage access». Полиморфный грант доступа
+ * конкретному membership на конкретную сущность. Семантика additive-restrictive:
+ * если у сущности есть ХОТЯ БЫ одна acl-строка — доступ ограничен (только гранты
+ * + владелец + админ); нет строк — сущность видна всему тенанту (текущее поведение).
+ */
+export const entityAcl = pgTable(
+  'entity_acl',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id, { onDelete: 'cascade' }),
+    /** view | edit — уровень предоставленного доступа. */
+    level: text('level').notNull().default('view'),
+    ...timestamps,
+  },
+  (table) => [
+    index('entity_acl_entity_idx').on(table.entityType, table.entityId),
+    uniqueIndex('entity_acl_triple_idx').on(table.entityType, table.entityId, table.membershipId),
+  ],
+);
+
 /** Аудиторская фирма (T-V29): реестр внешних аудиторов, приглашаемых в тенант. */
 export const auditFirm = pgTable(
   'audit_firm',

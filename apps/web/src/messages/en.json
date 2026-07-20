@@ -924,7 +924,18 @@
     "libraryHint": "Common risk scenarios — add to your register in one click; the class is computed by your matrix.",
     "addToRegister": "Add to register",
     "inRegister": "In register",
-    "actionTracker": "Action tracker"
+    "actionTracker": "Action tracker",
+    "access": {
+      "title": "Manage access",
+      "open": "Visible to everyone",
+      "restricted": "Restricted",
+      "member": "Member",
+      "level": "Level",
+      "view": "View",
+      "edit": "Edit",
+      "grant": "Grant",
+      "remove": "Remove"
+    }
   },
   "privacy": {
     "title": "Privacy — ROPA & DPIA",

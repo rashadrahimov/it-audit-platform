@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
@@ -14,6 +19,7 @@ import {
   user,
 } from '../db/schema';
 import { classifyRisk, DEFAULT_THRESHOLDS } from './classify-risk';
+import { EntityAclService } from '../entity-acl/entity-acl.service';
 
 interface Actor {
   tenantId: string;
@@ -41,6 +47,7 @@ export class RisksService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly entityAcl: EntityAclService,
   ) {}
 
   private async thresholds(
@@ -584,14 +591,25 @@ export class RisksService {
     });
   }
 
-  async list(tenantId: string, locale: Locale) {
-    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+  async list(tenantId: string, locale: Locale, userId?: string) {
+    let rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select()
         .from(risk)
         .where(and(isNotNull(risk.tenantId), isNull(risk.deletedAt)))
         .orderBy(desc(risk.createdAt)),
     );
+    // T-V48: per-entity ACL — скрыть ограниченные риски, к которым нет доступа
+    if (userId) {
+      const actor = await this.entityAcl.resolveActor(tenantId, userId);
+      const ctx = { tenantId, membershipId: actor.membershipId, isAdmin: actor.isAdmin };
+      const visible = await this.entityAcl.filterVisible(
+        ctx,
+        'risk',
+        rows.map((r) => ({ id: r.id, ownerMembershipId: r.ownerMembershipId })),
+      );
+      rows = rows.filter((r) => visible.has(r.id));
+    }
     return rows.map((r) => ({
       id: r.id,
       title: resolveLocalized(r.titleI18n, locale),
@@ -603,7 +621,7 @@ export class RisksService {
     }));
   }
 
-  async detail(tenantId: string, id: string, locale: Locale) {
+  async detail(tenantId: string, id: string, locale: Locale, userId?: string) {
     const [row] = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({ risk: risk, ownerName: user.fullName })
@@ -614,6 +632,18 @@ export class RisksService {
     );
     if (!row) throw new NotFoundException(`Риск ${id} не найден`);
     const r = row.risk;
+    // T-V48: per-entity ACL — 403, если сущность ограничена и доступа нет
+    if (userId) {
+      const actor = await this.entityAcl.resolveActor(tenantId, userId);
+      const access = await this.entityAcl.access(
+        { tenantId, membershipId: actor.membershipId, isAdmin: actor.isAdmin },
+        'risk',
+        id,
+        r.ownerMembershipId,
+      );
+      if (!access.canView)
+        throw new ForbiddenException('Нет доступа к этому риску (Manage access)');
+    }
     return {
       id: r.id,
       title: resolveLocalized(r.titleI18n, locale),

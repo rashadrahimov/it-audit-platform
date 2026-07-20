@@ -924,7 +924,18 @@
     "libraryHint": "Tipik risk ssenariləri — bir kliklə reyestrə əlavə edin; sinif sizin matrisinizlə hesablanır.",
     "addToRegister": "Reyestrə əlavə et",
     "inRegister": "Reyestrdədir",
-    "actionTracker": "Fəaliyyət izləyicisi"
+    "actionTracker": "Fəaliyyət izləyicisi",
+    "access": {
+      "title": "Girişi idarə et",
+      "open": "Hamıya görünür",
+      "restricted": "Məhdud",
+      "member": "İştirakçı",
+      "level": "Səviyyə",
+      "view": "Baxış",
+      "edit": "Redaktə",
+      "grant": "Ver",
+      "remove": "Sil"
+    }
   },
   "privacy": {
     "title": "Məxfilik — ROPA və DPIA",

@@ -5,6 +5,7 @@ import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { CommentsSection } from '@/components/comments-section';
 import { TasksSection, type TaskItem } from '@/components/tasks-section';
+import { ManageAccessSection, type AclGrantRow } from '@/components/manage-access-section';
 import {
   deleteRiskAction,
   linkRiskControlAction,
@@ -94,6 +95,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
     membersRes,
     cRes,
     tasksRes,
+    aclRes,
   ] = await Promise.all([
     apiFetch('/risks/matrix', { headers }),
     apiFetch(`/risks/${id}/controls`, { headers }),
@@ -103,6 +105,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
     apiFetch(`/memberships?locale=${locale}`, { headers }),
     apiFetch(`/comments?entityType=risk&entityId=${id}`, { headers }),
     apiFetch(`/tasks?entityType=risk&entityId=${id}`, { headers }),
+    apiFetch(`/entity-acl?entityType=risk&entityId=${id}`, { headers }),
   ]);
   const matrix: Matrix = matrixRes.ok
     ? await matrixRes.json()
@@ -126,6 +129,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
     ? await cRes.json()
     : [];
   const tasks: TaskItem[] = tasksRes.ok ? await tasksRes.json() : [];
+  const aclGrants: AclGrantRow[] = aclRes.ok ? await aclRes.json() : [];
 
   const linkedControlIds = new Set(linkedControls.map((c) => c.id));
   const linkableControls = allControls.filter((c) => !linkedControlIds.has(c.id));
@@ -400,6 +404,26 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
         members={members}
         testid="risk-tasks"
         title={t('actionTracker')}
+      />
+
+      <ManageAccessSection
+        entityType="risk"
+        entityId={r.id}
+        path={`/risks/${r.id}`}
+        grants={aclGrants}
+        members={members}
+        testid="risk-access"
+        labels={{
+          title: t('access.title'),
+          openHint: t('access.open'),
+          restrictedHint: t('access.restricted'),
+          member: t('access.member'),
+          level: t('access.level'),
+          view: t('access.view'),
+          edit: t('access.edit'),
+          grant: t('access.grant'),
+          remove: t('access.remove'),
+        }}
       />
 
       <CommentsSection
