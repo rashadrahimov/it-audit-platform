@@ -26,14 +26,30 @@ describe('navForCategory', () => {
     expect(hrefs).not.toContain('/iam');
     expect(hrefs).not.toContain('/access-reviews');
     // комплаенс-база и активы/уязвимости — видны
-    for (const href of ['/controls', '/frameworks', '/policies', '/documents', '/vendors', '/assets', '/vulnerabilities', '/findings']) {
+    for (const href of [
+      '/controls',
+      '/frameworks',
+      '/policies',
+      '/documents',
+      '/vendors',
+      '/assets',
+      '/vulnerabilities',
+      '/findings',
+    ]) {
       expect(hrefs).toContain(href);
     }
   });
 
   it('auditor: настроечные разделы (config/roles/sso) недоступны', () => {
     const hrefs = navForCategory('auditor').flatMap((g) => g.items.map((i) => i.href));
-    for (const href of ['/config', '/roles', '/members', '/api-keys', '/sso-settings', '/connectors']) {
+    for (const href of [
+      '/config',
+      '/roles',
+      '/members',
+      '/api-keys',
+      '/sso-settings',
+      '/connectors',
+    ]) {
       expect(hrefs).not.toContain(href);
     }
   });
