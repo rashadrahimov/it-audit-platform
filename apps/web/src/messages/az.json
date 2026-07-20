@@ -194,9 +194,9 @@
       "non_compliant": "Uyğun deyil",
       "not_applicable": "Tətbiq olunmur"
     },
-    "findings": "Findings",
+    "findings": "Qeydlər",
     "findingsEmpty": "Hələ finding yoxdur",
-    "findingTitle": "Finding",
+    "findingTitle": "Qeyd",
     "findingRating": "Risk",
     "findingOwner": "Sahib",
     "findingDue": "Son tarix",
@@ -249,7 +249,7 @@
     "management_response": "Rəhbərliyin cavabı",
     "approval": "Təsdiq",
     "report_issued": "Hesabat dərc edilib",
-    "follow_up": "Follow-up",
+    "follow_up": "İzləmə",
     "closed": "Bağlanıb",
     "paused": "Pauza",
     "archived": "Arxiv"
@@ -268,7 +268,7 @@
     "assigned": "Təyin edilib",
     "unassigned": "Təyin edilməyib",
     "withPassing": "Keçən sübutlu",
-    "percentPassing": "% keçən",
+    "percentPassing": "% keçid",
     "st": {
       "active": "Aktiv",
       "inactive": "Qeyri-aktiv",
@@ -612,12 +612,12 @@
     "composition": "Fiksasiya anında açıq findinqlər",
     "viewComposition": "Dondurulmuş tərkib",
     "noOpen": "Fiksasiya anında açıq findinq yoxdur.",
-    "colTitle": "Findinq",
+    "colTitle": "Qeyd",
     "colRisk": "Risk",
     "colStatus": "Status",
     "colDue": "Son tarix",
     "openVulns": "Açıq zəifliklər",
-    "count": "{n} findinq"
+    "count": "{n} qeyd"
   },
   "devices": {
     "title": "Cihaz Uyğunluğu",
@@ -691,7 +691,7 @@
     "assessments": "Qiymətləndirmələr",
     "noAssessments": "Hələ qiymətləndirmə yoxdur",
     "statusLabel": "Status",
-    "securityOwner": "Təhlükəsizlik sahibi",
+    "securityOwner": "Təhlükəsizlik məsulu",
     "edit": "Vendoru redaktə et",
     "save": "Yadda saxla",
     "analytics": "Kateqoriya üzrə",
@@ -730,7 +730,7 @@
     "completeAssessment": "Tamamla",
     "recommendation": "Tövsiyə",
     "recommendationPh": "Nəticə / tövsiyə",
-    "evidence": "Sübut",
+    "evidence": "Sübutlar",
     "evProvided": "Təqdim edilib",
     "attachDoc": "Sənəd əlavə et",
     "attach": "Əlavə et"
@@ -1431,7 +1431,7 @@
       "anthropic": "Anthropic Claude",
       "openai_compat": "OpenAI-uyğun (GPT / Kimi / DeepSeek / Ollama / vLLM)"
     },
-    "baseUrl": "Base URL",
+    "baseUrl": "Baza URL",
     "baseUrlHint": "/v1 ilə OpenAI-uyğun endpoint (məs. https://api.moonshot.cn/v1 və ya http://ollama:11434/v1). Anthropic buludu üçün boş buraxın.",
     "model": "Model",
     "modelHint": "anthropic: claude-*; OpenAI-uyğun: gpt-4o, kimi-k2, deepseek-chat, …",
@@ -1874,7 +1874,10 @@
         "t": "Profil",
         "d": "Hesabınız və çıxış düyməsi panelin aşağısındadır."
       }
-    }
+    },
+    "hideAsk": "Növbəti girişdə turu göstərək?",
+    "hideYes": "Bəli, göstər",
+    "hideNo": "Xeyr, gizlət"
   },
   "help": {
     "title": "Soraqça",
