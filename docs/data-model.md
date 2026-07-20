@@ -49,7 +49,7 @@ erDiagram
 
 **membership** — User↔Tenant (ADR-0015). `user_id`, `tenant_id`, `role_id`, `category` (`auditor`/`respondent`/`msp`/`external_auditor`), `department_id NULL`, `unit_id NULL`, `is_audit_seat bool` (тарификация ADR-0014), `invited_by`, `status`. UNIQUE(user_id, tenant_id).
 
-**membership_scope** — ограничение membership подмножеством дочек: `membership_id`, `subsidiary_id`. Пусто = вся группа (по роли).
+**membership_scope** — ограничение membership подмножеством дочек: `membership_id`, `subsidiary_id`. Пусто = вся группа (по роли). _(Реализовано как jsonb-поле `membership.subsidiary_scope`, не отдельная таблица — см. §12.)_
 
 **role** — `tenant_id NULL` (NULL = системные пресеты: Admin, View-only Admin, Editor, Collaborator, Assessor, Manager, Approver), `name_i18n`, `is_system`.
 
@@ -139,9 +139,9 @@ erDiagram
 
 **audit_type** — lookup (UNI-06): сид operational/financial/it/compliance/quality/advisory; `tenant_id NULL`+override.
 
-**engagement** — ядро (ADR-0005): `tenant_id`, `subsidiary_id`, `audit_type_id`, `title_i18n`, `period_start/end`, `mode` (`formal`/`light`), `state` (§8), `opinion_id NULL` (lookup, ENG-09), `plan_item_id NULL`, `custom jsonb`, `archived_at NULL` (ENG-08).
+**engagement** — ядро (ADR-0005): `tenant_id`, `subsidiary_id`, `audit_type_id`, `title_i18n`, `period_start/end`, `mode` (`formal`/`light`), `state` (§8), `opinion_id NULL` (lookup, ENG-09; _колонка выпилена — заключение через lookup `audit_opinion`, см. §12_), `plan_item_id NULL`, `custom jsonb`, `archived_at NULL` (ENG-08).
 
-**engagement_member** — GEN-08/SCH-02: `engagement_id`, `membership_id`, `engagement_role` (lead/assessor/reviewer/approver/observer), `stage_permissions jsonb NULL` (переопределение по стадиям: read-only/hidden/edit).
+**engagement_member** — GEN-08/SCH-02: `engagement_id`, `membership_id`, `engagement_role` (lead/assessor/reviewer/approver/observer), `stage_permissions jsonb NULL` (переопределение по стадиям: read-only/hidden/edit). _(Реализовано T-116, миграция 0070 — см. §12.)_
 
 **engagement_milestone** — ENG-03: `engagement_id`, `stage`, `planned_date`, `actual_date NULL`.
 
@@ -234,3 +234,20 @@ erDiagram
 1. `management_response` — поле finding'а или отдельная сущность с историей раундов (аудитор↔менеджмент)? Пока поле; RFP WP-02 упоминает как часть WP.
 2. Иерархия требований фреймворка: достаточно `parent_id` или нужна отдельная версия под tracked changes фреймворков (EP-FWK)? Пока `parent_id` + версия на уровне framework.
 3. Единицы (`unit`) — нужны ли в MVP или достаточно department? (Клиент упоминал оба.) Пока обе таблицы.
+
+## 12. Сверка docs↔code (T-121, 20.07.2026)
+
+Расхождения между этим документом и реализацией. По каждому — решение: **реализовано**, **осознанная замена** или **отложено**. Актуально на момент закрытия EP-AUDITOR-RELATIONSHIP.
+
+| # | Docs (этот файл) | Код | Решение |
+|---|---|---|---|
+| 1 | `membership_scope` — отдельная таблица (§2) | jsonb-поле `membership.subsidiary_scope` (T-012), без отдельной таблицы; правится через `PATCH /memberships/:id` (T-109) | **Замена.** Скоуп — простой список id, join-таблица избыточна; jsonb достаточен. Отдельная таблица — только если понадобятся индексируемые запросы «кто видит дочку X». |
+| 2 | `auditor_capacity` (`tenant_id, membership_id, period, available_hours`) (§4) | `annual_plan.capacity_hours` (T-100) + `resource_allocation` (SCH-02, часы на engagement) | **Замена.** Ёмкость нужна на уровне плана; утилизация считается из resource_allocation vs allocation. Отдельной сущности нет. |
+| 3 | `usage_snapshot` для биллинга/истории (§2 license) | не реализовано; потребление считается запросом (`LicenseService.usage`, T-026) | **Отложено** до внедрения биллинга (гейтится T-001, модель оплаты). |
+| 4 | `terminology_override` — per-tenant термины (§1/§7, GEN-06) | не реализовано; UI-строки в i18n-каркасе (en/az/ru), контент — jsonb `_i18n`; конфигурируемые списки GEN-06 закрыты через `config_list` (T-084+) | **Отложено** (per-tenant переопределение терминов — при явной потребности). |
+| 5 | `engagement.opinion_id NULL` (§5) | колонка выпилена; аудиторское заключение — lookup `audit_opinion` в `config_list` | **Замена.** Фиксация заключения per-engagement — вернуть поле/отдельную запись при надобности. |
+| 6 | `engagement_member` (§5) | **реализовано** (T-116, миграция 0070): `engagement_role` + `stage_permissions`, эндпоинты `/engagements/:id/members` | **Реализовано.** Enforcement постадийный — частично (`report_issued` требует lead/approver); полный per-stage — при надобности. |
+| 7 | «спящие» поля `membership.category` / `subsidiary_scope` (§2) | **активированы** (EP-AUDITOR-RELATIONSHIP): category в инвайте (T-108), scope в enforcement списков (T-111) + `PATCH` (T-109) | **Реализовано.** Больше не спящие. |
+| 8 | (не было в §2) окно доступа | `membership.data_access_from/until` **добавлено** (T-110, миграция 0069), enforcement в `resolveAccess` | **Реализовано** — задокументировано здесь. |
+
+**Прочие сущности EP-AUDITOR-RELATIONSHIP, добавленные вне исходного §5/§6** (для полноты): `document_link.review_status` (T-112), `auditor_assessment` (T-113), `evidence_request` (T-114) — все в консолидированной миграции 0069, FORCE RLS.
