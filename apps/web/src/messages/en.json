@@ -1174,7 +1174,10 @@
     "questionPh": "New question",
     "addQuestion": "Add question",
     "submit": "Submit",
-    "submitHint": "Answer all questions first"
+    "submitHint": "Answer all questions first",
+    "suggested": "Suggested from KB",
+    "match": "match",
+    "useSuggestion": "Use this"
   },
   "satisfaction": {
     "title": "Audit satisfaction",

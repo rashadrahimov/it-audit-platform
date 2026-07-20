@@ -102,6 +102,15 @@ export class QuestionnairesController {
     return this.service.list(req.tenantId, { status: filterParam(status, 'status') });
   }
 
+  @Get(':id/suggestions')
+  @RequirePermission('control', 'view')
+  @ApiOperation({
+    summary: 'Auto-suggest ответов из KB для неотвеченных вопросов (T-V42, без LLM)',
+  })
+  suggestions(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.suggestions(req.tenantId, id);
+  }
+
   @Get(':id')
   @RequirePermission('control', 'view')
   @ApiOperation({ summary: 'Опросник + ответы' })

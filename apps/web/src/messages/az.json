@@ -1174,7 +1174,10 @@
     "questionPh": "Yeni sual",
     "addQuestion": "Sual əlavə et",
     "submit": "Göndər",
-    "submitHint": "Əvvəlcə bütün suallara cavab verin"
+    "submitHint": "Əvvəlcə bütün suallara cavab verin",
+    "suggested": "KB-dən təklif",
+    "match": "uyğunluq",
+    "useSuggestion": "İstifadə et"
   },
   "satisfaction": {
     "title": "Audit məmnunluğu",
