@@ -5,6 +5,7 @@ import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { addRiskFromLibraryAction, createRiskAction, setRiskMatrixAction } from './actions';
 import { EmptyState } from '@/components/empty-state';
+import { WidgetChart } from '@/components/widget-chart';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +77,18 @@ export default async function RisksPage({
   } = matrixRes.ok
     ? await matrixRes.json()
     : { impactScale: 5, likelihoodScale: 5, thresholds: { medium: 6, high: 12, critical: 20 } };
+
+  // T-V59: Risk-Overview — распределение по treatment и по классу (донаты, WidgetChart)
+  const tally = (fn: (r: Risk) => string | null) => {
+    const acc: Record<string, number> = {};
+    for (const r of risks) {
+      const label = fn(r);
+      if (label) acc[label] = (acc[label] ?? 0) + 1;
+    }
+    return acc;
+  };
+  const treatmentData = tally((r) => (r.treatment ? t(`tr.${r.treatment}`) : null));
+  const classData = tally((r) => (r.riskClass ? t(`cls.${r.riskClass}`) : null));
 
   const classBadge = (c: RiskClass | null) =>
     c ? (
@@ -150,6 +163,22 @@ export default async function RisksPage({
           </button>
         </div>
       </form>
+
+      {!approvalQueue && risks.length > 0 && (
+        <section
+          className="grid gap-4 rounded-xl border border-border bg-white p-4 shadow-sm sm:grid-cols-2"
+          data-testid="risk-overview"
+        >
+          <div className="flex flex-col gap-2">
+            <h2 className="text-sm font-semibold text-primary">{t('byTreatment')}</h2>
+            <WidgetChart chartType="donut" data={treatmentData} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-sm font-semibold text-primary">{t('byClass')}</h2>
+            <WidgetChart chartType="donut" data={classData} />
+          </div>
+        </section>
+      )}
 
       <nav data-testid="risk-queue-tabs" className="flex gap-1.5">
         <Link

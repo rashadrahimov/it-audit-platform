@@ -970,7 +970,9 @@
       "pending": "Gözləyir",
       "approved": "Təsdiqlənib",
       "rejected": "Rədd edilib"
-    }
+    },
+    "byTreatment": "Müalicə üzrə",
+    "byClass": "Risk sinfi üzrə"
   },
   "privacy": {
     "title": "Məxfilik — ROPA və DPIA",

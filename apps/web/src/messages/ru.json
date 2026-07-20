@@ -970,7 +970,9 @@
       "pending": "На согласовании",
       "approved": "Согласован",
       "rejected": "Отклонён"
-    }
+    },
+    "byTreatment": "По обработке",
+    "byClass": "По классу риска"
   },
   "privacy": {
     "title": "Приватность — ROPA и DPIA",

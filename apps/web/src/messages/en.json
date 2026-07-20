@@ -970,7 +970,9 @@
       "pending": "Pending",
       "approved": "Approved",
       "rejected": "Rejected"
-    }
+    },
+    "byTreatment": "By treatment",
+    "byClass": "By risk class"
   },
   "privacy": {
     "title": "Privacy — ROPA & DPIA",
