@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FindingRemindersService } from './finding-reminders.service';
 import { PolicyRenewalRemindersService } from './policy-renewal-reminders.service';
 import { WeeklyDigestService } from './weekly-digest.service';
+import { DocumentSlaService } from './document-sla.service';
 import { JobsService } from './jobs.service';
 import { SlaService, type SlaRecalcResult } from './sla.service';
 
@@ -33,6 +34,7 @@ export class JobsController {
     private readonly findingRemindersService: FindingRemindersService,
     private readonly policyRenewalRemindersService: PolicyRenewalRemindersService,
     private readonly weeklyDigestService: WeeklyDigestService,
+    private readonly documentSlaService: DocumentSlaService,
   ) {}
 
   @Post('finding-reminders')
@@ -76,6 +78,18 @@ export class JobsController {
   @ApiCreatedResponse({ description: '{findings, tests} — сколько строк пересчитано' })
   slaRecalc(): Promise<SlaRecalcResult> {
     return this.slaService.recalc();
+  }
+
+  @Post('document-sla')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'SLA документов вручную (T-V02); планово — раз в сутки: renew_by истёк → overdue + письмо',
+  })
+  @ApiCreatedResponse({ description: '{overdue, emails}' })
+  documentSla(): Promise<{ overdue: number; emails: number }> {
+    return this.documentSlaService.run();
   }
 
   @Post('demo')

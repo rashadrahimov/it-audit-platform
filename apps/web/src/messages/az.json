@@ -1692,7 +1692,27 @@
     "firmNamePh": "məs. Ernst & Young",
     "firmEmail": "Əlaqə e-poçtu",
     "firmAdd": "Firma əlavə et",
-    "firmDelete": "Firmanı sil"
+    "firmDelete": "Firmanı sil",
+    "colStatus": "Status",
+    "colCategory": "Kateqoriya",
+    "colActions": "Əməllər",
+    "st": {
+      "needs_document": "Sənəd tələb olunur",
+      "draft": "Qaralama",
+      "active": "Aktiv",
+      "overdue": "Gecikib"
+    },
+    "publish": "Dərc et",
+    "uploadFile": "Yüklə",
+    "newVersion": "Yeni versiya",
+    "category": "Kateqoriya",
+    "categoryPh": "məs. siyasət, hesabat",
+    "saveDraft": "Qaralama kimi saxla",
+    "requestTitle": "Sübut tələb et",
+    "requestHint": "Gözlədiyiniz, lakin hələ olmayan sənəd üçün yer tutucu yaradın.",
+    "requestName": "Sənəd adı",
+    "requestNamePh": "məs. Q3 giriş yoxlaması",
+    "requestBtn": "Tələb et"
   },
   "tests": {
     "title": "Testlər",

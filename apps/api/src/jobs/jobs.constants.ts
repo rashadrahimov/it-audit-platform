@@ -41,3 +41,8 @@ export const JOB_WEEKLY_DIGEST = 'weekly-digest';
 /** Дайджест комплаенса (T-V20): прогон раз в сутки; per-tenant setting решает,
  * слать ли сегодня (weekly=понедельник, daily=каждый день, off=никогда). */
 export const WEEKLY_DIGEST_EVERY_MS = 24 * 60 * 60 * 1000;
+
+export const JOB_DOCUMENT_SLA = 'document-sla';
+
+/** SLA документов (T-V02): раз в сутки — просроченный renew_by → overdue + письмо owner'у. */
+export const DOCUMENT_SLA_EVERY_MS = 24 * 60 * 60 * 1000;

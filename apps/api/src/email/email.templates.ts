@@ -195,6 +195,29 @@ export const emailTemplates = {
       text: `Дайджест ${tenantName}: открытых findings ${openFindings} (${overdueFindings} просрочено), просроченных задач ${overdueTasks}, политик ${policiesDue}.`,
     }),
   },
+  'document-overdue': {
+    en: ({ filename, renewBy }) => ({
+      subject: `Evidence overdue: ${filename}`,
+      html: wrap(
+        `<p>The document <b>${filename}</b> is overdue for renewal${renewBy ? ` (due ${renewBy})` : ''}. Please upload a fresh version to keep your evidence current.</p>`,
+      ),
+      text: `The document ${filename} is overdue for renewal${renewBy ? ` (due ${renewBy})` : ''}. Please upload a fresh version.`,
+    }),
+    az: ({ filename, renewBy }) => ({
+      subject: `Sübut gecikib: ${filename}`,
+      html: wrap(
+        `<p><b>${filename}</b> sənədinin yenilənmə vaxtı keçib${renewBy ? ` (son tarix ${renewBy})` : ''}. Zəhmət olmasa yeni versiya yükləyin.</p>`,
+      ),
+      text: `${filename} sənədinin yenilənmə vaxtı keçib${renewBy ? ` (son tarix ${renewBy})` : ''}. Yeni versiya yükləyin.`,
+    }),
+    ru: ({ filename, renewBy }) => ({
+      subject: `Доказательство просрочено: ${filename}`,
+      html: wrap(
+        `<p>Документ <b>${filename}</b> просрочен по сроку обновления${renewBy ? ` (до ${renewBy})` : ''}. Пожалуйста, загрузите свежую версию, чтобы поддерживать доказательства актуальными.</p>`,
+      ),
+      text: `Документ ${filename} просрочен по сроку обновления${renewBy ? ` (до ${renewBy})` : ''}. Загрузите свежую версию.`,
+    }),
+  },
   'test-email': {
     en: ({ sentAt }) => ({
       subject: 'Test email — IT Audit Platform',

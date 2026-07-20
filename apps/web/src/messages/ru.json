@@ -1692,7 +1692,27 @@
     "firmNamePh": "напр. Ernst & Young",
     "firmEmail": "Контактный email",
     "firmAdd": "Добавить фирму",
-    "firmDelete": "Удалить фирму"
+    "firmDelete": "Удалить фирму",
+    "colStatus": "Статус",
+    "colCategory": "Категория",
+    "colActions": "Действия",
+    "st": {
+      "needs_document": "Нужен документ",
+      "draft": "Черновик",
+      "active": "Актуален",
+      "overdue": "Просрочен"
+    },
+    "publish": "Опубликовать",
+    "uploadFile": "Загрузить",
+    "newVersion": "Новая версия",
+    "category": "Категория",
+    "categoryPh": "напр. политика, отчёт",
+    "saveDraft": "Сохранить как черновик",
+    "requestTitle": "Запросить доказательство",
+    "requestHint": "Создайте плейсхолдер для документа, который ожидаете, но которого ещё нет.",
+    "requestName": "Название документа",
+    "requestNamePh": "напр. Обзор доступа за Q3",
+    "requestBtn": "Запросить"
   },
   "tests": {
     "title": "Тесты",

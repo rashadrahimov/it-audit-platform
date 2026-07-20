@@ -19,9 +19,11 @@ import {
   JOB_HEARTBEAT,
   JOB_SLA_RECALC,
   JOB_WEEKLY_DIGEST,
+  JOB_DOCUMENT_SLA,
   SLA_RECALC_EVERY_MS,
   SYSTEM_QUEUE,
   WEEKLY_DIGEST_EVERY_MS,
+  DOCUMENT_SLA_EVERY_MS,
 } from './jobs.constants';
 
 @Injectable()
@@ -66,6 +68,11 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       'weekly-digest-scheduler',
       { every: WEEKLY_DIGEST_EVERY_MS },
       { name: JOB_WEEKLY_DIGEST },
+    );
+    await this.queue.upsertJobScheduler(
+      'document-sla-scheduler',
+      { every: DOCUMENT_SLA_EVERY_MS },
+      { name: JOB_DOCUMENT_SLA },
     );
   }
 

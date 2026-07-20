@@ -46,7 +46,14 @@ export class DocumentsService {
   async upload(
     actor: Actor,
     file: { buffer: Buffer; originalName: string; mime: string },
-    options: { renewBy?: string; link?: LinkInput },
+    options: {
+      renewBy?: string;
+      category?: string;
+      status?: 'draft' | 'active';
+      link?: LinkInput;
+      /** T-V02: закрыть needs_document-плейсхолдер или загрузить новую версию. */
+      supersedesId?: string;
+    },
   ) {
     const [owner] = await this.dbService.db
       .select()
@@ -54,13 +61,83 @@ export class DocumentsService {
       .where(and(eq(membership.userId, actor.userId), eq(membership.tenantId, actor.tenantId)));
     if (!owner) throw new BadRequestException('У юзера нет membership в тенанте');
     if (options.link) this.validateLink(options.link);
+    const status = options.status ?? 'active';
+    const sha256 = createHash('sha256').update(file.buffer).digest('hex');
 
     const storageKey = `documents/${randomUUID()}/${file.originalName}`;
     await this.storage.put(storageKey, file.buffer, file.mime, {
       originalname: encodeURIComponent(file.originalName),
     });
 
-    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      // T-V02: закрытие needs_document-плейсхолдера или новая версия существующего
+      if (options.supersedesId) {
+        const [target] = await tx
+          .select()
+          .from(document)
+          .where(and(eq(document.id, options.supersedesId), isNull(document.deletedAt)));
+        if (!target) throw new BadRequestException('supersedesId: документ не найден');
+
+        // плейсхолдер (файла ещё не было) — заполняем ту же запись
+        if (target.status === 'needs_document') {
+          const [row] = await tx
+            .update(document)
+            .set({
+              storageKey,
+              filename: file.originalName,
+              mime: file.mime,
+              size: file.buffer.length,
+              sha256,
+              status,
+              renewBy: options.renewBy ? new Date(options.renewBy) : target.renewBy,
+              category: options.category ?? target.category,
+            })
+            .where(eq(document.id, target.id))
+            .returning();
+          return { row: row!, action: 'document.fulfilled' as const };
+        }
+
+        // уже был файл — создаём НОВУЮ версию, переносим привязки, старую прячем
+        const [row] = await tx
+          .insert(document)
+          .values({
+            tenantId: actor.tenantId,
+            storageKey,
+            filename: file.originalName,
+            mime: file.mime,
+            size: file.buffer.length,
+            sha256,
+            version: target.version + 1,
+            prevVersionId: target.id,
+            ownerMembershipId: target.ownerMembershipId,
+            renewBy: options.renewBy ? new Date(options.renewBy) : target.renewBy,
+            category: options.category ?? target.category,
+            status,
+          })
+          .returning();
+        const links = await tx
+          .select()
+          .from(documentLink)
+          .where(eq(documentLink.documentId, target.id));
+        for (const l of links) {
+          await tx
+            .insert(documentLink)
+            .values({
+              documentId: row!.id,
+              entityType: l.entityType,
+              entityId: l.entityId,
+              relation: l.relation,
+            })
+            .onConflictDoNothing();
+        }
+        await tx
+          .update(document)
+          .set({ deletedAt: sql`now()` })
+          .where(eq(document.id, target.id));
+        return { row: row!, action: 'document.new_version' as const };
+      }
+
+      // обычная загрузка
       const [row] = await tx
         .insert(document)
         .values({
@@ -69,14 +146,61 @@ export class DocumentsService {
           filename: file.originalName,
           mime: file.mime,
           size: file.buffer.length,
-          sha256: createHash('sha256').update(file.buffer).digest('hex'),
+          sha256,
           ownerMembershipId: owner.id,
           renewBy: options.renewBy ? new Date(options.renewBy) : null,
+          category: options.category ?? null,
+          status,
         })
         .returning();
       if (!row) throw new Error('Документ не создался');
       if (options.link) {
         await tx.insert(documentLink).values({ documentId: row.id, ...options.link });
+      }
+      return { row, action: 'document.uploaded' as const };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: result.action,
+      entityType: 'document',
+      entityId: result.row.id,
+      after: { filename: result.row.filename, sha256, version: result.row.version },
+    });
+    return result.row;
+  }
+
+  /** T-V02: запросить доказательство (needs_document-плейсхолдер без файла). */
+  async requestDocument(
+    actor: Actor,
+    input: { filename: string; category?: string; renewBy?: string; link?: LinkInput },
+  ) {
+    const [owner] = await this.dbService.db
+      .select()
+      .from(membership)
+      .where(and(eq(membership.userId, actor.userId), eq(membership.tenantId, actor.tenantId)));
+    if (!owner) throw new BadRequestException('У юзера нет membership в тенанте');
+    if (input.link) this.validateLink(input.link);
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .insert(document)
+        .values({
+          tenantId: actor.tenantId,
+          storageKey: '',
+          filename: input.filename,
+          mime: '',
+          size: 0,
+          sha256: '',
+          ownerMembershipId: owner.id,
+          renewBy: input.renewBy ? new Date(input.renewBy) : null,
+          category: input.category ?? null,
+          status: 'needs_document',
+        })
+        .returning();
+      if (!row) throw new Error('Плейсхолдер не создался');
+      if (input.link) {
+        await tx.insert(documentLink).values({ documentId: row.id, ...input.link });
       }
       return row;
     });
@@ -84,12 +208,42 @@ export class DocumentsService {
       tenantId: actor.tenantId,
       actorUserId: actor.userId,
       actorIp: actor.ip,
-      action: 'document.uploaded',
+      action: 'document.requested',
       entityType: 'document',
       entityId: created.id,
-      after: { filename: created.filename, sha256: created.sha256, link: options.link ?? null },
+      after: { filename: created.filename, category: created.category },
     });
     return created;
+  }
+
+  /** T-V02: опубликовать черновик (draft → active). */
+  async publish(actor: Actor, documentId: string) {
+    const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [doc] = await tx
+        .select()
+        .from(document)
+        .where(and(eq(document.id, documentId), isNull(document.deletedAt)));
+      if (!doc) throw new NotFoundException(`Документ ${documentId} не найден`);
+      if (doc.status !== 'draft') {
+        throw new BadRequestException('Публиковать можно только черновик (draft)');
+      }
+      const [row] = await tx
+        .update(document)
+        .set({ status: 'active' })
+        .where(eq(document.id, documentId))
+        .returning();
+      return row!;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'document.published',
+      entityType: 'document',
+      entityId: documentId,
+      after: { status: 'active' },
+    });
+    return { id: updated.id, status: updated.status };
   }
 
   async addLink(actor: Actor, documentId: string, link: LinkInput) {
@@ -136,6 +290,7 @@ export class DocumentsService {
           version: document.version,
           renewBy: document.renewBy,
           status: document.status,
+          category: document.category,
           createdAt: document.createdAt,
           owner: user.fullName,
         })
@@ -202,6 +357,7 @@ export class DocumentsService {
           relation: documentLink.relation,
           renewBy: document.renewBy,
           status: document.status,
+          category: document.category,
           createdAt: document.createdAt,
           owner: user.fullName,
         })
@@ -237,6 +393,9 @@ export class DocumentsService {
         .where(and(eq(document.id, documentId), isNull(document.deletedAt))),
     );
     if (!doc) throw new NotFoundException(`Документ ${documentId} не найден`);
+    if (doc.status === 'needs_document' || !doc.storageKey) {
+      throw new BadRequestException('Файл ещё не загружен (needs_document)');
+    }
     const stored = await this.storage.get(doc.storageKey);
     if (!stored) throw new NotFoundException('Файл отсутствует в хранилище');
     return { filename: doc.filename, stored };

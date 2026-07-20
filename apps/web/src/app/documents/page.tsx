@@ -3,7 +3,15 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
-import { reassignDocumentOwnerAction, uploadDocumentAction } from './actions';
+import { FilterBar } from '@/components/filter-bar';
+import { filterQuery, type SearchParams } from '@/lib/filters';
+import {
+  fulfillDocumentAction,
+  publishDocumentAction,
+  reassignDocumentOwnerAction,
+  requestDocumentAction,
+  uploadDocumentAction,
+} from './actions';
 import {
   createAuditFirmAction,
   deleteAuditFirmAction,
@@ -20,6 +28,7 @@ interface DocRow {
   version: number;
   renewBy: string | null;
   status: string;
+  category: string | null;
   createdAt: string;
   owner: string | null;
   links: number;
@@ -56,26 +65,34 @@ const REVIEW_TONE: Record<string, string> = {
   accepted: 'bg-emerald-100 text-emerald-700',
 };
 
-function fmtSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
+const DOC_STATUSES = ['needs_document', 'draft', 'active', 'overdue'] as const;
+const STATUS_TONE: Record<string, string> = {
+  needs_document: 'bg-amber-100 text-amber-700',
+  draft: 'bg-muted text-secondary',
+  active: 'bg-emerald-100 text-emerald-700',
+  overdue: 'bg-red-100 text-red-700',
+};
 
-/** Реестр документов-доказательств (T-V01): загрузка, привязки, скачивание, owner. */
-export default async function DocumentsPage() {
+/** Реестр документов-доказательств (T-V01, T-V02): жизненный цикл, загрузка, привязки, owner. */
+export default async function DocumentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, locale, tenantSlug] = await Promise.all([
+  const [t, tFilters, locale, tenantSlug, sp] = await Promise.all([
     getTranslations('documents'),
+    getTranslations('filters'),
     getCurrentLocale(),
     getActiveTenantSlug(),
+    searchParams,
   ]);
   if (!tenantSlug) redirect('/account');
   const headers = { 'X-Tenant-Slug': tenantSlug };
 
   const [docsRes, membersRes, controlsRes, engagementsRes] = await Promise.all([
-    apiFetch('/documents', { headers }),
+    apiFetch(`/documents?${filterQuery(sp, ['status']).slice(1)}`, { headers }),
     apiFetch(`/memberships?locale=${locale}`, { headers }),
     apiFetch(`/controls?tenantSlug=${tenantSlug}&locale=${locale}`, { headers }),
     apiFetch(`/engagements?locale=${locale}`, { headers }),
@@ -145,12 +162,25 @@ export default async function DocumentsPage() {
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-secondary">{t('category')}</span>
+          <input
+            type="text"
+            name="category"
+            placeholder={t('categoryPh')}
+            className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-secondary">{t('renewBy')}</span>
           <input
             type="date"
             name="renewBy"
             className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
           />
+        </label>
+        <label className="flex items-center gap-1.5 self-end pb-1.5 text-sm text-secondary">
+          <input type="checkbox" name="status" value="draft" />
+          {t('saveDraft')}
         </label>
         <button
           type="submit"
@@ -160,36 +190,103 @@ export default async function DocumentsPage() {
         </button>
       </form>
 
+      <section
+        className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+        data-testid="document-request"
+      >
+        <div className="w-full">
+          <h2 className="text-sm font-semibold text-primary">{t('requestTitle')}</h2>
+          <p className="text-xs text-secondary">{t('requestHint')}</p>
+        </div>
+        <form action={requestDocumentAction} className="flex flex-wrap items-end gap-3">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-secondary">{t('requestName')}</span>
+            <input
+              name="filename"
+              required
+              placeholder={t('requestNamePh')}
+              className="min-w-56 rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-secondary">{t('category')}</span>
+            <input
+              name="category"
+              placeholder={t('categoryPh')}
+              className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-secondary">{t('renewBy')}</span>
+            <input
+              type="date"
+              name="renewBy"
+              className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+            />
+          </label>
+          <button
+            type="submit"
+            data-testid="document-request-btn"
+            className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t('requestBtn')}
+          </button>
+        </form>
+      </section>
+
+      <FilterBar
+        basePath="/documents"
+        sp={sp}
+        allLabel={tFilters('all')}
+        groups={[
+          {
+            param: 'status',
+            label: tFilters('status'),
+            options: DOC_STATUSES.map((s) => ({ value: s, label: t(`st.${s}`) })),
+          },
+        ]}
+      />
+
       <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
         <table className="w-full text-left text-sm" data-testid="documents-table">
           <thead>
             <tr className="border-b border-border text-secondary">
               <th className="px-4 py-3 font-medium">{t('colName')}</th>
-              <th className="px-4 py-3 font-medium">{t('colSize')}</th>
+              <th className="px-4 py-3 font-medium">{t('colStatus')}</th>
+              <th className="px-4 py-3 font-medium">{t('colCategory')}</th>
               <th className="px-4 py-3 font-medium">{t('colOwner')}</th>
               <th className="px-4 py-3 font-medium">{t('evidence')}</th>
-              <th className="px-4 py-3 font-medium">{t('colLinks')}</th>
               <th className="px-4 py-3 font-medium">{t('colRenewBy')}</th>
-              <th className="px-4 py-3 font-medium">{t('colUploaded')}</th>
+              <th className="px-4 py-3 font-medium">{t('colActions')}</th>
             </tr>
           </thead>
           <tbody>
             {docs.map((d) => (
               <tr key={d.id} className="border-b border-border last:border-0 align-top">
                 <td className="px-4 py-3 font-medium">
-                  <a
-                    href={`/documents/${d.id}/download`}
-                    className="text-accent underline-offset-2 transition-colors duration-150 hover:underline"
-                  >
-                    {d.filename}
-                  </a>
+                  {d.status === 'needs_document' ? (
+                    <span className="text-foreground">{d.filename}</span>
+                  ) : (
+                    <a
+                      href={`/documents/${d.id}/download`}
+                      className="text-accent underline-offset-2 transition-colors duration-150 hover:underline"
+                    >
+                      {d.filename}
+                    </a>
+                  )}
                   {d.version > 1 && (
                     <span className="ml-1 text-xs text-secondary">v{d.version}</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-secondary tabular-nums whitespace-nowrap">
-                  {fmtSize(d.size)}
+                <td className="px-4 py-3">
+                  <span
+                    data-testid={`doc-status-${d.id}`}
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${STATUS_TONE[d.status] ?? 'bg-muted text-secondary'}`}
+                  >
+                    {t(`st.${d.status}`)}
+                  </span>
                 </td>
+                <td className="px-4 py-3 text-secondary whitespace-nowrap">{d.category ?? '—'}</td>
                 <td className="px-4 py-3 text-secondary">
                   {members.length > 0 ? (
                     <form
@@ -243,12 +340,63 @@ export default async function DocumentsPage() {
                     </button>
                   </form>
                 </td>
-                <td className="px-4 py-3 text-secondary tabular-nums">{d.links}</td>
                 <td className="px-4 py-3 text-secondary whitespace-nowrap">
                   {d.renewBy ? dateFmt.format(new Date(d.renewBy)) : '—'}
                 </td>
-                <td className="px-4 py-3 text-secondary whitespace-nowrap tabular-nums">
-                  {dateFmt.format(new Date(d.createdAt))}
+                <td className="px-4 py-3">
+                  {d.status === 'needs_document' ? (
+                    <form
+                      action={fulfillDocumentAction.bind(null, d.id)}
+                      className="flex items-center gap-1.5"
+                    >
+                      <input
+                        type="file"
+                        name="file"
+                        required
+                        className="w-28 text-xs text-foreground file:mr-1.5 file:rounded file:border file:border-border file:bg-muted file:px-1.5 file:py-0.5 file:text-xs file:text-secondary"
+                      />
+                      <button
+                        type="submit"
+                        data-testid={`doc-fulfill-${d.id}`}
+                        className="rounded-md border border-border px-1.5 py-1 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted"
+                      >
+                        {t('uploadFile')}
+                      </button>
+                    </form>
+                  ) : d.status === 'draft' ? (
+                    <form action={publishDocumentAction.bind(null, d.id)}>
+                      <button
+                        type="submit"
+                        data-testid={`doc-publish-${d.id}`}
+                        className="rounded-md border border-border px-2 py-1 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted"
+                      >
+                        {t('publish')}
+                      </button>
+                    </form>
+                  ) : (
+                    <details>
+                      <summary className="cursor-pointer text-xs font-medium text-accent">
+                        {t('newVersion')}
+                      </summary>
+                      <form
+                        action={fulfillDocumentAction.bind(null, d.id)}
+                        className="mt-1.5 flex items-center gap-1.5"
+                      >
+                        <input
+                          type="file"
+                          name="file"
+                          required
+                          className="w-28 text-xs text-foreground file:mr-1.5 file:rounded file:border file:border-border file:bg-muted file:px-1.5 file:py-0.5 file:text-xs file:text-secondary"
+                        />
+                        <button
+                          type="submit"
+                          className="rounded-md border border-border px-1.5 py-1 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted"
+                        >
+                          {t('uploadFile')}
+                        </button>
+                      </form>
+                    </details>
+                  )}
                 </td>
               </tr>
             ))}

@@ -8,6 +8,7 @@ import { UsersModule } from '../users/users.module';
 import { FindingRemindersService } from './finding-reminders.service';
 import { PolicyRenewalRemindersService } from './policy-renewal-reminders.service';
 import { WeeklyDigestService } from './weekly-digest.service';
+import { DocumentSlaService } from './document-sla.service';
 import { SYSTEM_QUEUE } from './jobs.constants';
 import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
@@ -32,6 +33,7 @@ const redisUrl = new URL(env.redisUrl);
     FindingRemindersService,
     PolicyRenewalRemindersService,
     WeeklyDigestService,
+    DocumentSlaService,
     JobsService,
     SlaService,
     SystemProcessor,

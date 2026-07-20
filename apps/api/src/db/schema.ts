@@ -517,7 +517,10 @@ export const document = pgTable(
       .references(() => membership.id),
     /** Cadence: дата, к которой доказательство надо обновить (renew-by). */
     renewBy: timestamp('renew_by', { withTimezone: true }),
+    /** T-V02 lifecycle: needs_document | draft | active | overdue. */
     status: text('status').notNull().default('active'),
+    /** T-V02: категория документа (policy/report/evidence/contract/…). */
+    category: text('category'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },

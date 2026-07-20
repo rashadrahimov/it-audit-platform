@@ -1684,7 +1684,27 @@
     "firmNamePh": "e.g. Ernst & Young",
     "firmEmail": "Contact email",
     "firmAdd": "Add firm",
-    "firmDelete": "Remove firm"
+    "firmDelete": "Remove firm",
+    "colStatus": "Status",
+    "colCategory": "Category",
+    "colActions": "Actions",
+    "st": {
+      "needs_document": "Needs document",
+      "draft": "Draft",
+      "active": "Active",
+      "overdue": "Overdue"
+    },
+    "publish": "Publish",
+    "uploadFile": "Upload",
+    "newVersion": "New version",
+    "category": "Category",
+    "categoryPh": "e.g. policy, report",
+    "saveDraft": "Save as draft",
+    "requestTitle": "Request evidence",
+    "requestHint": "Create a placeholder for a document you expect but do not have yet.",
+    "requestName": "Document name",
+    "requestNamePh": "e.g. Q3 access review",
+    "requestBtn": "Request"
   },
   "tests": {
     "title": "Tests",
