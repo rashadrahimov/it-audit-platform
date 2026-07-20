@@ -242,6 +242,31 @@ export const authEvent = pgTable(
   (table) => [index('auth_event_user_at_idx').on(table.userId, table.at)],
 );
 
+/**
+ * Magic-link токены (passwordless-вход): над-тенантные, как user/auth_event —
+ * запрос приходит на этапе логина, до установления tenant-контекста, поэтому без RLS.
+ * Храним только sha256-хеш токена (утечка БД не даёт рабочих ссылок); одноразовость —
+ * через consumed_at, ограничение жизни — expires_at.
+ */
+export const magicLinkToken = pgTable(
+  'magic_link_token',
+  {
+    id: id(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    requestedIp: text('requested_ip'),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('magic_link_token_hash_idx').on(table.tokenHash),
+    index('magic_link_token_user_idx').on(table.userId),
+  ],
+);
+
 /** Полиморфные комментарии (T-023): entity_type+entity_id, soft-delete. */
 export const comment = pgTable(
   'comment',

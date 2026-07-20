@@ -54,6 +54,25 @@ export const mfaChallengeResponseSchema = z.object({
 
 export const loginResponseSchema = z.union([authTokenResponseSchema, mfaChallengeResponseSchema]);
 
+/**
+ * Passwordless-вход по ссылке из письма (magic-link) — аддитивно рядом с паролем.
+ * Запрос: по email отправляем одноразовую ссылку; ответ всегда «принято» (не
+ * раскрываем существование аккаунта). Consume ссылки → тот же контракт, что у
+ * логина: сразу токен либо MFA-челлендж (второй фактор сохраняется).
+ */
+export const magicLinkRequestSchema = z.object({
+  email: z.email(),
+  locale: localeSchema.optional(),
+});
+
+export const magicLinkRequestResponseSchema = z.object({
+  status: z.literal('accepted'),
+});
+
+export const magicLinkConsumeSchema = z.object({
+  token: z.string().min(1),
+});
+
 export const mfaSetupResponseSchema = z.object({
   secret: z.string(),
   otpauthUrl: z.string(),
@@ -96,6 +115,9 @@ export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>;
 export type AuthTokenResponse = z.infer<typeof authTokenResponseSchema>;
 export type MfaChallengeResponse = z.infer<typeof mfaChallengeResponseSchema>;
 export type LoginResponse = z.infer<typeof loginResponseSchema>;
+export type MagicLinkRequest = z.infer<typeof magicLinkRequestSchema>;
+export type MagicLinkRequestResponse = z.infer<typeof magicLinkRequestResponseSchema>;
+export type MagicLinkConsumeRequest = z.infer<typeof magicLinkConsumeSchema>;
 export type MfaSetupResponse = z.infer<typeof mfaSetupResponseSchema>;
 export type MfaEnableRequest = z.infer<typeof mfaEnableRequestSchema>;
 export type MfaEnableResponse = z.infer<typeof mfaEnableResponseSchema>;

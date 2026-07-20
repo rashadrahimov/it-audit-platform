@@ -19,11 +19,14 @@ import type { z } from 'zod';
 import {
   changePasswordRequestSchema,
   loginRequestSchema,
+  magicLinkConsumeSchema,
+  magicLinkRequestSchema,
   mfaEnableRequestSchema,
   mfaVerifyRequestSchema,
   registerRequestSchema,
   type AuthTokenResponse,
   type LoginResponse,
+  type MagicLinkRequestResponse,
   type MeResponse,
   type MeTenantsResponse,
   type MfaEnableResponse,
@@ -31,6 +34,7 @@ import {
 } from '@it-audit/shared';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard, type AuthenticatedRequest } from './jwt-auth.guard';
+import { MagicLinkService } from './magic-link.service';
 import { MfaService } from './mfa.service';
 
 function parse<T extends z.ZodType>(schema: T, body: unknown): z.infer<T> {
@@ -44,6 +48,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly mfaService: MfaService,
+    private readonly magicLinkService: MagicLinkService,
   ) {}
 
   @Post('register')
@@ -60,6 +65,39 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Неверные креды или аккаунт заблокирован' })
   login(@Body() body: unknown, @Req() req: AuthenticatedRequest): Promise<LoginResponse> {
     return this.authService.login(parse(loginRequestSchema, body), {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+  }
+
+  @Post('magic-link/request')
+  @HttpCode(202)
+  @ApiOperation({
+    summary: 'Passwordless: запросить ссылку-вход по email (ответ всегда «accepted»)',
+  })
+  @ApiOkResponse({ description: 'Запрос принят (существование аккаунта не раскрывается)' })
+  async magicLinkRequest(
+    @Body() body: unknown,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<MagicLinkRequestResponse> {
+    await this.magicLinkService.request(parse(magicLinkRequestSchema, body), {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return { status: 'accepted' };
+  }
+
+  @Post('magic-link/consume')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Passwordless: обменять ссылку на сессию → JWT (или MFA-челлендж)' })
+  @ApiOkResponse({ description: 'Bearer-токен либо MFA-челлендж' })
+  @ApiUnauthorizedResponse({ description: 'Ссылка недействительна или истекла' })
+  magicLinkConsume(
+    @Body() body: unknown,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<LoginResponse> {
+    const { token } = parse(magicLinkConsumeSchema, body);
+    return this.magicLinkService.consume(token, {
       ip: req.ip,
       userAgent: req.headers['user-agent'],
     });

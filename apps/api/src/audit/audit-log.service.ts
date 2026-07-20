@@ -45,7 +45,7 @@ export interface AuditRecord {
 
 export interface AuthEventRecord {
   userId?: string | null;
-  event: 'login' | 'logout' | 'failed' | 'locked' | 'concurrent_session';
+  event: 'login' | 'logout' | 'failed' | 'locked' | 'concurrent_session' | 'magic_link_requested';
   ip?: string | null;
   userAgent?: string | null;
 }

@@ -93,7 +93,19 @@ export class AuthService {
       throw new UnauthorizedException('Неверный email или пароль');
     }
 
-    // Пароль верен; при включённой MFA — второй шаг (T-014)
+    // Пароль верен — общий пост-верификационный путь (MFA-челлендж либо токен)
+    return this.completeAfterPrimaryFactor(found, meta);
+  }
+
+  /**
+   * Пост-верификация первого фактора (пароль или magic-link): при включённой MFA —
+   * второй шаг (T-014), иначе — токен. Общее для /auth/login и magic-link consume,
+   * чтобы passwordless-вход не обходил MFA.
+   */
+  async completeAfterPrimaryFactor(
+    found: typeof user.$inferSelect,
+    meta: RequestMeta = {},
+  ): Promise<LoginResponse> {
     if (found.mfaEnabled) {
       const mfaToken = await this.jwtService.signAsync(
         { sub: found.id, purpose: 'mfa' },

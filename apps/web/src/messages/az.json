@@ -32,7 +32,19 @@
       "p1": "Hazır standartlar, nəzarətlər və çeklistlər",
       "p2": "Dəyişməz audit izi və sahə səviyyəli hüquqlar",
       "p3": "Hər törəmə şirkət üzrə hesabat, panel və KPI-lar"
-    }
+    },
+    "or": "və ya",
+    "magicToggle": "Giriş keçidini e-poçtla göndər",
+    "magicHint": "Şifrəsiz daxil olmaq üçün e-poçtunuza birdəfəlik keçid göndərəcəyik.",
+    "magicSend": "Giriş keçidini göndər",
+    "magicSending": "Göndərilir…",
+    "magicSent": "Bu e-poçt üçün hesab varsa, giriş keçidi yola düşdü. Poçtunuzu yoxlayın — keçid bir neçə dəqiqə etibarlıdır.",
+    "backToPassword": "Şifrə ilə girişə qayıt",
+    "magicTitle": "Giriş edilir",
+    "magicVerifying": "Giriş keçidi yoxlanılır…",
+    "magicComplete": "Girişi tamamla",
+    "magicInvalid": "Bu giriş keçidi etibarsızdır və ya vaxtı bitib. Yenisini istəyin.",
+    "backToLogin": "Girişə qayıt"
   },
   "account": {
     "title": "Hesab",

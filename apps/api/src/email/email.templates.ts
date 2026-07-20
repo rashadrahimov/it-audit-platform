@@ -41,6 +41,29 @@ export const emailTemplates = {
       text: `Вас пригласили в ${tenantName}. Принять: ${inviteUrl} (действует 7 дней)`,
     }),
   },
+  'magic-link': {
+    en: ({ magicUrl, minutes }) => ({
+      subject: 'Your STATERA sign-in link',
+      html: wrap(
+        `<p>Use this link to sign in to STATERA — no password needed.</p><p><a href="${magicUrl}">Sign in</a> (link is valid for ${minutes} minutes and can be used once).</p><p style="color:#64748b;font-size:13px">If you didn't request this, you can safely ignore this email.</p>`,
+      ),
+      text: `Use this link to sign in to STATERA (no password needed): ${magicUrl} — valid for ${minutes} minutes, single use. If you didn't request this, ignore this email.`,
+    }),
+    az: ({ magicUrl, minutes }) => ({
+      subject: 'STATERA-ya giriş keçidiniz',
+      html: wrap(
+        `<p>Şifrəsiz STATERA-ya daxil olmaq üçün bu keçiddən istifadə edin.</p><p><a href="${magicUrl}">Daxil ol</a> (keçid ${minutes} dəqiqə etibarlıdır və bir dəfə istifadə olunur).</p><p style="color:#64748b;font-size:13px">Bunu siz istəməmisinizsə, bu məktubu nəzərə almaya bilərsiniz.</p>`,
+      ),
+      text: `Şifrəsiz STATERA-ya daxil olmaq üçün keçid: ${magicUrl} — ${minutes} dəqiqə etibarlıdır, bir dəfəlik. Bunu siz istəməmisinizsə, məktubu nəzərə almayın.`,
+    }),
+    ru: ({ magicUrl, minutes }) => ({
+      subject: 'Ссылка для входа в STATERA',
+      html: wrap(
+        `<p>Войдите в STATERA по этой ссылке — пароль не нужен.</p><p><a href="${magicUrl}">Войти</a> (ссылка действует ${minutes} минут и одноразовая).</p><p style="color:#64748b;font-size:13px">Если вы не запрашивали вход, просто проигнорируйте это письмо.</p>`,
+      ),
+      text: `Войдите в STATERA по ссылке (пароль не нужен): ${magicUrl} — действует ${minutes} минут, одноразовая. Если вы не запрашивали вход, проигнорируйте письмо.`,
+    }),
+  },
   'finding-assigned': {
     en: ({ findingTitle, dueDate }) => ({
       subject: `Finding assigned to you: ${findingTitle}`,
