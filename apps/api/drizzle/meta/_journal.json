@@ -540,6 +540,13 @@
       "when": 1784511358250,
       "tag": "0076_vulnerability-asset",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1784512076853,
+      "tag": "0077_snapshot-composition",
+      "breakpoints": true
     }
   ]
 }

@@ -515,7 +515,19 @@
     "capturedAt": "captured",
     "controls": "Controls",
     "risks": "Risks",
-    "findings": "Findings"
+    "findings": "Findings",
+    "create": "Create snapshot",
+    "labelPh": "Label — e.g. Q3 2026 close",
+    "createBtn": "Capture",
+    "composition": "Open findings frozen at capture",
+    "viewComposition": "Frozen composition",
+    "noOpen": "No open findings at capture.",
+    "colTitle": "Finding",
+    "colRisk": "Risk",
+    "colStatus": "Status",
+    "colDue": "Due",
+    "openVulns": "Open vulnerabilities",
+    "count": "{n} findings"
   },
   "devices": {
     "title": "Endpoint Compliance",

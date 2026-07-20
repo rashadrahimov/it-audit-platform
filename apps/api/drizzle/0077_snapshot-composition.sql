@@ -1,0 +1,1 @@
+ALTER TABLE "report_snapshot" ADD COLUMN "composition" jsonb DEFAULT '{}'::jsonb NOT NULL;

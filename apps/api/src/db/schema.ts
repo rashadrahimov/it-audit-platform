@@ -1715,6 +1715,8 @@ export const reportSnapshot = pgTable(
       .references(() => tenant.id),
     label: text('label').notNull(),
     metrics: jsonb('metrics').notNull().default({}),
+    /** T-V34: замороженный состав открытых findings/vulnerabilities на дату. */
+    composition: jsonb('composition').notNull().default({}),
     capturedAt: timestamp('captured_at', { withTimezone: true }).notNull().defaultNow(),
     ...timestamps,
   },

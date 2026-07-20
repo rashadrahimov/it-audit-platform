@@ -515,7 +515,19 @@
     "capturedAt": "qeyd edilib",
     "controls": "Kontrollar",
     "risks": "Risklər",
-    "findings": "Tapıntılar"
+    "findings": "Tapıntılar",
+    "create": "Snapshot yarat",
+    "labelPh": "Etiket — məs. Q3 2026 bağlanış",
+    "createBtn": "Fiksasiya et",
+    "composition": "Fiksasiya anında açıq findinqlər",
+    "viewComposition": "Dondurulmuş tərkib",
+    "noOpen": "Fiksasiya anında açıq findinq yoxdur.",
+    "colTitle": "Findinq",
+    "colRisk": "Risk",
+    "colStatus": "Status",
+    "colDue": "Son tarix",
+    "openVulns": "Açıq zəifliklər",
+    "count": "{n} findinq"
   },
   "devices": {
     "title": "Cihaz Uyğunluğu",

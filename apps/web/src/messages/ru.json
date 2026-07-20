@@ -515,7 +515,19 @@
     "capturedAt": "зафиксирован",
     "controls": "Контроли",
     "risks": "Риски",
-    "findings": "Находки"
+    "findings": "Находки",
+    "create": "Создать снапшот",
+    "labelPh": "Метка — напр. Закрытие Q3 2026",
+    "createBtn": "Зафиксировать",
+    "composition": "Открытые findings, замороженные на дату",
+    "viewComposition": "Замороженный состав",
+    "noOpen": "На момент фиксации открытых findings нет.",
+    "colTitle": "Finding",
+    "colRisk": "Риск",
+    "colStatus": "Статус",
+    "colDue": "Срок",
+    "openVulns": "Открытые уязвимости",
+    "count": "{n} findings"
   },
   "devices": {
     "title": "Соответствие устройств",
