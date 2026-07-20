@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { and, asc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import {
-  ENGAGEMENT_APPROVER_ROLES,
   engagementRoleSchema,
   resolveLocalized,
+  type EngagementRole,
   type I18nText,
   type Locale,
 } from '@it-audit/shared';
@@ -37,6 +37,7 @@ import {
   ENGAGEMENT_FLOW,
   type EngagementMode,
 } from './engagement-states';
+import { memberTransitionDenial, transitionDenialMessage } from './engagement-stage-permissions';
 
 export interface CreateEngagementInput {
   subsidiaryId: string;
@@ -129,9 +130,11 @@ export class EngagementsService {
         .from(engagement)
         .where(and(eq(engagement.id, id), isNull(engagement.deletedAt)));
       if (!row) throw new NotFoundException(`Engagement ${id} не найден`);
-      // T-116: выпуск отчёта (approval) — только lead/approver из состава команды.
+      // T-116/T-123: постадийные права члена команды. Актор, состоящий в составе
+      // engagement, ограничен ролью + stage_permissions при движении state-machine
+      // (observer не двигает; sign-off — только lead/approver; явные override поверх).
       // Не-члены с RBAC engagement.edit не ограничиваются (обратная совместимость).
-      if (to === 'report_issued') {
+      {
         const [me] = await tx
           .select({ id: membership.id })
           .from(membership)
@@ -144,20 +147,23 @@ export class EngagementsService {
           );
         if (me) {
           const [em] = await tx
-            .select({ role: engagementMember.engagementRole })
+            .select({
+              role: engagementMember.engagementRole,
+              stagePermissions: engagementMember.stagePermissions,
+            })
             .from(engagementMember)
             .where(
               and(eq(engagementMember.engagementId, id), eq(engagementMember.membershipId, me.id)),
             );
-          if (
-            em &&
-            !ENGAGEMENT_APPROVER_ROLES.includes(
-              em.role as (typeof ENGAGEMENT_APPROVER_ROLES)[number],
-            )
-          ) {
-            throw new ForbiddenException(
-              `Роль «${em.role}» не может утверждать выпуск отчёта — нужен lead или approver`,
+          if (em) {
+            const denial = memberTransitionDenial(
+              em.role as EngagementRole,
+              em.stagePermissions,
+              to,
             );
+            if (denial) {
+              throw new ForbiddenException(transitionDenialMessage(denial, em.role, to));
+            }
           }
         }
       }

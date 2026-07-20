@@ -33,6 +33,9 @@ let tenantId: string;
 let subId: string;
 let engA: string;
 let engB: string;
+let engC: string; // findings_drafting — рабочая стадия (T-123)
+let engD: string; // approval — для override edit (T-123)
+let engE: string; // approval — для override read_only (T-123)
 const uid: Record<string, string> = {};
 const mid: Record<string, string> = {};
 
@@ -99,6 +102,39 @@ beforeAll(async () => {
       .returning();
     engA = a!.id;
     engB = b!.id;
+    const [c] = await tx
+      .insert(engagement)
+      .values({
+        tenantId,
+        subsidiaryId: subId,
+        titleI18n: { en: 'C' },
+        mode: 'formal',
+        state: 'findings_drafting',
+      })
+      .returning();
+    const [d] = await tx
+      .insert(engagement)
+      .values({
+        tenantId,
+        subsidiaryId: subId,
+        titleI18n: { en: 'D' },
+        mode: 'formal',
+        state: 'approval',
+      })
+      .returning();
+    const [e] = await tx
+      .insert(engagement)
+      .values({
+        tenantId,
+        subsidiaryId: subId,
+        titleI18n: { en: 'E' },
+        mode: 'formal',
+        state: 'approval',
+      })
+      .returning();
+    engC = c!.id;
+    engD = d!.id;
+    engE = e!.id;
   });
 });
 
@@ -187,5 +223,47 @@ describe('engagement members (T-116)', () => {
         engagementRole: 'observer',
       }),
     ).rejects.toThrow(/membershipId/);
+  });
+});
+
+describe('engagement member — постадийные права (T-123)', () => {
+  it('observer НЕ двигает даже рабочую стадию → 403', async () => {
+    await service.assignMember(actor('admin'), engC, {
+      membershipId: mid.admin!,
+      engagementRole: 'observer',
+    });
+    await expect(service.transition(actor('admin'), engC, 'management_response')).rejects.toThrow(
+      /наблюдатель/,
+    );
+  });
+
+  it('assessor двигает рабочую стадию (не sign-off) → успех', async () => {
+    await service.assignMember(actor('admin'), engC, {
+      membershipId: mid.assessor!,
+      engagementRole: 'assessor',
+    });
+    const res = await service.transition(actor('assessor'), engC, 'management_response');
+    expect(res!.state).toBe('management_response');
+  });
+
+  it('stage_permissions {report_issued: edit} — грант: assessor выпускает отчёт', async () => {
+    await service.assignMember(actor('admin'), engD, {
+      membershipId: mid.assessor!,
+      engagementRole: 'assessor',
+      stagePermissions: { report_issued: 'edit' },
+    });
+    const res = await service.transition(actor('assessor'), engD, 'report_issued');
+    expect(res!.state).toBe('report_issued');
+  });
+
+  it('stage_permissions {report_issued: read_only} — запрет даже approver → 403', async () => {
+    await service.assignMember(actor('admin'), engE, {
+      membershipId: mid.approver!,
+      engagementRole: 'approver',
+      stagePermissions: { report_issued: 'read_only' },
+    });
+    await expect(service.transition(actor('approver'), engE, 'report_issued')).rejects.toThrow(
+      /stage_permissions/,
+    );
   });
 });
