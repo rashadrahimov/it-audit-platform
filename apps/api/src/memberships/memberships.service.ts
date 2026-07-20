@@ -34,6 +34,8 @@ export class MembershipsService {
           category: membership.category,
           status: membership.status,
           subsidiaryScope: membership.subsidiaryScope,
+          dataAccessFrom: membership.dataAccessFrom,
+          dataAccessUntil: membership.dataAccessUntil,
           roleName: role.nameI18n,
         })
         .from(membership)
@@ -50,6 +52,8 @@ export class MembershipsService {
       category: r.category,
       status: r.status,
       subsidiaryScope: r.subsidiaryScope,
+      dataAccessFrom: r.dataAccessFrom?.toISOString() ?? null,
+      dataAccessUntil: r.dataAccessUntil?.toISOString() ?? null,
       role: resolveLocalized(r.roleName, locale),
     }));
   }
