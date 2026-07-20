@@ -62,6 +62,14 @@ export const magicLinkRequestSchema = z.object({
 /** Погашение magic-link токена → сессия (или MFA-челлендж, если MFA включён). */
 export const magicLinkConsumeSchema = z.object({ token: z.string().min(1) });
 
+/** SSO-discovery (T-V49-dispatch, ADR-0023): по email-домену — есть ли SSO у тенанта. */
+export const ssoDiscoverRequestSchema = z.object({ email: z.string().email() });
+export const ssoDiscoverResponseSchema = z.object({
+  available: z.boolean(),
+  protocol: z.enum(['oidc', 'saml']).optional(),
+  tenantSlug: z.string().optional(),
+});
+
 export const mfaSetupResponseSchema = z.object({
   secret: z.string(),
   otpauthUrl: z.string(),
@@ -108,6 +116,7 @@ export type MfaChallengeResponse = z.infer<typeof mfaChallengeResponseSchema>;
 export type LoginResponse = z.infer<typeof loginResponseSchema>;
 export type MagicLinkRequest = z.infer<typeof magicLinkRequestSchema>;
 export type MagicLinkConsume = z.infer<typeof magicLinkConsumeSchema>;
+export type SsoDiscoverResponse = z.infer<typeof ssoDiscoverResponseSchema>;
 export type MfaSetupResponse = z.infer<typeof mfaSetupResponseSchema>;
 export type MfaEnableRequest = z.infer<typeof mfaEnableRequestSchema>;
 export type MfaEnableResponse = z.infer<typeof mfaEnableResponseSchema>;

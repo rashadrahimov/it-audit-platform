@@ -52,6 +52,22 @@ const EMPTY: StoredSso = {
   clientSecretEncrypted: null,
 };
 
+/** T-V49-dispatch: домен из email (нижний регистр) или '' если не распознан. Чистая. */
+export function emailDomain(email: string): string {
+  const at = email.lastIndexOf('@');
+  if (at < 0 || at === email.length - 1) return '';
+  return email
+    .slice(at + 1)
+    .trim()
+    .toLowerCase();
+}
+
+export interface SsoDiscovery {
+  available: boolean;
+  protocol?: SsoProtocol;
+  tenantSlug?: string;
+}
+
 @Injectable()
 export class SsoConfigService {
   constructor(private readonly dbService: DbService) {}
@@ -78,6 +94,25 @@ export class SsoConfigService {
   async get(tenantId: string): Promise<SsoConfigView> {
     const [t] = await this.dbService.db.select().from(tenant).where(eq(tenant.id, tenantId));
     return this.toView(this.extract(t?.settings));
+  }
+
+  /**
+   * T-V49-dispatch (ADR-0023): по email-домену найти тенант с включённым SSO.
+   * Публичный (pre-login) — раскрывает лишь факт «домен использует SSO» + куда слать.
+   */
+  async discoverByEmail(email: string): Promise<SsoDiscovery> {
+    const domain = emailDomain(email);
+    if (!domain) return { available: false };
+    const tenants = await this.dbService.db
+      .select({ slug: tenant.slug, settings: tenant.settings })
+      .from(tenant);
+    for (const t of tenants) {
+      const sso = this.extract(t.settings);
+      if (sso.enabled && sso.emailDomain.toLowerCase() === domain) {
+        return { available: true, protocol: sso.protocol, tenantSlug: t.slug };
+      }
+    }
+    return { available: false };
   }
 
   async save(tenantId: string, input: SetSsoConfig): Promise<SsoConfigView> {
