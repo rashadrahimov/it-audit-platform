@@ -1,7 +1,12 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
-import { createAuditTypeAction, createTagAction, saveSlaConfigAction } from './actions';
+import {
+  createAuditTypeAction,
+  createTagAction,
+  saveBusinessProfileAction,
+  saveSlaConfigAction,
+} from './actions';
 import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +30,18 @@ interface SlaWindows {
   dueSoonDays: number;
 }
 const DEFAULT_SLA: SlaWindows = { critical: 7, high: 30, medium: 90, low: 180, dueSoonDays: 7 };
+interface BusinessProfile {
+  legalName: string;
+  jurisdiction: string;
+  address: string;
+  incidentContact: string;
+}
+const EMPTY_PROFILE: BusinessProfile = {
+  legalName: '',
+  jurisdiction: '',
+  address: '',
+  incidentContact: '',
+};
 
 const inputCls =
   'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
@@ -38,20 +55,47 @@ export default async function ConfigPage() {
   const [t, tenantSlug] = await Promise.all([getTranslations('config'), getActiveTenantSlug()]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const [typesRes, tagsRes, slaRes] = await Promise.all([
+  const [typesRes, tagsRes, slaRes, bizRes] = await Promise.all([
     apiFetch('/audit-types', { headers }),
     apiFetch('/tags', { headers }),
     apiFetch('/sla-config', { headers }),
+    apiFetch('/business-profile', { headers }),
   ]);
   const types: AuditType[] = typesRes.ok ? await typesRes.json() : [];
   const tags: Tag[] = tagsRes.ok ? await tagsRes.json() : [];
   const sla: SlaWindows = slaRes.ok ? await slaRes.json() : DEFAULT_SLA;
+  const biz: BusinessProfile = bizRes.ok ? await bizRes.json() : EMPTY_PROFILE;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+
+      {/* Бизнес-профиль (T-V36a) */}
+      <section className="flex flex-col gap-3" data-testid="business-profile">
+        <h2 className="text-sm font-semibold text-secondary">{t('bizTitle')}</h2>
+        <p className="text-xs text-secondary">{t('bizHint')}</p>
+        <form
+          action={saveBusinessProfileAction}
+          data-testid="business-profile-form"
+          className="grid gap-3 rounded-xl border border-border bg-white p-4 shadow-sm sm:grid-cols-2"
+        >
+          {(['legalName', 'jurisdiction', 'address', 'incidentContact'] as const).map((f) => (
+            <label key={f} className="flex flex-col gap-1 text-sm">
+              <span className="text-xs font-medium text-secondary">{t(f)}</span>
+              <input name={f} defaultValue={biz[f]} className={inputCls} />
+            </label>
+          ))}
+          <button
+            type="submit"
+            data-testid="business-profile-save"
+            className={`${btnCls} sm:col-span-2 sm:justify-self-start`}
+          >
+            {t('bizSave')}
+          </button>
+        </form>
+      </section>
 
       {/* Типы аудита */}
       <section className="flex flex-col gap-3">

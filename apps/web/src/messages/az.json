@@ -1023,7 +1023,14 @@
       "high": "Yüksək",
       "medium": "Orta",
       "low": "Aşağı"
-    }
+    },
+    "bizTitle": "Biznes profili",
+    "bizHint": "Hesabatlarda və Trust Center-də istifadə olunan hüquqi şəxsiyyət.",
+    "legalName": "Hüquqi ad",
+    "jurisdiction": "Yurisdiksiya",
+    "address": "Ünvan",
+    "incidentContact": "İnsident əlaqəsi",
+    "bizSave": "Profili saxla"
   },
   "reports": {
     "title": "Hesabatlar",

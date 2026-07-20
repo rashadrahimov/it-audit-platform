@@ -59,6 +59,7 @@ import { AuditFirmsModule } from './audit-firms/audit-firms.module';
 import { SlaConfigModule } from './sla-config/sla-config.module';
 import { RoadmapModule } from './roadmap/roadmap.module';
 import { ContractsModule } from './contracts/contracts.module';
+import { BusinessProfileModule } from './business-profile/business-profile.module';
 import { TasksModule } from './tasks/tasks.module';
 import { SatisfactionModule } from './satisfaction/satisfaction.module';
 import { SearchModule } from './search/search.module';
@@ -133,6 +134,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     SlaConfigModule,
     RoadmapModule,
     ContractsModule,
+    BusinessProfileModule,
     SatisfactionModule,
     SearchModule,
     SecurityAlertsModule,

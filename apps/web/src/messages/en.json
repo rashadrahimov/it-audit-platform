@@ -1023,7 +1023,14 @@
       "high": "High",
       "medium": "Medium",
       "low": "Low"
-    }
+    },
+    "bizTitle": "Business profile",
+    "bizHint": "Legal identity used in reports and the Trust Center.",
+    "legalName": "Legal name",
+    "jurisdiction": "Jurisdiction",
+    "address": "Address",
+    "incidentContact": "Incident contact",
+    "bizSave": "Save profile"
   },
   "reports": {
     "title": "Reports",

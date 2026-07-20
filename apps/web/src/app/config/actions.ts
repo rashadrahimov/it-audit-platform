@@ -18,6 +18,22 @@ export async function createTagAction(formData: FormData): Promise<void> {
   revalidatePath('/config');
 }
 
+/** T-V36a: сохранить бизнес-профиль тенанта (юр.имя/юрисдикция/адрес/контакт). */
+export async function saveBusinessProfileAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const body: Record<string, string> = {};
+  for (const key of ['legalName', 'jurisdiction', 'address', 'incidentContact'] as const) {
+    body[key] = String(formData.get(key) ?? '').trim();
+  }
+  await apiFetch('/business-profile', {
+    method: 'PUT',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  revalidatePath('/config');
+}
+
 /** T-V32: сохранить SLA-окна ремедиации тенанта по severity (+ окно due_soon). */
 export async function saveSlaConfigAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
