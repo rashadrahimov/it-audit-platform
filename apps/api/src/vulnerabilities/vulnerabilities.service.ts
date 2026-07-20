@@ -11,6 +11,12 @@ interface Actor {
   ip?: string;
 }
 
+/** T-V53: фильтры реестра — статус (в т.ч. resolved = история) и severity. */
+export interface VulnFilters {
+  status?: string;
+  severity?: string;
+}
+
 /** Lifecycle уязвимости (T-062): open→remediating→resolved. */
 const FLOW: Record<string, string[]> = {
   open: ['remediating', 'resolved'],
@@ -106,7 +112,11 @@ export class VulnerabilitiesService {
     return result;
   }
 
-  async list(tenantId: string) {
+  async list(tenantId: string, filters?: VulnFilters) {
+    // T-V53: resolved-фильтр = «Deactivated/History» — закрытые уязвимости отдельно
+    const conds = [isNull(vulnerability.deletedAt)];
+    if (filters?.status) conds.push(eq(vulnerability.status, filters.status));
+    if (filters?.severity) conds.push(eq(vulnerability.severity, filters.severity));
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
@@ -122,7 +132,7 @@ export class VulnerabilitiesService {
         })
         .from(vulnerability)
         .leftJoin(asset, eq(vulnerability.assetId, asset.id))
-        .where(isNull(vulnerability.deletedAt))
+        .where(and(...conds))
         .orderBy(desc(vulnerability.createdAt)),
     );
     return rows.map((v) => ({

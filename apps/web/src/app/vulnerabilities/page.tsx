@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
+import { filterQuery, type SearchParams } from '@/lib/filters';
+import { FilterBar } from '@/components/filter-bar';
 import { createVulnAction, transitionVulnAction } from './actions';
 import { EmptyState } from '@/components/empty-state';
 
@@ -56,18 +58,29 @@ const SLA_BADGE: Record<Sla, string> = {
   overdue: 'bg-red-100 text-red-700',
 };
 
-/** Реестр уязвимостей (T-062, T-V32): CVE, severity, SLA, группировка по активам. */
-export default async function VulnerabilitiesPage() {
+/**
+ * Реестр уязвимостей (T-062, T-V32): CVE, severity, SLA, группировка по активам.
+ * T-V53: фильтр по статусу (в т.ч. resolved = «Deactivated/History») и severity.
+ */
+export default async function VulnerabilitiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug] = await Promise.all([
+  const [t, tFilters, tenantSlug, sp] = await Promise.all([
     getTranslations('vulnerabilities'),
+    getTranslations('filters'),
     getActiveTenantSlug(),
+    searchParams,
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
+  // filterQuery отдаёт «&k=v…» → первый & меняем на ?; by-asset остаётся полным (сводка)
+  const qs = filterQuery(sp, ['status', 'severity']);
   const [res, byAssetRes, assetsRes] = await Promise.all([
-    apiFetch('/vulnerabilities', { headers }),
+    apiFetch(`/vulnerabilities${qs ? `?${qs.slice(1)}` : ''}`, { headers }),
     apiFetch('/vulnerabilities/by-asset', { headers }),
     apiFetch('/assets', { headers }),
   ]);
@@ -162,6 +175,27 @@ export default async function VulnerabilitiesPage() {
           </ul>
         </section>
       )}
+
+      <FilterBar
+        basePath="/vulnerabilities"
+        sp={sp}
+        allLabel={tFilters('all')}
+        groups={[
+          {
+            param: 'status',
+            label: t('statusHead'),
+            options: (['open', 'remediating', 'resolved'] as Status[]).map((s) => ({
+              value: s,
+              label: t(`st.${s}`),
+            })),
+          },
+          {
+            param: 'severity',
+            label: t('severity'),
+            options: SEVERITIES.map((s) => ({ value: s, label: t(`sev.${s}`) })),
+          },
+        ]}
+      />
 
       {vulns.length === 0 ? (
         <section className="rounded-xl border border-border bg-white shadow-sm">

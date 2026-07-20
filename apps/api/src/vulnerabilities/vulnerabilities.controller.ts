@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -68,9 +69,13 @@ export class VulnerabilitiesController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Реестр уязвимостей' })
-  list(@Req() req: TenantRequest) {
-    return this.service.list(req.tenantId);
+  @ApiOperation({ summary: 'Реестр уязвимостей (фильтры: status/severity)' })
+  list(
+    @Req() req: TenantRequest,
+    @Query('status') status?: string,
+    @Query('severity') severity?: string,
+  ) {
+    return this.service.list(req.tenantId, { status, severity });
   }
 
   @Get('by-asset')
