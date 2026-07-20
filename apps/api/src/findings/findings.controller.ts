@@ -62,6 +62,28 @@ function parseLocale(localeQuery?: string): Locale {
 export class FindingsController {
   constructor(private readonly findingsService: FindingsService) {}
 
+  @Get('templates')
+  @RequirePermission('finding', 'view')
+  @ApiOperation({
+    summary: 'Библиотека шаблонов findings (T-V28): preset title/risk/recommendation',
+  })
+  templates(@Query('locale') localeQuery?: string) {
+    return this.findingsService.templates(parseLocale(localeQuery));
+  }
+
+  @Post('from-template')
+  @RequirePermission('finding', 'create', 'edit')
+  @ApiOperation({ summary: 'Создать finding из шаблона (T-V28): identified с preset-полями' })
+  @ApiCreatedResponse({ description: 'Finding в статусе identified' })
+  createFromTemplate(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = z.object({ templateKey: z.string().min(1).max(64) }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.findingsService.createFromTemplate(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data.templateKey,
+    );
+  }
+
   @Post()
   @RequirePermission('finding', 'create', 'edit')
   @ApiOperation({

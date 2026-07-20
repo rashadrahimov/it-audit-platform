@@ -52,3 +52,15 @@ export async function addFindingCommentAction(id: string, formData: FormData): P
   });
   revalidatePath(`/findings/${id}`);
 }
+
+/** Создать finding из шаблона (T-V28): preset title/risk/recommendation. */
+export async function createFindingFromTemplateAction(templateKey: string): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch('/findings/from-template', {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ templateKey }),
+  });
+  revalidatePath('/findings');
+}

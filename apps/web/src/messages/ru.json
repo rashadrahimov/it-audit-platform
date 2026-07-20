@@ -1593,7 +1593,10 @@
       "ok": "ОК",
       "due_soon": "Скоро срок",
       "overdue": "Просрочено"
-    }
+    },
+    "templates": "Шаблоны findings",
+    "templatesHint": "Типовые findings с преднастроенным риском и рекомендацией — один клик создаёт редактируемый finding.",
+    "useTemplate": "Создать finding"
   },
   "documents": {
     "title": "Документы",

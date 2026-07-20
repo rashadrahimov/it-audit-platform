@@ -1593,7 +1593,10 @@
       "ok": "OK",
       "due_soon": "Vaxt yaxınlaşır",
       "overdue": "Gecikib"
-    }
+    },
+    "templates": "Finding şablonları",
+    "templatesHint": "Preset risk və tövsiyə ilə tipik findinqlər — bir klik redaktə edilə bilən finding yaradır.",
+    "useTemplate": "Finding yarat"
   },
   "documents": {
     "title": "Sənədlər",

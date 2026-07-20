@@ -1585,7 +1585,10 @@
       "ok": "OK",
       "due_soon": "Due soon",
       "overdue": "Overdue"
-    }
+    },
+    "templates": "Issue templates",
+    "templatesHint": "Common findings with preset risk and recommendation — one click creates an identified finding you can edit.",
+    "useTemplate": "Create finding"
   },
   "documents": {
     "title": "Documents",

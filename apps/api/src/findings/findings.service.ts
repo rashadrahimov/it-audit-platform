@@ -19,6 +19,7 @@ import { DbService } from '../db/db.service';
 import { EmailService } from '../email/email.service';
 import { RbacService } from '../rbac/rbac.service';
 import { maskFields, rejectedWriteFields } from '../rbac/field-policy';
+import { FINDING_TEMPLATES } from '../seed-data/finding-templates';
 import {
   auditLog,
   checklistItem,
@@ -97,6 +98,27 @@ export class FindingsService {
     if (rejected.length > 0) {
       throw new ForbiddenException(`Нет права на запись полей: ${rejected.join(', ')}`);
     }
+  }
+
+  /** T-V28: каталог шаблонов findings (статичный контент). */
+  templates(locale: Locale) {
+    return FINDING_TEMPLATES.map((tpl) => ({
+      key: tpl.key,
+      title: resolveLocalized(tpl.title, locale),
+      riskRating: tpl.riskRating,
+      recommendation: resolveLocalized(tpl.recommendation, locale),
+    }));
+  }
+
+  /** T-V28: создать finding из шаблона (preset title/risk/recommendation). */
+  async createFromTemplate(actor: Actor, templateKey: string) {
+    const tpl = FINDING_TEMPLATES.find((t) => t.key === templateKey);
+    if (!tpl) throw new NotFoundException(`Шаблон «${templateKey}» не найден`);
+    return this.create(actor, {
+      titleI18n: tpl.title,
+      riskRating: tpl.riskRating,
+      recommendationI18n: tpl.recommendation,
+    });
   }
 
   async create(actor: Actor, input: CreateFindingInput) {

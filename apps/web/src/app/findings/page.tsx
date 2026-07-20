@@ -6,6 +6,7 @@ import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
 import { FilterBar } from '@/components/filter-bar';
 import { filterQuery } from '@/lib/filters';
+import { createFindingFromTemplateAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,12 +67,20 @@ export default async function FindingsPage({
   ]);
 
   let findings: FindingRow[] = [];
+  let templates: Array<{ key: string; title: string; riskRating: string; recommendation: string }> =
+    [];
   if (tenantSlug) {
-    const res = await apiFetch(
-      `/findings?locale=${locale}${filterQuery(sp, ['status', 'riskRating', 'slaStatus', 'mine'])}`,
-      { headers: { 'X-Tenant-Slug': tenantSlug } },
-    );
+    const [res, tplRes] = await Promise.all([
+      apiFetch(
+        `/findings?locale=${locale}${filterQuery(sp, ['status', 'riskRating', 'slaStatus', 'mine'])}`,
+        { headers: { 'X-Tenant-Slug': tenantSlug } },
+      ),
+      apiFetch(`/findings/templates?locale=${locale}`, {
+        headers: { 'X-Tenant-Slug': tenantSlug },
+      }),
+    ]);
     findings = res.ok ? await res.json() : [];
+    templates = tplRes.ok ? await tplRes.json() : [];
   }
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
 
@@ -169,6 +178,42 @@ export default async function FindingsPage({
           </tbody>
         </table>
       </section>
+
+      {templates.length > 0 && (
+        <section
+          className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+          data-testid="finding-templates"
+        >
+          <h2 className="text-sm font-semibold text-primary">{t('templates')}</h2>
+          <p className="text-xs text-secondary">{t('templatesHint')}</p>
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {templates.map((tpl) => (
+              <li
+                key={tpl.key}
+                className="flex items-center justify-between gap-2 rounded-lg bg-muted/60 px-3 py-2"
+              >
+                <span className="flex min-w-0 flex-1 items-center gap-2">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${RATING_TONE[tpl.riskRating] ?? 'bg-muted text-secondary'}`}
+                  >
+                    {t(`ratings.${tpl.riskRating}`)}
+                  </span>
+                  <span className="truncate text-sm font-medium text-foreground">{tpl.title}</span>
+                </span>
+                <form action={createFindingFromTemplateAction.bind(null, tpl.key)}>
+                  <button
+                    type="submit"
+                    data-testid="finding-template-create"
+                    className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium whitespace-nowrap text-on-primary transition-colors duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    {t('useTemplate')}
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }
