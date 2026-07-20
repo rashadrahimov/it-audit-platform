@@ -108,7 +108,8 @@
     "rolesNav": "Rollar",
     "membersNav": "İştirakçılar",
     "myWorkNav": "Mənim işim",
-    "assetsNav": "Aktivlər"
+    "assetsNav": "Aktivlər",
+    "roadmap": "Yol xəritəsi"
   },
   "engagements": {
     "title": "Auditlər",
@@ -1286,7 +1287,8 @@
       "tests": "Nəzarətlərin davamlı yoxlanışı: reyestr, icra tarixçəsi, diqqət sayğacları.",
       "roles": "Rol şablonları və icazə matrisi; tenantın xüsusi rolları.",
       "members": "Tenant iştirakçıları: kateqoriyalar və rol təyini.",
-      "assets": "İT aktivləri inventarı: sistemlər, verilənlər bazaları, bulud xidmətləri — sahiblər və mənbələrlə."
+      "assets": "İT aktivləri inventarı: sistemlər, verilənlər bazaları, bulud xidmətləri — sahiblər və mənbələrlə.",
+      "roadmap": "Tətbiq yol xəritəsi: fazalar, hədəf tarixlər, testlərdən irəliləyiş."
     },
     "details": {
       "account": [
@@ -1521,6 +1523,11 @@
         "Aktivi əl ilə əlavə edin və ya Konnektorlar səhifəsindən idxal edin.",
         "Bir neçə aktivi seçib ümumi teq tətbiq edin.",
         "İnventarı auditə vermək üçün CSV ixracından istifadə edin."
+      ],
+      "roadmap": [
+        "Yol xəritəsində görünməsi üçün çərçivəni aktivləşdirin.",
+        "Hər çərçivə üçün hədəf audit tarixi təyin edin.",
+        "Nəzarət, siyasət, findinq və testlər yaxşılaşdıqca faza irəliləyişini izləyin."
       ]
     },
     "long": {
@@ -1572,7 +1579,8 @@
       "tests": "Testlər nəzarətləri davamlı yoxlayır. Reyestrdə status, SLA və sahib; kartda — uğursuz obyektlər və sübutlarla icra tarixçəsi. Avtotestlər düymə ilə işə düşür; köhnəlmiş testlər deaktiv edilir.",
       "roles": "Rollar resurs×əməliyyat icazə matrisini müəyyən edir. Sistem şablonları yalnız oxunur; xüsusi rollar yaradın və xanaları təyin edin.",
       "members": "Bütün iştirakçıların siyahısı: email, kateqoriya (auditor / istifadəçi / MSP) və rol. Rol sətirdə dəyişilir — dəyişiklik jurnala düşür.",
-      "assets": "Aktiv inventarı əhatə dairəsindəki bütün İT aktivlərini göstərir — ERP sistemləri, verilənlər bazaları, şəbəkə qurğuları, tətbiqlər, bulud xidmətləri və son nöqtələr. Hər aktivin sahibi və mənbəyi görünür: əl ilə yaradılıb və ya konnektor vasitəsilə avtomatik aşkarlanıb. Aktivləri toplu şəkildə teqləmək (məs. PCI və ya SOX əhatəsini işarələmək) və bütün inventarı auditorlar üçün CSV-yə ixrac etmək olar. Aktivlər Audit Universe-ə proyeksiya olunur və risklərlə əlaqələndirilə bilər."
+      "assets": "Aktiv inventarı əhatə dairəsindəki bütün İT aktivlərini göstərir — ERP sistemləri, verilənlər bazaları, şəbəkə qurğuları, tətbiqlər, bulud xidmətləri və son nöqtələr. Hər aktivin sahibi və mənbəyi görünür: əl ilə yaradılıb və ya konnektor vasitəsilə avtomatik aşkarlanıb. Aktivləri toplu şəkildə teqləmək (məs. PCI və ya SOX əhatəsini işarələmək) və bütün inventarı auditorlar üçün CSV-yə ixrac etmək olar. Aktivlər Audit Universe-ə proyeksiya olunur və risklərlə əlaqələndirilə bilər.",
+      "roadmap": "Yol xəritəsi hər aktivləşdirilmiş çərçivəni fazalı tətbiq planına çevirir — Quraşdırma, Siyasətlər, Aradan qaldırma, Audit — irəliləyiş canlı məlumatlardan hesablanır (nəzarət əhatəsi, təsdiqlənmiş siyasətlər, bağlanmış findinqlər, keçən testlər). Audit hazırlığı hədəf tarixi təyin edin və yol xəritəsi qrafikdə olub-olmadığınızı göstərir."
     }
   },
   "tour": {
@@ -1914,6 +1922,24 @@
       "open": "Açıq",
       "in_progress": "İcrada",
       "done": "Hazır"
+    }
+  },
+  "roadmap": {
+    "title": "Yol xəritəsi",
+    "empty": "Yol xəritəsi üçün çərçivə aktivləşdirin.",
+    "overall": "Ümumi",
+    "auditReady": "Auditə hazır",
+    "onTrack": "Qrafikdə",
+    "offTrack": "Qrafikdən kənar",
+    "target": "Hədəf tarix",
+    "setTarget": "Yadda saxla",
+    "noTarget": "Hədəf yoxdur",
+    "elapsed": "vaxt keçib",
+    "ph": {
+      "setup": "Quraşdırma",
+      "policies": "Siyasətlər",
+      "remediation": "Aradan qaldırma",
+      "audit": "Audit"
     }
   }
 }

@@ -108,7 +108,8 @@
     "rolesNav": "Roles",
     "membersNav": "Members",
     "myWorkNav": "My work",
-    "assetsNav": "Assets"
+    "assetsNav": "Assets",
+    "roadmap": "Roadmap"
   },
   "engagements": {
     "title": "Engagements",
@@ -1286,7 +1287,8 @@
       "tests": "Continuous checks of controls: registry, run history, attention counters.",
       "roles": "Role presets and the permission matrix; custom tenant roles.",
       "members": "Tenant members with categories and role assignment.",
-      "assets": "IT asset inventory: systems, databases, cloud services with owners and sources."
+      "assets": "IT asset inventory: systems, databases, cloud services with owners and sources.",
+      "roadmap": "Implementation roadmap: phases, target dates, progress from tests."
     },
     "details": {
       "account": [
@@ -1513,6 +1515,11 @@
         "Add an asset manually or import from a connector on the Connectors page.",
         "Select several assets with checkboxes and apply a shared tag.",
         "Use Export CSV to hand the inventory to an auditor."
+      ],
+      "roadmap": [
+        "Activate a framework to see it appear on the roadmap.",
+        "Set a target audit-ready date for each framework.",
+        "Watch phase progress rise as controls, policies, findings and tests improve."
       ]
     },
     "long": {
@@ -1564,7 +1571,8 @@
       "tests": "Tests verify controls continuously. The registry shows status, SLA and owner; the card holds run history with failing entities and evidence. Automated tests can be run on demand; stale tests can be deactivated.",
       "roles": "Roles define the resource×action permission matrix. System presets are read-only; create custom tenant roles and set matrix cells to none/view/edit.",
       "members": "Members lists everyone in the tenant with email, category (auditor / end user / MSP) and role. Change a member’s role inline — the change is journaled.",
-      "assets": "The asset inventory lists every IT asset in scope — ERP systems, databases, network devices, applications, cloud services and endpoints. Each asset shows its owner and where it came from: created manually or discovered automatically through a connector. Assets can be tagged in bulk (e.g. to mark PCI or SOX scope) and the whole inventory exports to CSV for auditors. Assets are projected into the Audit Universe, so risks can be linked to them."
+      "assets": "The asset inventory lists every IT asset in scope — ERP systems, databases, network devices, applications, cloud services and endpoints. Each asset shows its owner and where it came from: created manually or discovered automatically through a connector. Assets can be tagged in bulk (e.g. to mark PCI or SOX scope) and the whole inventory exports to CSV for auditors. Assets are projected into the Audit Universe, so risks can be linked to them.",
+      "roadmap": "The roadmap turns each activated framework into a phased implementation plan — Setup, Policies, Remediation, Audit — with progress computed from live data (control coverage, approved policies, closed findings, passing tests). Set an audit-ready target date and the roadmap flags whether you are on or off track. Use it to see, at a glance, how close each standard is to being audit-ready."
     }
   },
   "tour": {
@@ -1906,6 +1914,24 @@
       "open": "Open",
       "in_progress": "In progress",
       "done": "Done"
+    }
+  },
+  "roadmap": {
+    "title": "Roadmap",
+    "empty": "Activate a framework to build its roadmap.",
+    "overall": "Overall",
+    "auditReady": "Audit-ready",
+    "onTrack": "On track",
+    "offTrack": "Off track",
+    "target": "Target date",
+    "setTarget": "Save",
+    "noTarget": "No target set",
+    "elapsed": "time elapsed",
+    "ph": {
+      "setup": "Setup",
+      "policies": "Policies",
+      "remediation": "Remediation",
+      "audit": "Audit"
     }
   }
 }

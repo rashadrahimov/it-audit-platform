@@ -300,6 +300,8 @@ export const frameworkActivation = pgTable(
     frameworkId: uuid('framework_id')
       .notNull()
       .references(() => framework.id, { onDelete: 'cascade' }),
+    /** T-V33: целевая дата audit-ready для roadmap-прогресса. */
+    targetDate: timestamp('target_date', { withTimezone: true }),
     ...timestamps,
   },
   (table) => [uniqueIndex('framework_activation_pair_idx').on(table.tenantId, table.frameworkId)],

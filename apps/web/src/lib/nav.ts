@@ -26,6 +26,7 @@ export const NAV_GROUPS: NavGroup[] = [
     group: 'compliance',
     items: [
       { href: '/frameworks', testid: 'go-frameworks', label: 'frameworks' },
+      { href: '/roadmap', testid: 'go-roadmap', label: 'roadmap' },
       { href: '/controls', testid: 'go-controls', label: 'controls' },
       { href: '/tests', testid: 'go-tests', label: 'tests' },
       { href: '/policies', testid: 'go-policies', label: 'policies' },
