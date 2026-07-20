@@ -54,6 +54,7 @@ export default async function FindingsPage({
     riskRating?: string;
     slaStatus?: string;
     mine?: string;
+    tagId?: string;
   }>;
 }) {
   const user = await getSessionUser();
@@ -69,18 +70,21 @@ export default async function FindingsPage({
   let findings: FindingRow[] = [];
   let templates: Array<{ key: string; title: string; riskRating: string; recommendation: string }> =
     [];
+  let tags: Array<{ id: string; name: string }> = [];
   if (tenantSlug) {
-    const [res, tplRes] = await Promise.all([
+    const [res, tplRes, tagsRes] = await Promise.all([
       apiFetch(
-        `/findings?locale=${locale}${filterQuery(sp, ['status', 'riskRating', 'slaStatus', 'mine'])}`,
+        `/findings?locale=${locale}${filterQuery(sp, ['status', 'riskRating', 'slaStatus', 'mine', 'tagId'])}`,
         { headers: { 'X-Tenant-Slug': tenantSlug } },
       ),
       apiFetch(`/findings/templates?locale=${locale}`, {
         headers: { 'X-Tenant-Slug': tenantSlug },
       }),
+      apiFetch('/tags', { headers: { 'X-Tenant-Slug': tenantSlug } }),
     ]);
     findings = res.ok ? await res.json() : [];
     templates = tplRes.ok ? await tplRes.json() : [];
+    tags = tagsRes.ok ? await tagsRes.json() : [];
   }
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
 
@@ -114,6 +118,15 @@ export default async function FindingsPage({
             label: t('colSla'),
             options: SLAS.map((s) => ({ value: s, label: t(`slas.${s}`) })),
           },
+          ...(tags.length > 0
+            ? [
+                {
+                  param: 'tagId',
+                  label: tFilters('tag'),
+                  options: tags.map((tg) => ({ value: tg.id, label: tg.name })),
+                },
+              ]
+            : []),
         ]}
       />
       <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">

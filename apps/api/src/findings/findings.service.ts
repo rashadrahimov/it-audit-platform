@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import {
   localeSchema,
   resolveLocalized,
@@ -30,6 +30,7 @@ import {
   finding,
   membership,
   response,
+  tagLink,
   user,
 } from '../db/schema';
 
@@ -376,6 +377,7 @@ export class FindingsService {
       riskRating?: string;
       slaStatus?: string;
       ownerMembershipId?: string;
+      tagId?: string;
     },
   ) {
     const ownerMembership = alias(membership, 'owner_membership');
@@ -389,6 +391,18 @@ export class FindingsService {
     if (filters?.slaStatus) conds.push(eq(finding.slaStatus, filters.slaStatus));
     if (filters?.ownerMembershipId) {
       conds.push(eq(finding.ownerMembershipId, filters.ownerMembershipId));
+    }
+    // T-V36d: фильтр по тегу — сущности finding с этой tag_link-привязкой
+    if (filters?.tagId) {
+      conds.push(
+        inArray(
+          finding.id,
+          this.dbService.db
+            .select({ id: tagLink.entityId })
+            .from(tagLink)
+            .where(and(eq(tagLink.tagId, filters.tagId), eq(tagLink.entityType, 'finding'))),
+        ),
+      );
     }
     const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx

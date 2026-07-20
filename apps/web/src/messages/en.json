@@ -1720,7 +1720,8 @@
     "ownedByMe": "Owned by me",
     "needsMyApproval": "Needs my approval",
     "type": "Type",
-    "mode": "Mode"
+    "mode": "Mode",
+    "tag": "Tag"
   },
   "findings": {
     "title": "Findings",
@@ -1775,7 +1776,11 @@
     "templates": "Issue templates",
     "templatesHint": "Common findings with preset risk and recommendation — one click creates an identified finding you can edit.",
     "useTemplate": "Create finding",
-    "tasks": "Remediation tasks"
+    "tasks": "Remediation tasks",
+    "tagsTitle": "Tags",
+    "tagAdd": "Add tag…",
+    "tagNone": "No tags",
+    "tagAttach": "Attach"
   },
   "documents": {
     "title": "Documents",

@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { TasksSection, type TaskItem } from '@/components/tasks-section';
+import { TagsSection } from '@/components/tags-section';
 import {
   addFindingCommentAction,
   assignFindingAction,
@@ -76,12 +77,16 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
   const f: FindingDetail = await res.json();
 
   // список участников для assign-формы; у не-админа (403) — форма скрыта
-  const [mRes, tasksRes] = await Promise.all([
+  const [mRes, tasksRes, tagsOfRes, allTagsRes] = await Promise.all([
     apiFetch(`/memberships?locale=${locale}`, { headers }),
     apiFetch(`/tasks?entityType=finding&entityId=${id}`, { headers }),
+    apiFetch(`/tags/of?entityType=finding&entityId=${id}`, { headers }),
+    apiFetch('/tags', { headers }),
   ]);
   const members: Member[] = mRes.ok ? await mRes.json() : [];
   const tasks: TaskItem[] = tasksRes.ok ? await tasksRes.json() : [];
+  const currentTags = tagsOfRes.ok ? await tagsOfRes.json() : [];
+  const allTags = allTagsRes.ok ? await allTagsRes.json() : [];
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const dateTimeFmt = new Intl.DateTimeFormat(locale, {
@@ -198,6 +203,21 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
           </form>
         )}
       </section>
+
+      <TagsSection
+        entityType="finding"
+        entityId={id}
+        path={`/findings/${id}`}
+        current={currentTags}
+        all={allTags}
+        testid="finding-tags"
+        labels={{
+          title: t('tagsTitle'),
+          add: t('tagAdd'),
+          none: t('tagNone'),
+          attach: t('tagAttach'),
+        }}
+      />
 
       <TasksSection
         entityType="finding"

@@ -169,6 +169,7 @@ export class FindingsController {
     @Query('slaStatus') slaStatus?: string,
     @Query('ownerMembershipId') ownerMembershipId?: string,
     @Query('mine') mine?: string,
+    @Query('tagId') tagId?: string,
     @Query('locale') localeQuery?: string,
   ) {
     // T-V17: ?mine=true — очередь «Owned by me» (owner = membership текущего юзера)
@@ -182,6 +183,7 @@ export class FindingsController {
       riskRating: filterParam(riskRating, 'riskRating'),
       slaStatus: filterParam(slaStatus, 'slaStatus'),
       ownerMembershipId: owner,
+      tagId: uuidFilterParam(tagId, 'tagId'),
     });
   }
 

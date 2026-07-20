@@ -1728,7 +1728,8 @@
     "ownedByMe": "Назначено мне",
     "needsMyApproval": "Ждут моего решения",
     "type": "Тип",
-    "mode": "Режим"
+    "mode": "Режим",
+    "tag": "Тег"
   },
   "findings": {
     "title": "Замечания",
@@ -1783,7 +1784,11 @@
     "templates": "Шаблоны findings",
     "templatesHint": "Типовые findings с преднастроенным риском и рекомендацией — один клик создаёт редактируемый finding.",
     "useTemplate": "Создать finding",
-    "tasks": "Задачи ремедиации"
+    "tasks": "Задачи ремедиации",
+    "tagsTitle": "Теги",
+    "tagAdd": "Добавить тег…",
+    "tagNone": "Тегов нет",
+    "tagAttach": "Навесить"
   },
   "documents": {
     "title": "Документы",

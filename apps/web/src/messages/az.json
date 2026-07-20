@@ -1728,7 +1728,8 @@
     "ownedByMe": "Mənə təyin olunub",
     "needsMyApproval": "Mənim təsdiqimi gözləyir",
     "type": "Növ",
-    "mode": "Rejim"
+    "mode": "Rejim",
+    "tag": "Teq"
   },
   "findings": {
     "title": "Findinqlər",
@@ -1783,7 +1784,11 @@
     "templates": "Finding şablonları",
     "templatesHint": "Preset risk və tövsiyə ilə tipik findinqlər — bir klik redaktə edilə bilən finding yaradır.",
     "useTemplate": "Finding yarat",
-    "tasks": "Aradan qaldırma tapşırıqları"
+    "tasks": "Aradan qaldırma tapşırıqları",
+    "tagsTitle": "Teqlər",
+    "tagAdd": "Teq əlavə et…",
+    "tagNone": "Teq yoxdur",
+    "tagAttach": "Əlavə et"
   },
   "documents": {
     "title": "Sənədlər",
