@@ -962,7 +962,11 @@
     "schedAnytime": "İstənilən vaxt",
     "schedWorkHours": "İş saatları (9–18)",
     "settingsTimezone": "Saat qurşağı",
-    "settingsSave": "Yadda saxla"
+    "settingsSave": "Yadda saxla",
+    "settingsDigest": "Uyğunluq icmalı",
+    "digestWeekly": "Həftəlik (bazar ertəsi)",
+    "digestDaily": "Gündəlik",
+    "digestOff": "Söndürülüb"
   },
   "time": {
     "title": "Vaxt uçotu",

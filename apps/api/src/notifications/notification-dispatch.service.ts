@@ -14,12 +14,15 @@ export interface NotificationSettings {
   emailEnabled: boolean;
   schedule: 'anytime' | 'work_hours';
   timezone: string;
+  /** T-V20: периодичность еженедельного дайджеста. */
+  digest: 'weekly' | 'daily' | 'off';
 }
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   emailEnabled: true,
   schedule: 'anytime',
   timezone: 'UTC',
+  digest: 'weekly',
 };
 
 /**

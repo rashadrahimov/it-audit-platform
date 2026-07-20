@@ -962,7 +962,11 @@
     "schedAnytime": "Anytime",
     "schedWorkHours": "Work hours (9–18)",
     "settingsTimezone": "Timezone",
-    "settingsSave": "Save"
+    "settingsSave": "Save",
+    "settingsDigest": "Compliance digest",
+    "digestWeekly": "Weekly (Mondays)",
+    "digestDaily": "Daily",
+    "digestOff": "Off"
   },
   "time": {
     "title": "Time tracking",

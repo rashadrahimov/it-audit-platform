@@ -35,3 +35,9 @@ export const JOB_AUTO_TEST_RUN = 'auto-test-run';
 export const AUTO_TEST_RUN_EVERY_MS = 60 * 60 * 1000;
 
 export const JOB_NOTIFICATION_EMAIL = 'notification-email';
+
+export const JOB_WEEKLY_DIGEST = 'weekly-digest';
+
+/** Дайджест комплаенса (T-V20): прогон раз в сутки; per-tenant setting решает,
+ * слать ли сегодня (weekly=понедельник, daily=каждый день, off=никогда). */
+export const WEEKLY_DIGEST_EVERY_MS = 24 * 60 * 60 * 1000;

@@ -161,6 +161,40 @@ export const emailTemplates = {
       text: `Пожалуйста, подтвердите ознакомление с политикой: ${policyTitle}.`,
     }),
   },
+  'weekly-digest': {
+    en: ({ tenantName, openFindings, overdueFindings, overdueTasks, policiesDue }) => ({
+      subject: `Weekly compliance digest — ${tenantName}`,
+      html: wrap(
+        `<p>Your weekly compliance digest for <b>${tenantName}</b>:</p>` +
+          `<ul><li>Open findings: <b>${openFindings}</b> (${overdueFindings} overdue)</li>` +
+          `<li>Overdue tasks: <b>${overdueTasks}</b></li>` +
+          `<li>Policies due for renewal: <b>${policiesDue}</b></li></ul>` +
+          `<p>Sign in to review and act on outstanding items.</p>`,
+      ),
+      text: `Weekly digest for ${tenantName}: open findings ${openFindings} (${overdueFindings} overdue), overdue tasks ${overdueTasks}, policies due ${policiesDue}.`,
+    }),
+    az: ({ tenantName, openFindings, overdueFindings, overdueTasks, policiesDue }) => ({
+      subject: `Həftəlik uyğunluq icmalı — ${tenantName}`,
+      html: wrap(
+        `<p><b>${tenantName}</b> üçün həftəlik icmal:</p>` +
+          `<ul><li>Açıq findinqlər: <b>${openFindings}</b> (${overdueFindings} gecikmiş)</li>` +
+          `<li>Gecikmiş tapşırıqlar: <b>${overdueTasks}</b></li>` +
+          `<li>Yenilənməli siyasətlər: <b>${policiesDue}</b></li></ul>`,
+      ),
+      text: `Həftəlik icmal ${tenantName}: açıq findinqlər ${openFindings} (${overdueFindings} gecikmiş), gecikmiş tapşırıqlar ${overdueTasks}, siyasətlər ${policiesDue}.`,
+    }),
+    ru: ({ tenantName, openFindings, overdueFindings, overdueTasks, policiesDue }) => ({
+      subject: `Еженедельный дайджест комплаенса — ${tenantName}`,
+      html: wrap(
+        `<p>Ваш еженедельный дайджест по <b>${tenantName}</b>:</p>` +
+          `<ul><li>Открытых findings: <b>${openFindings}</b> (${overdueFindings} просрочено)</li>` +
+          `<li>Просроченных задач: <b>${overdueTasks}</b></li>` +
+          `<li>Политик к продлению: <b>${policiesDue}</b></li></ul>` +
+          `<p>Войдите, чтобы разобрать открытые пункты.</p>`,
+      ),
+      text: `Дайджест ${tenantName}: открытых findings ${openFindings} (${overdueFindings} просрочено), просроченных задач ${overdueTasks}, политик ${policiesDue}.`,
+    }),
+  },
   'test-email': {
     en: ({ sentAt }) => ({
       subject: 'Test email — IT Audit Platform',

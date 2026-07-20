@@ -6,6 +6,7 @@ import { AutoTestService } from '../tests/auto-test.service';
 import { EmailService } from '../email/email.service';
 import { FindingRemindersService } from './finding-reminders.service';
 import { PolicyRenewalRemindersService } from './policy-renewal-reminders.service';
+import { WeeklyDigestService } from './weekly-digest.service';
 import { JobsService } from './jobs.service';
 import { SlaService } from './sla.service';
 import {
@@ -17,6 +18,7 @@ import {
   JOB_POLICY_RENEWAL_REMINDERS,
   JOB_HEARTBEAT,
   JOB_SLA_RECALC,
+  JOB_WEEKLY_DIGEST,
   SYSTEM_QUEUE,
 } from './jobs.constants';
 
@@ -31,6 +33,7 @@ export class SystemProcessor extends WorkerHost {
     private readonly policyRenewalRemindersService: PolicyRenewalRemindersService,
     private readonly autoTestService: AutoTestService,
     private readonly emailService: EmailService,
+    private readonly weeklyDigestService: WeeklyDigestService,
   ) {
     super();
   }
@@ -71,6 +74,10 @@ export class SystemProcessor extends WorkerHost {
       case JOB_AUTO_TEST_RUN: {
         const result = await this.autoTestService.runAll();
         return `автотестов прогнано: ${result.ran}`;
+      }
+      case JOB_WEEKLY_DIGEST: {
+        const result = await this.weeklyDigestService.send();
+        return `дайджест: тенантов=${result.tenants}, писем=${result.emails}`;
       }
       default:
         throw new Error(`Неизвестная джоба «${job.name}» в очереди ${SYSTEM_QUEUE}`);

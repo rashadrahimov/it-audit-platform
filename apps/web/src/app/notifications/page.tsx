@@ -40,9 +40,12 @@ export default async function NotificationsPage() {
 
   // T-V19: настройки уведомлений (только админ — 403 прячет секцию)
   const sRes = await apiFetch('/notifications/settings', { headers });
-  const settings: { emailEnabled: boolean; schedule: string; timezone: string } | null = sRes.ok
-    ? await sRes.json()
-    : null;
+  const settings: {
+    emailEnabled: boolean;
+    schedule: string;
+    timezone: string;
+    digest: string;
+  } | null = sRes.ok ? await sRes.json() : null;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
@@ -131,6 +134,19 @@ export default async function NotificationsPage() {
               defaultValue={settings.timezone}
               className="w-44 rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
             />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-secondary">{t('settingsDigest')}</span>
+            <select
+              name="digest"
+              defaultValue={settings.digest}
+              data-testid="settings-digest"
+              className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+            >
+              <option value="weekly">{t('digestWeekly')}</option>
+              <option value="daily">{t('digestDaily')}</option>
+              <option value="off">{t('digestOff')}</option>
+            </select>
           </label>
           <button
             type="submit"

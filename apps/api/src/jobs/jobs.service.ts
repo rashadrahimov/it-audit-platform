@@ -18,8 +18,10 @@ import {
   POLICY_RENEWAL_REMINDERS_EVERY_MS,
   JOB_HEARTBEAT,
   JOB_SLA_RECALC,
+  JOB_WEEKLY_DIGEST,
   SLA_RECALC_EVERY_MS,
   SYSTEM_QUEUE,
+  WEEKLY_DIGEST_EVERY_MS,
 } from './jobs.constants';
 
 @Injectable()
@@ -59,6 +61,11 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       'auto-test-run-scheduler',
       { every: AUTO_TEST_RUN_EVERY_MS },
       { name: JOB_AUTO_TEST_RUN },
+    );
+    await this.queue.upsertJobScheduler(
+      'weekly-digest-scheduler',
+      { every: WEEKLY_DIGEST_EVERY_MS },
+      { name: JOB_WEEKLY_DIGEST },
     );
   }
 

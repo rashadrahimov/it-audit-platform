@@ -21,6 +21,7 @@ import type { DemoJobEnqueued, DemoJobStatus, HeartbeatStatus } from '@it-audit/
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FindingRemindersService } from './finding-reminders.service';
 import { PolicyRenewalRemindersService } from './policy-renewal-reminders.service';
+import { WeeklyDigestService } from './weekly-digest.service';
 import { JobsService } from './jobs.service';
 import { SlaService, type SlaRecalcResult } from './sla.service';
 
@@ -31,6 +32,7 @@ export class JobsController {
     private readonly slaService: SlaService,
     private readonly findingRemindersService: FindingRemindersService,
     private readonly policyRenewalRemindersService: PolicyRenewalRemindersService,
+    private readonly weeklyDigestService: WeeklyDigestService,
   ) {}
 
   @Post('finding-reminders')
@@ -53,6 +55,18 @@ export class JobsController {
   @ApiCreatedResponse({ description: '{sent}' })
   policyRenewalReminders(): Promise<{ sent: number }> {
     return this.policyRenewalRemindersService.send();
+  }
+
+  @Post('weekly-digest')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Дайджест комплаенса вручную (T-V20); планово — раз в сутки по настройке тенанта',
+  })
+  @ApiCreatedResponse({ description: '{tenants, emails}' })
+  weeklyDigest(): Promise<{ tenants: number; emails: number }> {
+    // ручной прогон игнорирует day-of-week: слать всем, у кого digest не off
+    return this.weeklyDigestService.send(new Date(Date.UTC(2000, 0, 3))); // понедельник
   }
 
   @Post('sla-recalc')

@@ -962,7 +962,11 @@
     "schedAnytime": "В любое время",
     "schedWorkHours": "Рабочие часы (9–18)",
     "settingsTimezone": "Таймзона",
-    "settingsSave": "Сохранить"
+    "settingsSave": "Сохранить",
+    "settingsDigest": "Дайджест комплаенса",
+    "digestWeekly": "Еженедельно (по пн)",
+    "digestDaily": "Ежедневно",
+    "digestOff": "Выключен"
   },
   "time": {
     "title": "Учёт времени",
