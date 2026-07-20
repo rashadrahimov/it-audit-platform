@@ -1133,7 +1133,9 @@
     "defaultLocaleHint": "Yeni girişlər istifadəçi başqasını seçənə qədər bu dili alır.",
     "securityContact": "Təhlükəsizlik əlaqəsi",
     "supportAccess": "Platforma dəstəyinə icazə ver",
-    "supportAccessHint": "Platforma dəstəyi problemlərin həlli üçün hesabınıza müvəqqəti girə bilər (audit-jurnalında)."
+    "supportAccessHint": "Platforma dəstəyi problemlərin həlli üçün hesabınıza müvəqqəti girə bilər (audit-jurnalında).",
+    "requireMfa": "Bütün iştirakçılar üçün MFA tələb et",
+    "requireMfaHint": "Təşkilat siyasəti: hər iştirakçı iki faktorlu autentifikasiyanı aktiv etməlidir."
   },
   "reports": {
     "title": "Hesabatlar",
@@ -2194,6 +2196,11 @@
     "recoveryHint": "Bu bərpa kodlarını təhlükəsiz yerdə saxlayın — cihazınızı itirsəniz, hər biri bir dəfə işləyir. Yalnız indi göstərilir.",
     "codeToDisable": "Söndürmək üçün kod",
     "disable": "2FA-nı söndür",
-    "disabledOk": "2FA söndürüldü."
+    "disabledOk": "2FA söndürüldü.",
+    "requiredTitle": "Təşkilatınız MFA tələb edir",
+    "requiredBody": "Təşkilat siyasətinə uyğun olmaq üçün aşağıda iki faktorlu autentifikasiyanı aktiv edin.",
+    "teamTitle": "Komandanın MFA komplayensi",
+    "teamCount": "{total} iştirakçıdan {enabled} MFA aktiv edib.",
+    "off": "Söndürülüb"
   }
 }

@@ -38,6 +38,7 @@ export async function saveBusinessProfileAction(formData: FormData): Promise<voi
   if (dl === 'en' || dl === 'az' || dl === 'ru') body.defaultLocale = dl;
   // checkbox: присутствует только когда отмечен
   body.supportAccess = formData.get('supportAccess') != null;
+  body.requireMfa = formData.get('requireMfa') != null;
   await apiFetch('/business-profile', {
     method: 'PUT',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },

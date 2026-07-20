@@ -39,6 +39,7 @@ interface BusinessProfile {
   idleTimeoutMin: number;
   defaultLocale: 'en' | 'az' | 'ru';
   supportAccess: boolean;
+  requireMfa: boolean;
 }
 const EMPTY_PROFILE: BusinessProfile = {
   legalName: '',
@@ -49,6 +50,7 @@ const EMPTY_PROFILE: BusinessProfile = {
   idleTimeoutMin: 0,
   defaultLocale: 'en',
   supportAccess: false,
+  requireMfa: false,
 };
 
 const inputCls =
@@ -135,6 +137,19 @@ export default async function ConfigPage() {
             <span className="flex flex-col">
               <span className="text-xs font-medium text-secondary">{t('supportAccess')}</span>
               <span className="text-[11px] text-secondary">{t('supportAccessHint')}</span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-sm sm:col-span-2">
+            <input
+              type="checkbox"
+              name="requireMfa"
+              defaultChecked={biz.requireMfa}
+              data-testid="require-mfa"
+              className="mt-0.5 h-4 w-4 rounded border-border text-accent focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <span className="flex flex-col">
+              <span className="text-xs font-medium text-secondary">{t('requireMfa')}</span>
+              <span className="text-[11px] text-secondary">{t('requireMfaHint')}</span>
             </span>
           </label>
           <button

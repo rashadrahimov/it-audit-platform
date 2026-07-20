@@ -21,6 +21,8 @@ export interface BusinessProfile {
   defaultLocale: Locale;
   /** T-V58: разрешить временный доступ поддержки платформы к аккаунту (audit-trail). */
   supportAccess: boolean;
+  /** T-V60: организация требует MFA у всех участников (policy + видимость комплаенса). */
+  requireMfa: boolean;
 }
 
 export const EMPTY_PROFILE: BusinessProfile = {
@@ -32,6 +34,7 @@ export const EMPTY_PROFILE: BusinessProfile = {
   idleTimeoutMin: 0,
   defaultLocale: DEFAULT_LOCALE,
   supportAccess: false,
+  requireMfa: false,
 };
 
 type TextField = 'legalName' | 'jurisdiction' | 'address' | 'incidentContact' | 'securityContact';
@@ -74,6 +77,7 @@ export class BusinessProfileService {
       merged.idleTimeoutMin = Math.min(1440, Math.max(0, Math.round(input.idleTimeoutMin)));
     }
     if (typeof input.supportAccess === 'boolean') merged.supportAccess = input.supportAccess;
+    if (typeof input.requireMfa === 'boolean') merged.requireMfa = input.requireMfa;
     const locale = localeSchema.safeParse(input.defaultLocale);
     if (locale.success) merged.defaultLocale = locale.data;
     await this.dbService.db

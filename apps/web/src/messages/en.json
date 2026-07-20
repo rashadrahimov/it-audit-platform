@@ -1133,7 +1133,9 @@
     "defaultLocaleHint": "New sign-ins get this language until the user picks another.",
     "securityContact": "Security contact",
     "supportAccess": "Allow platform support access",
-    "supportAccessHint": "Let platform support temporarily access your account for troubleshooting (audit-logged)."
+    "supportAccessHint": "Let platform support temporarily access your account for troubleshooting (audit-logged).",
+    "requireMfa": "Require MFA for all members",
+    "requireMfaHint": "Organization policy: every member should enable two-factor authentication."
   },
   "reports": {
     "title": "Reports",
@@ -2186,6 +2188,11 @@
     "recoveryHint": "Save these recovery codes somewhere safe — each works once if you lose your device. Shown only now.",
     "codeToDisable": "Code to disable",
     "disable": "Disable 2FA",
-    "disabledOk": "2FA disabled."
+    "disabledOk": "2FA disabled.",
+    "requiredTitle": "Your organization requires MFA",
+    "requiredBody": "Enable two-factor authentication below to comply with your organization policy.",
+    "teamTitle": "Team MFA compliance",
+    "teamCount": "{enabled} of {total} members have MFA enabled.",
+    "off": "Off"
   }
 }

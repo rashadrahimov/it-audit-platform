@@ -15,6 +15,7 @@ const saveSchema = z.object({
   idleTimeoutMin: z.number().int().min(0).max(1440).optional(),
   defaultLocale: z.enum(['en', 'az', 'ru']).optional(),
   supportAccess: z.boolean().optional(),
+  requireMfa: z.boolean().optional(),
 });
 
 @Controller('business-profile')

@@ -66,6 +66,7 @@ export class MembershipsService {
           category: membership.category,
           status: membership.status,
           roleName: role.nameI18n,
+          mfaEnabled: user.mfaEnabled,
         })
         .from(membership)
         .innerJoin(user, eq(membership.userId, user.id))
@@ -81,6 +82,7 @@ export class MembershipsService {
       category: r.category,
       status: r.status,
       role: resolveLocalized(r.roleName, locale),
+      mfaEnabled: r.mfaEnabled,
     }));
   }
 }
