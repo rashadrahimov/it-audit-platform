@@ -93,15 +93,28 @@ export class AuthService {
       throw new UnauthorizedException('Неверный email или пароль');
     }
 
-    // Пароль верен; при включённой MFA — второй шаг (T-014)
-    if (found.mfaEnabled) {
+    // Пароль верен → пост-аутентификация (MFA-челлендж или сразу сессия)
+    return this.beginSession(found.id, found.email, found.mfaEnabled, meta);
+  }
+
+  /**
+   * Пост-аутентификация: при включённой MFA — челлендж (T-014), иначе сразу сессия.
+   * Общая для парольного входа и magic-link (T-V36e) — фактор уже подтверждён вызывающим.
+   */
+  async beginSession(
+    userId: string,
+    email: string,
+    mfaEnabled: boolean,
+    meta: RequestMeta = {},
+  ): Promise<LoginResponse> {
+    if (mfaEnabled) {
       const mfaToken = await this.jwtService.signAsync(
-        { sub: found.id, purpose: 'mfa' },
+        { sub: userId, purpose: 'mfa' },
         { expiresIn: 300 },
       );
       return { mfaRequired: true, mfaToken };
     }
-    return this.completeLogin(found.id, found.email, meta);
+    return this.completeLogin(userId, email, meta);
   }
 
   /** Выдать токен пользователю после полной аутентификации (пароль или пароль+MFA). */

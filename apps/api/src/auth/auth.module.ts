@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { env } from '../env';
+import { EmailModule } from '../email/email.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LdapController } from './ldap.controller';
 import { LdapService } from './ldap.service';
+import { MagicLinkService } from './magic-link.service';
 import { MfaService } from './mfa.service';
 import { OidcController } from './oidc.controller';
 import { OidcService } from './oidc.service';
@@ -20,12 +22,14 @@ import { SsoUserService } from './sso-user.service';
       secret: env.jwtSecret,
       signOptions: { expiresIn: env.jwtTtlSeconds },
     }),
+    EmailModule,
   ],
   controllers: [AuthController, OidcController, SamlController, LdapController],
   providers: [
     AuthService,
     LdapService,
     MfaService,
+    MagicLinkService,
     OidcService,
     SamlService,
     SsoUserService,

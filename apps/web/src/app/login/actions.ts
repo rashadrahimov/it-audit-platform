@@ -121,6 +121,68 @@ export async function mfaVerifyAction(
   redirect('/account');
 }
 
+/** T-V36e: состояние формы запроса magic-link. */
+export interface MagicRequestState {
+  sent?: boolean;
+  error?: string;
+}
+
+/** Запросить magic-link на email. Ответ API всегда 200 — показываем нейтральное «проверьте почту». */
+export async function magicRequestAction(
+  _prev: MagicRequestState,
+  formData: FormData,
+): Promise<MagicRequestState> {
+  const email = String(formData.get('email') ?? '').trim();
+  if (!email) return { error: 'email' };
+  const store = await cookies();
+  const locale = store.get('locale')?.value;
+  try {
+    await fetch(`${API_URL}/auth/magic-link/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, locale }),
+      cache: 'no-store',
+    });
+  } catch {
+    // сеть недоступна — но не раскрываем, показываем то же «проверьте почту»
+  }
+  return { sent: true };
+}
+
+/** T-V36e: погасить magic-link токен → сессия (или MFA-челлендж). */
+export async function magicConsumeAction(
+  _prev: LoginFormState,
+  formData: FormData,
+): Promise<LoginFormState> {
+  const t = await getTranslations('auth');
+  const token = String(formData.get('token') ?? '');
+  if (!token) return { error: t('magicInvalid') };
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}/auth/magic-link/consume`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+      cache: 'no-store',
+    });
+  } catch {
+    return { error: t('apiUnreachable') };
+  }
+  if (!response.ok) return { error: t('magicInvalid') };
+
+  const parsed = loginResponseSchema.safeParse(await response.json());
+  if (!parsed.success) return { error: t('apiUnreachable') };
+
+  const mfa = mfaChallengeResponseSchema.safeParse(parsed.data);
+  if (mfa.success) return { mfaToken: mfa.data.mfaToken };
+
+  const tokenResp = authTokenResponseSchema.parse(parsed.data);
+  await setSessionCookie(tokenResp.accessToken, tokenResp.expiresInSeconds);
+  await applyTenantLocale();
+  redirect('/account');
+}
+
 export async function logoutAction(): Promise<void> {
   const store = await cookies();
   store.delete(SESSION_COOKIE);

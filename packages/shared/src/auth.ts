@@ -54,6 +54,14 @@ export const mfaChallengeResponseSchema = z.object({
 
 export const loginResponseSchema = z.union([authTokenResponseSchema, mfaChallengeResponseSchema]);
 
+/** Magic-link (passwordless, T-V36e): запрос ссылки на email. Ответ всегда 200 (без enumeration). */
+export const magicLinkRequestSchema = z.object({
+  email: z.string().email(),
+  locale: localeSchema.optional(),
+});
+/** Погашение magic-link токена → сессия (или MFA-челлендж, если MFA включён). */
+export const magicLinkConsumeSchema = z.object({ token: z.string().min(1) });
+
 export const mfaSetupResponseSchema = z.object({
   secret: z.string(),
   otpauthUrl: z.string(),
@@ -98,6 +106,8 @@ export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>;
 export type AuthTokenResponse = z.infer<typeof authTokenResponseSchema>;
 export type MfaChallengeResponse = z.infer<typeof mfaChallengeResponseSchema>;
 export type LoginResponse = z.infer<typeof loginResponseSchema>;
+export type MagicLinkRequest = z.infer<typeof magicLinkRequestSchema>;
+export type MagicLinkConsume = z.infer<typeof magicLinkConsumeSchema>;
 export type MfaSetupResponse = z.infer<typeof mfaSetupResponseSchema>;
 export type MfaEnableRequest = z.infer<typeof mfaEnableRequestSchema>;
 export type MfaEnableResponse = z.infer<typeof mfaEnableResponseSchema>;

@@ -32,7 +32,14 @@
       "p1": "Frameworks, controls and checklists out of the box",
       "p2": "Tamper-evident audit trail and field-level access",
       "p3": "Reports, dashboards and KPIs for every subsidiary"
-    }
+    },
+    "or": "or",
+    "magicHint": "No password? Get a one-time sign-in link by email.",
+    "magicSend": "Email me a link",
+    "magicSent": "If that email has an account, a sign-in link is on its way. Check your inbox.",
+    "magicTitle": "Signing you in",
+    "magicConsuming": "Completing sign-in…",
+    "magicInvalid": "This link is invalid or has expired."
   },
   "account": {
     "title": "Account",

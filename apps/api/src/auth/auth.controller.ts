@@ -19,6 +19,8 @@ import type { z } from 'zod';
 import {
   changePasswordRequestSchema,
   loginRequestSchema,
+  magicLinkConsumeSchema,
+  magicLinkRequestSchema,
   mfaEnableRequestSchema,
   mfaVerifyRequestSchema,
   registerRequestSchema,
@@ -31,6 +33,7 @@ import {
 } from '@it-audit/shared';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard, type AuthenticatedRequest } from './jwt-auth.guard';
+import { MagicLinkService } from './magic-link.service';
 import { MfaService } from './mfa.service';
 
 function parse<T extends z.ZodType>(schema: T, body: unknown): z.infer<T> {
@@ -44,6 +47,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly mfaService: MfaService,
+    private readonly magicLinkService: MagicLinkService,
   ) {}
 
   @Post('register')
@@ -60,6 +64,36 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Неверные креды или аккаунт заблокирован' })
   login(@Body() body: unknown, @Req() req: AuthenticatedRequest): Promise<LoginResponse> {
     return this.authService.login(parse(loginRequestSchema, body), {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+  }
+
+  @Post('magic-link/request')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Magic-link (T-V36e): выслать ссылку на email; ответ всегда 200 (без enumeration)',
+  })
+  @ApiOkResponse({ description: 'Принято (письмо уходит только существующему аккаунту)' })
+  async magicLinkRequest(@Body() body: unknown, @Req() req: AuthenticatedRequest): Promise<void> {
+    const { email, locale } = parse(magicLinkRequestSchema, body);
+    await this.magicLinkService.request(email, locale, {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+  }
+
+  @Post('magic-link/consume')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Magic-link: погасить токен → JWT (или MFA-челлендж)' })
+  @ApiOkResponse({ description: 'Bearer-токен или {mfaRequired, mfaToken}' })
+  @ApiUnauthorizedResponse({ description: 'Ссылка недействительна или истекла' })
+  magicLinkConsume(
+    @Body() body: unknown,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<LoginResponse> {
+    const { token } = parse(magicLinkConsumeSchema, body);
+    return this.magicLinkService.consume(token, {
       ip: req.ip,
       userAgent: req.headers['user-agent'],
     });

@@ -12,7 +12,7 @@ test('логин → dashboard → engagements(toggle) → ai-settings → accou
   await page.goto('/login');
   await page.getByTestId('login-email').fill(EMAIL);
   await page.getByTestId('login-password').fill(PASSWORD);
-  await page.locator('button[type="submit"]').click();
+  await page.getByTestId('login-submit').click();
 
   // submitLogin редиректит на /account — успешный логин увёл с /login
   await page.waitForURL(/\/account/, { timeout: 15_000 });
@@ -44,7 +44,7 @@ test('тур: кнопка «?» открывает шаги, Далее раб�
   await page.goto('/login');
   await page.getByTestId('login-email').fill(EMAIL);
   await page.getByTestId('login-password').fill(PASSWORD);
-  await page.locator('button[type="submit"]').click();
+  await page.getByTestId('login-submit').click();
   await page.waitForURL(/\/account/, { timeout: 15_000 });
 
   // страница гайда (T-H34)

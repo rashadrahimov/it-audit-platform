@@ -69,7 +69,7 @@ async function login(page: Page) {
   await page.goto('/login');
   await page.getByTestId('login-email').fill(EMAIL);
   await page.getByTestId('login-password').fill(PASSWORD);
-  await page.locator('button[type="submit"]').click();
+  await page.getByTestId('login-submit').click();
   await page.waitForURL(/\/account/, { timeout: 15_000 });
 }
 

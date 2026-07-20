@@ -18,6 +18,29 @@ const wrap = (body: string): string =>
   `<div style="font-family:sans-serif;max-width:600px">${body}</div>`;
 
 export const emailTemplates = {
+  'magic-link': {
+    en: ({ magicUrl }) => ({
+      subject: 'Your sign-in link — IT Audit Platform',
+      html: wrap(
+        `<p>Use the link below to sign in. It is valid for 15 minutes and works once.</p><p><a href="${magicUrl}">Sign in</a></p><p style="color:#888;font-size:12px">If you didn't request this, ignore this email.</p>`,
+      ),
+      text: `Sign in to IT Audit Platform: ${magicUrl} (valid 15 minutes). If you didn't request this, ignore this email.`,
+    }),
+    az: ({ magicUrl }) => ({
+      subject: 'Giriş keçidiniz — IT Audit Platform',
+      html: wrap(
+        `<p>Daxil olmaq üçün aşağıdakı keçiddən istifadə edin. 15 dəqiqə etibarlıdır.</p><p><a href="${magicUrl}">Daxil ol</a></p><p style="color:#888;font-size:12px">Əgər bunu tələb etməmisinizsə, bu məktubu nəzərə almayın.</p>`,
+      ),
+      text: `IT Audit Platform-a daxil olun: ${magicUrl} (15 dəqiqə etibarlıdır).`,
+    }),
+    ru: ({ magicUrl }) => ({
+      subject: 'Ссылка для входа — IT Audit Platform',
+      html: wrap(
+        `<p>Войдите по ссылке ниже. Она действует 15 минут.</p><p><a href="${magicUrl}">Войти</a></p><p style="color:#888;font-size:12px">Если вы не запрашивали вход, проигнорируйте это письмо.</p>`,
+      ),
+      text: `Вход в IT Audit Platform: ${magicUrl} (действует 15 минут). Если вы не запрашивали — проигнорируйте.`,
+    }),
+  },
   invite: {
     en: ({ inviteUrl, tenantName }) => ({
       subject: `You are invited to IT Audit Platform (${tenantName})`,
