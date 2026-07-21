@@ -70,9 +70,35 @@ export async function createFindingFromSuggestionAction(
   suggestedTitle: string,
   suggestedRisk: string,
   reason: string,
+  expected: string,
+  observed: string,
+  confidence: number,
+  evidenceReferencesJson: string,
 ): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
   if (!tenantSlug) return;
+  let evidenceReferences: Array<{
+    documentId: string;
+    filename: string;
+    relation: string;
+    location: string;
+  }> = [];
+  try {
+    const parsed = JSON.parse(evidenceReferencesJson) as unknown;
+    if (Array.isArray(parsed)) {
+      evidenceReferences = parsed.filter(
+        (ev): ev is (typeof evidenceReferences)[number] =>
+          !!ev &&
+          typeof ev === 'object' &&
+          typeof (ev as { documentId?: unknown }).documentId === 'string' &&
+          typeof (ev as { filename?: unknown }).filename === 'string' &&
+          typeof (ev as { relation?: unknown }).relation === 'string' &&
+          typeof (ev as { location?: unknown }).location === 'string',
+      );
+    }
+  } catch {
+    evidenceReferences = [];
+  }
   await apiFetch('/findings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
@@ -82,6 +108,15 @@ export async function createFindingFromSuggestionAction(
       titleI18n: { en: suggestedTitle },
       descriptionI18n: reason ? { en: reason } : undefined,
       riskRating: suggestedRisk,
+      aiReview: {
+        source: 'finding_suggestion',
+        decision: 'accepted',
+        confidence,
+        expected,
+        observed,
+        reason,
+        evidenceReferences,
+      },
     }),
   });
   revalidatePath(`/engagements/${engagementId}`);

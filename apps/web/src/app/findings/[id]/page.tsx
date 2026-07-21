@@ -31,6 +31,22 @@ interface FindingDetail {
   retestResult: string | null;
   resolutionDate: string | null;
   allowedNext: string | null;
+  aiReview: {
+    source: 'finding_suggestion';
+    decision: 'accepted';
+    confidence: number;
+    expected: string;
+    observed: string;
+    reason?: string;
+    evidenceReferences: Array<{
+      documentId: string;
+      filename: string;
+      relation: string;
+      location: string;
+    }>;
+    reviewedAt: string;
+    reviewedBy: string;
+  } | null;
   history: Array<{ action: string; actor: string | null; at: string }>;
   comments: Array<{ author: string; body: string; at: string }>;
 }
@@ -136,6 +152,11 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
             {t(`slas.${f.slaStatus}`)}
           </span>
         )}
+        {f.aiReview && (
+          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+            {t('aiAccepted')} · {Math.round(f.aiReview.confidence * 100)}%
+          </span>
+        )}
       </header>
 
       <section
@@ -151,6 +172,51 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
           ))}
         </dl>
       </section>
+
+      {f.aiReview && (
+        <section
+          className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-sm"
+          data-testid="finding-ai-review"
+        >
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.14em] text-emerald-700 uppercase">
+                {t('aiTrailKicker')}
+              </p>
+              <h2 className="text-sm font-semibold text-emerald-950">{t('aiTrailTitle')}</h2>
+            </div>
+            <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800">
+              {t('humanAccepted')}
+            </span>
+          </div>
+          <dl className="grid gap-2 text-xs md:grid-cols-2">
+            <div className="rounded-lg bg-white/80 p-3">
+              <dt className="font-semibold text-secondary">{t('aiExpected')}</dt>
+              <dd className="mt-1 text-foreground">{f.aiReview.expected}</dd>
+            </div>
+            <div className="rounded-lg bg-white/80 p-3">
+              <dt className="font-semibold text-secondary">{t('aiObserved')}</dt>
+              <dd className="mt-1 text-foreground">{f.aiReview.observed}</dd>
+            </div>
+          </dl>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {f.aiReview.evidenceReferences.length > 0 ? (
+              f.aiReview.evidenceReferences.map((ev) => (
+                <span
+                  key={`${ev.documentId}-${ev.location}`}
+                  className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-emerald-800"
+                >
+                  {ev.filename} · {ev.location}
+                </span>
+              ))
+            ) : (
+              <span className="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-medium text-amber-800">
+                {t('aiNoEvidence')}
+              </span>
+            )}
+          </div>
+        </section>
+      )}
 
       <section
         className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"

@@ -68,6 +68,47 @@ export interface CreateFindingInput {
   auditorMembershipId?: string;
   dueDate?: string;
   managementResponse?: string;
+  aiReview?: AiFindingReviewInput;
+}
+
+export interface AiFindingReviewInput {
+  source: 'finding_suggestion';
+  decision: 'accepted';
+  confidence: number;
+  expected: string;
+  observed: string;
+  reason?: string;
+  evidenceReferences?: Array<{
+    documentId: string;
+    filename: string;
+    relation: string;
+    location: string;
+  }>;
+}
+
+interface AiFindingReviewMetadata extends AiFindingReviewInput {
+  reviewedAt: string;
+  reviewedBy: string;
+}
+
+function aiReviewFromCustom(custom: unknown): AiFindingReviewMetadata | null {
+  if (!custom || typeof custom !== 'object') return null;
+  const ai = (custom as { ai?: unknown }).ai;
+  if (!ai || typeof ai !== 'object') return null;
+  const data = ai as Partial<AiFindingReviewMetadata>;
+  if (data.source !== 'finding_suggestion' || data.decision !== 'accepted') return null;
+  if (typeof data.confidence !== 'number') return null;
+  return {
+    source: data.source,
+    decision: data.decision,
+    confidence: Math.max(0, Math.min(1, data.confidence)),
+    expected: typeof data.expected === 'string' ? data.expected : '',
+    observed: typeof data.observed === 'string' ? data.observed : '',
+    reason: typeof data.reason === 'string' ? data.reason : undefined,
+    evidenceReferences: Array.isArray(data.evidenceReferences) ? data.evidenceReferences : [],
+    reviewedAt: typeof data.reviewedAt === 'string' ? data.reviewedAt : '',
+    reviewedBy: typeof data.reviewedBy === 'string' ? data.reviewedBy : '',
+  };
 }
 
 /** Finding (T-038): «третья колонка» чеклиста клиента; lifecycle придёт с T-039. */
@@ -192,6 +233,16 @@ export class FindingsService {
           auditorMembershipId: input.auditorMembershipId ?? null,
           dueDate,
           managementResponse: input.managementResponse ?? null,
+          custom: input.aiReview
+            ? {
+                ai: {
+                  ...input.aiReview,
+                  evidenceReferences: input.aiReview.evidenceReferences ?? [],
+                  reviewedAt: new Date().toISOString(),
+                  reviewedBy: actor.userId,
+                } satisfies AiFindingReviewMetadata,
+              }
+            : {},
         })
         .returning();
       if (!row) throw new Error('Finding не создался');
@@ -204,8 +255,28 @@ export class FindingsService {
       action: 'finding.created',
       entityType: 'finding',
       entityId: created.id,
-      after: { title: created.titleI18n.en, riskRating: created.riskRating },
+      after: {
+        title: created.titleI18n.en,
+        riskRating: created.riskRating,
+        source: input.aiReview ? 'ai_suggestion' : 'manual',
+      },
     });
+    if (input.aiReview) {
+      await this.auditLogService.record({
+        tenantId: actor.tenantId,
+        actorUserId: actor.userId,
+        actorIp: actor.ip,
+        action: 'ai_finding.accepted',
+        entityType: 'finding',
+        entityId: created.id,
+        before: { reviewStatus: 'draft', source: input.aiReview.source },
+        after: {
+          reviewStatus: 'accepted',
+          confidence: input.aiReview.confidence,
+          evidenceReferences: input.aiReview.evidenceReferences ?? [],
+        },
+      });
+    }
     return created;
   }
 
@@ -434,6 +505,7 @@ export class FindingsService {
           dueDate: finding.dueDate,
           engagementId: finding.engagementId,
           controlId: finding.controlId,
+          custom: finding.custom,
           owner: ownerUser.fullName,
           auditor: auditorUser.fullName,
         })
@@ -454,6 +526,7 @@ export class FindingsService {
       dueDate: row.dueDate?.toISOString() ?? null,
       engagementId: row.engagementId,
       controlId: row.controlId,
+      aiReview: aiReviewFromCustom(row.custom),
       owner: row.owner,
       auditor: row.auditor,
     }));
@@ -542,6 +615,7 @@ export class FindingsService {
       remediatedAt: row.remediatedAt?.toISOString() ?? null,
       retestResult: row.retestResult,
       resolutionDate: row.resolutionDate?.toISOString() ?? null,
+      aiReview: aiReviewFromCustom(row.custom),
       // T-V03: следующий шаг lifecycle для кнопок UI (сервер всё равно enforce'ит)
       allowedNext: nextIdx >= 0 ? (FINDING_FLOW[nextIdx + 1] ?? null) : null,
       history: history.map((h) => ({ action: h.action, actor: h.actor, at: h.at.toISOString() })),

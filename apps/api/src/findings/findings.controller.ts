@@ -46,6 +46,27 @@ const createFindingSchema = z.object({
   auditorMembershipId: z.uuid().optional(),
   dueDate: z.iso.datetime().optional(),
   managementResponse: z.string().optional(),
+  aiReview: z
+    .object({
+      source: z.literal('finding_suggestion'),
+      decision: z.literal('accepted').default('accepted'),
+      confidence: z.number().min(0).max(1),
+      expected: z.string().min(1).max(4000),
+      observed: z.string().min(1).max(4000),
+      reason: z.string().max(4000).optional(),
+      evidenceReferences: z
+        .array(
+          z.object({
+            documentId: z.uuid(),
+            filename: z.string().min(1).max(500),
+            relation: z.string().min(1).max(80),
+            location: z.string().min(1).max(300),
+          }),
+        )
+        .max(20)
+        .default([]),
+    })
+    .optional(),
 });
 
 function parseLocale(localeQuery?: string): Locale {

@@ -58,6 +58,21 @@ interface FindingRow {
   dueDate: string | null;
   owner: string | null;
   auditor: string | null;
+  aiReview: {
+    source: 'finding_suggestion';
+    decision: 'accepted';
+    confidence: number;
+    expected: string;
+    observed: string;
+    evidenceReferences: Array<{
+      documentId: string;
+      filename: string;
+      relation: string;
+      location: string;
+    }>;
+    reviewedAt: string;
+    reviewedBy: string;
+  } | null;
 }
 
 interface EvidenceDoc {
@@ -302,6 +317,10 @@ export default async function EngagementDetailPage({
                         s.observed,
                         ...s.evidenceReferences.map((ev) => `${ev.filename} (${ev.location})`),
                       ].join('\n'),
+                      s.expected,
+                      s.observed,
+                      s.confidence,
+                      JSON.stringify(s.evidenceReferences),
                     )}
                   >
                     <button
@@ -538,7 +557,16 @@ export default async function EngagementDetailPage({
               <tbody>
                 {findings.map((f) => (
                   <tr key={f.id} className="border-b border-border align-top last:border-0">
-                    <td className="py-2 pr-4 text-foreground">{f.title}</td>
+                    <td className="py-2 pr-4 text-foreground">
+                      <div className="flex flex-col gap-1">
+                        <span>{f.title}</span>
+                        {f.aiReview && (
+                          <span className="w-fit rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                            {t('aiAccepted')} · {Math.round(f.aiReview.confidence * 100)}%
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="py-2 pr-4">
                       <span
                         className={

@@ -219,6 +219,7 @@
     "expected": "Expected",
     "observed": "Observed",
     "noEvidenceRef": "No document reference yet",
+    "aiAccepted": "AI accepted",
     "risk": {
       "high": "High",
       "medium": "Medium"
@@ -1976,6 +1977,13 @@
     "commentsEmpty": "No comments yet",
     "commentPh": "Write a comment…",
     "commentAdd": "Add",
+    "aiAccepted": "AI accepted",
+    "aiTrailKicker": "AI review trail",
+    "aiTrailTitle": "Accepted draft evidence",
+    "humanAccepted": "Accepted by auditor",
+    "aiExpected": "Expected control state",
+    "aiObserved": "Observed gap",
+    "aiNoEvidence": "No document reference was attached",
     "statuses": {
       "identified": "Identified",
       "assigned": "Assigned",
