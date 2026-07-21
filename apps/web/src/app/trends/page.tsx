@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { resolveLocalized, type I18nText } from '@it-audit/shared';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { EmptyState } from '@/components/empty-state';
+import { getCurrentLocale } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,9 +15,41 @@ interface SnapshotRow {
 interface SnapshotDetail extends SnapshotRow {
   metrics: Record<string, Record<string, number>>;
 }
+interface SnapshotDiff {
+  baseline: SnapshotRow | null;
+  currentAt: string;
+  counts: {
+    baselineOpen: number;
+    currentOpen: number;
+    new: number;
+    remediated: number;
+    changed: number;
+    unchanged: number;
+  };
+  findings: Array<{
+    id: string;
+    title: I18nText;
+    riskRating: string;
+    status: string;
+    previousRiskRating: string | null;
+    previousStatus: string | null;
+    change:
+      'new' | 'remediated' | 'risk_escalated' | 'risk_reduced' | 'status_changed' | 'unchanged';
+  }>;
+}
 
 const inputCls =
   'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
+const cardCls = 'rounded-xl border border-border bg-white p-5 shadow-sm';
+
+const CHANGE_TONE: Record<string, string> = {
+  new: 'bg-amber-100 text-amber-900',
+  remediated: 'bg-emerald-100 text-emerald-900',
+  risk_escalated: 'bg-red-100 text-red-900',
+  risk_reduced: 'bg-emerald-100 text-emerald-900',
+  status_changed: 'bg-sky-100 text-sky-900',
+  unchanged: 'bg-muted text-secondary',
+};
 
 /** SVG-полилиния тренда (RSK-08 subset, T-A22). */
 function TrendChart({ points }: { points: Array<{ label: string; value: number }> }) {
@@ -76,10 +110,15 @@ export default async function TrendsPage({
     getActiveTenantSlug(),
     searchParams,
   ]);
+  const locale = await getCurrentLocale();
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const listRes = await apiFetch('/snapshots', { headers });
+  const [listRes, diffRes] = await Promise.all([
+    apiFetch('/snapshots', { headers }),
+    apiFetch('/snapshots/latest-diff', { headers }),
+  ]);
   const rows: SnapshotRow[] = listRes.ok ? await listRes.json() : [];
+  const diff: SnapshotDiff | null = diffRes.ok ? await diffRes.json() : null;
   // хронологический порядок
   rows.sort((a, b) => new Date(a.capturedAt).getTime() - new Date(b.capturedAt).getTime());
 
@@ -106,6 +145,67 @@ export default async function TrendsPage({
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+
+      {diff?.baseline && (
+        <section className={cardCls} data-testid="snapshot-latest-diff">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
+                {t('followUpKicker')}
+              </p>
+              <h2 className="text-lg font-semibold text-primary">{t('followUpTitle')}</h2>
+              <p className="mt-1 text-sm text-secondary">
+                {t('baseline')}: {diff.baseline.label}
+              </p>
+            </div>
+            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900">
+              {t('currentOpen')}: {diff.counts.currentOpen}
+            </span>
+          </div>
+          <dl className="mt-4 grid gap-3 sm:grid-cols-4">
+            {(
+              [
+                ['new', diff.counts.new],
+                ['remediated', diff.counts.remediated],
+                ['changed', diff.counts.changed],
+                ['unchanged', diff.counts.unchanged],
+              ] as const
+            ).map(([key, value]) => (
+              <div key={key} className="rounded-xl bg-muted/60 p-3">
+                <dd className="text-2xl font-bold tabular-nums text-primary">{value}</dd>
+                <dt className="text-xs text-secondary">{t(key)}</dt>
+              </div>
+            ))}
+          </dl>
+          {diff.findings.length > 0 ? (
+            <ul className="mt-4 grid gap-2">
+              {diff.findings.map((finding) => (
+                <li
+                  key={`${finding.id}-${finding.change}`}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/80 p-3"
+                >
+                  <div>
+                    <p className="font-medium text-primary">
+                      {resolveLocalized(finding.title, locale)}
+                    </p>
+                    <p className="text-xs text-secondary">
+                      {finding.previousRiskRating ?? '—'} → {finding.riskRating} ·{' '}
+                      {finding.previousStatus ?? '—'} → {finding.status}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${CHANGE_TONE[finding.change] ?? CHANGE_TONE.unchanged}`}
+                  >
+                    {t(`changes.${finding.change}`)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm text-secondary">{t('noDiff')}</p>
+          )}
+        </section>
+      )}
 
       {snaps.length < 2 ? (
         <section className="rounded-xl border border-border bg-white shadow-sm">

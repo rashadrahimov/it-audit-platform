@@ -45,6 +45,13 @@ export class SnapshotsController {
     return this.service.list(req.tenantId);
   }
 
+  @Get('latest-diff')
+  @RequirePermission('report', 'export', 'view')
+  @ApiOperation({ summary: 'T-H39: diff последнего снапшота с текущими findings' })
+  latestDiff(@Req() req: TenantRequest) {
+    return this.service.latestDiff(req.tenantId);
+  }
+
   @Get(':id')
   @RequirePermission('report', 'export', 'view')
   @ApiOperation({ summary: 'Исторический снапшот (замороженные метрики)' })
