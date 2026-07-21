@@ -222,6 +222,20 @@ export class EngagementsController {
     );
   }
 
+  @Get('workflow-summary')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({
+    summary: 'Сводка lifecycle cockpit: фазы аудита, средний прогресс, команда и bottlenecks',
+  })
+  @ApiOkResponse({ description: '{total, averageProgressPercent, byPhase, topBlockers}' })
+  workflowSummary(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
+    return this.engagementsService.workflowSummary(
+      req.tenantId,
+      req.user.sub,
+      parseLocale(localeQuery),
+    );
+  }
+
   @Get(':id')
   @RequirePermission('engagement', 'view')
   @ApiOperation({

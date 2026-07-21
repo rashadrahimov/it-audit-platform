@@ -162,7 +162,36 @@
     "periodStart": "Dövr başı",
     "periodEnd": "Dövr sonu",
     "createSubmit": "Yarat",
-    "createError": "Yaradıla bilmədi"
+    "createError": "Yaradıla bilmədi",
+    "workspaceKicker": "Audit iş sahəsi",
+    "workflow": {
+      "kicker": "Həyat dövrü pultu",
+      "title": "Audit prosesinin sağlamlığı",
+      "subtitle": "Bütün aktiv auditləri fazalar üzrə izləyin: əhatə, sübut toplama, qiymətləndirmə, qeydlər və hesabat — dar boğazlar sürprizə çevrilməzdən əvvəl görünür.",
+      "avgProgress": "orta irəliləyiş",
+      "activeAudits": "Aktiv auditlər",
+      "activeHint": "Aktiv portfeldə cəmi: {total}",
+      "teamCoverage": "Komanda ilə",
+      "teamHint": "{total} audit üçün aydın məsuliyyət lazımdır",
+      "pausedClosed": "Pauza / bağlı",
+      "pausedClosedHint": "Axın nəzarəti və tamamlanmış iş",
+      "blockersTitle": "Açılmalı dar boğazlar",
+      "noBlockers": "Prosesdə dar boğaz aşkarlanmadı.",
+      "phases": {
+        "scoping": "Əhatə",
+        "data_collection": "Məlumat toplama",
+        "assessment": "Qiymətləndirmə",
+        "findings": "Qeydlər",
+        "reporting": "Hesabat"
+      },
+      "reasons": {
+        "paused": "Pauzada",
+        "milestone_overdue": "Vəhlə gecikib",
+        "no_checklist": "Çeklist yoxdur",
+        "awaiting_responses": "Cavablar gözlənilir",
+        "findings_in_review": "Qeydlər icmalı"
+      }
+    }
   },
   "engagementDetail": {
     "back": "Bütün auditlər",

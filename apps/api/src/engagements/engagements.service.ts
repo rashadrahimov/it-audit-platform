@@ -57,6 +57,24 @@ interface Actor {
   ip?: string;
 }
 
+const WORKFLOW_PHASES = [
+  { key: 'scoping', states: ['draft', 'manager_review'] },
+  { key: 'data_collection', states: ['issued_to_respondents', 'responses_in_progress'] },
+  { key: 'assessment', states: ['findings_drafting'] },
+  { key: 'findings', states: ['management_response', 'approval'] },
+  { key: 'reporting', states: ['report_issued', 'follow_up', 'closed'] },
+] as const;
+
+type WorkflowPhaseKey = (typeof WORKFLOW_PHASES)[number]['key'];
+type WorkflowBlockerReason =
+  'paused' | 'milestone_overdue' | 'no_checklist' | 'awaiting_responses' | 'findings_in_review';
+
+function phaseForState(state: string): WorkflowPhaseKey {
+  return (
+    WORKFLOW_PHASES.find((p) => (p.states as readonly string[]).includes(state))?.key ?? 'scoping'
+  );
+}
+
 /** Engagement (T-035, ADR-0005): CRUD + переходы state machine с фиксацией вех. */
 @Injectable()
 export class EngagementsService {
@@ -379,6 +397,190 @@ export class EngagementsService {
       subsidiary: resolveLocalized(row.subsidiaryName, locale),
       auditType: row.auditTypeName ? resolveLocalized(row.auditTypeName, locale) : null,
     }));
+  }
+
+  /**
+   * T-H46: cockpit жизненного цикла аудитов. Сводка строится поверх state machine,
+   * план/факт вех, чеклиста, ответов, замечаний и состава команды — без мутаций.
+   */
+  async workflowSummary(tenantId: string, userId: string, locale: Locale) {
+    const now = new Date();
+    const scope = await resolveAuditorScope(this.dbService, tenantId, userId);
+    const data = await this.dbService.withTenant(tenantId, async (tx) => {
+      const conds = [isNull(engagement.deletedAt), isNull(engagement.archivedAt)];
+      if (scope !== null) {
+        conds.push(scope.length === 0 ? sql`false` : inArray(engagement.subsidiaryId, scope));
+      }
+      const rows = await tx
+        .select({
+          id: engagement.id,
+          titleI18n: engagement.titleI18n,
+          state: engagement.state,
+          pausedFromState: engagement.pausedFromState,
+          mode: engagement.mode,
+          subsidiaryName: subsidiary.nameI18n,
+        })
+        .from(engagement)
+        .innerJoin(subsidiary, eq(engagement.subsidiaryId, subsidiary.id))
+        .where(and(...conds))
+        .orderBy(asc(engagement.createdAt));
+      const ids = rows.map((r) => r.id);
+      if (ids.length === 0) {
+        return { rows, milestones: [], checklist: [], answered: [], findings: [], members: [] };
+      }
+      const milestones = await tx
+        .select({
+          engagementId: engagementMilestone.engagementId,
+          stage: engagementMilestone.stage,
+          plannedDate: engagementMilestone.plannedDate,
+          actualDate: engagementMilestone.actualDate,
+        })
+        .from(engagementMilestone)
+        .where(inArray(engagementMilestone.engagementId, ids));
+      const checklist = await tx
+        .select({ engagementId: checklistItem.engagementId, id: checklistItem.id })
+        .from(checklistItem)
+        .where(inArray(checklistItem.engagementId, ids));
+      const answered = await tx
+        .select({
+          engagementId: checklistItem.engagementId,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(response)
+        .innerJoin(checklistItem, eq(response.checklistItemId, checklistItem.id))
+        .where(inArray(checklistItem.engagementId, ids))
+        .groupBy(checklistItem.engagementId);
+      const findings = await tx
+        .select({
+          engagementId: finding.engagementId,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(finding)
+        .where(and(inArray(finding.engagementId, ids), isNull(finding.deletedAt)))
+        .groupBy(finding.engagementId);
+      const members = await tx
+        .select({
+          engagementId: engagementMember.engagementId,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(engagementMember)
+        .where(inArray(engagementMember.engagementId, ids))
+        .groupBy(engagementMember.engagementId);
+      return { rows, milestones, checklist, answered, findings, members };
+    });
+
+    const checklistCount = new Map<string, number>();
+    for (const item of data.checklist) {
+      checklistCount.set(item.engagementId, (checklistCount.get(item.engagementId) ?? 0) + 1);
+    }
+    const answeredCount = new Map(data.answered.map((r) => [r.engagementId, r.count]));
+    const findingCount = new Map(data.findings.map((r) => [r.engagementId, r.count]));
+    const memberCount = new Map(data.members.map((r) => [r.engagementId, r.count]));
+    const milestonesByEngagement = new Map<string, typeof data.milestones>();
+    for (const m of data.milestones) {
+      const existing = milestonesByEngagement.get(m.engagementId) ?? [];
+      existing.push(m);
+      milestonesByEngagement.set(m.engagementId, existing);
+    }
+
+    const byPhase = WORKFLOW_PHASES.map((phase, index) => ({
+      phase: phase.key,
+      order: index + 1,
+      states: phase.states,
+      count: 0,
+      percent: 0,
+    }));
+    const phaseRows = new Map(byPhase.map((p) => [p.phase, p]));
+
+    const blockers: {
+      engagementId: string;
+      title: string;
+      subsidiary: string;
+      state: string;
+      phase: WorkflowPhaseKey;
+      reason: WorkflowBlockerReason;
+      checklistTotal: number;
+      answered: number;
+      findings: number;
+      dueAt: string | null;
+    }[] = [];
+    let progressTotal = 0;
+
+    for (const row of data.rows) {
+      const effectiveState =
+        row.state === 'paused' ? (row.pausedFromState ?? row.state) : row.state;
+      const phase = phaseForState(effectiveState);
+      const phaseRow = phaseRows.get(phase);
+      if (phaseRow) phaseRow.count += 1;
+
+      const stageIndex = Math.max(
+        0,
+        ENGAGEMENT_FLOW.indexOf(effectiveState as (typeof ENGAGEMENT_FLOW)[number]),
+      );
+      progressTotal += Math.round(((stageIndex + 1) / ENGAGEMENT_FLOW.length) * 100);
+
+      const total = checklistCount.get(row.id) ?? 0;
+      const answered = answeredCount.get(row.id) ?? 0;
+      const findingsTotal = findingCount.get(row.id) ?? 0;
+      const milestones = milestonesByEngagement.get(row.id) ?? [];
+      const overdueMilestone = milestones
+        .filter((m) => m.plannedDate !== null && m.actualDate === null && m.plannedDate < now)
+        .sort((a, b) => Number(a.plannedDate) - Number(b.plannedDate))[0];
+
+      let reason: WorkflowBlockerReason | null = null;
+      let dueAt: string | null = null;
+      if (row.state === 'paused') reason = 'paused';
+      else if (overdueMilestone) {
+        reason = 'milestone_overdue';
+        dueAt = overdueMilestone.plannedDate?.toISOString() ?? null;
+      } else if (total === 0 && phase === 'scoping') reason = 'no_checklist';
+      else if (
+        total > 0 &&
+        answered < total &&
+        (phase === 'data_collection' || effectiveState === 'issued_to_respondents')
+      ) {
+        reason = 'awaiting_responses';
+      } else if (findingsTotal > 0 && phase === 'findings') {
+        reason = 'findings_in_review';
+      }
+
+      if (reason) {
+        blockers.push({
+          engagementId: row.id,
+          title: resolveLocalized(row.titleI18n, locale),
+          subsidiary: resolveLocalized(row.subsidiaryName, locale),
+          state: row.state,
+          phase,
+          reason,
+          checklistTotal: total,
+          answered,
+          findings: findingsTotal,
+          dueAt,
+        });
+      }
+    }
+
+    const total = data.rows.length;
+    const phaseSummary = byPhase.map((p) => ({
+      ...p,
+      percent: total === 0 ? 0 : Math.round((p.count / total) * 100),
+    }));
+    const active = data.rows.filter((r) => r.state !== 'closed' && r.state !== 'paused').length;
+    const paused = data.rows.filter((r) => r.state === 'paused').length;
+    const closed = data.rows.filter((r) => r.state === 'closed').length;
+    const withTeam = data.rows.filter((r) => (memberCount.get(r.id) ?? 0) > 0).length;
+
+    return {
+      generatedAt: now.toISOString(),
+      total,
+      active,
+      paused,
+      closed,
+      withTeam,
+      averageProgressPercent: total === 0 ? 0 : Math.round(progressTotal / total),
+      byPhase: phaseSummary,
+      topBlockers: blockers.slice(0, 6),
+    };
   }
 
   async detail(tenantId: string, userId: string, id: string, locale: Locale) {

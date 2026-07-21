@@ -162,7 +162,36 @@
     "periodStart": "Период с",
     "periodEnd": "Период по",
     "createSubmit": "Создать",
-    "createError": "Не удалось создать"
+    "createError": "Не удалось создать",
+    "workspaceKicker": "Рабочее пространство аудита",
+    "workflow": {
+      "kicker": "Пульт жизненного цикла",
+      "title": "Здоровье аудиторского процесса",
+      "subtitle": "Следите за всеми активными аудитами по фазам: скоупинг, сбор доказательств, оценка, замечания и отчётность — с узкими местами до неприятных сюрпризов.",
+      "avgProgress": "средний прогресс",
+      "activeAudits": "Активные аудиты",
+      "activeHint": "Всего в активном портфеле: {total}",
+      "teamCoverage": "С командой",
+      "teamHint": "{total} аудитов требуют явной ответственности",
+      "pausedClosed": "Пауза / закрыто",
+      "pausedClosedHint": "Контроль потока и завершённая работа",
+      "blockersTitle": "Узкие места для разблокировки",
+      "noBlockers": "Узких мест в процессе не найдено.",
+      "phases": {
+        "scoping": "Скоупинг",
+        "data_collection": "Сбор данных",
+        "assessment": "Оценка",
+        "findings": "Замечания",
+        "reporting": "Отчётность"
+      },
+      "reasons": {
+        "paused": "На паузе",
+        "milestone_overdue": "Веха просрочена",
+        "no_checklist": "Нет чеклиста",
+        "awaiting_responses": "Ждём ответы",
+        "findings_in_review": "Ревью замечаний"
+      }
+    }
   },
   "engagementDetail": {
     "back": "Все аудиты",

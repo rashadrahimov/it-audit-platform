@@ -162,7 +162,36 @@
     "periodStart": "Period from",
     "periodEnd": "Period to",
     "createSubmit": "Create",
-    "createError": "Could not create"
+    "createError": "Could not create",
+    "workspaceKicker": "Audit workspace",
+    "workflow": {
+      "kicker": "Lifecycle cockpit",
+      "title": "Audit workflow health",
+      "subtitle": "Track every active audit across scoping, evidence collection, assessment, findings and reporting — with bottlenecks surfaced before they become surprises.",
+      "avgProgress": "average progress",
+      "activeAudits": "Active audits",
+      "activeHint": "{total} total in the active portfolio",
+      "teamCoverage": "With team",
+      "teamHint": "{total} audits need named accountability",
+      "pausedClosed": "Paused / closed",
+      "pausedClosedHint": "Flow control and completed work",
+      "blockersTitle": "Bottlenecks to unblock",
+      "noBlockers": "No workflow bottlenecks detected.",
+      "phases": {
+        "scoping": "Scoping",
+        "data_collection": "Data collection",
+        "assessment": "Assessment",
+        "findings": "Findings",
+        "reporting": "Reporting"
+      },
+      "reasons": {
+        "paused": "Paused",
+        "milestone_overdue": "Milestone overdue",
+        "no_checklist": "No checklist",
+        "awaiting_responses": "Awaiting responses",
+        "findings_in_review": "Findings review"
+      }
+    }
   },
   "engagementDetail": {
     "back": "All engagements",
