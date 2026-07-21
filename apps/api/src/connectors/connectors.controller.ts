@@ -83,6 +83,19 @@ export class ConnectorsController {
     return this.connectorSyncService.catalog();
   }
 
+  @Get('monitoring-summary')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({
+    summary: 'T-H43: continuous monitoring/rescan summary по коннекторам и автотестам',
+  })
+  @ApiOkResponse({
+    description:
+      '{counts, scheduler, lastSyncAt, lastAutoTestAt, connectors[], recentRuns[]} без секретов',
+  })
+  monitoringSummary(@Req() req: TenantRequest) {
+    return this.connectorsService.monitoringSummary(req.tenantId);
+  }
+
   @Get(':id')
   @RequirePermission('settings', 'view')
   @ApiOperation({ summary: 'Карточка коннектора + история sync_run' })

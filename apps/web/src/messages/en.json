@@ -437,6 +437,32 @@
     "intervalHint": "0 = manual only; minimum 5 min",
     "configEdit": "Update config (leave blank to keep)",
     "save": "Save",
+    "never": "Never",
+    "monitor": {
+      "kicker": "Continuous monitoring",
+      "title": "Rescan control room",
+      "subtitle": "Connector autosync runs every {sync} min; automated tests are checked every {tests} min.",
+      "timeline": "Latest activity",
+      "lastSync": "Last connector sync",
+      "lastAutoTest": "Last automated test",
+      "noSources": "No connected sources yet.",
+      "dueNow": "Rescan due",
+      "waiting": "Waiting for first run",
+      "noErrors": "No connector errors",
+      "errors": "{n} connector errors",
+      "failingTests": "{n} automated tests need attention",
+      "metrics": {
+        "activeConnectors": "Active sources",
+        "scheduledConnectors": "Scheduled",
+        "dueForSync": "Due now",
+        "automatedTests": "Auto-tests"
+      },
+      "outcomes": {
+        "success": "Synced",
+        "error": "Error",
+        "running": "Running"
+      }
+    },
     "statuses": {
       "active": "Active",
       "error": "Error",

@@ -437,6 +437,32 @@
     "intervalHint": "0 = yalnız əl ilə; minimum 5 dəq",
     "configEdit": "Konfiqi yenilə (boş = saxla)",
     "save": "Yadda saxla",
+    "never": "Heç vaxt",
+    "monitor": {
+      "kicker": "Davamlı monitorinq",
+      "title": "Yenidən skan paneli",
+      "subtitle": "Konnektorların avtosinxronizasiyası hər {sync} dəq işləyir; avtomatik testlər hər {tests} dəq yoxlanılır.",
+      "timeline": "Son aktivlik",
+      "lastSync": "Son konnektor sinxronizasiyası",
+      "lastAutoTest": "Son avtomatik test",
+      "noSources": "Hələ qoşulmuş mənbə yoxdur.",
+      "dueNow": "Yenidən skan vaxtıdır",
+      "waiting": "İlk işə salmanı gözləyir",
+      "noErrors": "Konnektor xətası yoxdur",
+      "errors": "{n} konnektor xətası",
+      "failingTests": "{n} avtomatik test diqqət tələb edir",
+      "metrics": {
+        "activeConnectors": "Aktiv mənbələr",
+        "scheduledConnectors": "Cədvəldə",
+        "dueForSync": "İndi lazımdır",
+        "automatedTests": "Avtotestlər"
+      },
+      "outcomes": {
+        "success": "Sinxronlaşdırıldı",
+        "error": "Xəta",
+        "running": "İcradadır"
+      }
+    },
     "statuses": {
       "active": "Aktiv",
       "error": "Xəta",
