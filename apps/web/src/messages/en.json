@@ -1000,7 +1000,22 @@
       "rejected": "Rejected"
     },
     "byTreatment": "By treatment",
-    "byClass": "By risk class"
+    "byClass": "By risk class",
+    "aiSuggestionsKicker": "AI-assisted risk detection",
+    "aiSuggestions": "Business-risk proposals",
+    "aiSuggestionsHint": "Draft-only suggestions derived from open findings. Review, edit if needed, then add to the register.",
+    "reviewRequired": "Human review required",
+    "confidence": "Confidence",
+    "evidence": "Evidence",
+    "addAfterReview": "Add after review",
+    "businessCategories": {
+      "operational": "Operational",
+      "financial": "Financial",
+      "regulatory": "Regulatory",
+      "third_party": "Third-party",
+      "continuity": "Continuity",
+      "reputational": "Reputational"
+    }
   },
   "privacy": {
     "title": "Privacy — ROPA & DPIA",

@@ -160,6 +160,39 @@ export async function addRiskFromLibraryAction(libraryRiskId: string): Promise<v
   revalidatePath('/risks');
 }
 
+/** Human-in-the-loop: принять AI/business-risk proposal и создать риск в реестре. */
+export async function addRiskSuggestionAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const title = String(formData.get('title') ?? '').trim();
+  if (!title) return;
+  const description = String(formData.get('description') ?? '').trim();
+  const category = String(formData.get('category') ?? '').trim();
+  const domain = String(formData.get('domain') ?? '').trim();
+  const num = (k: string) => {
+    const v = Number(formData.get(k));
+    return Number.isFinite(v) && v >= 1 && v <= 5 ? v : 3;
+  };
+  await apiFetch('/risks', {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      titleI18n: { en: title, ru: title, az: title },
+      descriptionI18n: description
+        ? { en: description, ru: description, az: description }
+        : undefined,
+      category: category || undefined,
+      domain: domain || undefined,
+      inherentImpact: num('inherentImpact'),
+      inherentLikelihood: num('inherentLikelihood'),
+      residualImpact: num('inherentImpact'),
+      residualLikelihood: num('inherentLikelihood'),
+      treatment: 'mitigate',
+    }),
+  });
+  revalidatePath('/risks');
+}
+
 /** Настроить матрицу рисков (T-057 → UI T-V12): шкалы и пороги классов. */
 export async function setRiskMatrixAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();

@@ -11,6 +11,7 @@ import { DbService } from '../db/db.service';
 import {
   auditableEntity,
   control,
+  finding,
   membership,
   risk,
   riskControl,
@@ -20,6 +21,7 @@ import {
 } from '../db/schema';
 import { classifyRisk, DEFAULT_THRESHOLDS } from './classify-risk';
 import { EntityAclService } from '../entity-acl/entity-acl.service';
+import { suggestBusinessRisks } from './risk-suggest';
 
 interface Actor {
   tenantId: string;
@@ -710,6 +712,46 @@ export class RisksService {
       status: r.status,
       approvalStatus: r.approvalStatus,
     }));
+  }
+
+  /** EP-AI requirement slice: business-risk proposals from open findings, draft-only. */
+  async suggestions(tenantId: string, locale: Locale, opts?: { engagementId?: string }) {
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          findingId: finding.id,
+          titleI18n: finding.titleI18n,
+          riskRating: finding.riskRating,
+          status: finding.status,
+          controlRef: control.ref,
+        })
+        .from(finding)
+        .leftJoin(control, eq(finding.controlId, control.id))
+        .where(
+          and(
+            eq(finding.tenantId, tenantId),
+            isNull(finding.deletedAt),
+            opts?.engagementId ? eq(finding.engagementId, opts.engagementId) : undefined,
+          ),
+        )
+        .orderBy(desc(finding.createdAt)),
+    );
+    const suggestions = suggestBusinessRisks(
+      rows.map((r) => ({
+        findingId: r.findingId,
+        titleI18n: r.titleI18n,
+        riskRating: r.riskRating,
+        status: r.status,
+        controlRef: r.controlRef,
+        domain: null,
+      })),
+      locale,
+    );
+    return {
+      reviewRequired: true,
+      count: suggestions.length,
+      items: suggestions,
+    };
   }
 
   async detail(tenantId: string, id: string, locale: Locale, userId?: string) {

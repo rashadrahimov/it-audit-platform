@@ -1000,7 +1000,22 @@
       "rejected": "Rədd edilib"
     },
     "byTreatment": "Müalicə üzrə",
-    "byClass": "Risk sinfi üzrə"
+    "byClass": "Risk sinfi üzrə",
+    "aiSuggestionsKicker": "AI risk köməkçisi",
+    "aiSuggestions": "Biznes-risk təklifləri",
+    "aiSuggestionsHint": "Açıq findings əsasında qaralama təkliflər. Yoxlayın, lazım gələrsə redaktə edin və yalnız sonra reyestrə əlavə edin.",
+    "reviewRequired": "İnsan yoxlaması tələb olunur",
+    "confidence": "Etibar",
+    "evidence": "Sübut",
+    "addAfterReview": "Yoxlamadan sonra əlavə et",
+    "businessCategories": {
+      "operational": "Əməliyyat",
+      "financial": "Maliyyə",
+      "regulatory": "Tənzimləyici",
+      "third_party": "Üçüncü tərəf",
+      "continuity": "Davamlılıq",
+      "reputational": "Reputasiya"
+    }
   },
   "privacy": {
     "title": "Məxfilik — ROPA və DPIA",

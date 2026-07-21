@@ -1000,7 +1000,22 @@
       "rejected": "Отклонён"
     },
     "byTreatment": "По обработке",
-    "byClass": "По классу риска"
+    "byClass": "По классу риска",
+    "aiSuggestionsKicker": "AI-помощник по рискам",
+    "aiSuggestions": "Предложения бизнес-рисков",
+    "aiSuggestionsHint": "Черновые предложения из открытых findings. Проверьте, при необходимости отредактируйте и только потом добавьте в реестр.",
+    "reviewRequired": "Требуется проверка человеком",
+    "confidence": "Уверенность",
+    "evidence": "Доказательство",
+    "addAfterReview": "Добавить после проверки",
+    "businessCategories": {
+      "operational": "Операционный",
+      "financial": "Финансовый",
+      "regulatory": "Регуляторный",
+      "third_party": "Третьи стороны",
+      "continuity": "Непрерывность",
+      "reputational": "Репутационный"
+    }
   },
   "privacy": {
     "title": "Приватность — ROPA и DPIA",

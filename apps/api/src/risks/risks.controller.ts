@@ -305,6 +305,29 @@ export class RisksController {
     });
   }
 
+  @Get('suggestions')
+  @RequirePermission('control', 'view')
+  @ApiOperation({
+    summary:
+      'AI/business-risk proposals from findings (draft-only; human review required before register)',
+  })
+  @ApiQuery({ name: 'locale', required: false })
+  @ApiQuery({ name: 'engagementId', required: false })
+  suggestions(
+    @Req() req: TenantRequest,
+    @Query('locale') localeQuery?: string,
+    @Query('engagementId') engagementId?: string,
+  ) {
+    const parsedEngagementId =
+      engagementId === undefined ? undefined : z.uuid().safeParse(engagementId);
+    if (parsedEngagementId !== undefined && !parsedEngagementId.success) {
+      throw new BadRequestException('engagementId: ожидается UUID');
+    }
+    return this.service.suggestions(req.tenantId, parseLocale(localeQuery), {
+      engagementId: parsedEngagementId?.data,
+    });
+  }
+
   @Get(':id')
   @RequirePermission('control', 'view')
   @ApiOperation({ summary: 'Карточка риска' })

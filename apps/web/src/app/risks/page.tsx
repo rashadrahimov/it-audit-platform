@@ -3,7 +3,12 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
-import { addRiskFromLibraryAction, createRiskAction, setRiskMatrixAction } from './actions';
+import {
+  addRiskFromLibraryAction,
+  addRiskSuggestionAction,
+  createRiskAction,
+  setRiskMatrixAction,
+} from './actions';
 import { EmptyState } from '@/components/empty-state';
 import { WidgetChart } from '@/components/widget-chart';
 import { StatusBadge, type StatusTone } from '@/components/status-badge';
@@ -21,6 +26,19 @@ interface Risk {
   treatment: Treatment | null;
   status: string;
   approvalStatus: string | null;
+}
+interface RiskSuggestion {
+  findingId: string;
+  title: string;
+  description: string;
+  category: string;
+  affectedControlRef: string | null;
+  domain: string | null;
+  inherentImpact: number;
+  inherentLikelihood: number;
+  riskClass: RiskClass | null;
+  confidence: number;
+  evidenceRef: { type: string; id: string; location: string };
 }
 
 const APPR_TONE: Record<string, StatusTone> = {
@@ -56,10 +74,11 @@ export default async function RisksPage({
   // T-V57: очередь «Требуют моего согласования»
   const approvalQueue = sp.queue === 'approval';
 
-  const [res, matrixRes, libRes] = await Promise.all([
+  const [res, matrixRes, libRes, suggestRes] = await Promise.all([
     apiFetch(`/risks?locale=${locale}${approvalQueue ? '&needsMyApproval=true' : ''}`, { headers }),
     apiFetch('/risks/matrix', { headers }),
     apiFetch(`/risks/library?locale=${locale}`, { headers }),
+    apiFetch(`/risks/suggestions?locale=${locale}`, { headers }),
   ]);
   const risks: Risk[] = res.ok ? await res.json() : [];
   const library: Array<{
@@ -78,6 +97,8 @@ export default async function RisksPage({
   } = matrixRes.ok
     ? await matrixRes.json()
     : { impactScale: 5, likelihoodScale: 5, thresholds: { medium: 6, high: 12, critical: 20 } };
+  const suggestions: { reviewRequired: boolean; count: number; items: RiskSuggestion[] } =
+    suggestRes.ok ? await suggestRes.json() : { reviewRequired: true, count: 0, items: [] };
 
   // T-V59: Risk-Overview — распределение по treatment и по классу (донаты, WidgetChart)
   const tally = (fn: (r: Risk) => string | null) => {
@@ -183,6 +204,68 @@ export default async function RisksPage({
             <h2 className="text-sm font-semibold text-primary">{t('byClass')}</h2>
             <WidgetChart chartType="donut" data={classData} />
           </div>
+        </section>
+      )}
+
+      {!approvalQueue && suggestions.items.length > 0 && (
+        <section
+          className="flex flex-col gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/70 p-5 shadow-sm"
+          data-testid="risk-ai-suggestions"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.12em] text-accent uppercase">
+                {t('aiSuggestionsKicker')}
+              </p>
+              <h2 className="text-lg font-semibold text-primary">{t('aiSuggestions')}</h2>
+              <p className="mt-1 text-sm text-secondary">{t('aiSuggestionsHint')}</p>
+            </div>
+            <StatusBadge tone="warning" dot>
+              {t('reviewRequired')}
+            </StatusBadge>
+          </div>
+          <ul className="grid gap-3 lg:grid-cols-2">
+            {suggestions.items.slice(0, 6).map((s) => (
+              <li
+                key={s.findingId}
+                className="rounded-xl border border-border bg-white/90 p-4 shadow-xs"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusBadge tone={s.riskClass ? CLASS_TONE[s.riskClass] : 'neutral'} dot>
+                    {s.riskClass ? t(`cls.${s.riskClass}`) : '—'}
+                  </StatusBadge>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-secondary">
+                    {t(`businessCategories.${s.category}`)}
+                  </span>
+                  <span className="text-xs text-secondary">
+                    {t('confidence')}: {Math.round(s.confidence * 100)}%
+                  </span>
+                </div>
+                <h3 className="mt-2 text-sm font-semibold text-foreground">{s.title}</h3>
+                <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-secondary">
+                  {s.description}
+                </p>
+                <p className="mt-2 text-xs text-secondary">
+                  {t('evidence')}: {s.evidenceRef.location}
+                </p>
+                <form action={addRiskSuggestionAction} className="mt-3">
+                  <input type="hidden" name="title" value={s.title} />
+                  <input type="hidden" name="description" value={s.description} />
+                  <input type="hidden" name="category" value={s.category} />
+                  <input type="hidden" name="domain" value={s.affectedControlRef ?? ''} />
+                  <input type="hidden" name="inherentImpact" value={s.inherentImpact} />
+                  <input type="hidden" name="inherentLikelihood" value={s.inherentLikelihood} />
+                  <button
+                    type="submit"
+                    data-testid="risk-suggestion-add"
+                    className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    {t('addAfterReview')}
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
