@@ -1205,6 +1205,26 @@
     "title": "Reports",
     "toAccount": "To account",
     "export": "Data export",
+    "schedule": {
+      "kicker": "Scheduled reports",
+      "title": "Compliance digest schedule",
+      "next": "Next estimated digest: {date}",
+      "disabled": "Digest sending is disabled in notification settings.",
+      "ready": "Ready to send",
+      "quiet": "No signal",
+      "meta": "{digest} · {recipients} recipients · {timezone}",
+      "digest": {
+        "weekly": "Weekly",
+        "daily": "Daily",
+        "off": "Off"
+      },
+      "metrics": {
+        "openFindings": "Open findings",
+        "overdueFindings": "Overdue findings",
+        "overdueTasks": "Overdue tasks",
+        "policiesDue": "Policies due"
+      }
+    },
     "deliverables": {
       "kicker": "Standard audit deliverables",
       "title": "One engagement, five board-ready outputs.",

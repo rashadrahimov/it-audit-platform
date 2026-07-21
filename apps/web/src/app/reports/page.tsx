@@ -28,6 +28,21 @@ interface EngagementRow {
   subsidiary: string | null;
   auditType: string | null;
 }
+interface SchedulePreview {
+  enabled: boolean;
+  digest: 'weekly' | 'daily' | 'off';
+  schedule: 'anytime' | 'work_hours';
+  timezone: string;
+  nextRunAt: string | null;
+  recipientCount: number;
+  willSendIfRunNow: boolean;
+  metrics: {
+    openFindings: number;
+    overdueFindings: number;
+    overdueTasks: number;
+    policiesDue: number;
+  };
+}
 
 const ENTITIES = ['findings', 'risks', 'controls'];
 const FORMATS = ['csv', 'xml'];
@@ -67,12 +82,14 @@ export default async function ReportsPage({
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const [snapRes, engagementRes] = await Promise.all([
+  const [snapRes, engagementRes, scheduleRes] = await Promise.all([
     apiFetch('/snapshots', { headers }),
     apiFetch(`/engagements?locale=${locale}`, { headers }),
+    apiFetch('/reports/schedule-preview', { headers }),
   ]);
   const snapshots: Snapshot[] = snapRes.ok ? await snapRes.json() : [];
   const engagements: EngagementRow[] = engagementRes.ok ? await engagementRes.json() : [];
+  const schedule: SchedulePreview | null = scheduleRes.ok ? await scheduleRes.json() : null;
   const selectedEngagement =
     engagements.find((e) => e.id === sp.engagementId) ?? engagements[0] ?? null;
 
@@ -90,6 +107,65 @@ export default async function ReportsPage({
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+
+      {schedule && (
+        <section
+          className="rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm"
+          data-testid="report-schedule-preview"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
+                {t('schedule.kicker')}
+              </p>
+              <h2 className="text-lg font-semibold text-primary">{t('schedule.title')}</h2>
+              <p className="mt-1 text-sm text-secondary">
+                {schedule.enabled
+                  ? t('schedule.next', {
+                      date: schedule.nextRunAt
+                        ? new Intl.DateTimeFormat(locale, {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          }).format(new Date(schedule.nextRunAt))
+                        : '—',
+                    })
+                  : t('schedule.disabled')}
+              </p>
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                schedule.willSendIfRunNow
+                  ? 'bg-emerald-100 text-emerald-900'
+                  : 'bg-amber-100 text-amber-900'
+              }`}
+            >
+              {schedule.willSendIfRunNow ? t('schedule.ready') : t('schedule.quiet')}
+            </span>
+          </div>
+          <dl className="mt-4 grid gap-3 sm:grid-cols-4">
+            {(
+              [
+                ['openFindings', schedule.metrics.openFindings],
+                ['overdueFindings', schedule.metrics.overdueFindings],
+                ['overdueTasks', schedule.metrics.overdueTasks],
+                ['policiesDue', schedule.metrics.policiesDue],
+              ] as const
+            ).map(([key, value]) => (
+              <div key={key} className="rounded-xl bg-muted/60 p-3">
+                <dd className="text-2xl font-bold tabular-nums text-primary">{value}</dd>
+                <dt className="text-xs text-secondary">{t(`schedule.metrics.${key}`)}</dt>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-3 text-xs text-secondary">
+            {t('schedule.meta', {
+              digest: t(`schedule.digest.${schedule.digest}`),
+              recipients: schedule.recipientCount,
+              timezone: schedule.timezone,
+            })}
+          </p>
+        </section>
+      )}
 
       {/* Пакет стандартных deliverables */}
       <section className="overflow-hidden rounded-3xl border border-emerald-200/70 bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 text-white shadow-xl shadow-emerald-950/10">

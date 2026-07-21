@@ -1,8 +1,22 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, isNull, lt, ne, sql } from 'drizzle-orm';
 import { resolveLocalized } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { control, finding, reportSnapshot, risk } from '../db/schema';
+import {
+  control,
+  finding,
+  membership,
+  policy,
+  reportSnapshot,
+  risk,
+  task,
+  tenant,
+  user,
+} from '../db/schema';
+import {
+  DEFAULT_NOTIFICATION_SETTINGS,
+  type NotificationSettings,
+} from '../notifications/notification-dispatch.service';
 import { diffMetrics, type MetricGroups } from './diff-metrics';
 import { csvCell, xmlEscape } from './serialize';
 import { computeGroupTrends } from './trend';
@@ -16,6 +30,26 @@ export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 export class ReportsExportService {
   constructor(private readonly dbService: DbService) {}
 
+  private notificationSettingsOf(row: { settings: unknown } | undefined): NotificationSettings {
+    const raw =
+      row && typeof row.settings === 'object' && row.settings !== null
+        ? ((row.settings as Record<string, unknown>).notifications as
+            Partial<NotificationSettings> | undefined)
+        : undefined;
+    return { ...DEFAULT_NOTIFICATION_SETTINGS, ...raw };
+  }
+
+  private nextDigestRunAt(settings: NotificationSettings, now = new Date()): string | null {
+    if (!settings.emailEnabled || settings.digest === 'off') return null;
+    const next = new Date(now);
+    next.setUTCHours(9, 0, 0, 0);
+    if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
+    if (settings.digest === 'weekly') {
+      while (next.getUTCDay() !== 1) next.setUTCDate(next.getUTCDate() + 1);
+    }
+    return next.toISOString();
+  }
+
   async export(tenantId: string, entity: string, format: string) {
     if (!(EXPORT_ENTITIES as readonly string[]).includes(entity)) {
       throw new BadRequestException(`entity: ожидается ${EXPORT_ENTITIES.join('|')}`);
@@ -27,6 +61,72 @@ export class ReportsExportService {
     const body = format === 'csv' ? this.toCsv(rows) : this.toXml(entity, rows);
     const contentType = format === 'csv' ? 'text/csv; charset=utf-8' : 'application/xml';
     return { body, contentType, filename: `${entity}.${format}` };
+  }
+
+  /** T-H41: scheduled report preview — read-only view of the compliance digest schedule. */
+  async schedulePreview(tenantId: string) {
+    const [tenantRow] = await this.dbService.db
+      .select({ id: tenant.id, name: tenant.name, settings: tenant.settings })
+      .from(tenant)
+      .where(eq(tenant.id, tenantId));
+    if (!tenantRow) throw new NotFoundException(`Тенант ${tenantId} не найден`);
+    const settings = this.notificationSettingsOf(tenantRow);
+    const now = new Date();
+
+    const [metrics, recipients] = await Promise.all([
+      this.dbService.withTenant(tenantId, async (tx) => {
+        const [openF] = await tx
+          .select({ c: sql<number>`count(*)::int` })
+          .from(finding)
+          .where(and(isNull(finding.deletedAt), ne(finding.status, 'closed')));
+        const [overdueF] = await tx
+          .select({ c: sql<number>`count(*)::int` })
+          .from(finding)
+          .where(
+            and(
+              isNull(finding.deletedAt),
+              ne(finding.status, 'closed'),
+              eq(finding.slaStatus, 'overdue'),
+            ),
+          );
+        const [overdueT] = await tx
+          .select({ c: sql<number>`count(*)::int` })
+          .from(task)
+          .where(and(ne(task.status, 'done'), lt(task.dueDate, now)));
+        const [policiesDue] = await tx
+          .select({ c: sql<number>`count(*)::int` })
+          .from(policy)
+          .where(
+            and(isNull(policy.deletedAt), ne(policy.status, 'archived'), lt(policy.renewBy, now)),
+          );
+        return {
+          openFindings: openF?.c ?? 0,
+          overdueFindings: overdueF?.c ?? 0,
+          overdueTasks: overdueT?.c ?? 0,
+          policiesDue: policiesDue?.c ?? 0,
+        };
+      }),
+      this.dbService.db
+        .select({ email: user.email })
+        .from(membership)
+        .innerJoin(user, eq(membership.userId, user.id))
+        .where(and(eq(membership.tenantId, tenantId), eq(membership.status, 'active'))),
+    ]);
+
+    const recipientCount = new Set(recipients.map((r) => r.email).filter(Boolean)).size;
+    const hasSignal =
+      metrics.openFindings > 0 || metrics.overdueTasks > 0 || metrics.policiesDue > 0;
+    return {
+      tenantName: tenantRow.name,
+      enabled: settings.emailEnabled && settings.digest !== 'off',
+      digest: settings.digest,
+      schedule: settings.schedule,
+      timezone: settings.timezone,
+      nextRunAt: this.nextDigestRunAt(settings, now),
+      recipientCount,
+      willSendIfRunNow: settings.emailEnabled && settings.digest !== 'off' && hasSignal,
+      metrics,
+    };
   }
 
   /** Сравнение двух снапшотов (T-099, REP-03): дельта по каждой метрике и breakdown-ключу. */

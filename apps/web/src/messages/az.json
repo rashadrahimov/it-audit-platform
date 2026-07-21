@@ -1205,6 +1205,26 @@
     "title": "Hesabatlar",
     "toAccount": "Hesaba",
     "export": "Məlumat ixracı",
+    "schedule": {
+      "kicker": "Cədvəl üzrə hesabatlar",
+      "title": "Uyğunluq digest cədvəli",
+      "next": "Növbəti təxmini digest: {date}",
+      "disabled": "Digest göndərişi bildiriş parametrlərində söndürülüb.",
+      "ready": "Göndərməyə hazır",
+      "quiet": "Siqnal yoxdur",
+      "meta": "{digest} · {recipients} alıcı · {timezone}",
+      "digest": {
+        "weekly": "Həftəlik",
+        "daily": "Gündəlik",
+        "off": "Söndürülüb"
+      },
+      "metrics": {
+        "openFindings": "Açıq qeydlər",
+        "overdueFindings": "Gecikmiş qeydlər",
+        "overdueTasks": "Gecikmiş tapşırıqlar",
+        "policiesDue": "Yenilənməli siyasətlər"
+      }
+    },
     "deliverables": {
       "kicker": "Standart audit sənədləri",
       "title": "Bir audit — müştəri üçün beş hazır sənəd.",

@@ -13,6 +13,13 @@ import { ReportsExportService } from './reports-export.service';
 export class ReportsExportController {
   constructor(private readonly service: ReportsExportService) {}
 
+  @Get('schedule-preview')
+  @RequirePermission('report', 'export', 'view')
+  @ApiOperation({ summary: 'T-H41: preview расписания compliance digest / scheduled reports' })
+  schedulePreview(@Req() req: TenantRequest) {
+    return this.service.schedulePreview(req.tenantId);
+  }
+
   @Get('export')
   @RequirePermission('report', 'export', 'edit')
   @ApiOperation({
