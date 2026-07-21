@@ -5,6 +5,7 @@ import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import {
   checklistItem,
+  control,
   controlMapping,
   documentLink,
   engagement,
@@ -34,6 +35,11 @@ export interface FrameworkListItem {
   sourceFrameworkId: string | null;
   /** T-V46: предыдущая версия (если это версия-потомок). */
   previousVersionId: string | null;
+}
+
+interface MappingRow {
+  controlId: string;
+  requirementId: string;
 }
 
 /**
@@ -88,6 +94,179 @@ export class FrameworksService {
       sourceFrameworkId: row.sourceFrameworkId,
       previousVersionId: row.previousVersionId,
     }));
+  }
+
+  /** T-H40: cross-framework compliance mapping — один контрол может закрывать несколько стандартов. */
+  async mappingSummary(tenantSlug: string | undefined, locale: Locale) {
+    const collect = async (db: Pick<typeof this.dbService.db, 'select'>) => {
+      const [frameworks, activations, controls, requirements, mappings] = await Promise.all([
+        db
+          .select({
+            id: framework.id,
+            nameI18n: framework.nameI18n,
+            version: framework.version,
+            deletedAt: framework.deletedAt,
+          })
+          .from(framework)
+          .where(isNull(framework.deletedAt)),
+        db.select({ frameworkId: frameworkActivation.frameworkId }).from(frameworkActivation),
+        db
+          .select({
+            id: control.id,
+            ref: control.ref,
+            tenantId: control.tenantId,
+            originControlId: control.originControlId,
+            objectiveI18n: control.objectiveI18n,
+          })
+          .from(control)
+          .where(isNull(control.deletedAt)),
+        db
+          .select({
+            id: frameworkRequirement.id,
+            ref: frameworkRequirement.ref,
+            frameworkId: frameworkRequirement.frameworkId,
+          })
+          .from(frameworkRequirement),
+        db
+          .select({
+            controlId: controlMapping.controlId,
+            requirementId: controlMapping.requirementId,
+          })
+          .from(controlMapping),
+      ]);
+      return { frameworks, activations, controls, requirements, mappings };
+    };
+
+    let data: Awaited<ReturnType<typeof collect>>;
+    let tenantId: string | null = null;
+    if (!tenantSlug) {
+      data = await collect(this.dbService.db);
+    } else {
+      const [found] = await this.dbService.db
+        .select({ id: tenant.id })
+        .from(tenant)
+        .where(eq(tenant.slug, tenantSlug));
+      if (!found) throw new BadRequestException(`Тенант «${tenantSlug}» не найден`);
+      tenantId = found.id;
+      data = await this.dbService.withTenant(found.id, collect);
+    }
+
+    const activeIds =
+      tenantSlug && data.activations.length > 0
+        ? new Set(data.activations.map((a) => a.frameworkId))
+        : new Set(data.frameworks.map((fw) => fw.id));
+    const activeFrameworks = data.frameworks.filter((fw) => activeIds.has(fw.id));
+    const frameworkById = new Map(activeFrameworks.map((fw) => [fw.id, fw]));
+    const requirements = data.requirements.filter((r) => activeIds.has(r.frameworkId));
+    const reqById = new Map(requirements.map((r) => [r.id, r]));
+    const mappingsByControl = new Map<string, MappingRow[]>();
+    for (const mapping of data.mappings) {
+      if (!reqById.has(mapping.requirementId)) continue;
+      const rows = mappingsByControl.get(mapping.controlId) ?? [];
+      rows.push(mapping);
+      mappingsByControl.set(mapping.controlId, rows);
+    }
+
+    const controlsByRef = new Map<string, (typeof data.controls)[number]>();
+    for (const row of data.controls) {
+      const previous = controlsByRef.get(row.ref);
+      const rowIsTenant = tenantId !== null && row.tenantId === tenantId;
+      const previousIsTenant = tenantId !== null && previous?.tenantId === tenantId;
+      if (!previous || (rowIsTenant && !previousIsTenant)) controlsByRef.set(row.ref, row);
+    }
+
+    const effectiveMappingsFor = (row: { id: string; originControlId: string | null }) => {
+      const own = mappingsByControl.get(row.id) ?? [];
+      if (own.length > 0) return own;
+      return row.originControlId ? (mappingsByControl.get(row.originControlId) ?? []) : [];
+    };
+
+    const mappedRequirementIds = new Set<string>();
+    const controlsWithMappings: Array<{
+      id: string;
+      ref: string;
+      objective: string;
+      requirementIds: Set<string>;
+      frameworkIds: Set<string>;
+    }> = [];
+    const unmappedControls: Array<{ id: string; ref: string; objective: string }> = [];
+
+    for (const row of controlsByRef.values()) {
+      const mappings = effectiveMappingsFor(row);
+      const requirementIds = new Set(
+        mappings.map((m) => m.requirementId).filter((id) => reqById.has(id)),
+      );
+      const frameworkIds = new Set(
+        [...requirementIds]
+          .map((id) => reqById.get(id)?.frameworkId)
+          .filter((id): id is string => !!id),
+      );
+      for (const id of requirementIds) mappedRequirementIds.add(id);
+      const item = {
+        id: row.id,
+        ref: row.ref,
+        objective: resolveLocalized(row.objectiveI18n, locale),
+        requirementIds,
+        frameworkIds,
+      };
+      if (requirementIds.size === 0) {
+        unmappedControls.push({ id: item.id, ref: item.ref, objective: item.objective });
+      } else {
+        controlsWithMappings.push(item);
+      }
+    }
+
+    const byFramework = activeFrameworks
+      .map((fw) => {
+        const reqs = requirements.filter((r) => r.frameworkId === fw.id);
+        const covered = reqs.filter((r) => mappedRequirementIds.has(r.id));
+        return {
+          frameworkId: fw.id,
+          name: resolveLocalized(fw.nameI18n, locale),
+          version: fw.version,
+          total: reqs.length,
+          covered: covered.length,
+          percent: reqs.length === 0 ? 0 : Math.round((covered.length / reqs.length) * 100),
+          uncovered: reqs
+            .filter((r) => !mappedRequirementIds.has(r.id))
+            .map((r) => r.ref)
+            .sort()
+            .slice(0, 8),
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    const reusableControls = controlsWithMappings
+      .filter((c) => c.frameworkIds.size >= 2)
+      .map((c) => ({
+        id: c.id,
+        ref: c.ref,
+        objective: c.objective,
+        frameworks: [...c.frameworkIds]
+          .map((id) => frameworkById.get(id))
+          .filter((fw): fw is NonNullable<typeof fw> => !!fw)
+          .map((fw) => resolveLocalized(fw.nameI18n, locale))
+          .sort(),
+        requirements: c.requirementIds.size,
+      }))
+      .sort((a, b) => b.frameworks.length - a.frameworks.length || b.requirements - a.requirements)
+      .slice(0, 10);
+
+    return {
+      activeFrameworks: activeFrameworks.length,
+      totalRequirements: requirements.length,
+      coveredRequirements: mappedRequirementIds.size,
+      coveragePercent:
+        requirements.length === 0
+          ? 0
+          : Math.round((mappedRequirementIds.size / requirements.length) * 100),
+      mappedControls: controlsWithMappings.length,
+      reusableControls: reusableControls.length,
+      unmappedControls: unmappedControls.length,
+      byFramework,
+      topReusableControls: reusableControls,
+      unmappedSample: unmappedControls.sort((a, b) => a.ref.localeCompare(b.ref)).slice(0, 10),
+    };
   }
 
   /**

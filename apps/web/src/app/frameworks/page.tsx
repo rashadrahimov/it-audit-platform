@@ -17,6 +17,31 @@ interface FrameworkRow {
   isGlobal: boolean;
   isActive: boolean | null;
 }
+interface MappingSummary {
+  activeFrameworks: number;
+  totalRequirements: number;
+  coveredRequirements: number;
+  coveragePercent: number;
+  mappedControls: number;
+  reusableControls: number;
+  unmappedControls: number;
+  byFramework: Array<{
+    frameworkId: string;
+    name: string;
+    version: string;
+    total: number;
+    covered: number;
+    percent: number;
+    uncovered: string[];
+  }>;
+  topReusableControls: Array<{
+    id: string;
+    ref: string;
+    objective: string;
+    frameworks: string[];
+    requirements: number;
+  }>;
+}
 
 const DOMAINS = ['security', 'privacy', 'industry', 'custom'];
 const DOMAIN_TONE: Record<string, string> = {
@@ -37,8 +62,12 @@ export default async function FrameworksPage() {
   ]);
 
   const qs = tenantSlug ? `&tenantSlug=${tenantSlug}` : '';
-  const res = await apiFetch(`/frameworks?locale=${locale}${qs}`);
+  const [res, mapRes] = await Promise.all([
+    apiFetch(`/frameworks?locale=${locale}${qs}`),
+    apiFetch(`/frameworks/mapping-summary?locale=${locale}${qs}`),
+  ]);
   const frameworks: FrameworkRow[] = res.ok ? await res.json() : [];
+  const mapping: MappingSummary | null = mapRes.ok ? await mapRes.json() : null;
   const active = frameworks.filter((fw) => fw.isActive === true);
   const available = frameworks.filter((fw) => fw.isActive !== true);
 
@@ -123,6 +152,95 @@ export default async function FrameworksPage() {
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+      {mapping && (
+        <section
+          className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm"
+          data-testid="framework-mapping-summary"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
+                {t('mappingKicker')}
+              </p>
+              <h2 className="text-lg font-semibold text-primary">{t('mappingTitle')}</h2>
+              <p className="mt-1 text-sm text-secondary">{t('mappingSub')}</p>
+            </div>
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
+              {mapping.coveragePercent}% {t('mapped')}
+            </span>
+          </div>
+
+          <dl className="mt-4 grid gap-3 sm:grid-cols-4">
+            {(
+              [
+                ['activeFrameworks', mapping.activeFrameworks],
+                [
+                  'coveredRequirements',
+                  `${mapping.coveredRequirements}/${mapping.totalRequirements}`,
+                ],
+                ['reusableControls', mapping.reusableControls],
+                ['unmappedControls', mapping.unmappedControls],
+              ] as const
+            ).map(([key, value]) => (
+              <div key={key} className="rounded-xl bg-white/80 p-3 shadow-sm">
+                <dd className="text-xl font-bold tabular-nums text-primary">{value}</dd>
+                <dt className="text-xs text-secondary">{t(key)}</dt>
+              </div>
+            ))}
+          </dl>
+
+          <div className="mt-4 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="rounded-xl border border-emerald-100 bg-white/80 p-3">
+              <h3 className="mb-2 text-sm font-semibold text-primary">
+                {t('coverageByFramework')}
+              </h3>
+              <ul className="grid gap-2">
+                {mapping.byFramework.slice(0, 5).map((fw) => (
+                  <li key={fw.frameworkId}>
+                    <div className="flex items-center justify-between gap-3 text-xs">
+                      <span className="font-medium text-foreground">
+                        {fw.name} <span className="text-secondary">{fw.version}</span>
+                      </span>
+                      <span className="font-semibold tabular-nums text-primary">{fw.percent}%</span>
+                    </div>
+                    <span className="mt-1 block h-2 overflow-hidden rounded-full bg-muted">
+                      <span
+                        className="block h-full rounded-full bg-accent"
+                        style={{ width: `${fw.percent}%` }}
+                      />
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-xl border border-emerald-100 bg-white/80 p-3">
+              <h3 className="mb-2 text-sm font-semibold text-primary">{t('reusable')}</h3>
+              {mapping.topReusableControls.length === 0 ? (
+                <p className="text-sm text-secondary">{t('noReusable')}</p>
+              ) : (
+                <ul className="grid gap-2">
+                  {mapping.topReusableControls.slice(0, 4).map((control) => (
+                    <li key={control.id} className="text-sm">
+                      <Link
+                        href={`/controls/${control.id}`}
+                        className="font-medium text-accent hover:underline"
+                      >
+                        {control.ref}
+                      </Link>
+                      <span className="ml-2 text-secondary">
+                        {t('coversFrameworks', {
+                          n: control.frameworks.length,
+                          r: control.requirements,
+                        })}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
       <div>
         <h2 className="mb-2 text-sm font-semibold text-secondary">{t('active')}</h2>
         {table(active, 'active', 'frameworks-active')}

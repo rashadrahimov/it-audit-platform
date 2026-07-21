@@ -47,6 +47,20 @@ export class FrameworksController {
     return this.frameworksService.list(tenantSlug, parseLocale(localeQuery));
   }
 
+  @Get('mapping-summary')
+  @ApiOperation({
+    summary: 'T-H40: cross-framework compliance mapping and reusable-control coverage',
+  })
+  @ApiQuery({ name: 'tenantSlug', required: false })
+  @ApiQuery({ name: 'locale', required: false })
+  @ApiOkResponse({
+    description:
+      '{activeFrameworks,totalRequirements,coveredRequirements,coveragePercent,topReusableControls,byFramework}',
+  })
+  mappingSummary(@Query('tenantSlug') tenantSlug?: string, @Query('locale') localeQuery?: string) {
+    return this.frameworksService.mappingSummary(tenantSlug, parseLocale(localeQuery));
+  }
+
   @Get(':id/requirements')
   @ApiOperation({ summary: 'Дерево требований фреймворка (T-078, EP-FWK)' })
   @ApiQuery({ name: 'locale', required: false })
