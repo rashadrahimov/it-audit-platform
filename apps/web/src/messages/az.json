@@ -210,7 +210,13 @@
     },
     "export": "İxrac",
     "duplicate": "Dublikat / bərpa",
+    "suggestionsKicker": "AI draft · evidence-grounded",
     "suggestions": "Təklif olunan tapıntılar (gaplar)",
+    "reviewRequired": "İnsan yoxlaması tələb olunur",
+    "confidence": "Etibar",
+    "expected": "Gözlənilən",
+    "observed": "Müşahidə olunan",
+    "noEvidenceRef": "Hələ sənəd istinadı yoxdur",
     "risk": {
       "high": "Yüksək",
       "medium": "Orta"

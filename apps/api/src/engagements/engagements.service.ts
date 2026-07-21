@@ -19,6 +19,8 @@ import {
   checklistItem,
   control,
   controlDomain,
+  document,
+  documentLink,
   engagement,
   engagementMember,
   engagementMilestone,
@@ -536,7 +538,9 @@ export class EngagementsService {
       const itemIds = items.map((i) => i.id);
       const responses = await tx
         .select({
+          id: response.id,
           checklistItemId: response.checklistItemId,
+          text: response.text,
           complianceStatus: response.complianceStatus,
         })
         .from(response)
@@ -545,14 +549,60 @@ export class EngagementsService {
         .select({ checklistItemId: finding.checklistItemId })
         .from(finding)
         .where(and(inArray(finding.checklistItemId, itemIds), isNull(finding.deletedAt)));
-      const complianceBy = new Map(responses.map((r) => [r.checklistItemId, r.complianceStatus]));
+      const responseBy = new Map(responses.map((r) => [r.checklistItemId, r]));
       const withFinding = new Set(findings.map((f) => f.checklistItemId));
+      const responseIds = responses.map((r) => r.id);
+      const evidenceTargets = [...itemIds, ...responseIds, id];
+      const evidence =
+        evidenceTargets.length > 0
+          ? await tx
+              .select({
+                documentId: document.id,
+                filename: document.filename,
+                relation: documentLink.relation,
+                entityType: documentLink.entityType,
+                entityId: documentLink.entityId,
+              })
+              .from(documentLink)
+              .innerJoin(document, eq(documentLink.documentId, document.id))
+              .where(
+                and(inArray(documentLink.entityId, evidenceTargets), isNull(document.deletedAt)),
+              )
+          : [];
+      const engagementEvidence = evidence
+        .filter((e) => e.entityType === 'engagement' && e.entityId === id)
+        .map((e) => ({
+          documentId: e.documentId,
+          filename: e.filename,
+          relation: e.relation,
+          location: 'engagement',
+        }));
       const input = items.map((i) => ({
         checklistItemId: i.id,
         ref: i.ref,
         question: resolveLocalized(i.questionI18n, locale),
-        complianceStatus: complianceBy.get(i.id) ?? null,
+        responseText: responseBy.get(i.id)?.text ?? null,
+        complianceStatus: responseBy.get(i.id)?.complianceStatus ?? null,
         hasFinding: withFinding.has(i.id),
+        evidenceReferences: [
+          ...evidence
+            .filter((e) => e.entityType === 'checklist_item' && e.entityId === i.id)
+            .map((e) => ({
+              documentId: e.documentId,
+              filename: e.filename,
+              relation: e.relation,
+              location: i.ref ? `checklist item ${i.ref}` : 'checklist item',
+            })),
+          ...evidence
+            .filter((e) => e.entityType === 'response' && e.entityId === responseBy.get(i.id)?.id)
+            .map((e) => ({
+              documentId: e.documentId,
+              filename: e.filename,
+              relation: e.relation,
+              location: i.ref ? `response for ${i.ref}` : 'response',
+            })),
+          ...engagementEvidence,
+        ].slice(0, 3),
       }));
       return { suggestions: suggestFindings(input) };
     });

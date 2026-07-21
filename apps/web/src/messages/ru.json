@@ -210,7 +210,13 @@
     },
     "export": "Экспорт",
     "duplicate": "Дублировать / восстановить",
+    "suggestionsKicker": "AI draft · evidence-grounded",
     "suggestions": "Предлагаемые findings (гэпы)",
+    "reviewRequired": "Нужна проверка человеком",
+    "confidence": "Уверенность",
+    "expected": "Ожидалось",
+    "observed": "Наблюдается",
+    "noEvidenceRef": "Пока нет ссылки на документ",
     "risk": {
       "high": "Высокий",
       "medium": "Средний"

@@ -210,7 +210,13 @@
     },
     "export": "Export",
     "duplicate": "Duplicate / restore",
+    "suggestionsKicker": "AI draft · evidence grounded",
     "suggestions": "Suggested findings (gaps)",
+    "reviewRequired": "Human review required",
+    "confidence": "Confidence",
+    "expected": "Expected",
+    "observed": "Observed",
+    "noEvidenceRef": "No document reference yet",
     "risk": {
       "high": "High",
       "medium": "Medium"

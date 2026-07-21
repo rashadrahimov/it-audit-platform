@@ -140,6 +140,18 @@ export default async function EngagementDetailPage({
     ref: string | null;
     suggestedTitle: string;
     suggestedRisk: string;
+    reason: string;
+    expected: string;
+    observed: string;
+    confidence: number;
+    evidenceReferences: Array<{
+      documentId: string;
+      filename: string;
+      relation: string;
+      location: string;
+    }>;
+    aiDraft: boolean;
+    reviewRequired: boolean;
   }> = sRes.ok ? (await sRes.json()).suggestions : [];
 
   // T-V10: комментарии аудита (полиморфный API T-023)
@@ -210,20 +222,35 @@ export default async function EngagementDetailPage({
 
       {suggestions.length > 0 && (
         <section
-          className="rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm"
+          className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm"
           data-testid="finding-suggestions"
         >
-          <h2 className="mb-2 text-sm font-semibold text-amber-800">
-            {t('suggestions')} ({suggestions.length})
-          </h2>
-          <ul className="flex flex-col gap-1.5">
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.14em] text-emerald-700 uppercase">
+                {t('suggestionsKicker')}
+              </p>
+              <h2 className="text-sm font-semibold text-emerald-950">
+                {t('suggestions')} ({suggestions.length})
+              </h2>
+            </div>
+            <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800">
+              {t('reviewRequired')}
+            </span>
+          </div>
+          <ul className="flex flex-col gap-3">
             {suggestions.map((s) => (
               <li
                 key={s.checklistItemId}
-                className="flex items-center justify-between gap-2 text-sm"
+                className="rounded-xl border border-emerald-200/80 bg-white p-3 text-sm shadow-sm"
               >
-                <span className="text-foreground">{s.suggestedTitle}</span>
-                <span className="flex items-center gap-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-foreground">{s.suggestedTitle}</p>
+                    <p className="mt-1 text-xs text-secondary">
+                      {t('confidence')}: {Math.round(s.confidence * 100)}%
+                    </p>
+                  </div>
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       s.suggestedRisk === 'high'
@@ -233,6 +260,34 @@ export default async function EngagementDetailPage({
                   >
                     {t(`risk.${s.suggestedRisk}`)}
                   </span>
+                </div>
+                <dl className="mt-3 grid gap-2 text-xs md:grid-cols-2">
+                  <div className="rounded-lg bg-muted/50 p-2">
+                    <dt className="font-semibold text-secondary">{t('expected')}</dt>
+                    <dd className="mt-1 text-foreground">{s.expected}</dd>
+                  </div>
+                  <div className="rounded-lg bg-muted/50 p-2">
+                    <dt className="font-semibold text-secondary">{t('observed')}</dt>
+                    <dd className="mt-1 text-foreground">{s.observed}</dd>
+                  </div>
+                </dl>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {s.evidenceReferences.length > 0 ? (
+                      s.evidenceReferences.map((ev) => (
+                        <span
+                          key={`${s.checklistItemId}-${ev.documentId}-${ev.location}`}
+                          className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800"
+                        >
+                          {ev.filename} · {ev.location}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-medium text-amber-800">
+                        {t('noEvidenceRef')}
+                      </span>
+                    )}
+                  </div>
                   <form
                     action={createFindingFromSuggestionAction.bind(
                       null,
@@ -240,18 +295,23 @@ export default async function EngagementDetailPage({
                       s.checklistItemId,
                       s.suggestedTitle,
                       s.suggestedRisk,
-                      s.ref ? `Gap at ${s.ref}` : '',
+                      [
+                        s.reason,
+                        s.expected,
+                        s.observed,
+                        ...s.evidenceReferences.map((ev) => `${ev.filename} (${ev.location})`),
+                      ].join('\n'),
                     )}
                   >
                     <button
                       type="submit"
                       data-testid="suggestion-create-finding"
-                      className="rounded-md border border-amber-300 px-2 py-0.5 text-xs font-medium text-amber-800 transition-colors duration-150 hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-ring"
+                      className="rounded-md border border-emerald-300 px-2.5 py-1 text-xs font-medium text-emerald-800 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {t('suggestionCreate')}
                     </button>
                   </form>
-                </span>
+                </div>
               </li>
             ))}
           </ul>

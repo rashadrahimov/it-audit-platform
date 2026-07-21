@@ -1,50 +1,55 @@
 import { describe, expect, it } from 'vitest';
-import { suggestFindings, type SuggestInputItem } from '../src/engagements/finding-suggest';
-
-/** DoD EP-AI assist-срез (T-H15): детерминированный гэп-детект. Чистая функция. */
-const item = (o: Partial<SuggestInputItem>): SuggestInputItem => ({
-  checklistItemId: 'i1',
-  ref: 'AC-01',
-  question: 'Least privilege?',
-  complianceStatus: null,
-  hasFinding: false,
-  ...o,
-});
+import { suggestFindings } from '../src/engagements/finding-suggest';
 
 describe('suggestFindings', () => {
-  it('non_compliant без finding → предложение с риском high', () => {
-    const [s] = suggestFindings([item({ complianceStatus: 'non_compliant' })]);
-    expect(s!.suggestedRisk).toBe('high');
-    expect(s!.suggestedTitle).toContain('AC-01');
-    expect(s!.checklistItemId).toBe('i1');
-  });
-
-  it('partially_compliant без finding → medium', () => {
-    const [s] = suggestFindings([item({ complianceStatus: 'partially_compliant' })]);
-    expect(s!.suggestedRisk).toBe('medium');
-  });
-
-  it('compliant → нет предложения', () => {
-    expect(suggestFindings([item({ complianceStatus: 'compliant' })])).toEqual([]);
-  });
-
-  it('несоответствие, но finding уже есть → нет предложения', () => {
-    expect(
-      suggestFindings([item({ complianceStatus: 'non_compliant', hasFinding: true })]),
-    ).toEqual([]);
-  });
-
-  it('без ответа (null) → нет предложения', () => {
-    expect(suggestFindings([item({ complianceStatus: null })])).toEqual([]);
-  });
-
-  it('несколько пунктов — только гэпы без finding', () => {
-    const res = suggestFindings([
-      item({ checklistItemId: 'a', complianceStatus: 'non_compliant' }),
-      item({ checklistItemId: 'b', complianceStatus: 'compliant' }),
-      item({ checklistItemId: 'c', complianceStatus: 'partially_compliant', hasFinding: true }),
-      item({ checklistItemId: 'd', complianceStatus: 'partially_compliant' }),
+  it('creates evidence-grounded draft findings for unresolved checklist gaps', () => {
+    const suggestions = suggestFindings([
+      {
+        checklistItemId: 'item-1',
+        ref: 'AC-01',
+        question: 'Access reviews are performed quarterly',
+        responseText: 'Reviews are ad-hoc and not documented.',
+        complianceStatus: 'non_compliant',
+        hasFinding: false,
+        evidenceReferences: [
+          {
+            documentId: 'doc-1',
+            filename: 'access-review.xlsx',
+            relation: 'evidence',
+            location: 'response for AC-01',
+          },
+        ],
+      },
     ]);
-    expect(res.map((r) => r.checklistItemId)).toEqual(['a', 'd']);
+
+    expect(suggestions).toHaveLength(1);
+    expect(suggestions[0]).toMatchObject({
+      checklistItemId: 'item-1',
+      suggestedRisk: 'high',
+      confidence: 0.82,
+      aiDraft: true,
+      reviewRequired: true,
+      expected: 'Control requirement: Access reviews are performed quarterly',
+      observed: 'Auditee response (non_compliant): Reviews are ad-hoc and not documented.',
+      evidenceReferences: [{ filename: 'access-review.xlsx', location: 'response for AC-01' }],
+    });
+  });
+
+  it('keeps low-confidence drafts when the gap has no document reference yet', () => {
+    const suggestions = suggestFindings([
+      {
+        checklistItemId: 'item-2',
+        ref: 'BC-02',
+        question: 'Backups are tested',
+        responseText: null,
+        complianceStatus: 'partially_compliant',
+        hasFinding: false,
+        evidenceReferences: [],
+      },
+    ]);
+
+    expect(suggestions[0]?.suggestedRisk).toBe('medium');
+    expect(suggestions[0]?.confidence).toBe(0.64);
+    expect(suggestions[0]?.evidenceReferences).toEqual([]);
   });
 });
