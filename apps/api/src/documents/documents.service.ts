@@ -49,6 +49,9 @@ export interface LinkInput {
   relation: string;
 }
 
+type EvidenceGapReason =
+  'awaiting_upload' | 'draft' | 'overdue' | 'renewal_due' | 'unlinked' | 'flagged';
+
 /** Документы-доказательства (T-034): метаданные + S3 (T-042), полиморфные привязки. */
 @Injectable()
 export class DocumentsService {
@@ -327,6 +330,140 @@ export class DocumentsService {
       createdAt: d.createdAt.toISOString(),
       links: linkCount.get(d.id) ?? 0,
     }));
+  }
+
+  /**
+   * T-H45: управленческая сводка готовности evidence. Она собирается только из
+   * уже имеющихся метаданных: жизненный цикл документа, привязки, review-статусы
+   * и сроки обновления. Никаких AI/внешних вызовов — безопасный read-only слой.
+   */
+  async readinessSummary(tenantId: string) {
+    const now = new Date();
+    const dueSoonCutoff = new Date(now);
+    dueSoonCutoff.setDate(dueSoonCutoff.getDate() + 30);
+
+    const data = await this.dbService.withTenant(tenantId, async (tx) => {
+      const docs = await tx
+        .select({
+          id: document.id,
+          filename: document.filename,
+          status: document.status,
+          category: document.category,
+          renewBy: document.renewBy,
+          createdAt: document.createdAt,
+        })
+        .from(document)
+        .where(isNull(document.deletedAt))
+        .orderBy(desc(document.createdAt));
+      const links = await tx
+        .select({
+          id: documentLink.id,
+          documentId: documentLink.documentId,
+          reviewStatus: documentLink.reviewStatus,
+        })
+        .from(documentLink)
+        .innerJoin(document, eq(documentLink.documentId, document.id))
+        .where(isNull(document.deletedAt));
+      return { docs, links };
+    });
+
+    const linksByDoc = new Map<string, typeof data.links>();
+    for (const link of data.links) {
+      const existing = linksByDoc.get(link.documentId) ?? [];
+      existing.push(link);
+      linksByDoc.set(link.documentId, existing);
+    }
+
+    const totalDocuments = data.docs.length;
+    const activeDocuments = data.docs.filter((d) => d.status === 'active').length;
+    const requestedDocuments = data.docs.filter((d) => d.status === 'needs_document').length;
+    const draftDocuments = data.docs.filter((d) => d.status === 'draft').length;
+    const overdueDocuments = data.docs.filter(
+      (d) => d.status === 'overdue' || (d.renewBy !== null && d.renewBy < now),
+    ).length;
+    const renewalDueSoon = data.docs.filter(
+      (d) => d.renewBy !== null && d.renewBy >= now && d.renewBy <= dueSoonCutoff,
+    ).length;
+    const linkedDocuments = data.docs.filter((d) => (linksByDoc.get(d.id)?.length ?? 0) > 0).length;
+    const unlinkedDocuments = Math.max(totalDocuments - linkedDocuments, 0);
+
+    const acceptedLinks = data.links.filter((l) => l.reviewStatus === 'accepted').length;
+    const readyLinks = data.links.filter((l) => l.reviewStatus === 'ready').length;
+    const flaggedLinks = data.links.filter((l) => l.reviewStatus === 'flagged').length;
+    const notReadyLinks = data.links.filter((l) => l.reviewStatus === 'not_ready').length;
+    const reviewedEvidenceLinks = acceptedLinks + readyLinks + flaggedLinks;
+
+    const coveragePercent =
+      totalDocuments === 0 ? 0 : Math.round((linkedDocuments / totalDocuments) * 100);
+    const reviewAcceptancePercent =
+      data.links.length === 0 ? 0 : Math.round((acceptedLinks / data.links.length) * 100);
+    const readyPercent =
+      totalDocuments === 0
+        ? 0
+        : Math.round(
+            ((activeDocuments - overdueDocuments - flaggedLinks - unlinkedDocuments) /
+              totalDocuments) *
+              100,
+          );
+
+    const topGaps: {
+      id: string;
+      filename: string;
+      status: string;
+      category: string | null;
+      renewBy: string | null;
+      reason: EvidenceGapReason;
+    }[] = [];
+
+    const pushGap = (doc: (typeof data.docs)[number], reason: EvidenceGapReason) => {
+      if (topGaps.some((g) => g.id === doc.id && g.reason === reason)) return;
+      topGaps.push({
+        id: doc.id,
+        filename: doc.filename,
+        status: doc.status,
+        category: doc.category,
+        renewBy: doc.renewBy?.toISOString() ?? null,
+        reason,
+      });
+    };
+
+    for (const doc of data.docs) {
+      const links = linksByDoc.get(doc.id) ?? [];
+      if (doc.status === 'needs_document') pushGap(doc, 'awaiting_upload');
+      else if (doc.status === 'draft') pushGap(doc, 'draft');
+      else if (doc.status === 'overdue' || (doc.renewBy !== null && doc.renewBy < now)) {
+        pushGap(doc, 'overdue');
+      } else if (doc.renewBy !== null && doc.renewBy <= dueSoonCutoff) {
+        pushGap(doc, 'renewal_due');
+      } else if (links.length === 0) {
+        pushGap(doc, 'unlinked');
+      } else if (links.some((l) => l.reviewStatus === 'flagged')) {
+        pushGap(doc, 'flagged');
+      }
+      if (topGaps.length >= 6) break;
+    }
+
+    return {
+      generatedAt: now.toISOString(),
+      totalDocuments,
+      activeDocuments,
+      requestedDocuments,
+      draftDocuments,
+      overdueDocuments,
+      renewalDueSoon,
+      linkedDocuments,
+      unlinkedDocuments,
+      evidenceLinks: data.links.length,
+      acceptedLinks,
+      readyLinks,
+      flaggedLinks,
+      notReadyLinks,
+      reviewedEvidenceLinks,
+      coveragePercent,
+      reviewAcceptancePercent,
+      readyPercent: Math.max(0, Math.min(100, readyPercent)),
+      topGaps,
+    };
   }
 
   /** T-V01: переназначить owner документа (админ-действие). */

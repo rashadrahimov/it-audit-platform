@@ -170,6 +170,16 @@ export class DocumentsController {
     );
   }
 
+  @Get('readiness-summary')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({
+    summary: 'Сводка готовности документов-доказательств: покрытие, review, просрочки и gaps',
+  })
+  @ApiOkResponse({ description: '{totalDocuments, coveragePercent, topGaps, ...}' })
+  readinessSummary(@Req() req: TenantRequest) {
+    return this.documentsService.readinessSummary(req.tenantId);
+  }
+
   @Get()
   @RequirePermission('engagement', 'view')
   @ApiOperation({

@@ -56,6 +56,35 @@ interface AuditFirm {
   name: string;
   contactEmail: string | null;
 }
+interface EvidenceGap {
+  id: string;
+  filename: string;
+  status: string;
+  category: string | null;
+  renewBy: string | null;
+  reason: string;
+}
+interface ReadinessSummary {
+  generatedAt: string;
+  totalDocuments: number;
+  activeDocuments: number;
+  requestedDocuments: number;
+  draftDocuments: number;
+  overdueDocuments: number;
+  renewalDueSoon: number;
+  linkedDocuments: number;
+  unlinkedDocuments: number;
+  evidenceLinks: number;
+  acceptedLinks: number;
+  readyLinks: number;
+  flaggedLinks: number;
+  notReadyLinks: number;
+  reviewedEvidenceLinks: number;
+  coveragePercent: number;
+  reviewAcceptancePercent: number;
+  readyPercent: number;
+  topGaps: EvidenceGap[];
+}
 
 const REVIEW_STATUSES = ['not_ready', 'ready', 'flagged', 'accepted'] as const;
 const REVIEW_TONE: Record<string, string> = {
@@ -91,13 +120,15 @@ export default async function DocumentsPage({
   if (!tenantSlug) redirect('/account');
   const headers = { 'X-Tenant-Slug': tenantSlug };
 
-  const [docsRes, membersRes, controlsRes, engagementsRes] = await Promise.all([
+  const [docsRes, readinessRes, membersRes, controlsRes, engagementsRes] = await Promise.all([
     apiFetch(`/documents?${filterQuery(sp, ['status']).slice(1)}`, { headers }),
+    apiFetch('/documents/readiness-summary', { headers }),
     apiFetch(`/memberships?locale=${locale}`, { headers }),
     apiFetch(`/controls?tenantSlug=${tenantSlug}&locale=${locale}`, { headers }),
     apiFetch(`/engagements?locale=${locale}`, { headers }),
   ]);
   const docs: DocRow[] = docsRes.ok ? await docsRes.json() : [];
+  const readiness: ReadinessSummary | null = readinessRes.ok ? await readinessRes.json() : null;
   const members: Member[] = membersRes.ok ? await membersRes.json() : [];
   const controls: ControlOpt[] = controlsRes.ok ? await controlsRes.json() : [];
   const engagements: EngagementOpt[] = engagementsRes.ok ? await engagementsRes.json() : [];
@@ -117,12 +148,145 @@ export default async function DocumentsPage({
   const firms: AuditFirm[] = firmsRes.ok ? await firmsRes.json() : [];
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
+  const generatedAt = readiness?.generatedAt
+    ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
+        new Date(readiness.generatedAt),
+      )
+    : null;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full min-w-0 max-w-4xl flex-col gap-6 p-6 pt-12">
+    <main className="mx-auto flex min-h-screen w-full min-w-0 max-w-5xl flex-col gap-6 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+
+      {readiness && (
+        <section
+          data-testid="document-readiness-summary"
+          className="overflow-hidden rounded-2xl border border-emerald-200/70 bg-white shadow-[0_18px_55px_rgba(6,78,59,0.12)]"
+        >
+          <div className="relative border-b border-emerald-100 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),linear-gradient(135deg,#ecfdf5,#ffffff)] p-5">
+            <div className="absolute top-4 right-5 hidden h-16 w-16 rounded-full bg-emerald-200/40 blur-2xl sm:block" />
+            <p className="text-xs font-semibold tracking-[0.22em] text-emerald-700 uppercase">
+              {t('readiness.kicker')}
+            </p>
+            <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-primary">{t('readiness.title')}</h2>
+                <p className="mt-1 max-w-2xl text-sm text-secondary">{t('readiness.subtitle')}</p>
+              </div>
+              <div className="rounded-2xl bg-emerald-950 px-5 py-4 text-center text-white shadow-lg shadow-emerald-950/15">
+                <div className="text-3xl font-bold">{readiness.readyPercent}%</div>
+                <div className="text-xs text-emerald-100">{t('readiness.ready')}</div>
+              </div>
+            </div>
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-emerald-100">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                style={{ width: `${readiness.readyPercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                label: t('readiness.coverage'),
+                value: `${readiness.coveragePercent}%`,
+                hint: t('readiness.coverageHint', {
+                  linked: readiness.linkedDocuments,
+                  total: readiness.totalDocuments,
+                }),
+              },
+              {
+                label: t('readiness.review'),
+                value: `${readiness.reviewAcceptancePercent}%`,
+                hint: t('readiness.reviewHint', {
+                  accepted: readiness.acceptedLinks,
+                  total: readiness.evidenceLinks,
+                }),
+              },
+              {
+                label: t('readiness.requests'),
+                value: readiness.requestedDocuments,
+                hint: t('readiness.requestsHint', { draft: readiness.draftDocuments }),
+              },
+              {
+                label: t('readiness.renewals'),
+                value: readiness.overdueDocuments + readiness.renewalDueSoon,
+                hint: t('readiness.renewalsHint', {
+                  overdue: readiness.overdueDocuments,
+                  due: readiness.renewalDueSoon,
+                }),
+              },
+            ].map((metric) => (
+              <div
+                key={metric.label}
+                className="rounded-xl border border-border bg-[linear-gradient(180deg,#ffffff,#f7fbf8)] p-4"
+              >
+                <div className="text-xs font-medium text-secondary">{metric.label}</div>
+                <div className="mt-1 text-2xl font-bold text-primary">{metric.value}</div>
+                <div className="mt-1 text-xs text-secondary">{metric.hint}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-4 border-t border-border p-5 lg:grid-cols-[1.2fr_0.8fr]">
+            <div>
+              <h3 className="text-sm font-semibold text-primary">{t('readiness.gapsTitle')}</h3>
+              <div className="mt-3 flex flex-col gap-2">
+                {readiness.topGaps.length > 0 ? (
+                  readiness.topGaps.map((gap) => (
+                    <div
+                      key={`${gap.id}-${gap.reason}`}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/60 px-3 py-2 text-sm"
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-foreground">{gap.filename}</div>
+                        <div className="text-xs text-secondary">
+                          {gap.category ?? t('readiness.noCategory')}
+                          {gap.renewBy ? ` · ${dateFmt.format(new Date(gap.renewBy))}` : ''}
+                        </div>
+                      </div>
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                        {t(`readiness.reasons.${gap.reason}`)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-xl bg-emerald-50 px-3 py-3 text-sm text-emerald-800">
+                    {t('readiness.noGaps')}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 p-4">
+              <h3 className="text-sm font-semibold text-primary">{t('readiness.signalTitle')}</h3>
+              <p className="mt-2 text-sm text-secondary">{t('readiness.signalBody')}</p>
+              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <dt className="text-xs text-secondary">{t('readiness.flagged')}</dt>
+                  <dd className="text-xl font-bold text-primary">{readiness.flaggedLinks}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-secondary">{t('readiness.unlinked')}</dt>
+                  <dd className="text-xl font-bold text-primary">{readiness.unlinkedDocuments}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-secondary">{t('readiness.reviewed')}</dt>
+                  <dd className="text-xl font-bold text-primary">
+                    {readiness.reviewedEvidenceLinks}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-secondary">{t('readiness.updated')}</dt>
+                  <dd className="text-xs font-medium text-primary">{generatedAt ?? '—'}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </section>
+      )}
 
       <form
         action={uploadDocumentAction}

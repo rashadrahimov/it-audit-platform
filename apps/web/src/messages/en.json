@@ -2165,7 +2165,38 @@
     "requestHint": "Create a placeholder for a document you expect but do not have yet.",
     "requestName": "Document name",
     "requestNamePh": "e.g. Q3 access review",
-    "requestBtn": "Request"
+    "requestBtn": "Request",
+    "readiness": {
+      "kicker": "Evidence command center",
+      "title": "Evidence readiness",
+      "subtitle": "A board-level view of collected evidence, links, auditor review and renewal gaps before reporting starts.",
+      "ready": "audit-ready",
+      "coverage": "Linked coverage",
+      "coverageHint": "{linked} of {total} documents mapped",
+      "review": "Accepted review",
+      "reviewHint": "{accepted} of {total} evidence links accepted",
+      "requests": "Open requests",
+      "requestsHint": "{draft} drafts still unpublished",
+      "renewals": "Renewal pressure",
+      "renewalsHint": "{overdue} overdue · {due} due soon",
+      "gapsTitle": "Close these first",
+      "noCategory": "No category",
+      "noGaps": "No priority evidence gaps detected.",
+      "signalTitle": "Evidence signal",
+      "signalBody": "The score favors active, linked, accepted evidence and penalizes flagged, expired or orphaned documents.",
+      "flagged": "Flagged links",
+      "unlinked": "Unlinked docs",
+      "reviewed": "Reviewed links",
+      "updated": "Updated",
+      "reasons": {
+        "awaiting_upload": "Awaiting upload",
+        "draft": "Draft",
+        "overdue": "Overdue",
+        "renewal_due": "Renewal due",
+        "unlinked": "Unlinked",
+        "flagged": "Flagged"
+      }
+    }
   },
   "tests": {
     "title": "Tests",

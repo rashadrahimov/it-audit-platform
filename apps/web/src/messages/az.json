@@ -2173,7 +2173,38 @@
     "requestHint": "Gözlədiyiniz, lakin hələ olmayan sənəd üçün yer tutucu yaradın.",
     "requestName": "Sənəd adı",
     "requestNamePh": "məs. Q3 giriş yoxlaması",
-    "requestBtn": "Tələb et"
+    "requestBtn": "Tələb et",
+    "readiness": {
+      "kicker": "Sübut mərkəzi",
+      "title": "Sübutların hazırlığı",
+      "subtitle": "Hesabatdan əvvəl toplanmış sənədlər, bağlantılar, auditor icmalı və yenilənmə boşluqları üzrə rəhbər baxışı.",
+      "ready": "auditə hazır",
+      "coverage": "Bağlantı əhatəsi",
+      "coverageHint": "{linked} / {total} sənəd bağlanıb",
+      "review": "Qəbul edilmiş icmal",
+      "reviewHint": "{accepted} / {total} sübut bağlantısı qəbul edilib",
+      "requests": "Açıq tələblər",
+      "requestsHint": "{draft} qaralama hələ dərc olunmayıb",
+      "renewals": "Yenilənmə təzyiqi",
+      "renewalsHint": "{overdue} gecikib · {due} tezliklə yenilənməlidir",
+      "gapsTitle": "Əvvəl bunları bağlayın",
+      "noCategory": "Kateqoriyasız",
+      "noGaps": "Prioritet sübut boşluğu aşkarlanmadı.",
+      "signalTitle": "Sübut siqnalı",
+      "signalBody": "Qiymət aktiv, bağlanmış və qəbul edilmiş sübutlarla yüksəlir; qeydli, vaxtı keçmiş və sahibsiz sənədlərlə azalır.",
+      "flagged": "Qeydli bağlantılar",
+      "unlinked": "Bağlantısız sənədlər",
+      "reviewed": "Yoxlanmış bağlantılar",
+      "updated": "Yenilənib",
+      "reasons": {
+        "awaiting_upload": "Yükləmə gözləyir",
+        "draft": "Qaralama",
+        "overdue": "Gecikib",
+        "renewal_due": "Yenilənmə yaxınlaşır",
+        "unlinked": "Bağlantısız",
+        "flagged": "Qeyd var"
+      }
+    }
   },
   "tests": {
     "title": "Testlər",
