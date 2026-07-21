@@ -21,6 +21,8 @@ interface AiStatus {
 const PROVIDERS = ['none', 'anthropic', 'openai_compat'] as const;
 const inputCls =
   'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
+const trustCardCls =
+  'rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-950 via-emerald-900 to-slate-950 p-5 text-white shadow-xl shadow-emerald-950/15';
 
 /** Per-tenant выбор LLM-провайдера (EP-AI, T-H23): клиент сам подключает Claude/GPT/Kimi/локальную. */
 export default async function AiSettingsPage() {
@@ -39,6 +41,10 @@ export default async function AiSettingsPage() {
   const status: AiStatus = statusRes.ok
     ? await statusRes.json()
     : { enabled: false, provider: 'none', model: null };
+  const tenantConfigured = cfg.provider !== 'none' && cfg.hasKey && Boolean(cfg.model);
+  const effectiveEnabled = tenantConfigured || status.enabled;
+  const effectiveProvider = tenantConfigured ? cfg.provider : status.provider;
+  const effectiveModel = tenantConfigured ? cfg.model : status.model;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 pt-12">
@@ -47,6 +53,41 @@ export default async function AiSettingsPage() {
       </div>
 
       <p className="text-sm text-secondary">{t('intro')}</p>
+
+      <section data-testid="ai-trust-posture" className={trustCardCls}>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold tracking-[0.28em] text-emerald-200 uppercase">
+              {t('trust.kicker')}
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold">{t('trust.title')}</h2>
+            <p className="mt-2 text-sm text-emerald-50/75">{t('trust.body')}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-sm backdrop-blur lg:min-w-64">
+            <p className="text-xs font-medium text-emerald-50/65">{t('trust.effectiveMode')}</p>
+            <p className="mt-1 text-lg font-semibold">
+              {effectiveEnabled
+                ? `${t(`providers.${effectiveProvider}`)}${effectiveModel ? ` · ${effectiveModel}` : ''}`
+                : t('trust.deterministic')}
+            </p>
+            <p className="mt-2 text-xs text-emerald-50/65">
+              {tenantConfigured ? t('trust.tenantOverride') : t('trust.deploymentFallback')}
+            </p>
+          </div>
+        </div>
+        <dl className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          {(['grounded', 'human', 'secrets', 'privateMode'] as const).map((key) => (
+            <div key={key} className="rounded-xl border border-white/10 bg-white/10 p-3">
+              <dt className="text-sm font-semibold text-emerald-50">
+                {t(`trust.cards.${key}.title`)}
+              </dt>
+              <dd className="mt-1 text-xs leading-5 text-emerald-50/70">
+                {t(`trust.cards.${key}.body`)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       {/* Деплой-дефолт (env) — справочно */}
       <section

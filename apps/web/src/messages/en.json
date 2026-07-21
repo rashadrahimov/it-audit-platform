@@ -1556,6 +1556,33 @@
     "intro": "Choose which AI model powers assist features for your organization. Off by default — the deterministic assist works without any provider.",
     "deployDefault": "Deployment default",
     "deployOff": "AI is off",
+    "trust": {
+      "kicker": "Trust posture",
+      "title": "Evidence-first AI, controlled by people",
+      "body": "Assist features draft text from the audit evidence you provide. The platform keeps AI output as a draft until a reviewer accepts it, and deterministic fallback remains available when no provider is configured.",
+      "effectiveMode": "Effective mode",
+      "deterministic": "Deterministic assist",
+      "tenantOverride": "Tenant override is active.",
+      "deploymentFallback": "Using deployment default or deterministic fallback.",
+      "cards": {
+        "grounded": {
+          "title": "Evidence-grounded",
+          "body": "Draft findings and DRL suggestions keep links back to source controls, answers and documents."
+        },
+        "human": {
+          "title": "Human-in-loop",
+          "body": "AI suggestions stay draft until a user validates, edits or accepts them."
+        },
+        "secrets": {
+          "title": "Encrypted keys",
+          "body": "Provider keys are stored encrypted and are never returned by the API."
+        },
+        "privateMode": {
+          "title": "Private-ready",
+          "body": "Use Ollama/vLLM or another local OpenAI-compatible endpoint when data must stay inside your perimeter."
+        }
+      }
+    },
     "provider": "Provider",
     "providers": {
       "none": "Off",
