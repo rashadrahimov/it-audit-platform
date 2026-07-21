@@ -2118,6 +2118,13 @@
     "title": "Search",
     "hint": "Type a query in the top bar — findings, controls, working papers, knowledge base and audit programs are searched.",
     "empty": "Nothing found",
+    "askKicker": "Audit query assistant",
+    "askFound": "{n} matching findings",
+    "askEmpty": "No matching findings",
+    "deterministic": "Evidence-safe",
+    "risk": "Risk",
+    "status": "Status",
+    "topic": "Topic",
     "types": {
       "finding": "Findings",
       "control": "Controls",
