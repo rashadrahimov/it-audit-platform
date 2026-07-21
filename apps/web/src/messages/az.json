@@ -1184,6 +1184,37 @@
     "title": "Hesabatlar",
     "toAccount": "Hesaba",
     "export": "Məlumat ixracı",
+    "deliverables": {
+      "kicker": "Standart audit sənədləri",
+      "title": "Bir audit — müştəri üçün beş hazır sənəd.",
+      "hint": "Məcburi audit paketini eyni sübuta əsaslanan məlumat bazasından yaradın: hesabat, uyğunsuzluqlar, risk matrisi, tədbirlər planı və icraçı xülasə.",
+      "engagement": "Audit",
+      "apply": "Auditi seç",
+      "ready": "Hazır",
+      "empty": "Audit paketini yaratmaq üçün əvvəlcə audit yaradın.",
+      "items": {
+        "audit_report": {
+          "title": "Audit hesabatı",
+          "hint": "Scope, çeklist, tapıntılar, risklər və tövsiyələrlə tam hesabat."
+        },
+        "nonconformities": {
+          "title": "Uyğunsuzluqlar",
+          "hint": "Kontrollar üzrə gaps, kritiklik və cari statusla fokuslanmış siyahı."
+        },
+        "risk_matrix": {
+          "title": "Risk matrisi",
+          "hint": "Likelihood, impact və risk sinfi ilə prioritetləşdirilmiş risk reyestri."
+        },
+        "action_plan": {
+          "title": "Tədbirlər planı",
+          "hint": "Sahiblər, son tarixlər və əlaqəli findings ilə remediation actions."
+        },
+        "executive_summary": {
+          "title": "İcraçı xülasə",
+          "hint": "Əsas nəticələr, prioritet risklər və növbəti addımlar üzrə rəhbərlik görünüşü."
+        }
+      }
+    },
     "compare": "Snapşotların müqayisəsi",
     "needTwo": "Müqayisə üçün ən azı iki snapşot lazımdır",
     "periodA": "Dövr A",

@@ -18,6 +18,7 @@ export async function GET(
   const url = new URL(request.url);
   const format = url.searchParams.get('format') ?? 'pdf';
   const locale = url.searchParams.get('locale') ?? 'en';
+  const deliverable = url.searchParams.get('deliverable') ?? 'audit_report';
   if (!ALLOWED.has(format)) {
     return NextResponse.json({ error: 'unsupported format' }, { status: 400 });
   }
@@ -26,9 +27,12 @@ export async function GET(
     return NextResponse.json({ error: 'no tenant' }, { status: 400 });
   }
 
-  const res = await apiFetch(`/engagements/${id}/report?format=${format}&locale=${locale}`, {
-    headers: { 'X-Tenant-Slug': tenantSlug },
-  });
+  const res = await apiFetch(
+    `/engagements/${id}/report?format=${format}&locale=${locale}&deliverable=${encodeURIComponent(deliverable)}`,
+    {
+      headers: { 'X-Tenant-Slug': tenantSlug },
+    },
+  );
   if (!res.ok) {
     return NextResponse.json({ error: 'export failed' }, { status: res.status });
   }

@@ -1184,6 +1184,37 @@
     "title": "Reports",
     "toAccount": "To account",
     "export": "Data export",
+    "deliverables": {
+      "kicker": "Standard audit deliverables",
+      "title": "One engagement, five board-ready outputs.",
+      "hint": "Generate the mandatory audit package from the same evidence-backed dataset: report, non-conformities, risk matrix, action plan and executive summary.",
+      "engagement": "Engagement",
+      "apply": "Use engagement",
+      "ready": "Ready",
+      "empty": "Create an engagement first to generate the audit package.",
+      "items": {
+        "audit_report": {
+          "title": "Audit Report",
+          "hint": "Full report with scope, checklist, findings, risks and recommendations."
+        },
+        "nonconformities": {
+          "title": "Non-Conformities",
+          "hint": "Focused list of gaps per control with severity and current status."
+        },
+        "risk_matrix": {
+          "title": "Risk Matrix",
+          "hint": "Prioritized risk register with likelihood, impact and risk class."
+        },
+        "action_plan": {
+          "title": "Action Plan",
+          "hint": "Remediation actions with owners, due dates and linked findings."
+        },
+        "executive_summary": {
+          "title": "Executive Summary",
+          "hint": "Management view of key results, priority risks and next actions."
+        }
+      }
+    },
     "compare": "Snapshot comparison",
     "needTwo": "Need at least two snapshots to compare",
     "periodA": "Period A",

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { EmptyState } from '@/components/empty-state';
+import { getCurrentLocale } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,9 +21,24 @@ interface CompareResult {
   b: { id: string; label: string };
   diff: Record<string, Record<string, Cell>>;
 }
+interface EngagementRow {
+  id: string;
+  title: string;
+  state: string;
+  subsidiary: string | null;
+  auditType: string | null;
+}
 
 const ENTITIES = ['findings', 'risks', 'controls'];
 const FORMATS = ['csv', 'xml'];
+const DELIVERABLE_FORMATS = ['pdf', 'docx', 'xlsx'] as const;
+const DELIVERABLES = [
+  'audit_report',
+  'nonconformities',
+  'risk_matrix',
+  'action_plan',
+  'executive_summary',
+] as const;
 
 const selectCls =
   'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
@@ -39,19 +55,26 @@ function deltaTone(d: number): string {
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ a?: string; b?: string }>;
+  searchParams: Promise<{ a?: string; b?: string; engagementId?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug, sp] = await Promise.all([
+  const [t, locale, tenantSlug, sp] = await Promise.all([
     getTranslations('reports'),
+    getCurrentLocale(),
     getActiveTenantSlug(),
     searchParams,
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const snapRes = await apiFetch('/snapshots', { headers });
+  const [snapRes, engagementRes] = await Promise.all([
+    apiFetch('/snapshots', { headers }),
+    apiFetch(`/engagements?locale=${locale}`, { headers }),
+  ]);
   const snapshots: Snapshot[] = snapRes.ok ? await snapRes.json() : [];
+  const engagements: EngagementRow[] = engagementRes.ok ? await engagementRes.json() : [];
+  const selectedEngagement =
+    engagements.find((e) => e.id === sp.engagementId) ?? engagements[0] ?? null;
 
   let compare: CompareResult | null = null;
   if (sp.a && sp.b) {
@@ -63,10 +86,95 @@ export default async function ReportsPage({
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 p-6 pt-12">
+    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+
+      {/* Пакет стандартных deliverables */}
+      <section className="overflow-hidden rounded-3xl border border-emerald-200/70 bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 text-white shadow-xl shadow-emerald-950/10">
+        <div className="grid gap-6 p-6 md:grid-cols-[1.15fr_0.85fr] md:p-8">
+          <div>
+            <p className="mb-2 text-xs font-semibold tracking-[0.18em] text-emerald-200 uppercase">
+              {t('deliverables.kicker')}
+            </p>
+            <h2 className="max-w-xl text-3xl font-bold tracking-tight">
+              {t('deliverables.title')}
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-emerald-50/80">
+              {t('deliverables.hint')}
+            </p>
+          </div>
+          <form method="GET" className="rounded-2xl border border-white/15 bg-white/10 p-4">
+            <label className="flex flex-col gap-2 text-xs font-medium text-emerald-50">
+              {t('deliverables.engagement')}
+              <select
+                name="engagementId"
+                defaultValue={selectedEngagement?.id ?? ''}
+                className="rounded-xl border border-white/20 bg-white px-3 py-2 text-sm text-primary shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:outline-none"
+              >
+                {engagements.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="submit"
+              className="mt-3 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-950 transition-colors duration-150 hover:bg-emerald-50 focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:outline-none"
+            >
+              {t('deliverables.apply')}
+            </button>
+            {selectedEngagement && (
+              <p className="mt-3 text-xs text-emerald-50/75">
+                {selectedEngagement.subsidiary ?? '—'} · {selectedEngagement.auditType ?? '—'} ·{' '}
+                {selectedEngagement.state}
+              </p>
+            )}
+          </form>
+        </div>
+        <div className="grid gap-3 border-t border-white/10 bg-white/8 p-4 md:grid-cols-5">
+          {selectedEngagement ? (
+            DELIVERABLES.map((d, index) => (
+              <article
+                key={d}
+                className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur"
+                data-testid={`deliverable-${d}`}
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-300/20 text-sm font-bold text-emerald-50">
+                    {index + 1}
+                  </span>
+                  <span className="rounded-full bg-emerald-300/15 px-2 py-1 text-[10px] font-semibold tracking-wide text-emerald-100 uppercase">
+                    {t('deliverables.ready')}
+                  </span>
+                </div>
+                <h3 className="text-sm font-semibold">{t(`deliverables.items.${d}.title`)}</h3>
+                <p className="mt-2 min-h-16 text-xs leading-5 text-emerald-50/75">
+                  {t(`deliverables.items.${d}.hint`)}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {DELIVERABLE_FORMATS.map((fmt) => (
+                    <a
+                      key={fmt}
+                      href={`/engagements/${selectedEngagement.id}/report?format=${fmt}&locale=${locale}&deliverable=${d}`}
+                      className="rounded-lg bg-white/95 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-950 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:outline-none"
+                      data-testid={`deliverable-${d}-${fmt}`}
+                    >
+                      {fmt.toUpperCase()}
+                    </a>
+                  ))}
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="md:col-span-5">
+              <EmptyState size="sm" text={t('deliverables.empty')} />
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Выгрузка */}
       <section className="flex flex-col gap-3">

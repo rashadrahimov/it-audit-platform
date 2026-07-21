@@ -15,7 +15,11 @@ import { DEFAULT_LOCALE, localeSchema } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
-import { ReportDataService } from './report-data.service';
+import {
+  REPORT_DELIVERABLES,
+  ReportDataService,
+  type ReportDeliverable,
+} from './report-data.service';
 import { toCsv, toDocx, toPdf, toXlsx, toXml } from './report-renderers';
 
 const FORMATS = {
@@ -43,9 +47,13 @@ export class ReportsController {
 
   @Get()
   @RequirePermission('report', 'export', 'edit')
-  @ApiOperation({ summary: 'Экспорт отчёта engagement (T-045): ?format=pdf|docx|xlsx|csv|xml' })
+  @ApiOperation({
+    summary:
+      'Экспорт deliverable engagement (T-045/T-H33): ?format=pdf|docx|xlsx|csv|xml&deliverable=...',
+  })
   @ApiQuery({ name: 'format', enum: Object.keys(FORMATS) })
   @ApiQuery({ name: 'locale', required: false })
+  @ApiQuery({ name: 'deliverable', required: false, enum: REPORT_DELIVERABLES })
   @ApiProduces(...Object.values(FORMATS).map((f) => f.mime))
   async export(
     @Req() req: TenantRequest,
@@ -53,6 +61,7 @@ export class ReportsController {
     @Res() res: Response,
     @Query('format') format?: string,
     @Query('locale') localeQuery?: string,
+    @Query('deliverable') deliverableQuery?: string,
   ): Promise<void> {
     if (!format || !(format in FORMATS)) {
       throw new BadRequestException(`format: ожидается ${Object.keys(FORMATS).join('|')}`);
@@ -63,7 +72,14 @@ export class ReportsController {
       if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
       locale = parsed.data;
     }
-    const data = await this.reportDataService.build(req.tenantId, id, locale);
+    let deliverable: ReportDeliverable = 'audit_report';
+    if (deliverableQuery !== undefined) {
+      if (!REPORT_DELIVERABLES.includes(deliverableQuery as ReportDeliverable)) {
+        throw new BadRequestException(`deliverable: ожидается ${REPORT_DELIVERABLES.join('|')}`);
+      }
+      deliverable = deliverableQuery as ReportDeliverable;
+    }
+    const data = await this.reportDataService.build(req.tenantId, id, locale, deliverable);
     const spec = FORMATS[format as Format];
     const body =
       format === 'pdf'
@@ -80,7 +96,7 @@ export class ReportsController {
     res.setHeader('Content-Length', String(body.length));
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename*=UTF-8''${encodeURIComponent(`engagement-report.${spec.ext}`)}`,
+      `attachment; filename*=UTF-8''${encodeURIComponent(`${deliverable}.${spec.ext}`)}`,
     );
     res.end(body);
   }
