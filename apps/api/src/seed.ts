@@ -69,7 +69,7 @@ async function seedPostgres(): Promise<void> {
 
     await db
       .insert(tenant)
-      .values({ slug: DEMO_TENANT_SLUG, name: 'Demo Group', languageDefault: 'en' })
+      .values({ slug: DEMO_TENANT_SLUG, name: 'Demo Group', languageDefault: 'ru' })
       .onConflictDoNothing({ target: tenant.slug });
     const [demoTenant] = await db.select().from(tenant).where(eq(tenant.slug, DEMO_TENANT_SLUG));
     if (!demoTenant) throw new Error(`Tenant «${DEMO_TENANT_SLUG}» не найден после вставки`);
