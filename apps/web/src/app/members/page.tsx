@@ -78,6 +78,7 @@ export default async function MembersPage() {
                     >
                       <select
                         name="roleId"
+                        aria-label={`${t('role')}: ${m.fullName}`}
                         defaultValue={roles.find((r) => roleName(r) === m.role)?.id ?? ''}
                         className="rounded-md border border-border bg-white px-1.5 py-1 text-xs text-foreground"
                       >

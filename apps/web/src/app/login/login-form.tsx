@@ -184,7 +184,7 @@ export function LoginForm() {
       <Link
         href="/login/sso"
         data-testid="sso-link"
-        className="text-center text-sm font-medium text-accent hover:underline"
+        className="inline-flex min-h-9 items-center justify-center rounded-md text-center text-sm font-medium text-accent hover:bg-accent-soft hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
         {t('ssoToggle')}
       </Link>

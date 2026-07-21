@@ -75,6 +75,8 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
   const res = await apiFetch(`/findings/${id}?locale=${locale}`, { headers });
   if (!res.ok) redirect('/findings');
   const f: FindingDetail = await res.json();
+  f.comments ??= [];
+  f.history ??= [];
 
   // список участников для assign-формы; у не-админа (403) — форма скрыта
   const [mRes, tasksRes, tagsOfRes, allTagsRes] = await Promise.all([
@@ -180,15 +182,15 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
         {members.length > 0 && f.status !== 'closed' && (
           <form
             action={assignFindingAction.bind(null, f.id)}
-            className="flex items-center gap-2"
+            className="flex min-w-0 flex-1 flex-col items-stretch gap-2 sm:flex-row sm:items-center"
             data-testid="finding-assign"
           >
-            <label className="flex items-center gap-2 text-sm text-secondary">
+            <label className="flex min-w-0 flex-1 flex-col gap-1.5 text-sm text-secondary sm:flex-row sm:items-center">
               {t('assignTitle')}
               <select
                 name="ownerMembershipId"
                 required
-                className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+                className="min-w-0 flex-1 rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
               >
                 {members.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -197,7 +199,7 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
                 ))}
               </select>
             </label>
-            <button type="submit" className={secondaryBtn}>
+            <button type="submit" className={`${secondaryBtn} w-full sm:w-auto`}>
               {t('assignBtn')}
             </button>
           </form>

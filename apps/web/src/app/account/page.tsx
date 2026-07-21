@@ -137,10 +137,14 @@ export default async function AccountPage() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-6 md:p-10">
       {/* Hero */}
-      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary to-[#123a5e] p-7 text-on-primary shadow-md md:p-9">
+      <header className="relative overflow-hidden rounded-2xl border border-emerald-900/10 bg-[linear-gradient(120deg,#12372a_0%,#0b513b_58%,#07865f_100%)] p-7 text-on-primary shadow-[0_20px_45px_-24px_rgb(7_134_95/0.55)] md:p-9">
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-16 -right-10 h-56 w-56 rounded-full bg-accent/25 blur-3xl"
+          className="pointer-events-none absolute -top-24 -right-10 h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-8 -bottom-28 h-52 w-52 rounded-full border-[36px] border-white/5"
         />
         <p className="text-sm font-medium text-white/70">{t('welcome')},</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight">{user.fullName}</h1>
@@ -157,9 +161,9 @@ export default async function AccountPage() {
         {stats.map((s) => (
           <div
             key={s.label}
-            className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-5 shadow-sm transition-shadow duration-150 hover:shadow-md"
+            className="group flex flex-col gap-3 rounded-xl border border-border bg-surface/90 p-5 shadow-sm hover:-translate-y-0.5 hover:border-accent/25 hover:shadow-md"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent ring-1 ring-accent/5 group-hover:bg-accent group-hover:text-white group-hover:shadow-[0_8px_18px_rgb(7_134_95/0.2)]">
               <Icon d={s.icon} className="h-5 w-5" />
             </span>
             <div>

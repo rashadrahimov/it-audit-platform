@@ -76,7 +76,7 @@ interface EvidenceReview {
 
 const REVIEW_TONE: Record<string, string> = {
   not_ready: 'bg-muted text-secondary',
-  ready: 'bg-sky-100 text-sky-700',
+  ready: 'bg-emerald-100 text-emerald-700',
   flagged: 'bg-red-100 text-red-700',
   accepted: 'bg-emerald-100 text-emerald-700',
 };
@@ -317,45 +317,47 @@ export default async function EngagementDetailPage({
         {eng.checklist.length === 0 ? (
           <p className="text-sm text-secondary">{t('checklistEmpty')}</p>
         ) : (
-          <table className="w-full text-left text-sm" data-testid="engagement-checklist">
-            <thead>
-              <tr className="border-b border-border text-secondary">
-                <th className="py-2 pr-4 font-medium">{t('checklistRef')}</th>
-                <th className="py-2 pr-4 font-medium">{t('checklistQuestion')}</th>
-                <th className="py-2 font-medium">{t('checklistStatus')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {eng.checklist.map((item) => (
-                <tr key={item.id} className="border-b border-border align-top last:border-0">
-                  <td className="py-2 pr-4 font-medium whitespace-nowrap text-foreground">
-                    {item.ref}
-                  </td>
-                  <td className="py-2 pr-4 text-foreground">
-                    {item.question}
-                    {item.response && (
-                      <p
-                        data-testid={`response-${item.ref}`}
-                        className="mt-1.5 rounded-md bg-muted/60 px-2.5 py-1.5 text-xs text-secondary"
-                      >
-                        <span className="font-medium text-foreground">
-                          {item.response.respondent}:
-                        </span>{' '}
-                        {item.response.text}
-                      </p>
-                    )}
-                  </td>
-                  <td className="py-2">
-                    <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-secondary">
-                      {item.response
-                        ? t(`compliance.${item.response.complianceStatus}`)
-                        : item.status}
-                    </span>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-80 text-left text-sm" data-testid="engagement-checklist">
+              <thead>
+                <tr className="border-b border-border text-secondary">
+                  <th className="py-2 pr-4 font-medium">{t('checklistRef')}</th>
+                  <th className="py-2 pr-4 font-medium">{t('checklistQuestion')}</th>
+                  <th className="py-2 font-medium">{t('checklistStatus')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {eng.checklist.map((item) => (
+                  <tr key={item.id} className="border-b border-border align-top last:border-0">
+                    <td className="py-2 pr-4 font-medium whitespace-nowrap text-foreground">
+                      {item.ref}
+                    </td>
+                    <td className="py-2 pr-4 text-foreground">
+                      {item.question}
+                      {item.response && (
+                        <p
+                          data-testid={`response-${item.ref}`}
+                          className="mt-1.5 rounded-md bg-muted/60 px-2.5 py-1.5 text-xs text-secondary"
+                        >
+                          <span className="font-medium text-foreground">
+                            {item.response.respondent}:
+                          </span>{' '}
+                          {item.response.text}
+                        </p>
+                      )}
+                    </td>
+                    <td className="py-2">
+                      <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-secondary">
+                        {item.response
+                          ? t(`compliance.${item.response.complianceStatus}`)
+                          : item.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
         {eng.checklist.length > 0 && (
           <details className="mt-4">
@@ -443,41 +445,46 @@ export default async function EngagementDetailPage({
         {findings.length === 0 ? (
           <p className="text-sm text-secondary">{t('findingsEmpty')}</p>
         ) : (
-          <table className="w-full text-left text-sm" data-testid="engagement-findings">
-            <thead>
-              <tr className="border-b border-border text-secondary">
-                <th className="py-2 pr-4 font-medium">{t('findingTitle')}</th>
-                <th className="py-2 pr-4 font-medium">{t('findingRating')}</th>
-                <th className="py-2 pr-4 font-medium">{t('findingOwner')}</th>
-                <th className="py-2 font-medium">{t('findingDue')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {findings.map((f) => (
-                <tr key={f.id} className="border-b border-border align-top last:border-0">
-                  <td className="py-2 pr-4 text-foreground">{f.title}</td>
-                  <td className="py-2 pr-4">
-                    <span
-                      className={
-                        'rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ' +
-                        (f.riskRating === 'critical' || f.riskRating === 'high'
-                          ? 'bg-red-100 text-red-800'
-                          : f.riskRating === 'medium'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-muted text-secondary')
-                      }
-                    >
-                      {t(`ratings.${f.riskRating}`)}
-                    </span>
-                  </td>
-                  <td className="py-2 pr-4 text-secondary">{f.owner ?? '—'}</td>
-                  <td className="py-2 whitespace-nowrap text-secondary">
-                    {f.dueDate ? fmt(f.dueDate) : '—'}
-                  </td>
+          <div className="overflow-x-auto">
+            <table
+              className="w-full min-w-[22rem] text-left text-sm"
+              data-testid="engagement-findings"
+            >
+              <thead>
+                <tr className="border-b border-border text-secondary">
+                  <th className="py-2 pr-4 font-medium">{t('findingTitle')}</th>
+                  <th className="py-2 pr-4 font-medium">{t('findingRating')}</th>
+                  <th className="py-2 pr-4 font-medium">{t('findingOwner')}</th>
+                  <th className="py-2 font-medium">{t('findingDue')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {findings.map((f) => (
+                  <tr key={f.id} className="border-b border-border align-top last:border-0">
+                    <td className="py-2 pr-4 text-foreground">{f.title}</td>
+                    <td className="py-2 pr-4">
+                      <span
+                        className={
+                          'rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ' +
+                          (f.riskRating === 'critical' || f.riskRating === 'high'
+                            ? 'bg-red-100 text-red-800'
+                            : f.riskRating === 'medium'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-muted text-secondary')
+                        }
+                      >
+                        {t(`ratings.${f.riskRating}`)}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-4 text-secondary">{f.owner ?? '—'}</td>
+                    <td className="py-2 whitespace-nowrap text-secondary">
+                      {f.dueDate ? fmt(f.dueDate) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
 
@@ -549,24 +556,29 @@ export default async function EngagementDetailPage({
         {eng.milestones.length === 0 ? (
           <p className="text-sm text-secondary">{t('milestonesEmpty')}</p>
         ) : (
-          <table className="w-full text-left text-sm" data-testid="engagement-milestones">
-            <thead>
-              <tr className="border-b border-border text-secondary">
-                <th className="py-2 pr-4 font-medium">{t('stage')}</th>
-                <th className="py-2 pr-4 font-medium">{t('planned')}</th>
-                <th className="py-2 font-medium">{t('actual')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {eng.milestones.map((m) => (
-                <tr key={m.stage} className="border-b border-border last:border-0">
-                  <td className="py-2 pr-4 text-foreground">{tStates(m.stage)}</td>
-                  <td className="py-2 pr-4 text-secondary">{fmt(m.plannedDate)}</td>
-                  <td className="py-2 text-secondary">{fmt(m.actualDate)}</td>
+          <div className="overflow-x-auto">
+            <table
+              className="w-full min-w-80 text-left text-sm"
+              data-testid="engagement-milestones"
+            >
+              <thead>
+                <tr className="border-b border-border text-secondary">
+                  <th className="py-2 pr-4 font-medium">{t('stage')}</th>
+                  <th className="py-2 pr-4 font-medium">{t('planned')}</th>
+                  <th className="py-2 font-medium">{t('actual')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {eng.milestones.map((m) => (
+                  <tr key={m.stage} className="border-b border-border last:border-0">
+                    <td className="py-2 pr-4 text-foreground">{tStates(m.stage)}</td>
+                    <td className="py-2 pr-4 text-secondary">{fmt(m.plannedDate)}</td>
+                    <td className="py-2 text-secondary">{fmt(m.actualDate)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
       <CommentsSection

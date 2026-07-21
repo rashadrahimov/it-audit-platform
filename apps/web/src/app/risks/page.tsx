@@ -6,6 +6,7 @@ import { getCurrentLocale } from '@/lib/locale';
 import { addRiskFromLibraryAction, createRiskAction, setRiskMatrixAction } from './actions';
 import { EmptyState } from '@/components/empty-state';
 import { WidgetChart } from '@/components/widget-chart';
+import { StatusBadge, type StatusTone } from '@/components/status-badge';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,17 +23,17 @@ interface Risk {
   approvalStatus: string | null;
 }
 
-const APPR_TONE: Record<string, string> = {
-  approved: 'bg-emerald-100 text-emerald-700',
-  pending: 'bg-amber-100 text-amber-700',
-  rejected: 'bg-red-100 text-red-700',
+const APPR_TONE: Record<string, StatusTone> = {
+  approved: 'success',
+  pending: 'warning',
+  rejected: 'critical',
 };
 
-const CLASS_TONE: Record<RiskClass, string> = {
-  low: 'bg-emerald-100 text-emerald-700',
-  medium: 'bg-amber-100 text-amber-700',
-  high: 'bg-orange-100 text-orange-700',
-  critical: 'bg-red-100 text-red-700',
+const CLASS_TONE: Record<RiskClass, StatusTone> = {
+  low: 'success',
+  medium: 'warning',
+  high: 'high',
+  critical: 'critical',
 };
 const TREATMENTS: Treatment[] = ['mitigate', 'transfer', 'accept', 'avoid'];
 const SCORES = [1, 2, 3, 4, 5];
@@ -92,9 +93,9 @@ export default async function RisksPage({
 
   const classBadge = (c: RiskClass | null) =>
     c ? (
-      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${CLASS_TONE[c]}`}>
+      <StatusBadge tone={CLASS_TONE[c]} dot>
         {t(`cls.${c}`)}
-      </span>
+      </StatusBadge>
     ) : (
       <span className="text-secondary">—</span>
     );
@@ -117,15 +118,20 @@ export default async function RisksPage({
   );
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
-      <div className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 p-6 pt-10 md:p-10">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="mb-1 text-xs font-semibold tracking-[0.12em] text-accent uppercase">
+            Risk intelligence
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">{t('title')}</h1>
+        </div>
       </div>
 
       <form
         action={createRiskAction}
         data-testid="risk-create"
-        className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+        className="flex flex-col gap-4 rounded-2xl border border-border bg-white/90 p-5 shadow-sm"
       >
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-secondary">{t('create')}</span>
@@ -166,7 +172,7 @@ export default async function RisksPage({
 
       {!approvalQueue && risks.length > 0 && (
         <section
-          className="grid gap-4 rounded-xl border border-border bg-white p-4 shadow-sm sm:grid-cols-2"
+          className="grid gap-5 rounded-2xl border border-border bg-white/90 p-5 shadow-sm sm:grid-cols-2"
           data-testid="risk-overview"
         >
           <div className="flex flex-col gap-2">
@@ -210,7 +216,7 @@ export default async function RisksPage({
           <EmptyState text={approvalQueue ? t('approvalQueueEmpty') : t('empty')} />
         </section>
       ) : (
-        <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+        <section className="overflow-x-auto rounded-2xl border border-border bg-white/90 shadow-sm">
           <table className="w-full text-left text-sm" data-testid="risks-table">
             <thead>
               <tr className="border-b border-border text-secondary">
@@ -245,11 +251,9 @@ export default async function RisksPage({
                   </td>
                   <td className="px-4 py-3">
                     {r.approvalStatus ? (
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${APPR_TONE[r.approvalStatus] ?? 'bg-muted text-secondary'}`}
-                      >
+                      <StatusBadge tone={APPR_TONE[r.approvalStatus] ?? 'neutral'} dot>
                         {t(`appr.${r.approvalStatus}`)}
-                      </span>
+                      </StatusBadge>
                     ) : (
                       <span className="text-secondary">—</span>
                     )}

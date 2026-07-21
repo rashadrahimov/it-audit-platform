@@ -105,7 +105,7 @@ export default async function PrivacyPage({
   const vendors: Vendor[] = venRes.ok ? await venRes.json() : [];
 
   const tabCls = (on: boolean) =>
-    `rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors duration-150 ${
+    `inline-flex min-h-8 items-center rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-150 ${
       on ? 'bg-accent text-on-primary' : 'bg-muted text-secondary hover:bg-border'
     }`;
 
@@ -136,23 +136,39 @@ export default async function PrivacyPage({
           data-testid="ropa-create"
           className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
         >
-          <input name="name" required placeholder={t('name')} className={`flex-1 ${inputCls}`} />
-          <input name="purpose" placeholder={t('purpose')} className={inputCls} />
-          <select name="legalBasis" defaultValue="consent" className={inputCls}>
+          <input
+            name="name"
+            required
+            placeholder={t('name')}
+            aria-label={t('name')}
+            className={`flex-1 ${inputCls}`}
+          />
+          <input
+            name="purpose"
+            placeholder={t('purpose')}
+            aria-label={t('purpose')}
+            className={inputCls}
+          />
+          <select
+            name="legalBasis"
+            defaultValue="consent"
+            aria-label={t('legalBasis')}
+            className={inputCls}
+          >
             {LEGAL_BASES.map((b) => (
               <option key={b} value={b}>
                 {t(`lb.${b}`)}
               </option>
             ))}
           </select>
-          <select name="role" defaultValue="controller" className={inputCls}>
+          <select name="role" defaultValue="controller" aria-label={t('role')} className={inputCls}>
             {ROLES.map((r) => (
               <option key={r} value={r}>
                 {t(`rl.${r}`)}
               </option>
             ))}
           </select>
-          <select name="vendorId" defaultValue="" className={inputCls}>
+          <select name="vendorId" defaultValue="" aria-label={t('vendor')} className={inputCls}>
             <option value="">{t('vendorNone')}</option>
             {vendors.map((v) => (
               <option key={v.id} value={v.id}>
@@ -160,7 +176,12 @@ export default async function PrivacyPage({
               </option>
             ))}
           </select>
-          <input name="dataLocations" placeholder={t('dataLocationsPh')} className={inputCls} />
+          <input
+            name="dataLocations"
+            placeholder={t('dataLocationsPh')}
+            aria-label={t('dataLocations')}
+            className={inputCls}
+          />
           <label className="flex flex-col gap-1 text-xs text-secondary">
             <span>{t('reviewDate')}</span>
             <input type="date" name="reviewDate" className={inputCls} />
@@ -196,12 +217,12 @@ export default async function PrivacyPage({
                     {t(`lb.${r.legalBasis}`)} · {t(`rl.${r.role}`)}
                   </span>
                   {r.vendorName && (
-                    <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
                       {r.vendorName}
                     </span>
                   )}
-                  {r.dataLocations.length > 0 && (
-                    <span className="text-xs text-secondary">📍 {r.dataLocations.join(', ')}</span>
+                  {(r.dataLocations?.length ?? 0) > 0 && (
+                    <span className="text-xs text-secondary">{r.dataLocations.join(', ')}</span>
                   )}
                   {r.crossBorder && (
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
@@ -250,7 +271,12 @@ export default async function PrivacyPage({
             data-testid="dpia-create"
             className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
           >
-            <select name="processingActivityId" className={inputCls} defaultValue={ropa[0]!.id}>
+            <select
+              name="processingActivityId"
+              aria-label={t('ropa')}
+              className={inputCls}
+              defaultValue={ropa[0]!.id}
+            >
               {ropa.map((r) => (
                 <option key={r.id} value={r.id}>
                   {resolveName(r.nameI18n, locale)}
@@ -261,16 +287,27 @@ export default async function PrivacyPage({
               name="title"
               required
               placeholder={t('titlePh')}
+              aria-label={t('titlePh')}
               className={`flex-1 ${inputCls}`}
             />
-            <select name="riskLevel" defaultValue="medium" className={inputCls}>
+            <select
+              name="riskLevel"
+              aria-label={t('riskLevel')}
+              defaultValue="medium"
+              className={inputCls}
+            >
               {RISK_LEVELS.map((l) => (
                 <option key={l} value={l}>
                   {t(`lvl.${l}`)}
                 </option>
               ))}
             </select>
-            <select name="approverMembershipId" defaultValue="" className={inputCls}>
+            <select
+              name="approverMembershipId"
+              aria-label={t('approver')}
+              defaultValue=""
+              className={inputCls}
+            >
               <option value="">{t('approverNone')}</option>
               {members.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -314,7 +351,7 @@ export default async function PrivacyPage({
                   <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-secondary">
                     {t(`st.${d.status}`)}
                   </span>
-                  {DPIA_NEXT[d.status].map((to) => (
+                  {(DPIA_NEXT[d.status] ?? []).map((to) => (
                     <form key={to} action={transitionDpiaAction}>
                       <input type="hidden" name="id" value={d.id} />
                       <input type="hidden" name="to" value={to} />

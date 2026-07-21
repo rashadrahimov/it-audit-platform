@@ -22,8 +22,8 @@ interface AssetOpt {
 }
 
 const STATUS_TONE: Record<Status, string> = {
-  requested: 'bg-sky-100 text-sky-700',
-  approved: 'bg-indigo-100 text-indigo-700',
+  requested: 'bg-emerald-100 text-emerald-700',
+  approved: 'bg-violet-100 text-violet-700',
   rejected: 'bg-muted text-secondary',
   deployed: 'bg-emerald-100 text-emerald-700',
 };

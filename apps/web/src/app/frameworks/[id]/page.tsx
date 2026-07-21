@@ -159,7 +159,7 @@ export default async function FrameworkDetailPage({ params }: { params: Promise<
           {fw.version}
         </span>
         {fw.domain && ['security', 'privacy', 'industry', 'custom'].includes(fw.domain) && (
-          <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-700">
+          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
             {t(`dom.${fw.domain}`)}
           </span>
         )}

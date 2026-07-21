@@ -28,7 +28,7 @@ interface Dept {
 
 const STATUS_TONE: Record<Profile['employmentStatus'], string> = {
   active: 'bg-emerald-100 text-emerald-700',
-  onboarding: 'bg-sky-100 text-sky-700',
+  onboarding: 'bg-emerald-100 text-emerald-700',
   offboarded: 'bg-muted text-secondary',
 };
 const STATUSES = ['active', 'onboarding', 'offboarded'] as const;
@@ -55,7 +55,8 @@ export default async function PersonnelPage() {
   const deptName = (d: Dept) =>
     (d.nameI18n as Record<string, string | undefined>)[locale] ?? d.nameI18n.en;
 
-  const taskStatus = (s: Profile['taskSummary']) => {
+  const taskStatus = (s: Profile['taskSummary'] | undefined) => {
+    s ??= { total: 0, open: 0, overdue: 0 };
     if (s.total === 0) return <span className="text-secondary">{t('noTasks')}</span>;
     if (s.overdue > 0)
       return (

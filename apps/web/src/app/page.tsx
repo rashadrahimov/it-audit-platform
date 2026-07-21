@@ -37,7 +37,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <main className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-primary via-[#122c4d] to-[#0a3355] text-on-primary">
+    <main className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-primary via-[#164e3b] to-[#062c22] text-on-primary">
       {/* мягкие свечения */}
       <div
         aria-hidden

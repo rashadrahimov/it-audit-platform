@@ -17,7 +17,7 @@ const KEY_TONE: Record<string, string> = {
   ok: '#059669',
   pass: '#059669',
 };
-const PALETTE = ['#2563eb', '#7c3aed', '#0891b2', '#db2777', '#65a30d', '#f59e0b', '#475569'];
+const PALETTE = ['#07865f', '#16a36a', '#84a83e', '#d97706', '#be123c', '#78716c', '#14532d'];
 const colorOf = (key: string, i: number) => KEY_TONE[key] ?? PALETTE[i % PALETTE.length]!;
 
 function PieSvg({ entries, donut }: { entries: Array<[string, number]>; donut: boolean }) {
@@ -63,9 +63,9 @@ function LineSvg({ entries }: { entries: Array<[string, number]> }) {
   const points = entries.map(([, v], i) => `${i * step},${h - (v / max) * (h - 6) - 3}`).join(' ');
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="h-16 w-full" role="img" aria-label="chart">
-      <polyline points={points} fill="none" stroke="#2563eb" strokeWidth="2" />
+      <polyline points={points} fill="none" stroke="#07865f" strokeWidth="2" />
       {entries.map(([key, v], i) => (
-        <circle key={key} cx={i * step} cy={h - (v / max) * (h - 6) - 3} r="2.5" fill="#2563eb" />
+        <circle key={key} cx={i * step} cy={h - (v / max) * (h - 6) - 3} r="2.5" fill="#07865f" />
       ))}
     </svg>
   );

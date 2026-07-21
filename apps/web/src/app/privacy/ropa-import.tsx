@@ -17,13 +17,14 @@ export function RopaImport() {
     >
       <h2 className="text-sm font-semibold text-primary">{t('importTitle')}</h2>
       <p className="text-xs text-secondary">{t('importHint')}</p>
-      <form action={action} className="flex flex-wrap items-center gap-2">
+      <form action={action} className="flex min-w-0 flex-wrap items-center gap-2">
         <input
           type="file"
           name="file"
           accept=".csv,text/csv"
+          aria-label={t('importTitle')}
           data-testid="ropa-import-file"
-          className="text-sm text-secondary"
+          className="min-w-0 max-w-full text-sm text-secondary"
         />
         <button
           type="submit"

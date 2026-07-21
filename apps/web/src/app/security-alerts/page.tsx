@@ -53,7 +53,7 @@ const SEV_TONE: Record<Severity, string> = {
   critical: 'bg-red-100 text-red-700',
 };
 const STATUS_TONE: Record<Status, string> = {
-  new: 'bg-sky-100 text-sky-700',
+  new: 'bg-emerald-100 text-emerald-700',
   triaged: 'bg-amber-100 text-amber-700',
   closed: 'bg-muted text-secondary',
 };
@@ -209,7 +209,7 @@ export default async function SecurityAlertsPage({
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {a.status === 'closed' ? (
+                    {a.status === 'closed' || !a.slaStatus ? (
                       <span className="text-xs text-secondary">—</span>
                     ) : (
                       <span

@@ -84,7 +84,7 @@ export default async function TestsPage({
     : [];
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
+    <main className="mx-auto flex min-h-screen w-full min-w-0 max-w-4xl flex-col gap-6 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
@@ -128,8 +128,8 @@ export default async function TestsPage({
         ]}
       />
 
-      <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
-        <table className="w-full text-left text-sm" data-testid="tests-table">
+      <section className="max-w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+        <table className="w-full min-w-[52rem] text-left text-sm" data-testid="tests-table">
           <thead>
             <tr className="border-b border-border text-secondary">
               <th className="px-4 py-3 font-medium">{t('colTitle')}</th>
@@ -165,7 +165,7 @@ export default async function TestsPage({
                   )}
                 </td>
                 <td className="px-4 py-3 text-xs text-secondary">
-                  {row.standards.length > 0 ? row.standards.join(', ') : '—'}
+                  {(row.standards?.length ?? 0) > 0 ? row.standards.join(', ') : '—'}
                 </td>
                 <td className="px-4 py-3">
                   <span

@@ -60,7 +60,7 @@ interface AuditFirm {
 const REVIEW_STATUSES = ['not_ready', 'ready', 'flagged', 'accepted'] as const;
 const REVIEW_TONE: Record<string, string> = {
   not_ready: 'bg-muted text-secondary',
-  ready: 'bg-sky-100 text-sky-700',
+  ready: 'bg-emerald-100 text-emerald-700',
   flagged: 'bg-red-100 text-red-700',
   accepted: 'bg-emerald-100 text-emerald-700',
 };
@@ -119,7 +119,7 @@ export default async function DocumentsPage({
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
+    <main className="mx-auto flex min-h-screen w-full min-w-0 max-w-4xl flex-col gap-6 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
@@ -129,13 +129,13 @@ export default async function DocumentsPage({
         data-testid="document-upload"
         className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
       >
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex min-w-0 max-w-full flex-col gap-1 text-sm">
           <span className="font-medium text-secondary">{t('upload')}</span>
           <input
             type="file"
             name="file"
             required
-            className="text-sm text-foreground file:mr-2 file:rounded-md file:border file:border-border file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-secondary"
+            className="min-w-0 max-w-full text-sm text-foreground file:mr-2 file:rounded-md file:border file:border-border file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-secondary"
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -198,14 +198,14 @@ export default async function DocumentsPage({
           <h2 className="text-sm font-semibold text-primary">{t('requestTitle')}</h2>
           <p className="text-xs text-secondary">{t('requestHint')}</p>
         </div>
-        <form action={requestDocumentAction} className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm">
+        <form action={requestDocumentAction} className="flex min-w-0 flex-wrap items-end gap-3">
+          <label className="flex min-w-0 max-w-full flex-col gap-1 text-sm">
             <span className="font-medium text-secondary">{t('requestName')}</span>
             <input
               name="filename"
               required
               placeholder={t('requestNamePh')}
-              className="min-w-56 rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+              className="min-w-0 max-w-full rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
@@ -247,8 +247,8 @@ export default async function DocumentsPage({
         ]}
       />
 
-      <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
-        <table className="w-full text-left text-sm" data-testid="documents-table">
+      <section className="max-w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+        <table className="w-full min-w-[570px] text-left text-sm" data-testid="documents-table">
           <thead>
             <tr className="border-b border-border text-secondary">
               <th className="px-4 py-3 font-medium">{t('colName')}</th>
@@ -295,6 +295,7 @@ export default async function DocumentsPage({
                     >
                       <select
                         name="ownerMembershipId"
+                        aria-label={`${t('colOwner')}: ${d.filename}`}
                         defaultValue={members.find((m) => m.fullName === d.owner)?.id ?? ''}
                         className="rounded-md border border-border bg-white px-1.5 py-1 text-xs text-foreground"
                       >
@@ -322,6 +323,7 @@ export default async function DocumentsPage({
                   >
                     <select
                       name="status"
+                      aria-label={`${t('evidence')}: ${d.filename}`}
                       defaultValue={reviews[d.id]?.status ?? 'not_ready'}
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${REVIEW_TONE[reviews[d.id]?.status ?? 'not_ready']}`}
                     >
@@ -352,6 +354,7 @@ export default async function DocumentsPage({
                       <input
                         type="file"
                         name="file"
+                        aria-label={`${t('uploadFile')}: ${d.filename}`}
                         required
                         className="w-28 text-xs text-foreground file:mr-1.5 file:rounded file:border file:border-border file:bg-muted file:px-1.5 file:py-0.5 file:text-xs file:text-secondary"
                       />
@@ -385,6 +388,7 @@ export default async function DocumentsPage({
                         <input
                           type="file"
                           name="file"
+                          aria-label={`${t('newVersion')}: ${d.filename}`}
                           required
                           className="w-28 text-xs text-foreground file:mr-1.5 file:rounded file:border file:border-border file:bg-muted file:px-1.5 file:py-0.5 file:text-xs file:text-secondary"
                         />

@@ -64,6 +64,7 @@ export default async function KnowledgeBasePage({
           name="q"
           defaultValue={q}
           placeholder={t('searchPh')}
+          aria-label={t('searchPh')}
           className={`flex-1 ${inputCls}`}
         />
         <button
@@ -93,10 +94,21 @@ export default async function KnowledgeBasePage({
             name="question"
             required
             placeholder={t('questionPh')}
+            aria-label={t('questionPh')}
             className={`flex-1 ${inputCls}`}
           />
-          <input name="category" placeholder={t('category')} className={inputCls} />
-          <select name="ownerMembershipId" defaultValue="" className={inputCls}>
+          <input
+            name="category"
+            placeholder={t('category')}
+            aria-label={t('category')}
+            className={inputCls}
+          />
+          <select
+            name="ownerMembershipId"
+            defaultValue=""
+            aria-label={t('owner')}
+            className={inputCls}
+          >
             <option value="">{t('ownerNone')}</option>
             {members.map((m) => (
               <option key={m.id} value={m.id}>
@@ -114,6 +126,7 @@ export default async function KnowledgeBasePage({
           required
           rows={2}
           placeholder={t('answerPh')}
+          aria-label={t('answerPh')}
           className={inputCls}
         />
         <button
@@ -153,7 +166,7 @@ export default async function KnowledgeBasePage({
                 {e.trustVisible && (
                   <span
                     data-testid={`kb-trust-badge-${e.id}`}
-                    className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700"
+                    className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700"
                   >
                     {t('trustPublished')}
                   </span>
@@ -181,6 +194,7 @@ export default async function KnowledgeBasePage({
                 >
                   <select
                     name="ownerMembershipId"
+                    aria-label={`${t('owner')}: ${e.question}`}
                     defaultValue={e.ownerMembershipId ?? ''}
                     data-testid={`kb-owner-${e.id}`}
                     className={inputCls}
@@ -195,6 +209,7 @@ export default async function KnowledgeBasePage({
                   <input
                     type="date"
                     name="expiresAt"
+                    aria-label={`${t('expires')}: ${e.question}`}
                     defaultValue={e.expiresAt ? e.expiresAt.slice(0, 10) : ''}
                     className={inputCls}
                   />

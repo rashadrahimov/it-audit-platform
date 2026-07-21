@@ -170,8 +170,20 @@ export default async function ConfigPage() {
           data-testid="audit-type-create"
           className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
         >
-          <input name="code" required placeholder={t('codePh')} className={inputCls} />
-          <input name="name" required placeholder={t('namePh')} className={`flex-1 ${inputCls}`} />
+          <input
+            name="code"
+            required
+            placeholder={t('codePh')}
+            aria-label={t('codePh')}
+            className={inputCls}
+          />
+          <input
+            name="name"
+            required
+            placeholder={t('namePh')}
+            aria-label={t('namePh')}
+            className={`flex-1 ${inputCls}`}
+          />
           <button type="submit" className={btnCls}>
             {t('add')}
           </button>
@@ -185,7 +197,7 @@ export default async function ConfigPage() {
               <span className="font-medium text-foreground">{at.name}</span>
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  at.isGlobal ? 'bg-muted text-secondary' : 'bg-sky-100 text-sky-700'
+                  at.isGlobal ? 'bg-muted text-secondary' : 'bg-emerald-100 text-emerald-700'
                 }`}
               >
                 {at.isGlobal ? t('global') : t('custom')}
@@ -243,11 +255,17 @@ export default async function ConfigPage() {
           data-testid="tag-create"
           className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
         >
-          <input name="name" required placeholder={t('tagPh')} className={`flex-1 ${inputCls}`} />
+          <input
+            name="name"
+            required
+            placeholder={t('tagPh')}
+            aria-label={t('tagPh')}
+            className={`flex-1 ${inputCls}`}
+          />
           <input
             name="color"
             type="color"
-            defaultValue="#0369A1"
+            defaultValue="#07865F"
             className="h-10 w-14 rounded-md border border-border"
             aria-label={t('color')}
           />

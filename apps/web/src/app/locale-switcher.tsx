@@ -20,8 +20,8 @@ export function LocaleSwitcher({ current }: { current: Locale }) {
           onClick={() => setLocale(locale)}
           className={
             locale === current
-              ? 'font-semibold text-neutral-900 underline'
-              : 'text-neutral-500 hover:text-neutral-900'
+              ? 'inline-flex min-h-8 min-w-8 items-center justify-center rounded-md px-2 font-semibold text-neutral-900 underline'
+              : 'inline-flex min-h-8 min-w-8 items-center justify-center rounded-md px-2 text-neutral-500 hover:bg-muted hover:text-neutral-900'
           }
         >
           {locale.toUpperCase()}

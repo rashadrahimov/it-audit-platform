@@ -94,7 +94,7 @@ export default async function QuestionnaireDetailPage({
             <span className="flex items-center gap-2">
               <span className="font-medium text-foreground">{a.question}</span>
               {a.reusedFromKb && (
-                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
                   {t('fromKb')}
                 </span>
               )}
@@ -106,10 +106,10 @@ export default async function QuestionnaireDetailPage({
                 {suggestions[a.id] && (
                   <div
                     data-testid={`suggestion-${a.id}`}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-sky-50 px-3 py-2"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-emerald-50 px-3 py-2"
                   >
                     <span className="flex flex-col">
-                      <span className="text-xs font-medium text-sky-700">
+                      <span className="text-xs font-medium text-emerald-700">
                         {t('suggested')} · {t('match')} {Math.round(suggestions[a.id]!.score * 100)}
                         %
                       </span>
@@ -128,7 +128,7 @@ export default async function QuestionnaireDetailPage({
                       <button
                         type="submit"
                         data-testid={`use-suggestion-${a.id}`}
-                        className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white transition-opacity duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-opacity duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       >
                         {t('useSuggestion')}
                       </button>

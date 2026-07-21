@@ -20,7 +20,7 @@ interface FrameworkRow {
 
 const DOMAINS = ['security', 'privacy', 'industry', 'custom'];
 const DOMAIN_TONE: Record<string, string> = {
-  security: 'bg-sky-100 text-sky-700',
+  security: 'bg-emerald-100 text-emerald-700',
   privacy: 'bg-violet-100 text-violet-700',
   industry: 'bg-amber-100 text-amber-700',
   custom: 'bg-muted text-secondary',

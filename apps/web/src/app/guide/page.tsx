@@ -22,7 +22,7 @@ export default async function GuidePage() {
       data-testid="guide-page"
     >
       {/* Шапка */}
-      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary to-[#123a5e] p-7 text-on-primary shadow-md md:p-9">
+      <header className="relative overflow-hidden rounded-2xl border border-emerald-900/10 bg-[linear-gradient(120deg,#12372a_0%,#0b513b_58%,#07865f_100%)] p-7 text-on-primary shadow-[0_20px_45px_-24px_rgb(7_134_95/0.55)] md:p-9">
         <div
           aria-hidden
           className="pointer-events-none absolute -top-16 -right-10 h-56 w-56 rounded-full bg-accent/25 blur-3xl"

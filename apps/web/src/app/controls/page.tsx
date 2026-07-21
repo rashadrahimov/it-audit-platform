@@ -65,7 +65,7 @@ export default async function ControlsPage() {
             [
               ['assigned', summary.assigned, 'text-emerald-700'],
               ['unassigned', summary.unassigned, 'text-amber-700'],
-              ['withPassing', summary.withPassingEvidence, 'text-sky-700'],
+              ['withPassing', summary.withPassingEvidence, 'text-emerald-700'],
               ['percentPassing', `${summary.percentPassing}%`, 'text-primary'],
             ] as const
           ).map(([key, value, tone]) => (

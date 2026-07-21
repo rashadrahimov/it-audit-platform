@@ -36,24 +36,24 @@ function TrendChart({ points }: { points: Array<{ label: string; value: number }
         y1={H - pad}
         x2={W - pad}
         y2={H - pad}
-        stroke="var(--color-border, #e2e8f0)"
+        stroke="var(--color-border, #dce8e1)"
         strokeWidth="1"
       />
       <polyline
         fill="none"
-        stroke="var(--color-accent, #0369A1)"
+        stroke="var(--color-accent, #07865F)"
         strokeWidth="2"
         points={coords.join(' ')}
       />
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={x(i)} cy={y(p.value)} r="3.5" fill="var(--color-accent, #0369A1)" />
+          <circle cx={x(i)} cy={y(p.value)} r="3.5" fill="var(--color-accent, #07865F)" />
           <text
             x={x(i)}
             y={y(p.value) - 8}
             textAnchor="middle"
             fontSize="11"
-            fill="var(--color-foreground, #0f172a)"
+            fill="var(--color-foreground, #10231c)"
           >
             {p.value}
           </text>

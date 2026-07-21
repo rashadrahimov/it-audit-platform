@@ -160,7 +160,7 @@ export function AppShell({
               aria-expanded={groupOpen}
               data-testid={`nav-group-${g.group}`}
               className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
-                groupActive ? 'text-primary' : 'text-secondary hover:bg-muted'
+                groupActive ? 'text-white' : 'text-white/55 hover:bg-white/8 hover:text-white/85'
               }`}
             >
               <GroupIcon group={g.group} />
@@ -195,14 +195,16 @@ export function AppShell({
                         aria-current={active ? 'page' : undefined}
                         className={`group relative flex items-center gap-2.5 rounded-lg py-1.5 pr-2 pl-3.5 text-sm transition-all duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                           active
-                            ? 'bg-accent-soft font-semibold text-accent before:absolute before:top-1.5 before:bottom-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-accent'
-                            : 'text-secondary hover:bg-muted hover:text-foreground'
+                            ? 'bg-white/12 font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.08)] before:absolute before:top-1.5 before:bottom-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-emerald-300'
+                            : 'text-white/60 hover:bg-white/7 hover:text-white'
                         }`}
                       >
                         <span
                           aria-hidden
                           className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
-                            active ? 'bg-accent' : 'bg-border group-hover:bg-secondary'
+                            active
+                              ? 'bg-emerald-300 shadow-[0_0_8px_rgb(110_231_183/0.6)]'
+                              : 'bg-white/20 group-hover:bg-white/55'
                           }`}
                         />
                         <span className="truncate">{it.label}</span>
@@ -222,33 +224,33 @@ export function AppShell({
     <Link
       href="/account"
       onClick={() => setOpen(false)}
-      className="flex items-center gap-2.5 border-b border-border px-4 py-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      className="flex items-center gap-2.5 border-b border-white/10 px-4 py-5 focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:outline-none"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-on-primary shadow-sm">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-300 to-emerald-500 text-primary shadow-[0_8px_22px_rgb(16_185_129/0.28)] ring-1 ring-white/20">
         <LogoMark className="h-5 w-5" />
       </span>
       <span className="flex min-w-0 flex-col">
-        <span className="truncate text-sm font-bold tracking-[0.08em] text-foreground">
+        <span className="truncate text-sm font-bold tracking-[0.12em] text-white">
           {labels.brand}
         </span>
-        <span className="truncate text-xs text-secondary">{labels.brandSub}</span>
+        <span className="truncate text-xs text-white/45">{labels.brandSub}</span>
       </span>
     </Link>
   );
 
   const footer = (
-    <div className="flex items-center gap-3 border-t border-border px-3 py-3">
+    <div className="flex items-center gap-3 border-t border-white/10 px-3 py-3.5">
       <span
         aria-hidden
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-primary"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-emerald-200 ring-1 ring-white/10"
       >
         {initials}
       </span>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span data-testid="account-name" className="truncate text-sm font-medium text-foreground">
+        <span data-testid="account-name" className="truncate text-sm font-medium text-white/90">
           {user.name}
         </span>
-        <span data-testid="account-email" className="truncate text-xs text-secondary">
+        <span data-testid="account-email" className="truncate text-xs text-white/40">
           {user.email}
         </span>
       </div>
@@ -258,7 +260,7 @@ export function AppShell({
           data-testid="logout"
           title={labels.signOut}
           aria-label={labels.signOut}
-          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-secondary transition-colors duration-150 hover:bg-muted hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-white/45 hover:bg-white/10 hover:text-rose-300 focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:outline-none"
         >
           <svg
             viewBox="0 0 24 24"
@@ -290,7 +292,7 @@ export function AppShell({
       {/* Единый адаптивный сайдбар: desktop — статичный (sticky), mobile — drawer */}
       <aside
         data-testid="app-sidebar"
-        className={`fixed top-0 left-0 z-40 flex h-screen w-64 shrink-0 flex-col border-r border-border bg-white transition-transform duration-200 md:sticky md:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 flex h-screen w-64 shrink-0 flex-col border-r border-white/8 bg-[linear-gradient(165deg,#123c2e_0%,#0b2a21_58%,#071e18_100%)] shadow-[10px_0_40px_rgb(18_55_42/0.1)] transition-transform duration-200 md:sticky md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -302,7 +304,7 @@ export function AppShell({
       {/* Content */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Единый топ-бар: mobile — гамбургер+бренд; desktop — хлебные крошки */}
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-surface/85 px-4 py-3 backdrop-blur md:px-8">
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/60 bg-surface/75 px-4 py-3 shadow-[0_1px_0_rgb(18_55_42/0.03)] backdrop-blur-xl md:px-8">
           <button
             type="button"
             aria-label={labels.menu}
@@ -372,8 +374,9 @@ export function AppShell({
               type="search"
               name="q"
               placeholder={labels.searchPh}
+              aria-label={labels.searchPh}
               data-testid="global-search"
-              className="w-32 rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground transition-[width] duration-200 focus:w-56 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:w-44"
+              className="w-32 rounded-xl border border-border bg-white/85 px-3 py-2 text-sm text-foreground shadow-xs transition-[width,box-shadow] duration-200 placeholder:text-secondary/65 focus:w-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:w-44"
             />
           </form>
 
@@ -383,7 +386,7 @@ export function AppShell({
             data-testid="topbar-help"
             aria-label="Tour"
             onClick={() => setHelpOpen(true)}
-            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-secondary transition-colors duration-150 hover:bg-muted hover:text-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-border bg-white/80 text-secondary shadow-xs hover:-translate-y-0.5 hover:border-accent/30 hover:bg-accent-soft hover:text-accent hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <svg
               aria-hidden

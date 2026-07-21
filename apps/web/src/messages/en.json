@@ -2090,6 +2090,7 @@
     "colCategory": "Category",
     "colStatus": "Status",
     "colRole": "Role",
+    "role": "Role",
     "roleSave": "OK",
     "empty": "No members",
     "categories": {

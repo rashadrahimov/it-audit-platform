@@ -19,14 +19,24 @@ export function AssessmentForm({
   return (
     <form action={formAction} className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="targetId" value={findingId} />
-      <select name="verdict" defaultValue={verdicts[0]?.value} className={inputCls}>
+      <select
+        name="verdict"
+        defaultValue={verdicts[0]?.value}
+        aria-label={labels.add}
+        className={inputCls}
+      >
         {verdicts.map((v) => (
           <option key={v.value} value={v.value}>
             {v.label}
           </option>
         ))}
       </select>
-      <input name="note" placeholder={labels.notePh} className={`flex-1 ${inputCls}`} />
+      <input
+        name="note"
+        placeholder={labels.notePh}
+        aria-label={labels.notePh}
+        className={`flex-1 ${inputCls}`}
+      />
       <button
         type="submit"
         disabled={pending}

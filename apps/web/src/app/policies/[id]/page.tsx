@@ -73,6 +73,8 @@ export default async function PolicyDetailPage({ params }: { params: Promise<{ i
   const res = await apiFetch(`/policies/${id}?locale=${locale}`, { headers });
   if (!res.ok) redirect('/policies');
   const p: PolicyDetail = await res.json();
+  p.frameworks ??= [];
+  p.versions ??= [];
 
   const [attRes, mRes, dRes] = await Promise.all([
     apiFetch(`/policies/${id}/attestations?locale=${locale}`, { headers }),
@@ -80,6 +82,7 @@ export default async function PolicyDetailPage({ params }: { params: Promise<{ i
     apiFetch('/documents', { headers }),
   ]);
   const attestations: Attestations | null = attRes.ok ? await attRes.json() : null;
+  if (attestations) attestations.rows ??= [];
   const members: Member[] = mRes.ok ? await mRes.json() : [];
   const docs: DocOpt[] = dRes.ok ? await dRes.json() : [];
 
@@ -217,39 +220,41 @@ export default async function PolicyDetailPage({ params }: { params: Promise<{ i
         {p.versions.length === 0 ? (
           <p className="text-sm text-secondary">{t('versionsEmpty')}</p>
         ) : (
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-border text-secondary">
-                <th className="px-3 py-2 font-medium">#</th>
-                <th className="px-3 py-2 font-medium">{t('changelog')}</th>
-                <th className="px-3 py-2 font-medium">{t('document')}</th>
-                <th className="px-3 py-2 font-medium">{t('approvedAt')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {p.versions.map((v) => (
-                <tr key={v.version} className="border-b border-border last:border-0">
-                  <td className="px-3 py-2 font-medium tabular-nums">v{v.version}</td>
-                  <td className="px-3 py-2 text-secondary">{v.changelog ?? '—'}</td>
-                  <td className="px-3 py-2">
-                    {v.documentId ? (
-                      <a
-                        href={`/documents/${v.documentId}/download`}
-                        className="text-accent underline-offset-2 hover:underline"
-                      >
-                        {t('download')}
-                      </a>
-                    ) : (
-                      <span className="text-secondary">—</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-secondary tabular-nums">
-                    {v.approvedAt ? `✓ ${dateFmt.format(new Date(v.approvedAt))}` : '—'}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-80 text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-secondary">
+                  <th className="px-3 py-2 font-medium">#</th>
+                  <th className="px-3 py-2 font-medium">{t('changelog')}</th>
+                  <th className="px-3 py-2 font-medium">{t('document')}</th>
+                  <th className="px-3 py-2 font-medium">{t('approvedAt')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {p.versions.map((v) => (
+                  <tr key={v.version} className="border-b border-border last:border-0">
+                    <td className="px-3 py-2 font-medium tabular-nums">v{v.version}</td>
+                    <td className="px-3 py-2 text-secondary">{v.changelog ?? '—'}</td>
+                    <td className="px-3 py-2">
+                      {v.documentId ? (
+                        <a
+                          href={`/documents/${v.documentId}/download`}
+                          className="text-accent underline-offset-2 hover:underline"
+                        >
+                          {t('download')}
+                        </a>
+                      ) : (
+                        <span className="text-secondary">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-secondary tabular-nums">
+                      {v.approvedAt ? `✓ ${dateFmt.format(new Date(v.approvedAt))}` : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
         {isAdmin && p.status !== 'archived' && (
           <form

@@ -101,7 +101,7 @@ export default async function AuditProgramsPage() {
                     </span>
                   )}
                   {p.originProgramId && (
-                    <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
                       {t('rolled')}
                     </span>
                   )}

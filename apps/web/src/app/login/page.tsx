@@ -35,7 +35,7 @@ export default async function LoginPage() {
   return (
     <main className="flex min-h-screen">
       {/* Бренд-панель (desktop) */}
-      <aside className="relative hidden w-[45%] flex-col justify-between overflow-hidden bg-gradient-to-br from-primary via-[#122c4d] to-[#0a3355] p-10 text-on-primary lg:flex">
+      <aside className="relative hidden w-[45%] flex-col justify-between overflow-hidden bg-gradient-to-br from-primary via-[#164e3b] to-[#062c22] p-10 text-on-primary lg:flex">
         <div
           aria-hidden
           className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-accent/20 blur-3xl"

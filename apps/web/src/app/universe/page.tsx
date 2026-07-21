@@ -31,9 +31,9 @@ interface TreeNode extends UniverseNode {
 const KIND_BADGE: Record<NodeKind, string> = {
   subsidiary: 'bg-accent/10 text-accent',
   process: 'bg-emerald-100 text-emerald-700',
-  system: 'bg-indigo-100 text-indigo-700',
+  system: 'bg-violet-100 text-violet-700',
   location: 'bg-amber-100 text-amber-700',
-  activity: 'bg-sky-100 text-sky-700',
+  activity: 'bg-emerald-100 text-emerald-700',
   function: 'bg-muted text-secondary',
 };
 

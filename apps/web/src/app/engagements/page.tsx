@@ -5,6 +5,7 @@ import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
 import { FilterBar } from '@/components/filter-bar';
+import { StatusBadge } from '@/components/status-badge';
 import { filterQuery } from '@/lib/filters';
 import { NewEngagementForm } from './new-engagement-form';
 
@@ -83,16 +84,24 @@ export default async function EngagementsPage({
   }
 
   const tabCls = (on: boolean) =>
-    `rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
-      on ? 'bg-accent text-on-primary' : 'text-secondary hover:bg-muted'
+    `rounded-lg px-3.5 py-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+      on ? 'bg-white text-accent shadow-sm' : 'text-secondary hover:text-foreground'
     }`;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 pt-12">
-      <div className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 p-6 pt-10 md:p-10">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="mb-1 text-xs font-semibold tracking-[0.12em] text-accent uppercase">
+            Audit workspace
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">{t('title')}</h1>
+        </div>
       </div>
-      <nav data-testid="engagements-view-toggle" className="flex gap-1">
+      <nav
+        data-testid="engagements-view-toggle"
+        className="flex w-fit gap-1 rounded-xl border border-border bg-muted/70 p-1"
+      >
         <Link href="/engagements" className={tabCls(!archived)}>
           {t('viewActive')}
         </Link>
@@ -151,10 +160,10 @@ export default async function EngagementsPage({
           },
         ]}
       />
-      <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+      <section className="overflow-x-auto rounded-2xl border border-border bg-white/90 shadow-sm">
         <table className="w-full text-left text-sm" data-testid="engagements-table">
           <thead>
-            <tr className="border-b border-border text-secondary">
+            <tr className="border-b border-border bg-muted/35 text-[11px] tracking-wide text-secondary uppercase">
               <th className="px-4 py-3 font-medium">{t('name')}</th>
               <th className="px-4 py-3 font-medium">{t('subsidiary')}</th>
               <th className="px-4 py-3 font-medium">{t('auditType')}</th>
@@ -164,7 +173,7 @@ export default async function EngagementsPage({
           </thead>
           <tbody>
             {engagements.map((e) => (
-              <tr key={e.id} className="border-b border-border last:border-0">
+              <tr key={e.id} className="border-b border-border/80 last:border-0">
                 <td className="px-4 py-3 font-medium">
                   <Link
                     href={`/engagements/${e.id}`}
@@ -177,9 +186,9 @@ export default async function EngagementsPage({
                 <td className="px-4 py-3 text-secondary">{e.auditType ?? '—'}</td>
                 <td className="px-4 py-3 text-secondary">{t(`modes.${e.mode}`)}</td>
                 <td className="px-4 py-3">
-                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-secondary">
+                  <StatusBadge tone={e.state === 'closed' ? 'success' : 'info'} dot>
                     {tStates(e.state)}
-                  </span>
+                  </StatusBadge>
                 </td>
               </tr>
             ))}

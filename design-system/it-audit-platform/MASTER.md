@@ -19,18 +19,19 @@
 
 | Role        | Hex       | CSS Variable          |
 | ----------- | --------- | --------------------- |
-| Primary     | `#0F172A` | `--color-primary`     |
+| Primary     | `#12372A` | `--color-primary`     |
 | On Primary  | `#FFFFFF` | `--color-on-primary`  |
-| Secondary   | `#334155` | `--color-secondary`   |
-| Accent/CTA  | `#0369A1` | `--color-accent`      |
-| Background  | `#F8FAFC` | `--color-background`  |
-| Foreground  | `#020617` | `--color-foreground`  |
-| Muted       | `#E8ECF1` | `--color-muted`       |
-| Border      | `#E2E8F0` | `--color-border`      |
+| Secondary   | `#60716A` | `--color-secondary`   |
+| Accent/CTA  | `#07865F` | `--color-accent`      |
+| Background  | `#F4F8F5` | `--color-background`  |
+| Foreground  | `#10231C` | `--color-foreground`  |
+| Muted       | `#EAF2ED` | `--color-muted`       |
+| Border      | `#DCE8E1` | `--color-border`      |
 | Destructive | `#DC2626` | `--color-destructive` |
-| Ring        | `#0F172A` | `--color-ring`        |
+| Ring        | `#13A875` | `--color-ring`        |
 
-**Color Notes:** Professional navy + blue CTA
+**Color Notes:** Enterprise forest + emerald CTA. Blue/sky/cyan/indigo are forbidden for
+internal UI; red, amber and orange remain reserved for semantic risk and warning states.
 
 ### Typography
 
@@ -77,7 +78,7 @@ _Density: 6/10 — Standard_
 ```css
 /* Primary Button */
 .btn-primary {
-  background: #0369a1;
+  background: #07865f;
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
@@ -94,8 +95,8 @@ _Density: 6/10 — Standard_
 /* Secondary Button */
 .btn-secondary {
   background: transparent;
-  color: #0f172a;
-  border: 2px solid #0f172a;
+  color: #12372a;
+  border: 2px solid #12372a;
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -108,7 +109,7 @@ _Density: 6/10 — Standard_
 
 ```css
 .card {
-  background: #f8fafc;
+  background: #ffffff;
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow-md);
@@ -127,16 +128,16 @@ _Density: 6/10 — Standard_
 ```css
 .input {
   padding: 12px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #dce8e1;
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 200ms ease;
 }
 
 .input:focus {
-  border-color: #0f172a;
+  border-color: #13a875;
   outline: none;
-  box-shadow: 0 0 0 3px #0f172a20;
+  box-shadow: 0 0 0 3px #13a87520;
 }
 ```
 
@@ -162,13 +163,14 @@ _Density: 6/10 — Standard_
 
 ## Style Guidelines
 
-**Style:** Trust & Authority
+**Style:** Trust & Growth
 
 **Keywords:** Certificates/badges displayed, expert credentials, case studies with metrics, before/after comparisons, industry recognition, security badges
 
 **Best For:** Healthcare/medical landing pages, financial services, enterprise software, premium/luxury products, legal services
 
-**Key Effects:** Badge hover effects, metric pulse animations, certificate carousel, smooth stat reveal
+**Key Effects:** layered white surfaces, restrained emerald glow, subtle elevation, clear status
+semantics and smooth state transitions. Motion stays at 2/10 and must never compete with data.
 
 ### Page Pattern
 

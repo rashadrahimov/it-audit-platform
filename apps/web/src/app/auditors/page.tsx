@@ -30,8 +30,8 @@ interface Subsidiary {
 }
 
 const CATEGORY_TONE: Record<string, string> = {
-  external_auditor: 'bg-sky-100 text-sky-700',
-  auditor: 'bg-indigo-100 text-indigo-700',
+  external_auditor: 'bg-emerald-100 text-emerald-700',
+  auditor: 'bg-violet-100 text-violet-700',
   respondent: 'bg-slate-100 text-slate-700',
   msp: 'bg-amber-100 text-amber-700',
 };

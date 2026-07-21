@@ -29,7 +29,7 @@ interface Roadmap {
 
 function barTone(progress: number): string {
   if (progress >= 100) return 'bg-emerald-500';
-  if (progress >= 60) return 'bg-sky-500';
+  if (progress >= 60) return 'bg-emerald-500';
   if (progress >= 30) return 'bg-amber-500';
   return 'bg-red-400';
 }
@@ -80,7 +80,7 @@ export default async function RoadmapPage() {
                     it.onTrack !== null && (
                       <span
                         className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          it.onTrack ? 'bg-sky-100 text-sky-700' : 'bg-red-100 text-red-700'
+                          it.onTrack ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                         }`}
                       >
                         {it.onTrack ? t('onTrack') : t('offTrack')}

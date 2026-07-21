@@ -2098,6 +2098,7 @@
     "colCategory": "Kateqoriya",
     "colStatus": "Status",
     "colRole": "Rol",
+    "role": "Rol",
     "roleSave": "OK",
     "empty": "İştirakçı yoxdur",
     "categories": {

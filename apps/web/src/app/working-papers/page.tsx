@@ -44,14 +44,14 @@ interface ExceptionReport {
 
 const STATUS_TONE: Record<WpStatus, string> = {
   draft: 'bg-muted text-secondary',
-  prepared: 'bg-sky-100 text-sky-700',
+  prepared: 'bg-emerald-100 text-emerald-700',
   in_review: 'bg-amber-100 text-amber-700',
-  reviewed: 'bg-indigo-100 text-indigo-700',
+  reviewed: 'bg-violet-100 text-violet-700',
   signed_off: 'bg-emerald-100 text-emerald-700',
 };
 const KIND_TONE: Record<AnnKind, string> = {
   comment: 'bg-muted text-secondary',
-  tick_mark: 'bg-sky-100 text-sky-700',
+  tick_mark: 'bg-emerald-100 text-emerald-700',
   exception: 'bg-red-100 text-red-700',
 };
 const KINDS: AnnKind[] = ['comment', 'tick_mark', 'exception'];

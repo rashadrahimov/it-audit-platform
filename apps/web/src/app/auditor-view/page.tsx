@@ -45,14 +45,14 @@ interface Member {
 
 const REVIEW_TONE: Record<string, string> = {
   not_ready: 'bg-muted text-secondary',
-  ready: 'bg-sky-100 text-sky-700',
+  ready: 'bg-emerald-100 text-emerald-700',
   accepted: 'bg-emerald-100 text-emerald-700',
   flagged: 'bg-red-100 text-red-700',
   not_applicable: 'bg-slate-100 text-slate-700',
 };
 const REQ_TONE: Record<string, string> = {
   requested: 'bg-amber-100 text-amber-700',
-  provided: 'bg-sky-100 text-sky-700',
+  provided: 'bg-emerald-100 text-emerald-700',
   accepted: 'bg-emerald-100 text-emerald-700',
 };
 const VERDICT_TONE: Record<string, string> = {

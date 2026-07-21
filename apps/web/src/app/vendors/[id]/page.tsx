@@ -428,7 +428,18 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
                           href={`/documents/${d.id}/download`}
                           className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-border"
                         >
-                          📄 {d.filename}
+                          <svg
+                            aria-hidden
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.7}
+                            className="mr-1 inline h-3.5 w-3.5 align-[-2px]"
+                          >
+                            <path d="M6.75 3.75h7.5l3 3v13.5H6.75V3.75z" />
+                            <path d="M14.25 3.75v3h3" />
+                          </svg>
+                          {d.filename}
                         </a>
                       </li>
                     ))}
