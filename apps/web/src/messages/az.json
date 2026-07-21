@@ -1288,6 +1288,27 @@
       "apply": "Auditi seç",
       "ready": "Hazır",
       "empty": "Audit paketini yaratmaq üçün əvvəlcə audit yaradın.",
+      "readiness": {
+        "kicker": "Hesabat öncəsi yoxlama",
+        "title": "Paket hazırlığı: {score}%",
+        "subtitle": "PDF, Word və Excel yaradılmadan əvvəl seçilmiş auditi yoxlayır.",
+        "ready": "ixraca hazır",
+        "review": "əvvəl yoxlayın",
+        "metrics": {
+          "responses": "Çeklist cavabları",
+          "findings": "Açıq qeydlər",
+          "risks": "Matrisdə risklər",
+          "evidence": "Sübut bağlantıları"
+        },
+        "checks": {
+          "scope": "Əhatə",
+          "checklist": "Çeklist",
+          "responses": "Cavablar",
+          "findings": "Qeydlər",
+          "risks": "Risklər",
+          "evidence": "Sübutlar"
+        }
+      },
       "items": {
         "audit_report": {
           "title": "Audit hesabatı",

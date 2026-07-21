@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { resolveLocalized, type Locale } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
 import {
   auditType,
   checklistItem,
+  document,
+  documentLink,
   engagement,
   finding,
   membership,
@@ -128,11 +130,18 @@ export class ReportDataService {
         items.length > 0
           ? await tx
               .select({
+                id: response.id,
                 checklistItemId: response.checklistItemId,
                 text: response.text,
                 compliance: response.complianceStatus,
               })
               .from(response)
+              .where(
+                inArray(
+                  response.checklistItemId,
+                  items.map((i) => i.id),
+                ),
+              )
           : [];
       const answerByItem = new Map(answers.map((a) => [a.checklistItemId, a]));
 
@@ -218,6 +227,93 @@ export class ReportDataService {
           owner: r.owner,
         })),
         generatedAt: new Date().toISOString(),
+      };
+    });
+  }
+
+  /**
+   * T-H47: готовность пакета отчётности. Это pre-flight перед PDF/Word/Excel:
+   * показывает, есть ли чеклист, ответы, findings, risks и evidence links.
+   */
+  async readiness(tenantId: string, engagementId: string, locale: Locale) {
+    return this.dbService.withTenant(tenantId, async (tx) => {
+      const [eng] = await tx
+        .select()
+        .from(engagement)
+        .where(and(eq(engagement.id, engagementId), isNull(engagement.deletedAt)));
+      if (!eng) throw new NotFoundException(`Engagement ${engagementId} не найден`);
+      const [sub] = await tx.select().from(subsidiary).where(eq(subsidiary.id, eng.subsidiaryId));
+      const [type] = eng.auditTypeId
+        ? await tx.select().from(auditType).where(eq(auditType.id, eng.auditTypeId))
+        : [null];
+
+      const items = await tx
+        .select({ id: checklistItem.id })
+        .from(checklistItem)
+        .where(eq(checklistItem.engagementId, engagementId));
+      const itemIds = items.map((i) => i.id);
+      const answers =
+        itemIds.length > 0
+          ? await tx
+              .select({ id: response.id, checklistItemId: response.checklistItemId })
+              .from(response)
+              .where(inArray(response.checklistItemId, itemIds))
+          : [];
+      const findings = await tx
+        .select({ id: finding.id, status: finding.status, riskRating: finding.riskRating })
+        .from(finding)
+        .where(and(eq(finding.engagementId, engagementId), isNull(finding.deletedAt)));
+      const risks = await tx
+        .select({ id: risk.id })
+        .from(risk)
+        .where(and(eq(risk.tenantId, tenantId), isNull(risk.deletedAt)));
+
+      const evidenceTargets = [engagementId, ...itemIds, ...answers.map((a) => a.id)];
+      const evidence =
+        evidenceTargets.length > 0
+          ? await tx
+              .select({ documentId: document.id })
+              .from(documentLink)
+              .innerJoin(document, eq(documentLink.documentId, document.id))
+              .where(
+                and(inArray(documentLink.entityId, evidenceTargets), isNull(document.deletedAt)),
+              )
+          : [];
+
+      const checklistTotal = items.length;
+      const answered = new Set(answers.map((a) => a.checklistItemId)).size;
+      const findingsOpen = findings.filter((f) => f.status !== 'closed').length;
+      const highRiskFindings = findings.filter((f) =>
+        ['critical', 'high'].includes(f.riskRating),
+      ).length;
+      const evidenceLinks = new Set(evidence.map((e) => e.documentId)).size;
+      const checks = [
+        { key: 'scope', passed: Boolean(eng.periodStart || eng.periodEnd || type || sub) },
+        { key: 'checklist', passed: checklistTotal > 0 },
+        { key: 'responses', passed: checklistTotal > 0 && answered >= checklistTotal },
+        { key: 'findings', passed: findings.length > 0 },
+        { key: 'risks', passed: risks.length > 0 },
+        { key: 'evidence', passed: evidenceLinks > 0 },
+      ];
+      const score = Math.round((checks.filter((c) => c.passed).length / checks.length) * 100);
+
+      return {
+        engagementId,
+        title: resolveLocalized(eng.titleI18n, locale),
+        subsidiary: sub ? resolveLocalized(sub.nameI18n, locale) : null,
+        auditType: type ? resolveLocalized(type.nameI18n, locale) : null,
+        state: eng.state,
+        generatedAt: new Date().toISOString(),
+        score,
+        ready: score >= 80 && checklistTotal > 0,
+        checklistTotal,
+        answered,
+        findings: findings.length,
+        findingsOpen,
+        highRiskFindings,
+        risks: risks.length,
+        evidenceLinks,
+        checks,
       };
     });
   }

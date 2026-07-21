@@ -43,6 +43,24 @@ interface SchedulePreview {
     policiesDue: number;
   };
 }
+interface ReportReadiness {
+  engagementId: string;
+  title: string;
+  subsidiary: string | null;
+  auditType: string | null;
+  state: string;
+  generatedAt: string;
+  score: number;
+  ready: boolean;
+  checklistTotal: number;
+  answered: number;
+  findings: number;
+  findingsOpen: number;
+  highRiskFindings: number;
+  risks: number;
+  evidenceLinks: number;
+  checks: { key: string; passed: boolean }[];
+}
 
 const ENTITIES = ['findings', 'risks', 'controls'];
 const FORMATS = ['csv', 'xml'];
@@ -92,6 +110,14 @@ export default async function ReportsPage({
   const schedule: SchedulePreview | null = scheduleRes.ok ? await scheduleRes.json() : null;
   const selectedEngagement =
     engagements.find((e) => e.id === sp.engagementId) ?? engagements[0] ?? null;
+  let readiness: ReportReadiness | null = null;
+  if (selectedEngagement) {
+    const readinessRes = await apiFetch(
+      `/engagements/${selectedEngagement.id}/report/readiness?locale=${locale}`,
+      { headers },
+    );
+    readiness = readinessRes.ok ? await readinessRes.json() : null;
+  }
 
   let compare: CompareResult | null = null;
   if (sp.a && sp.b) {
@@ -210,6 +236,71 @@ export default async function ReportsPage({
             )}
           </form>
         </div>
+        {readiness && (
+          <div
+            className="border-t border-white/10 bg-emerald-950/35 px-6 py-5 md:px-8"
+            data-testid="report-readiness"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold tracking-[0.16em] text-emerald-200 uppercase">
+                  {t('deliverables.readiness.kicker')}
+                </p>
+                <h3 className="mt-1 text-xl font-bold">
+                  {t('deliverables.readiness.title', { score: readiness.score })}
+                </h3>
+                <p className="mt-1 text-sm text-emerald-50/75">
+                  {t('deliverables.readiness.subtitle')}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white px-5 py-4 text-center text-emerald-950 shadow-lg shadow-emerald-950/20">
+                <div className="text-3xl font-bold">{readiness.score}%</div>
+                <div className="text-xs font-semibold">
+                  {readiness.ready
+                    ? t('deliverables.readiness.ready')
+                    : t('deliverables.readiness.review')}
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  label: t('deliverables.readiness.metrics.responses'),
+                  value: `${readiness.answered}/${readiness.checklistTotal}`,
+                },
+                {
+                  label: t('deliverables.readiness.metrics.findings'),
+                  value: readiness.findingsOpen,
+                },
+                {
+                  label: t('deliverables.readiness.metrics.risks'),
+                  value: readiness.risks,
+                },
+                {
+                  label: t('deliverables.readiness.metrics.evidence'),
+                  value: readiness.evidenceLinks,
+                },
+              ].map((metric) => (
+                <div key={metric.label} className="rounded-xl bg-white/10 px-3 py-2">
+                  <div className="text-lg font-bold text-white">{metric.value}</div>
+                  <div className="text-xs text-emerald-50/70">{metric.label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {readiness.checks.map((check) => (
+                <span
+                  key={check.key}
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                    check.passed ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950'
+                  }`}
+                >
+                  {check.passed ? '✓' : '•'} {t(`deliverables.readiness.checks.${check.key}`)}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="grid gap-3 border-t border-white/10 bg-white/8 p-4 md:grid-cols-5">
           {selectedEngagement ? (
             DELIVERABLES.map((d, index) => (
@@ -223,7 +314,9 @@ export default async function ReportsPage({
                     {index + 1}
                   </span>
                   <span className="rounded-full bg-emerald-300/15 px-2 py-1 text-[10px] font-semibold tracking-wide text-emerald-100 uppercase">
-                    {t('deliverables.ready')}
+                    {readiness?.ready
+                      ? t('deliverables.ready')
+                      : t('deliverables.readiness.review')}
                   </span>
                 </div>
                 <h3 className="text-sm font-semibold">{t(`deliverables.items.${d}.title`)}</h3>

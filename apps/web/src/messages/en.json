@@ -1288,6 +1288,27 @@
       "apply": "Use engagement",
       "ready": "Ready",
       "empty": "Create an engagement first to generate the audit package.",
+      "readiness": {
+        "kicker": "Report pre-flight",
+        "title": "{score}% package readiness",
+        "subtitle": "Checks the selected audit before PDF, Word and Excel are generated.",
+        "ready": "ready to export",
+        "review": "review first",
+        "metrics": {
+          "responses": "Checklist answers",
+          "findings": "Open findings",
+          "risks": "Risks in matrix",
+          "evidence": "Evidence links"
+        },
+        "checks": {
+          "scope": "Scope",
+          "checklist": "Checklist",
+          "responses": "Responses",
+          "findings": "Findings",
+          "risks": "Risks",
+          "evidence": "Evidence"
+        }
+      },
       "items": {
         "audit_report": {
           "title": "Audit Report",

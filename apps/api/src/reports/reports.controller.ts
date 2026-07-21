@@ -45,6 +45,23 @@ type Format = keyof typeof FORMATS;
 export class ReportsController {
   constructor(private readonly reportDataService: ReportDataService) {}
 
+  @Get('readiness')
+  @RequirePermission('report', 'export', 'edit')
+  @ApiOperation({ summary: 'T-H47: pre-flight готовность report package для engagement' })
+  readiness(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    let locale = DEFAULT_LOCALE;
+    if (localeQuery !== undefined) {
+      const parsed = localeSchema.safeParse(localeQuery);
+      if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+      locale = parsed.data;
+    }
+    return this.reportDataService.readiness(req.tenantId, id, locale);
+  }
+
   @Get()
   @RequirePermission('report', 'export', 'edit')
   @ApiOperation({
