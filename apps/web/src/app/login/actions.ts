@@ -7,6 +7,7 @@ import {
   authTokenResponseSchema,
   loginResponseSchema,
   localeSchema,
+  meResponseSchema,
   mfaChallengeResponseSchema,
 } from '@it-audit/shared';
 import { getCurrentLocale } from '@/lib/locale';
@@ -18,10 +19,27 @@ const API_URL = process.env.API_URL ?? 'http://localhost:3001';
  * T-V36f: при отсутствии явной cookie `locale` выставляем её из defaultLocale тенанта
  * (business-profile). Hot-path i18n не трогаем — ставим только на входе. Best-effort.
  */
-async function applyTenantLocale(): Promise<void> {
+async function applyTenantLocale(accessToken?: string): Promise<void> {
   try {
     const store = await cookies();
     if (store.get('locale')) return; // уважаем явный выбор пользователя
+    if (accessToken) {
+      const meRes = await fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: 'no-store',
+      });
+      if (meRes.ok) {
+        const me = meResponseSchema.safeParse(await meRes.json());
+        if (me.success) {
+          store.set('locale', me.data.locale, {
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 365,
+          });
+          return;
+        }
+      }
+    }
     const slug = await getActiveTenantSlug();
     if (!slug) return;
     const res = await apiFetch('/business-profile', { headers: { 'X-Tenant-Slug': slug } });
@@ -83,7 +101,7 @@ export async function loginAction(
 
   const token = authTokenResponseSchema.parse(parsed.data);
   await setSessionCookie(token.accessToken, token.expiresInSeconds);
-  await applyTenantLocale();
+  await applyTenantLocale(token.accessToken);
   redirect('/account');
 }
 
@@ -113,7 +131,7 @@ export async function mfaVerifyAction(
   const parsed = authTokenResponseSchema.safeParse(await response.json());
   if (!parsed.success) return { error: t('apiUnreachable'), mfaToken };
   await setSessionCookie(parsed.data.accessToken, parsed.data.expiresInSeconds);
-  await applyTenantLocale();
+  await applyTenantLocale(parsed.data.accessToken);
   redirect('/account');
 }
 
@@ -183,7 +201,7 @@ export async function magicConsumeAction(
 
   const token2 = authTokenResponseSchema.parse(parsed.data);
   await setSessionCookie(token2.accessToken, token2.expiresInSeconds);
-  await applyTenantLocale();
+  await applyTenantLocale(token2.accessToken);
   redirect('/account');
 }
 

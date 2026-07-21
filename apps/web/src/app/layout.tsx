@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
+import type { Locale } from '@it-audit/shared';
 import { AppShell } from '@/components/app-shell';
 import {
   apiFetch,
@@ -25,13 +26,14 @@ export const metadata: Metadata = {
 async function Shell({ children }: { children: ReactNode }) {
   const user = await getSessionUser();
   if (!user) return <>{children}</>;
-  const [t, tTour, tGuide, tHelp, tenantSlug, category] = await Promise.all([
+  const [t, tTour, tGuide, tHelp, tenantSlug, category, locale] = await Promise.all([
     getTranslations('account'),
     getTranslations('tour'),
     getTranslations('guide'),
     getTranslations('help'),
     getActiveTenantSlug(),
     getActiveTenantCategory(),
+    getLocale(),
   ]);
   // T-V50: внешний аудитор (category=auditor) получает scoped-навигацию
   const navGroups = navForCategory(category);
@@ -92,6 +94,7 @@ async function Shell({ children }: { children: ReactNode }) {
     <AppShell
       groups={groups}
       user={{ name: user.fullName, email: user.email }}
+      currentLocale={locale as Locale}
       labels={{
         brand: 'STATERA',
         brandSub: tenantSlug ?? 'GRC',
@@ -99,6 +102,7 @@ async function Shell({ children }: { children: ReactNode }) {
         menu: t('menu'),
         home: t('home'),
         searchPh: t('searchPh'),
+        language: t('language'),
       }}
       tour={{
         steps: tourSteps,

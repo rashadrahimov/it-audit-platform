@@ -3,10 +3,12 @@
 import { type ReactNode, Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LocaleSwitcher } from '@/app/locale-switcher';
 import { logoutAction } from '@/app/login/actions';
 import { ProductTour, type TourLabels, type TourStep } from '@/components/product-tour';
 import { HelpPanel, type HelpEntry, type HelpLabels } from '@/components/help-panel';
 import { LogoMark } from '@/components/logo';
+import type { Locale } from '@it-audit/shared';
 
 interface NavItem {
   href: string;
@@ -25,6 +27,7 @@ interface Labels {
   menu: string;
   home: string;
   searchPh: string;
+  language: string;
 }
 
 /** Иконки групп (Heroicons outline, 18px). SVG, не emoji — по чеклисту ui-ux-pro-max. */
@@ -74,6 +77,7 @@ function GroupIcon({ group }: { group: string }) {
 export function AppShell({
   groups,
   user,
+  currentLocale,
   labels,
   tour,
   help,
@@ -82,6 +86,7 @@ export function AppShell({
 }: {
   groups: NavGroup[];
   user: { name: string; email: string };
+  currentLocale: Locale;
   labels: Labels;
   tour: { steps: TourStep[]; labels: TourLabels };
   help: { entries: Record<string, HelpEntry>; labels: HelpLabels };
@@ -379,6 +384,13 @@ export function AppShell({
               className="w-32 rounded-xl border border-border bg-white/85 px-3 py-2 text-sm text-foreground shadow-xs transition-[width,box-shadow] duration-200 placeholder:text-secondary/65 focus:w-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:w-44"
             />
           </form>
+
+          <div
+            className="hidden shrink-0 rounded-xl border border-border bg-white/80 px-1 py-0.5 shadow-xs sm:block"
+            title={labels.language}
+          >
+            <LocaleSwitcher current={currentLocale} ariaLabel={labels.language} compact />
+          </div>
 
           {/* Помощь: запуск тура */}
           <button
