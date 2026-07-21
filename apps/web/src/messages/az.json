@@ -2365,6 +2365,13 @@
     "created": "Tələb yaradıldı",
     "reqError": "Tələb yaradıla bilmədi",
     "noRequests": "Hələ tələb yoxdur",
+    "drlKicker": "AI tərəfindən yaradılmış DRL",
+    "drlTitle": "Təklif olunan sənəd tələbləri: {n}",
+    "reviewRequired": "Göndərmədən əvvəl yoxlayın",
+    "priority": {
+      "high": "Yüksək prioritet",
+      "medium": "Orta prioritet"
+    },
     "status": "Status",
     "accept": "Qəbul et",
     "req": {

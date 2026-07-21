@@ -1,9 +1,19 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
+import { DEFAULT_LOCALE, resolveLocalized, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { document, engagement, evidenceRequest, membership, user } from '../db/schema';
+import {
+  checklistItem,
+  document,
+  documentLink,
+  engagement,
+  evidenceRequest,
+  membership,
+  response,
+  user,
+} from '../db/schema';
 import { NotificationsService } from '../notifications/notifications.service';
 import { resolveActorCategory, resolveAuditorScope } from '../rbac/auditor-scope';
 
@@ -11,6 +21,82 @@ interface Actor {
   tenantId: string;
   userId: string;
   ip?: string | null;
+}
+
+export interface EvidenceRequestSuggestion {
+  checklistItemId: string;
+  ref: string;
+  title: string;
+  description: string;
+  priority: 'high' | 'medium';
+  reason: string;
+  source: 'ai_drl';
+  reviewRequired: true;
+}
+
+function evidenceKind(question: string): string {
+  const q = question.toLowerCase();
+  if (
+    /(access|user|account|mfa|privilege|iam|identity|доступ|уч[её]т|пользовател|giriş|hesab)/u.test(
+      q,
+    )
+  ) {
+    return 'access control evidence';
+  }
+  if (/(backup|restore|recovery|резерв|восстанов|bərpa|ehtiyat)/u.test(q)) {
+    return 'backup and recovery evidence';
+  }
+  if (/(incident|alert|security event|инцидент|hadisə|insident)/u.test(q)) {
+    return 'incident response evidence';
+  }
+  if (/(vendor|supplier|third|outsourc|поставщик|вендор|təchizatçı|vendor)/u.test(q)) {
+    return 'third-party oversight evidence';
+  }
+  if (/(change|release|deployment|изменен|релиз|dəyişiklik|buraxılış)/u.test(q)) {
+    return 'change management evidence';
+  }
+  if (/(log|monitor|siem|журнал|лог|monitorinq|jurnal)/u.test(q)) {
+    return 'logging and monitoring evidence';
+  }
+  if (/(policy|procedure|standard|политик|процедур|siyasət|prosedur)/u.test(q)) {
+    return 'policy or procedure evidence';
+  }
+  return 'control evidence';
+}
+
+function buildSuggestion(
+  item: { id: string; ref: string; question: string; hasResponse: boolean },
+  locale: Locale,
+): EvidenceRequestSuggestion {
+  const kind = evidenceKind(item.question);
+  const title =
+    locale === 'ru'
+      ? `${item.ref}: запросить доказательство контроля`
+      : locale === 'az'
+        ? `${item.ref}: nəzarət sübutunu tələb et`
+        : `${item.ref}: request ${kind}`;
+  const description =
+    locale === 'ru'
+      ? `Пожалуйста, предоставьте доказательство по контролю ${item.ref}: ${item.question}. Подойдёт файл, отчёт, выгрузка, политика или скриншот, подтверждающий выполнение контроля.`
+      : locale === 'az'
+        ? `Zəhmət olmasa ${item.ref} nəzarəti üzrə sübut təqdim edin: ${item.question}. Kontrolun icrasını təsdiqləyən fayl, hesabat, ixrac, siyasət və ya ekran görüntüsü uyğundur.`
+        : `Please provide ${kind} for control ${item.ref}: ${item.question}. A file, report, export, policy, or screenshot that supports the control is acceptable.`;
+  const reason =
+    locale === 'ru'
+      ? `К пункту ${item.ref} ещё не привязано доказательство${item.hasResponse ? ' для ответа аудируемого' : ''}.`
+      : locale === 'az'
+        ? `${item.ref} bəndinə hələ sübut bağlanmayıb${item.hasResponse ? ' (auditee cavabı üzrə)' : ''}.`
+        : `No evidence is linked to checklist item ${item.ref}${item.hasResponse ? ' or its response' : ''}.`;
+  return {
+    checklistItemId: item.id,
+    ref: item.ref,
+    title,
+    description,
+    priority: item.hasResponse ? 'medium' : 'high',
+    reason,
+    source: 'ai_drl',
+    reviewRequired: true,
+  };
 }
 
 /**
@@ -84,6 +170,99 @@ export class EvidenceRequestsService {
       after: { engagementId: row.engagementId, title: row.title, status: row.status },
     });
     return { id: row.id, status: row.status };
+  }
+
+  /** T-H37: auto-generated DRL — подсказки request-list из чеклиста без evidence. */
+  async suggestions(
+    actor: Actor,
+    engagementId: string,
+    locale: Locale = DEFAULT_LOCALE,
+  ): Promise<{ count: number; items: EvidenceRequestSuggestion[] }> {
+    await this.assertAuditor(actor);
+    const subsidiaryId = await this.engagementSubsidiary(actor.tenantId, engagementId);
+    if (subsidiaryId === undefined) throw new BadRequestException('Engagement не найден');
+    await this.assertInScope(actor, subsidiaryId);
+
+    const data = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const items = await tx
+        .select({
+          id: checklistItem.id,
+          ref: checklistItem.ref,
+          questionI18n: checklistItem.questionI18n,
+        })
+        .from(checklistItem)
+        .where(eq(checklistItem.engagementId, engagementId))
+        .orderBy(asc(checklistItem.order));
+      const itemIds = items.map((i) => i.id);
+      const responses =
+        itemIds.length > 0
+          ? await tx
+              .select({ id: response.id, checklistItemId: response.checklistItemId })
+              .from(response)
+              .where(inArray(response.checklistItemId, itemIds))
+          : [];
+      const responseIds = responses.map((r) => r.id);
+      const linkedTargets = [
+        ...itemIds.map((id) => ({ type: 'checklist_item', id })),
+        ...responseIds.map((id) => ({ type: 'response', id })),
+      ];
+      const links =
+        linkedTargets.length > 0
+          ? await tx
+              .select({
+                entityType: documentLink.entityType,
+                entityId: documentLink.entityId,
+              })
+              .from(documentLink)
+              .where(
+                inArray(
+                  documentLink.entityId,
+                  linkedTargets.map((t) => t.id),
+                ),
+              )
+          : [];
+      const requests = await tx
+        .select({ title: evidenceRequest.title, description: evidenceRequest.description })
+        .from(evidenceRequest)
+        .where(eq(evidenceRequest.engagementId, engagementId));
+      return { items, responses, links, requests };
+    });
+
+    const responseByItem = new Map(data.responses.map((r) => [r.checklistItemId, r.id]));
+    const covered = new Set(
+      data.links.map((l) =>
+        l.entityType === 'checklist_item' || l.entityType === 'response'
+          ? `${l.entityType}:${l.entityId}`
+          : '',
+      ),
+    );
+    const existingRequestText = data.requests
+      .map((r) => `${r.title}\n${r.description ?? ''}`.toLowerCase())
+      .join('\n');
+    const suggestions = data.items
+      .filter((item) => {
+        const responseId = responseByItem.get(item.id);
+        const hasEvidence =
+          covered.has(`checklist_item:${item.id}`) ||
+          (responseId ? covered.has(`response:${responseId}`) : false);
+        const hasRequest =
+          existingRequestText.includes(`ai-drl:${item.id}`) ||
+          existingRequestText.includes(item.ref.toLowerCase());
+        return !hasEvidence && !hasRequest;
+      })
+      .map((item) =>
+        buildSuggestion(
+          {
+            id: item.id,
+            ref: item.ref,
+            question: resolveLocalized(item.questionI18n, locale),
+            hasResponse: responseByItem.has(item.id),
+          },
+          locale,
+        ),
+      )
+      .slice(0, 12);
+    return { count: suggestions.length, items: suggestions };
   }
 
   /** Auditee прикладывает документ → provided; уведомляет запросившего аудитора. */

@@ -2357,6 +2357,13 @@
     "created": "Request created",
     "reqError": "Could not create request",
     "noRequests": "No requests yet",
+    "drlKicker": "AI-generated DRL",
+    "drlTitle": "{n} suggested document requests",
+    "reviewRequired": "Review before sending",
+    "priority": {
+      "high": "High priority",
+      "medium": "Medium priority"
+    },
     "status": "Status",
     "accept": "Accept",
     "req": {

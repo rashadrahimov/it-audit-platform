@@ -18,6 +18,7 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { z } from 'zod';
+import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
@@ -31,6 +32,13 @@ const createSchema = z.object({
   dueDate: z.iso.datetime({ offset: true }).optional(),
 });
 const provideSchema = z.object({ documentId: z.uuid() });
+
+function parseLocale(localeQuery?: string): Locale {
+  if (localeQuery === undefined) return DEFAULT_LOCALE;
+  const parsed = localeSchema.safeParse(localeQuery);
+  if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+  return parsed.data;
+}
 
 @Controller('evidence-requests')
 @UseGuards(JwtAuthGuard, PermissionGuard)
@@ -85,5 +93,24 @@ export class EvidenceRequestsController {
   list(@Req() req: TenantRequest, @Query('engagementId') engagementId?: string) {
     if (!engagementId) throw new BadRequestException('Нужен engagementId');
     return this.service.list(req.tenantId, engagementId);
+  }
+
+  @Get('suggestions')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({
+    summary: 'T-H37: AI-assisted DRL suggestions for missing checklist evidence',
+  })
+  @ApiOkResponse({ description: '{count, items[]}' })
+  suggestions(
+    @Req() req: TenantRequest,
+    @Query('engagementId') engagementId?: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    if (!engagementId) throw new BadRequestException('Нужен engagementId');
+    return this.service.suggestions(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      engagementId,
+      parseLocale(localeQuery),
+    );
   }
 }

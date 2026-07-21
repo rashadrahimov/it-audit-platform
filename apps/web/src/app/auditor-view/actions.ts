@@ -47,18 +47,25 @@ export async function createRequestAction(
   const title = String(formData.get('title') ?? '').trim();
   if (!engagementId || !title) return { error: 'empty' };
   const assigneeMembershipId = String(formData.get('assigneeMembershipId') ?? '');
+  const description = String(formData.get('description') ?? '').trim();
   const res = await apiFetch('/evidence-requests', {
     method: 'POST',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       engagementId,
       title,
+      ...(description ? { description } : {}),
       ...(assigneeMembershipId ? { assigneeMembershipId } : {}),
     }),
   });
   if (!res.ok) return { error: 'failed' };
   revalidatePath('/auditor-view');
   return { ok: true };
+}
+
+/** T-H37: создать запрос из AI-подсказки DRL без client-state формы. */
+export async function createSuggestedRequestAction(formData: FormData): Promise<void> {
+  await createRequestAction({}, formData);
 }
 
 /** T-113: аудитор добавляет вердикт по пункту аудита (новый раунд). */

@@ -6,7 +6,11 @@ import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
 import { RequestForm } from './request-form';
 import { AssessmentForm } from './assessment-form';
-import { setReviewStatusAction, acceptRequestAction } from './actions';
+import {
+  setReviewStatusAction,
+  acceptRequestAction,
+  createSuggestedRequestAction,
+} from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +23,16 @@ interface EvidenceRequest {
   title: string;
   status: string;
   assignee: string | null;
+}
+interface EvidenceRequestSuggestion {
+  checklistItemId: string;
+  ref: string;
+  title: string;
+  description: string;
+  priority: 'high' | 'medium';
+  reason: string;
+  source: 'ai_drl';
+  reviewRequired: true;
 }
 interface DocLink {
   linkId: string;
@@ -92,13 +106,17 @@ export default async function AuditorViewPage({
 
   let requests: EvidenceRequest[] = [];
   let requestsOpen = 0;
+  let requestSuggestions: EvidenceRequestSuggestion[] = [];
   let docs: DocLink[] = [];
   let findings: (Finding & { assessments: Assessment[] })[] = [];
   let members: Member[] = [];
 
   if (selectedId) {
-    const [reqRes, docRes, fRes, mRes] = await Promise.all([
+    const [reqRes, suggestRes, docRes, fRes, mRes] = await Promise.all([
       apiFetch(`/evidence-requests?engagementId=${selectedId}`, { headers }),
+      apiFetch(`/evidence-requests/suggestions?engagementId=${selectedId}&locale=${locale}`, {
+        headers,
+      }),
       apiFetch(`/documents?entityType=engagement&entityId=${selectedId}`, { headers }),
       apiFetch(`/findings?engagementId=${selectedId}&locale=${locale}`, { headers }),
       apiFetch('/memberships', { headers }),
@@ -107,6 +125,13 @@ export default async function AuditorViewPage({
       const body = (await reqRes.json()) as { open: number; items: EvidenceRequest[] };
       requests = body.items;
       requestsOpen = body.open;
+    }
+    if (suggestRes.ok) {
+      const body = (await suggestRes.json()) as {
+        count: number;
+        items: EvidenceRequestSuggestion[];
+      };
+      requestSuggestions = body.items;
     }
     if (docRes.ok) docs = await docRes.json();
     if (mRes.ok) members = await mRes.json();
@@ -184,6 +209,53 @@ export default async function AuditorViewPage({
                   error: t('reqError'),
                 }}
               />
+            )}
+            {selectedId && requestSuggestions.length > 0 && (
+              <section
+                className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 shadow-sm"
+                data-testid="drl-suggestions"
+              >
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-semibold tracking-[0.14em] text-emerald-700 uppercase">
+                      {t('drlKicker')}
+                    </p>
+                    <h3 className="text-sm font-semibold text-emerald-950">
+                      {t('drlTitle', { n: requestSuggestions.length })}
+                    </h3>
+                  </div>
+                  {pill(t('reviewRequired'), 'bg-white text-emerald-800')}
+                </div>
+                <ul className="grid gap-2 md:grid-cols-2">
+                  {requestSuggestions.map((s) => (
+                    <li
+                      key={s.checklistItemId}
+                      className="rounded-xl border border-emerald-200/80 bg-white p-3 text-sm shadow-sm"
+                    >
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-foreground">{s.title}</p>
+                          <p className="mt-1 text-xs text-secondary">{s.reason}</p>
+                        </div>
+                        {pill(t(`priority.${s.priority}`), 'bg-emerald-100 text-emerald-800')}
+                      </div>
+                      <p className="line-clamp-3 text-xs text-secondary">{s.description}</p>
+                      <form action={createSuggestedRequestAction} className="mt-3">
+                        <input type="hidden" name="engagementId" value={selectedId} />
+                        <input type="hidden" name="title" value={s.title} />
+                        <input
+                          type="hidden"
+                          name="description"
+                          value={`${s.description}\n\nAI-DRL:${s.checklistItemId}\n${s.reason}`}
+                        />
+                        <button type="submit" className={btnCls} data-testid="drl-request">
+                          {t('createRequest')}
+                        </button>
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )}
             {requests.length === 0 ? (
               <div className="rounded-xl border border-border bg-white shadow-sm">
