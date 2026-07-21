@@ -20,6 +20,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { z } from 'zod';
+import { DEFAULT_LOCALE, localeSchema } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
@@ -37,6 +38,10 @@ const updateSchema = z.object({
   status: z.enum(['open', 'in_progress', 'done']).optional(),
   assigneeMembershipId: z.uuid().nullable().optional(),
   dueDate: z.iso.datetime().nullable().optional(),
+});
+const actionPlanSeedSchema = z.object({
+  engagementId: z.uuid(),
+  locale: localeSchema.default(DEFAULT_LOCALE),
 });
 
 // Задачи ремедиации — governance-домен, право 'control' (соседствует с findings/risks).
@@ -69,6 +74,20 @@ export class TasksController {
     const parsed = createSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);
     return this.service.create(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data,
+    );
+  }
+
+  @Post('action-plan/from-findings')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({
+    summary: 'T-H35: создать Action Plan tasks из recommendations findings engagement',
+  })
+  seedActionPlan(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = actionPlanSeedSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.seedActionPlanFromFindings(
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       parsed.data,
     );

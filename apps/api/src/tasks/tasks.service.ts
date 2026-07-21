@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
+import { resolveLocalized, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { membership, task, user } from '../db/schema';
+import { finding, membership, task, user } from '../db/schema';
 
 interface Actor {
   tenantId: string;
@@ -19,6 +20,11 @@ export interface CreateTaskInput {
   title: string;
   assigneeMembershipId?: string;
   dueDate?: string;
+}
+
+export interface ActionPlanSeedResult {
+  created: number;
+  skipped: number;
 }
 
 /** Задачи ремедиации (T-V27): декомпозиция finding/risk на шаги с due/assignee. */
@@ -102,6 +108,84 @@ export class TasksService {
       after: { title: created.title, taskId: created.id },
     });
     return { id: created.id, status: created.status };
+  }
+
+  /**
+   * T-H35: recommendations → Action Plan. Создаёт remediation tasks из рекомендаций
+   * findings выбранного engagement, сохраняя owner/dueDate и не дублируя уже созданные.
+   */
+  async seedActionPlanFromFindings(
+    actor: Actor,
+    input: { engagementId: string; locale: Locale },
+  ): Promise<ActionPlanSeedResult> {
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const rows = await tx
+        .select({
+          id: finding.id,
+          titleI18n: finding.titleI18n,
+          recommendationI18n: finding.recommendationI18n,
+          ownerMembershipId: finding.ownerMembershipId,
+          dueDate: finding.dueDate,
+        })
+        .from(finding)
+        .where(and(eq(finding.engagementId, input.engagementId), isNull(finding.deletedAt)));
+      const eligible = rows
+        .map((f) => {
+          const recommendation = f.recommendationI18n
+            ? resolveLocalized(f.recommendationI18n, input.locale).trim()
+            : '';
+          if (!recommendation) return null;
+          const findingTitle = resolveLocalized(f.titleI18n, input.locale);
+          return {
+            findingId: f.id,
+            title:
+              recommendation.length > 500 ? recommendation.slice(0, 497) + '…' : recommendation,
+            findingTitle,
+            ownerMembershipId: f.ownerMembershipId,
+            dueDate: f.dueDate,
+          };
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+      if (eligible.length === 0) return { created: 0, skipped: 0 };
+
+      const existing = await tx
+        .select({ entityId: task.entityId, title: task.title })
+        .from(task)
+        .where(
+          and(
+            eq(task.entityType, 'finding'),
+            inArray(
+              task.entityId,
+              eligible.map((f) => f.findingId),
+            ),
+          ),
+        );
+      const existingKeys = new Set(existing.map((t) => `${t.entityId}:${t.title}`));
+      const toCreate = eligible.filter((f) => !existingKeys.has(`${f.findingId}:${f.title}`));
+      if (toCreate.length > 0) {
+        await tx.insert(task).values(
+          toCreate.map((f) => ({
+            tenantId: actor.tenantId,
+            entityType: 'finding',
+            entityId: f.findingId,
+            title: f.title,
+            assigneeMembershipId: f.ownerMembershipId ?? null,
+            dueDate: f.dueDate ?? null,
+          })),
+        );
+      }
+      return { created: toCreate.length, skipped: eligible.length - toCreate.length };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'action_plan.seeded',
+      entityType: 'engagement',
+      entityId: input.engagementId,
+      after: result,
+    });
+    return result;
   }
 
   /** Смена статуса/полей задачи; done проставляет completed_at. */

@@ -9,6 +9,7 @@ import {
   addChecklistItemsAction,
   createFindingFromSuggestionAction,
   duplicateEngagementAction,
+  seedActionPlanFromRecommendationsAction,
   saveResponseAction,
   transitionAction,
 } from './actions';
@@ -501,7 +502,23 @@ export default async function EngagementDetailPage({
       </section>
 
       <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-primary">{t('findings')}</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-primary">{t('findings')}</h2>
+            <p className="mt-1 text-xs text-secondary">{t('actionPlanHint')}</p>
+          </div>
+          {findings.length > 0 && (
+            <form action={seedActionPlanFromRecommendationsAction.bind(null, eng.id)}>
+              <button
+                type="submit"
+                className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                data-testid="seed-action-plan"
+              >
+                {t('seedActionPlan')}
+              </button>
+            </form>
+          )}
+        </div>
         {findings.length === 0 ? (
           <p className="text-sm text-secondary">{t('findingsEmpty')}</p>
         ) : (

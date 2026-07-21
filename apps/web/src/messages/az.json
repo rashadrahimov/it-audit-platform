@@ -196,7 +196,9 @@
       "not_applicable": "Tətbiq olunmur"
     },
     "findings": "Qeydlər",
-    "findingsEmpty": "Hələ finding yoxdur",
+    "actionPlanHint": "Tövsiyələri Action Plan üçün canlı remediation tapşırıqlarına çevirmək olar.",
+    "seedActionPlan": "Tədbirlər planını qur",
+    "findingsEmpty": "Hələ qeyd yoxdur",
     "findingTitle": "Qeyd",
     "findingRating": "Risk",
     "findingOwner": "Sahib",

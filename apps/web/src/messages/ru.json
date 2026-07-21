@@ -196,7 +196,9 @@
       "not_applicable": "Неприменимо"
     },
     "findings": "Замечания",
-    "findingsEmpty": "Findings пока нет",
+    "actionPlanHint": "Рекомендации можно превратить в живые задачи ремедиации для Action Plan.",
+    "seedActionPlan": "Собрать план действий",
+    "findingsEmpty": "Замечаний пока нет",
     "findingTitle": "Замечание",
     "findingRating": "Риск",
     "findingOwner": "Владелец",

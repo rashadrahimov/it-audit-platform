@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { getLocale } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug } from '@/lib/session';
 
 /** Восстановить/дублировать аудит (T-H16): создаёт копию, переходит на неё. */
@@ -82,6 +83,18 @@ export async function createFindingFromSuggestionAction(
       descriptionI18n: reason ? { en: reason } : undefined,
       riskRating: suggestedRisk,
     }),
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}
+
+/** T-H35: recommendations findings → live Action Plan tasks. */
+export async function seedActionPlanFromRecommendationsAction(engagementId: string): Promise<void> {
+  const [tenantSlug, locale] = await Promise.all([getActiveTenantSlug(), getLocale()]);
+  if (!tenantSlug) return;
+  await apiFetch('/tasks/action-plan/from-findings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
+    body: JSON.stringify({ engagementId, locale }),
   });
   revalidatePath(`/engagements/${engagementId}`);
 }

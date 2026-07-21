@@ -196,6 +196,8 @@
       "not_applicable": "Not applicable"
     },
     "findings": "Findings",
+    "actionPlanHint": "Recommendations can be turned into live remediation tasks for the Action Plan.",
+    "seedActionPlan": "Build action plan",
     "findingsEmpty": "No findings yet",
     "findingTitle": "Finding",
     "findingRating": "Risk",
