@@ -1454,6 +1454,18 @@
           "label": "Göndərmə şərti",
           "hint": "Digest açıq risk, gecikmiş iş və siyasət yenilənmə siqnallarına reaksiya verir"
         }
+      },
+      "proof": {
+        "kicker": "Avtomatik çatdırılma sübutu",
+        "title": "Cədvəl üzrə e-poçt işçisi qoşulub",
+        "hint": "Bu, uyğunluq icmalının avtomatik göndərilməsi üçün istifadə olunan faktiki növbə, tapşırıq və şablon yoludur.",
+        "queue": "Növbə",
+        "job": "Tapşırıq",
+        "interval": "Period",
+        "intervalValue": "Hər {hours} saat",
+        "template": "E-poçt şablonu",
+        "recipientPolicy": "Alıcılar: tenantın unikal e-poçt ünvanı olan aktiv iştirakçıları.",
+        "signalGate": "Göndərmə şərti: açıq qeydlər, gecikmiş tapşırıqlar və ya yenilənməli siyasətlər."
       }
     },
     "deliverables": {
@@ -2787,7 +2799,7 @@
         },
         "reportingUx": {
           "title": "Hesabat və çoxdilli UX",
-          "hint": "Dashboard-lar, planlı hesabat çatdırılma planı və RU/AZ/EN interfeysi."
+          "hint": "Dashboard-lar, planlı hesabat çatdırılma planı, qoşulmuş e-poçt icmalı işçisi və RU/AZ/EN interfeysi."
         },
         "advancedAi": {
           "title": "Qabaqcıl AI dövrəsi",

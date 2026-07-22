@@ -42,6 +42,15 @@ interface SchedulePreview {
     overdueTasks: number;
     policiesDue: number;
   };
+  deliveryProof?: {
+    queue: string;
+    jobName: string;
+    intervalMs: number;
+    emailTemplate: string;
+    manualTriggerPath: string;
+    recipientPolicy: string;
+    signalGate: string;
+  };
 }
 interface ReportReadiness {
   engagementId: string;
@@ -227,6 +236,53 @@ export default async function ReportsPage({
               </div>
             ))}
           </div>
+          {schedule.deliveryProof && (
+            <div
+              data-testid="report-delivery-proof"
+              className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.12em] text-emerald-800 uppercase">
+                    {t('schedule.proof.kicker')}
+                  </p>
+                  <h3 className="mt-1 text-sm font-semibold text-primary">
+                    {t('schedule.proof.title')}
+                  </h3>
+                  <p className="mt-1 text-xs text-secondary">{t('schedule.proof.hint')}</p>
+                </div>
+                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                  {schedule.deliveryProof.manualTriggerPath}
+                </span>
+              </div>
+              <dl className="mt-4 grid gap-2 md:grid-cols-4">
+                {(
+                  [
+                    ['queue', schedule.deliveryProof.queue],
+                    ['job', schedule.deliveryProof.jobName],
+                    [
+                      'interval',
+                      t('schedule.proof.intervalValue', {
+                        hours: Math.round(schedule.deliveryProof.intervalMs / 3_600_000),
+                      }),
+                    ],
+                    ['template', schedule.deliveryProof.emailTemplate],
+                  ] as const
+                ).map(([key, value]) => (
+                  <div key={key} className="rounded-xl bg-white/80 p-3">
+                    <dt className="text-xs font-medium text-secondary">
+                      {t(`schedule.proof.${key}`)}
+                    </dt>
+                    <dd className="mt-1 text-sm font-semibold text-primary">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-3 grid gap-2 text-xs text-secondary md:grid-cols-2">
+                <p>{t('schedule.proof.recipientPolicy')}</p>
+                <p>{t('schedule.proof.signalGate')}</p>
+              </div>
+            </div>
+          )}
         </section>
       )}
 

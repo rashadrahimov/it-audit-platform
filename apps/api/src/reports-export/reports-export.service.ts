@@ -17,6 +17,7 @@ import {
   DEFAULT_NOTIFICATION_SETTINGS,
   type NotificationSettings,
 } from '../notifications/notification-dispatch.service';
+import { JOB_WEEKLY_DIGEST, SYSTEM_QUEUE, WEEKLY_DIGEST_EVERY_MS } from '../jobs/jobs.constants';
 import { diffMetrics, type MetricGroups } from './diff-metrics';
 import { csvCell, xmlEscape } from './serialize';
 import { computeGroupTrends } from './trend';
@@ -126,6 +127,15 @@ export class ReportsExportService {
       recipientCount,
       willSendIfRunNow: settings.emailEnabled && settings.digest !== 'off' && hasSignal,
       metrics,
+      deliveryProof: {
+        queue: SYSTEM_QUEUE,
+        jobName: JOB_WEEKLY_DIGEST,
+        intervalMs: WEEKLY_DIGEST_EVERY_MS,
+        emailTemplate: 'weekly-digest',
+        manualTriggerPath: 'POST /jobs/weekly-digest',
+        recipientPolicy: 'active tenant members with unique email addresses',
+        signalGate: 'open findings, overdue tasks or policies due',
+      },
     };
   }
 

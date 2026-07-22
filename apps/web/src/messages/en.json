@@ -1454,6 +1454,18 @@
           "label": "Send condition",
           "hint": "The digest reacts to open risk, overdue work and policy renewal signals"
         }
+      },
+      "proof": {
+        "kicker": "Delivery automation proof",
+        "title": "Scheduled email worker is wired",
+        "hint": "This is the actual queue/job/template path used for automatic compliance digest delivery.",
+        "queue": "Queue",
+        "job": "Job",
+        "interval": "Cadence",
+        "intervalValue": "Every {hours}h",
+        "template": "Email template",
+        "recipientPolicy": "Recipients: active tenant members with unique email addresses.",
+        "signalGate": "Signal gate: open findings, overdue tasks or policies due."
       }
     },
     "deliverables": {
@@ -2779,7 +2791,7 @@
         },
         "reportingUx": {
           "title": "Reporting and multilingual UX",
-          "hint": "Dashboards, scheduled report delivery plan and RU/AZ/EN interface."
+          "hint": "Dashboards, scheduled report delivery plan, wired email digest worker and RU/AZ/EN interface."
         },
         "advancedAi": {
           "title": "Advanced AI loop",

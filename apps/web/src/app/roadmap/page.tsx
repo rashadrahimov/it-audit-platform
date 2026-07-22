@@ -77,7 +77,7 @@ const REQUIREMENT_COVERAGE = [
   {
     key: 'reportingUx',
     status: 'live',
-    evidence: ['dashboards', 'scheduled-delivery-plan', 'locales'],
+    evidence: ['dashboards', 'scheduled-delivery-plan', 'email-digest-worker', 'locales'],
   },
   {
     key: 'advancedAi',
