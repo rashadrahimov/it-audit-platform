@@ -77,7 +77,7 @@ export default async function DashboardsPage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
+    <main className="mx-auto flex min-h-screen w-full min-w-0 max-w-4xl flex-col gap-6 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
@@ -85,7 +85,7 @@ export default async function DashboardsPage() {
       <form
         action={createDashboardAction}
         data-testid="dashboard-create"
-        className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+        className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
       >
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-secondary">{t('create')}</span>

@@ -105,6 +105,7 @@ test('mobile viewport: drawer opens and key screens avoid horizontal overflow', 
   await expect(page.getByTestId('mobile-menu')).toBeVisible();
   await page.getByTestId('mobile-menu').click();
   await expect(page.getByTestId('app-sidebar')).toBeVisible();
+  await page.getByTestId('nav-group-engagements').click();
   await expect(page.getByTestId('go-engagements')).toBeVisible();
 
   for (const route of MOBILE_ROUTES) {
