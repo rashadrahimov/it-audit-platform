@@ -2,7 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -23,9 +28,12 @@ import { RequirePermission } from '../rbac/require-permission.decorator';
 import { GlossaryService } from './glossary.service';
 
 const createSchema = z.object({
-  term: z.string().min(1),
+  term: z.string().trim().min(1).max(160),
   definitionI18n: i18nTextSchema,
-  category: z.string().optional(),
+  category: z.string().trim().max(120).optional(),
+});
+const updateSchema = createSchema.partial().refine((body) => Object.keys(body).length > 0, {
+  message: 'Нужно передать хотя бы одно поле',
 });
 
 function parseLocale(localeQuery?: string): Locale {
@@ -62,5 +70,26 @@ export class GlossaryController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       parsed.data,
     );
+  }
+
+  @Patch(':id')
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Изменить кастомный термин тенанта' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @RequirePermission('settings', 'edit', 'edit')
+  @ApiOperation({ summary: 'Удалить кастомный термин тенанта' })
+  async remove(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    await this.service.remove({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id);
   }
 }
