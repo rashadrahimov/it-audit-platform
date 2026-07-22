@@ -311,6 +311,32 @@
     },
     "export": "Export",
     "duplicate": "Duplicate / restore",
+    "charter": {
+      "kicker": "Audit charter",
+      "title": "Scope, criteria and delivery plan",
+      "subtitle": "A compact audit brief for the opening meeting: entity, framework criteria, period, team, workflow and final deliverables.",
+      "noAuditType": "No audit type selected",
+      "noPeriod": "Period not set",
+      "periodHint": "Formal reporting period",
+      "criteriaHint": "{tested} tested across {domains} domains",
+      "teamHint": "{tasks} open audit tasks",
+      "cards": {
+        "scope": "Scope",
+        "criteria": "Criteria",
+        "period": "Period",
+        "team": "Team"
+      },
+      "workflowTitle": "Standard workflow",
+      "phases": {
+        "scoping": "Scoping",
+        "data_collection": "Data collection",
+        "assessment": "Assessment",
+        "findings": "Findings",
+        "reporting": "Reporting"
+      },
+      "deliverablesTitle": "Deliverables package",
+      "deliverablesBody": "Final outputs are prepared as management/regulator-ready report files and working-paper exports in the client languages."
+    },
     "suggestionsKicker": "AI draft · evidence grounded",
     "suggestions": "Suggested findings (gaps)",
     "reviewRequired": "Human review required",

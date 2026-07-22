@@ -395,6 +395,102 @@ export default async function EngagementDetailPage({
 
       <section
         className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-[0_18px_55px_rgba(6,78,59,0.12)]"
+        data-testid="audit-charter"
+      >
+        <div className="border-b border-emerald-100 bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.18),transparent_34%),linear-gradient(135deg,#f0fdfa,#ffffff)] p-5">
+          <p className="text-xs font-semibold tracking-[0.18em] text-emerald-700 uppercase">
+            {t('charter.kicker')}
+          </p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-primary">{t('charter.title')}</h2>
+              <p className="mt-1 max-w-3xl text-sm text-secondary">{t('charter.subtitle')}</p>
+            </div>
+            <span className="rounded-full bg-emerald-950 px-3 py-1.5 text-xs font-semibold text-white">
+              {t(`modes.${eng.mode}`)}
+            </span>
+          </div>
+        </div>
+        <div className="grid gap-3 p-5 md:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              key: 'scope',
+              value: eng.subsidiary ?? '—',
+              hint: eng.auditType ?? t('charter.noAuditType'),
+            },
+            {
+              key: 'criteria',
+              value: eng.domainProgressSummary.totalControls,
+              hint: t('charter.criteriaHint', {
+                domains: eng.domainProgressSummary.totalDomains,
+                tested: eng.domainProgressSummary.testedControls,
+              }),
+            },
+            {
+              key: 'period',
+              value:
+                eng.periodStart || eng.periodEnd
+                  ? `${eng.periodStart ? fmt(eng.periodStart) : '—'} → ${
+                      eng.periodEnd ? fmt(eng.periodEnd) : '—'
+                    }`
+                  : t('charter.noPeriod'),
+              hint: t('charter.periodHint'),
+            },
+            {
+              key: 'team',
+              value: team.length,
+              hint: t('charter.teamHint', { tasks: openAuditTasks }),
+            },
+          ].map((item) => (
+            <div
+              key={item.key}
+              className="rounded-xl border border-border bg-[linear-gradient(180deg,#ffffff,#f7fbf8)] p-4"
+            >
+              <div className="text-xs font-semibold tracking-wide text-secondary uppercase">
+                {t(`charter.cards.${item.key}`)}
+              </div>
+              <div className="mt-2 text-lg font-bold text-primary">{item.value}</div>
+              <div className="mt-1 text-xs text-secondary">{item.hint}</div>
+            </div>
+          ))}
+        </div>
+        <div className="grid gap-4 border-t border-border p-5 lg:grid-cols-[1.1fr_0.9fr]">
+          <div>
+            <h3 className="text-sm font-semibold text-primary">{t('charter.workflowTitle')}</h3>
+            <div className="mt-3 grid gap-2 sm:grid-cols-5">
+              {['scoping', 'data_collection', 'assessment', 'findings', 'reporting'].map(
+                (phase, index) => (
+                  <div key={phase} className="rounded-xl bg-muted/60 p-3 text-xs">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-800">
+                      {index + 1}
+                    </div>
+                    <div className="mt-2 font-semibold text-primary">
+                      {t(`charter.phases.${phase}`)}
+                    </div>
+                  </div>
+                ),
+              )}
+            </div>
+          </div>
+          <div className="rounded-xl bg-emerald-50/70 p-4">
+            <h3 className="text-sm font-semibold text-primary">{t('charter.deliverablesTitle')}</h3>
+            <p className="mt-2 text-sm text-secondary">{t('charter.deliverablesBody')}</p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {['PDF', 'DOCX', 'XLSX', 'EN', 'AZ', 'RU'].map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-[0_18px_55px_rgba(6,78,59,0.12)]"
         data-testid="ai-traceability-trail"
       >
         <div className="border-b border-emerald-100 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),linear-gradient(135deg,#ecfdf5,#ffffff)] p-5">

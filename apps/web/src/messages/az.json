@@ -311,6 +311,32 @@
     },
     "export": "İxrac",
     "duplicate": "Dublikat / bərpa",
+    "charter": {
+      "kicker": "Audit charter",
+      "title": "Əhatə, meyarlar və təhvil planı",
+      "subtitle": "Kickoff görüşü üçün qısa audit brief-i: obyekt, framework meyarları, dövr, komanda, workflow və final deliverable-lar.",
+      "noAuditType": "Audit növü seçilməyib",
+      "noPeriod": "Dövr təyin edilməyib",
+      "periodHint": "Formal hesabat dövrü",
+      "criteriaHint": "{domains} domen üzrə {tested} yoxlanıb",
+      "teamHint": "{tasks} açıq audit tapşırığı",
+      "cards": {
+        "scope": "Əhatə",
+        "criteria": "Meyarlar",
+        "period": "Dövr",
+        "team": "Komanda"
+      },
+      "workflowTitle": "Standart workflow",
+      "phases": {
+        "scoping": "Scoping",
+        "data_collection": "Məlumat toplama",
+        "assessment": "Qiymətləndirmə",
+        "findings": "Finding-lər",
+        "reporting": "Hesabat"
+      },
+      "deliverablesTitle": "Deliverable paketi",
+      "deliverablesBody": "Final nəticələr management/regulator üçün hazır hesabat faylları və working paper ixracları kimi müştəri dillərində hazırlanır."
+    },
     "suggestionsKicker": "AI qaralaması · sübuta əsaslanır",
     "suggestions": "Təklif olunan qeydlər (gaplar)",
     "reviewRequired": "İnsan yoxlaması tələb olunur",

@@ -311,6 +311,32 @@
     },
     "export": "Экспорт",
     "duplicate": "Дублировать / восстановить",
+    "charter": {
+      "kicker": "Audit charter",
+      "title": "Скоуп, критерии и план выдачи",
+      "subtitle": "Короткий audit brief для kickoff-встречи: объект, критерии фреймворка, период, команда, workflow и финальные deliverables.",
+      "noAuditType": "Тип аудита не выбран",
+      "noPeriod": "Период не задан",
+      "periodHint": "Формальный отчётный период",
+      "criteriaHint": "{tested} проверено в {domains} доменах",
+      "teamHint": "{tasks} открытых задач аудита",
+      "cards": {
+        "scope": "Скоуп",
+        "criteria": "Критерии",
+        "period": "Период",
+        "team": "Команда"
+      },
+      "workflowTitle": "Стандартный workflow",
+      "phases": {
+        "scoping": "Скоупинг",
+        "data_collection": "Сбор данных",
+        "assessment": "Оценка",
+        "findings": "Findings",
+        "reporting": "Отчётность"
+      },
+      "deliverablesTitle": "Пакет deliverables",
+      "deliverablesBody": "Финальные результаты готовятся как отчёты для менеджмента/регулятора и выгрузки working papers на языках клиента."
+    },
     "suggestionsKicker": "ИИ-черновик · на основе доказательств",
     "suggestions": "Предлагаемые замечания (гэпы)",
     "reviewRequired": "Нужна проверка человеком",
