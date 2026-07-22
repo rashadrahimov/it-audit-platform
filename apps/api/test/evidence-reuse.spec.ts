@@ -83,4 +83,41 @@ describe('cross-framework evidence reuse', () => {
     expect(summary.coveredRequirementsWithEvidence).toBe(2);
     expect(summary.topDocuments[0]?.controls).toEqual(['GOV-01']);
   });
+
+  it('counts tenant-specific evidence linked to an adapted control that reuses origin mappings', () => {
+    const summary = summarizeEvidenceReuse(
+      [
+        {
+          id: 'tenant-gov-01',
+          originControlId: 'global-gov-01',
+          ref: 'GOV-01',
+          requirementIds: ['iso-a-5-1', 'cobit-edm01', 'cbar-gov'],
+          frameworkIds: ['iso', 'cobit', 'cbar'],
+        },
+      ],
+      [
+        {
+          documentId: 'doc-demo-policy-pack',
+          filename: 'group-it-governance-policy-pack.txt',
+          entityId: 'tenant-gov-01',
+          relation: 'evidence',
+          reviewStatus: 'accepted',
+        },
+      ],
+      3,
+    );
+
+    expect(summary).toMatchObject({
+      evidenceDocuments: 1,
+      reusableEvidenceDocuments: 1,
+      coveredRequirementsWithEvidence: 3,
+      evidenceCoveragePercent: 100,
+    });
+    expect(summary.topDocuments[0]).toMatchObject({
+      frameworks: 3,
+      requirements: 3,
+      controls: ['GOV-01'],
+      reviewStatuses: ['accepted'],
+    });
+  });
 });

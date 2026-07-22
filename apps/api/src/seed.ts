@@ -5,6 +5,7 @@
  * Гарантирует S3-бакет с демо-файлом и сидит доменные данные (T-010+):
  * демо-tenant «demo» с одной дочкой. Растёт вместе со схемой.
  */
+import { createHash } from 'node:crypto';
 import {
   CreateBucketCommand,
   HeadBucketCommand,
@@ -27,6 +28,8 @@ import {
   controlDomain,
   controlMapping,
   department,
+  document,
+  documentLink,
   fieldPermission,
   framework,
   frameworkRequirement,
@@ -49,6 +52,14 @@ import { RISK_LIBRARY } from './seed-data/risk-library';
 import { encryptConfig } from './connectors/config-crypto';
 
 const DEMO_OBJECT_KEY = 'demo/welcome.txt';
+const DEMO_GOV_POLICY_OBJECT_KEY = 'demo/evidence/group-it-governance-policy-pack.txt';
+const DEMO_GOV_POLICY_BODY = [
+  'Group IT Governance Policy Pack',
+  'Purpose: evidence pack for governance, policy ownership, and audit-ready control mapping.',
+  'Scope: GOV-01; reusable for ISO/IEC 27001 A.5.1, COBIT EDM01, and CBAR governance requirements.',
+  'Owner: Demo Admin. Review status: accepted for demo walkthroughs.',
+].join('\n');
+const DEMO_GOV_POLICY_SHA256 = createHash('sha256').update(DEMO_GOV_POLICY_BODY).digest('hex');
 const DEMO_TENANT_SLUG = 'demo';
 
 /** Глобальный каталог прав (T-018, без RLS): 5 ресурсов × 6 действий. Идемпотентно. */
@@ -848,41 +859,106 @@ async function seedDemoControlAdaptation(db: NodePgDatabase, tenantId: string): 
       .select()
       .from(control)
       .where(and(eq(control.tenantId, tenantId), eq(control.ref, 'GOV-01')));
-    if (existing.length > 0) return;
-    const [adapted] = await tx
-      .insert(control)
-      .values({
+    let adapted = existing[0] ?? null;
+    if (!adapted) {
+      const [created] = await tx
+        .insert(control)
+        .values({
+          tenantId,
+          originControlId: origin.id,
+          ref: origin.ref,
+          domainId: origin.domainId,
+          objectiveI18n: origin.objectiveI18n,
+          questionI18n: origin.questionI18n,
+          guidanceI18n: {
+            en: 'Group adaptation: review the policy pack against CBAR requirements as well.',
+            ru: 'Адаптация группы: сверять пакет политик также с требованиями CBAR.',
+          },
+          ownerMembershipId: adminMembership.id,
+        })
+        .returning();
+      if (!created) throw new Error('Адаптация GOV-01 не создалась');
+      adapted = created;
+      await tx.insert(auditLog).values({
         tenantId,
-        originControlId: origin.id,
-        ref: origin.ref,
-        domainId: origin.domainId,
-        objectiveI18n: origin.objectiveI18n,
-        questionI18n: origin.questionI18n,
-        guidanceI18n: {
-          en: 'Group adaptation: review the policy pack against CBAR requirements as well.',
-          ru: 'Адаптация группы: сверять пакет политик также с требованиями CBAR.',
-        },
-        ownerMembershipId: adminMembership.id,
+        actorUserId: admin.id,
+        action: 'control.adapted',
+        entityType: 'control',
+        entityId: adapted.id,
+        after: { ref: adapted.ref, originControlId: origin.id },
+      });
+      await tx.insert(comment).values({
+        tenantId,
+        entityType: 'control',
+        entityId: adapted.id,
+        authorUserId: admin.id,
+        body: 'Adapted for the group: policy review must include CBAR checklist.',
+      });
+    }
+
+    const [existingPolicyDoc] = await tx
+      .select()
+      .from(document)
+      .where(
+        and(
+          eq(document.tenantId, tenantId),
+          eq(document.storageKey, DEMO_GOV_POLICY_OBJECT_KEY),
+          isNull(document.deletedAt),
+        ),
+      );
+    const createdPolicyDoc = !existingPolicyDoc;
+    const policyDoc = existingPolicyDoc
+      ? existingPolicyDoc
+      : (
+          await tx
+            .insert(document)
+            .values({
+              tenantId,
+              storageKey: DEMO_GOV_POLICY_OBJECT_KEY,
+              filename: 'group-it-governance-policy-pack.txt',
+              mime: 'text/plain; charset=utf-8',
+              size: Buffer.byteLength(DEMO_GOV_POLICY_BODY),
+              sha256: DEMO_GOV_POLICY_SHA256,
+              category: 'policy',
+              ownerMembershipId: adminMembership.id,
+              renewBy: new Date('2026-12-31T23:59:59.000Z'),
+              status: 'active',
+            })
+            .returning()
+        )[0];
+    if (!policyDoc) throw new Error('Демо policy-документ GOV-01 не создался');
+
+    const [createdLink] = await tx
+      .insert(documentLink)
+      .values({
+        documentId: policyDoc.id,
+        entityType: 'control',
+        entityId: adapted.id,
+        relation: 'evidence',
+        reviewStatus: 'accepted',
       })
-      .returning();
-    if (!adapted) throw new Error('Адаптация GOV-01 не создалась');
-    await tx.insert(auditLog).values({
-      tenantId,
-      actorUserId: admin.id,
-      action: 'control.adapted',
-      entityType: 'control',
-      entityId: adapted.id,
-      after: { ref: adapted.ref, originControlId: origin.id },
-    });
-    await tx.insert(comment).values({
-      tenantId,
-      entityType: 'control',
-      entityId: adapted.id,
-      authorUserId: admin.id,
-      body: 'Adapted for the group: policy review must include CBAR checklist.',
-    });
+      .onConflictDoNothing({
+        target: [documentLink.documentId, documentLink.entityType, documentLink.entityId],
+      })
+      .returning({ id: documentLink.id });
+
+    if (createdPolicyDoc || createdLink) {
+      await tx.insert(auditLog).values({
+        tenantId,
+        actorUserId: admin.id,
+        action: 'control.evidence_reuse_seeded',
+        entityType: 'control',
+        entityId: adapted.id,
+        after: {
+          ref: adapted.ref,
+          documentId: policyDoc.id,
+          storageKey: policyDoc.storageKey,
+          reviewStatus: 'accepted',
+        },
+      });
+    }
   });
-  console.log('✓ Демо-адаптация GOV-01 (owner: admin, history+comment) (idempotent)');
+  console.log('✓ Демо-адаптация GOV-01 + reusable evidence policy pack (idempotent)');
 }
 
 /** Демо-LDAP-коннектор (T-049): указывает на тестовый openldap, capability personnel. */
@@ -1005,6 +1081,15 @@ async function seedS3(): Promise<void> {
       }),
     );
     console.log(`✓ Демо-файл ${DEMO_OBJECT_KEY} загружен`);
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: env.s3Bucket,
+        Key: DEMO_GOV_POLICY_OBJECT_KEY,
+        Body: DEMO_GOV_POLICY_BODY,
+        ContentType: 'text/plain; charset=utf-8',
+      }),
+    );
+    console.log(`✓ Демо evidence-файл ${DEMO_GOV_POLICY_OBJECT_KEY} загружен`);
   } finally {
     s3.destroy();
   }
