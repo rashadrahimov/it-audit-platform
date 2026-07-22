@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
+import { createUniverseNodeAction, moveUniverseNodeAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +37,18 @@ const KIND_BADGE: Record<NodeKind, string> = {
   activity: 'bg-emerald-100 text-emerald-700',
   function: 'bg-muted text-secondary',
 };
+const NODE_KINDS: NodeKind[] = [
+  'subsidiary',
+  'process',
+  'system',
+  'location',
+  'activity',
+  'function',
+];
+const inputCls =
+  'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+const buttonCls =
+  'rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function buildTree(nodes: UniverseNode[]): TreeNode[] {
   const byId = new Map<string, TreeNode>(nodes.map((n) => [n.id, { ...n, children: [] }]));
@@ -81,6 +94,30 @@ export default async function UniversePage() {
         >
           {t(`kind.${node.kind}`)}
         </span>
+        <details className="ms-auto">
+          <summary className="cursor-pointer text-xs font-medium text-accent">{t('move')}</summary>
+          <form
+            action={moveUniverseNodeAction.bind(null, node.id)}
+            className="mt-2 flex items-end gap-2"
+          >
+            <select
+              name="parentId"
+              defaultValue={node.parentId ?? ''}
+              aria-label={t('parent')}
+              className={inputCls}
+            >
+              <option value="">{t('root')}</option>
+              {nodes
+                .filter((candidate) => candidate.id !== node.id)
+                .map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {resolveName(candidate.nameI18n, locale)}
+                  </option>
+                ))}
+            </select>
+            <button className={buttonCls}>{t('moveSave')}</button>
+          </form>
+        </details>
       </div>
       {node.children.length > 0 && (
         <ul>{node.children.map((child) => renderNode(child, depth + 1))}</ul>
@@ -97,6 +134,32 @@ export default async function UniversePage() {
       <p className="text-sm text-secondary">
         {nodes.length} {t('nodes')}
       </p>
+
+      <section className="flex flex-col gap-3" data-testid="universe-create">
+        <h2 className="text-sm font-semibold text-secondary">{t('create')}</h2>
+        <form
+          action={createUniverseNodeAction}
+          className="grid gap-3 rounded-xl border border-border bg-white p-4 shadow-sm sm:grid-cols-3"
+        >
+          <input name="name" required placeholder={t('name')} className={inputCls} />
+          <select name="kind" defaultValue="process" className={inputCls}>
+            {NODE_KINDS.map((kind) => (
+              <option key={kind} value={kind}>
+                {t(`kind.${kind}`)}
+              </option>
+            ))}
+          </select>
+          <select name="parentId" defaultValue="" className={inputCls}>
+            <option value="">{t('root')}</option>
+            {nodes.map((node) => (
+              <option key={node.id} value={node.id}>
+                {resolveName(node.nameI18n, locale)}
+              </option>
+            ))}
+          </select>
+          <button className={`${buttonCls} sm:justify-self-start`}>{t('createButton')}</button>
+        </form>
+      </section>
 
       <section className="rounded-xl border border-border bg-white p-3 shadow-sm">
         {tree.length === 0 ? (

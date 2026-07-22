@@ -21,7 +21,7 @@
 - [ ] **Risks-регистр** — список/создание/rescore/привязка контролей (heat-map уже есть, реестра нет).
 - [ ] **Privacy: ROPA** (`/processing-activities`) + **DPIA** (`/dpia`) — реестр + workflow.
 - [ ] **IAM:** accounts, access-requests (approve/deny), deprovisioning.
-- [ ] **Assets / Processes / Universe-CRUD** (universe-дерево read-only есть; нет создания узлов/проекции активов).
+- [ ] **Assets / Processes / Universe-CRUD:** assets UI и проекция готовы; Universe create/move UI закрыт T-H129; остаются edit/delete узла.
 - [ ] **Audit programs** + roll-forward, **code-changes** (approval), **KB + questionnaires** (reuse-flow).
 - [x] **Config:** custom-fields UI закрыт T-H125; config-lists UI (audit_opinion/risk/vendor categories) закрыт T-H126; tags-менеджер закрыт T-H127; glossary-CRUD закрыт T-H128.
 - [ ] **Reports:** экспорт (CSV/XML), сравнение снапшотов (compare-UI), dashboards-конфигуратор (сейчас read-only).

@@ -767,6 +767,13 @@
     "empty": "No universe nodes yet",
     "nodes": "nodes",
     "owner": "owner",
+    "create": "Create universe node",
+    "name": "Node name",
+    "parent": "Parent node",
+    "root": "Root level",
+    "createButton": "Create node",
+    "move": "Move",
+    "moveSave": "Save parent",
     "kind": {
       "subsidiary": "Subsidiary",
       "process": "Process",

@@ -767,6 +767,13 @@
     "empty": "Hələ kainat qovşağı yoxdur",
     "nodes": "qovşaq",
     "owner": "sahib",
+    "create": "Kainat qovşağı yarat",
+    "name": "Qovşağın adı",
+    "parent": "Ana qovşaq",
+    "root": "Kök səviyyə",
+    "createButton": "Qovşaq yarat",
+    "move": "Köçür",
+    "moveSave": "Ana qovşağı saxla",
     "kind": {
       "subsidiary": "Törəmə",
       "process": "Proses",
