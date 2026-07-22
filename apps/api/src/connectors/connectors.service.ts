@@ -41,6 +41,9 @@ export const CAPABILITIES = [
   'evidence',
   'vulns',
   'tasks',
+  'tickets',
+  'cloud',
+  'logs',
   'discovery',
   'code',
 ];

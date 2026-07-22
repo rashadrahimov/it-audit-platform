@@ -123,6 +123,23 @@ export default async function ConnectorsPage() {
       </div>
       <p className="text-sm text-secondary">{t('subtitle')}</p>
 
+      <section
+        className="grid gap-3 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm md:grid-cols-3"
+        data-testid="connector-source-coverage"
+      >
+        {(['ticketing', 'cloud', 'siem'] as const).map((key) => (
+          <article key={key} className="rounded-xl border border-emerald-100 bg-white/85 p-4">
+            <p className="text-xs font-semibold tracking-[0.12em] text-accent uppercase">
+              {t(`coverage.${key}.kicker`)}
+            </p>
+            <h2 className="mt-1 text-sm font-semibold text-primary">
+              {t(`coverage.${key}.title`)}
+            </h2>
+            <p className="mt-2 text-xs leading-5 text-secondary">{t(`coverage.${key}.hint`)}</p>
+          </article>
+        ))}
+      </section>
+
       {monitoring && (
         <section
           className="overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-950 via-emerald-900 to-slate-950 text-white shadow-xl shadow-emerald-950/15"

@@ -630,6 +630,23 @@
     "configEdit": "Update config (leave blank to keep)",
     "save": "Save",
     "never": "Never",
+    "coverage": {
+      "ticketing": {
+        "kicker": "Ticketing",
+        "title": "Jira / service tickets",
+        "hint": "Pull change tickets, remediation tasks and issue evidence through REST/JSON presets."
+      },
+      "cloud": {
+        "kicker": "Cloud config",
+        "title": "AWS / Azure / GCP posture",
+        "hint": "Use internal collectors to feed asset inventory, control tests and evidence refresh."
+      },
+      "siem": {
+        "kicker": "SIEM & logs",
+        "title": "Splunk / Elastic / Sentinel exports",
+        "hint": "Bring log evidence and security alerts into the continuous audit loop with auditor gates."
+      }
+    },
     "monitor": {
       "kicker": "Continuous monitoring",
       "title": "Rescan control room",

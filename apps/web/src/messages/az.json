@@ -630,6 +630,23 @@
     "configEdit": "Konfiqi yenilə (boş = saxla)",
     "save": "Yadda saxla",
     "never": "Heç vaxt",
+    "coverage": {
+      "ticketing": {
+        "kicker": "Sorğular",
+        "title": "Jira / servis sorğuları",
+        "hint": "Change ticket-ləri, düzəltmə tapşırıqlarını və sübutları REST/JSON presetləri ilə çəkin."
+      },
+      "cloud": {
+        "kicker": "Cloud config",
+        "title": "AWS / Azure / GCP posture",
+        "hint": "Daxili kollektorlar aktiv inventarını, kontrol avtotestlərini və sübut yenilənməsini qidalandırır."
+      },
+      "siem": {
+        "kicker": "SIEM və loqlar",
+        "title": "Splunk / Elastic / Sentinel eksportları",
+        "hint": "Loq sübutları və təhlükəsizlik xəbərdarlıqları auditor baxış qapıları ilə davamlı audit dövrəsinə daxil olur."
+      }
+    },
     "monitor": {
       "kicker": "Davamlı monitorinq",
       "title": "Yenidən skan paneli",

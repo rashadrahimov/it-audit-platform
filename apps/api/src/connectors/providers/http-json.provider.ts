@@ -59,8 +59,8 @@ export function extractRecords(json: unknown, path?: string): Array<Record<strin
  */
 @Injectable()
 export class HttpJsonConnectorProvider implements ConnectorProvider {
-  readonly provider = 'http_json';
-  readonly capabilities = [
+  readonly provider: string = 'http_json';
+  readonly capabilities: readonly string[] = [
     'evidence',
     'inventory',
     'access',
@@ -68,8 +68,8 @@ export class HttpJsonConnectorProvider implements ConnectorProvider {
     'discovery',
     'code',
   ] as const;
-  readonly label = 'HTTP / JSON API';
-  readonly description =
+  readonly label: string = 'HTTP / JSON API';
+  readonly description: string =
     'Универсальный коннектор к любому REST/JSON-API: облако, сканер уязвимостей, трекер задач, VCS, обнаружение вендоров. URL + опциональный Authorization.';
   readonly configFields: readonly ConfigField[] = [
     {
@@ -135,4 +135,116 @@ export class HttpJsonConnectorProvider implements ConnectorProvider {
     const records = extractRecords(json, config.recordsPath);
     return { records, stats: { records: records.length } };
   }
+}
+
+/**
+ * T-H100: Jira/ticketing preset. It intentionally reuses the hardened HTTP/JSON
+ * runtime (encrypted config, sync_run history, testConnection) while making the
+ * requirement-visible ticketing evidence source explicit in the catalog.
+ */
+@Injectable()
+export class TicketingJsonConnectorProvider extends HttpJsonConnectorProvider {
+  override readonly provider = 'ticketing_jira_json';
+  override readonly capabilities = ['tickets', 'tasks', 'evidence'] as const;
+  override readonly label = 'Ticketing / Jira REST';
+  override readonly description =
+    'Pull change tickets, remediation tasks or Jira issues from a REST/JSON endpoint for audit evidence and action-plan follow-up.';
+  override readonly configFields: readonly ConfigField[] = [
+    {
+      key: 'url',
+      label: 'Jira/search URL',
+      type: 'url',
+      required: true,
+      placeholder: 'https://jira.example.com/rest/api/3/search?jql=project=ITGC',
+    },
+    {
+      key: 'authorization',
+      label: 'Authorization header',
+      type: 'password',
+      required: false,
+      secret: true,
+      placeholder: 'Bearer <token> / Basic <base64>',
+    },
+    {
+      key: 'recordsPath',
+      label: 'Issues array path',
+      type: 'text',
+      required: false,
+      placeholder: 'issues',
+    },
+  ];
+}
+
+/**
+ * T-H100: Cloud configuration preset for AWS/Azure/GCP inventory or posture
+ * exports exposed through an internal REST/JSON collector.
+ */
+@Injectable()
+export class CloudConfigJsonConnectorProvider extends HttpJsonConnectorProvider {
+  override readonly provider = 'cloud_config_json';
+  override readonly capabilities = ['cloud', 'inventory', 'evidence'] as const;
+  override readonly label = 'Cloud config REST';
+  override readonly description =
+    'Pull cloud configuration inventory or posture findings from AWS/Azure/GCP collectors exposed as REST/JSON.';
+  override readonly configFields: readonly ConfigField[] = [
+    {
+      key: 'url',
+      label: 'Cloud collector URL',
+      type: 'url',
+      required: true,
+      placeholder: 'https://collector.internal/cloud/resources',
+    },
+    {
+      key: 'authorization',
+      label: 'Authorization header',
+      type: 'password',
+      required: false,
+      secret: true,
+      placeholder: 'Bearer <token>',
+    },
+    {
+      key: 'recordsPath',
+      label: 'Resources array path',
+      type: 'text',
+      required: false,
+      placeholder: 'data.resources',
+    },
+  ];
+}
+
+/**
+ * T-H100: SIEM/log-source preset for Splunk/Elastic/Sentinel exports exposed by
+ * an internal JSON endpoint. Draft signals still pass through auditor review gates.
+ */
+@Injectable()
+export class SiemLogsJsonConnectorProvider extends HttpJsonConnectorProvider {
+  override readonly provider = 'siem_logs_json';
+  override readonly capabilities = ['logs', 'evidence', 'vulns'] as const;
+  override readonly label = 'SIEM / log source REST';
+  override readonly description =
+    'Pull SIEM events, alert exports or log evidence from Splunk/Elastic/Sentinel-style REST/JSON sources.';
+  override readonly configFields: readonly ConfigField[] = [
+    {
+      key: 'url',
+      label: 'SIEM export URL',
+      type: 'url',
+      required: true,
+      placeholder: 'https://siem.internal/api/search/export',
+    },
+    {
+      key: 'authorization',
+      label: 'Authorization header',
+      type: 'password',
+      required: false,
+      secret: true,
+      placeholder: 'Bearer <token>',
+    },
+    {
+      key: 'recordsPath',
+      label: 'Events array path',
+      type: 'text',
+      required: false,
+      placeholder: 'results',
+    },
+  ];
 }

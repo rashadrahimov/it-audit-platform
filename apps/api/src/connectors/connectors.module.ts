@@ -5,7 +5,12 @@ import { ConnectorAutoSyncService } from './connector-autosync.service';
 import { ConnectorSyncService } from './connector-sync.service';
 import { ConnectorsController } from './connectors.controller';
 import { ConnectorsService } from './connectors.service';
-import { HttpJsonConnectorProvider } from './providers/http-json.provider';
+import {
+  CloudConfigJsonConnectorProvider,
+  HttpJsonConnectorProvider,
+  SiemLogsJsonConnectorProvider,
+  TicketingJsonConnectorProvider,
+} from './providers/http-json.provider';
 import { LdapConnectorProvider } from './providers/ldap.provider';
 import { ManualConnectorProvider } from './providers/manual.provider';
 
@@ -19,6 +24,9 @@ import { ManualConnectorProvider } from './providers/manual.provider';
     LdapConnectorProvider,
     ManualConnectorProvider,
     HttpJsonConnectorProvider,
+    TicketingJsonConnectorProvider,
+    CloudConfigJsonConnectorProvider,
+    SiemLogsJsonConnectorProvider,
   ],
   exports: [ConnectorsService, ConnectorSyncService, ConnectorAutoSyncService],
 })
