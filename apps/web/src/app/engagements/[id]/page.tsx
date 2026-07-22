@@ -98,6 +98,10 @@ interface FindingRow {
     confidence: number;
     expected: string;
     observed: string;
+    draftTitle?: string;
+    draftDescription?: string;
+    draftRiskRating?: string;
+    draftRecommendation?: string;
     reason?: string;
     controlClause?: string;
     riskJustification?: string;
@@ -109,6 +113,11 @@ interface FindingRow {
     }>;
     reviewedAt: string;
     reviewedBy: string;
+    editedFields: Array<{
+      field: 'title' | 'description' | 'riskRating' | 'recommendation';
+      draftValue: string | null;
+      acceptedValue: string | null;
+    }>;
   } | null;
 }
 
@@ -591,9 +600,18 @@ export default async function EngagementDetailPage({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-medium text-foreground">{finding.title}</span>
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-                        {Math.round((finding.aiReview?.confidence ?? 0) * 100)}%
-                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(finding.aiReview?.editedFields.length ?? 0) > 0 && (
+                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                            {t('trace.editedFields', {
+                              count: finding.aiReview?.editedFields.length ?? 0,
+                            })}
+                          </span>
+                        )}
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                          {Math.round((finding.aiReview?.confidence ?? 0) * 100)}%
+                        </span>
+                      </div>
                     </div>
                     <div className="mt-1 text-xs text-secondary">
                       {t('trace.reviewedBy', {

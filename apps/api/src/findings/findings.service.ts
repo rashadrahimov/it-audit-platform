@@ -77,6 +77,10 @@ export interface AiFindingReviewInput {
   confidence: number;
   expected: string;
   observed: string;
+  draftTitle?: string;
+  draftDescription?: string;
+  draftRiskRating?: RiskRating;
+  draftRecommendation?: string;
   reason?: string;
   controlClause?: string;
   riskJustification?: string;
@@ -91,6 +95,13 @@ export interface AiFindingReviewInput {
 interface AiFindingReviewMetadata extends AiFindingReviewInput {
   reviewedAt: string;
   reviewedBy: string;
+  editedFields: AiFindingEditedField[];
+}
+
+interface AiFindingEditedField {
+  field: 'title' | 'description' | 'riskRating' | 'recommendation';
+  draftValue: string | null;
+  acceptedValue: string | null;
 }
 
 function aiReviewFromCustom(custom: unknown): AiFindingReviewMetadata | null {
@@ -106,6 +117,17 @@ function aiReviewFromCustom(custom: unknown): AiFindingReviewMetadata | null {
     confidence: Math.max(0, Math.min(1, data.confidence)),
     expected: typeof data.expected === 'string' ? data.expected : '',
     observed: typeof data.observed === 'string' ? data.observed : '',
+    draftTitle: typeof data.draftTitle === 'string' ? data.draftTitle : undefined,
+    draftDescription: typeof data.draftDescription === 'string' ? data.draftDescription : undefined,
+    draftRiskRating:
+      data.draftRiskRating === 'critical' ||
+      data.draftRiskRating === 'high' ||
+      data.draftRiskRating === 'medium' ||
+      data.draftRiskRating === 'low'
+        ? data.draftRiskRating
+        : undefined,
+    draftRecommendation:
+      typeof data.draftRecommendation === 'string' ? data.draftRecommendation : undefined,
     reason: typeof data.reason === 'string' ? data.reason : undefined,
     controlClause: typeof data.controlClause === 'string' ? data.controlClause : undefined,
     riskJustification:
@@ -113,7 +135,46 @@ function aiReviewFromCustom(custom: unknown): AiFindingReviewMetadata | null {
     evidenceReferences: Array.isArray(data.evidenceReferences) ? data.evidenceReferences : [],
     reviewedAt: typeof data.reviewedAt === 'string' ? data.reviewedAt : '',
     reviewedBy: typeof data.reviewedBy === 'string' ? data.reviewedBy : '',
+    editedFields: Array.isArray(data.editedFields)
+      ? data.editedFields.filter((row): row is AiFindingEditedField => {
+          if (!row || typeof row !== 'object') return false;
+          const edit = row as Partial<AiFindingEditedField>;
+          return (
+            edit.field === 'title' ||
+            edit.field === 'description' ||
+            edit.field === 'riskRating' ||
+            edit.field === 'recommendation'
+          );
+        })
+      : [],
   };
+}
+
+function normalizedText(value: string | null | undefined): string | null {
+  if (value === null || value === undefined) return null;
+  const normalized = value.trim().replace(/\s+/g, ' ');
+  return normalized.length > 0 ? normalized : null;
+}
+
+function aiFindingEditedFields(input: CreateFindingInput): AiFindingEditedField[] {
+  if (!input.aiReview) return [];
+  const edits: AiFindingEditedField[] = [];
+  const compare = (
+    field: AiFindingEditedField['field'],
+    draftValue: string | null | undefined,
+    acceptedValue: string | null | undefined,
+  ) => {
+    if (draftValue === undefined) return;
+    const draft = normalizedText(draftValue);
+    const accepted = normalizedText(acceptedValue);
+    if (draft !== accepted) edits.push({ field, draftValue: draft, acceptedValue: accepted });
+  };
+
+  compare('title', input.aiReview.draftTitle, input.titleI18n.en);
+  compare('description', input.aiReview.draftDescription, input.descriptionI18n?.en);
+  compare('riskRating', input.aiReview.draftRiskRating, input.riskRating);
+  compare('recommendation', input.aiReview.draftRecommendation, input.recommendationI18n?.en);
+  return edits;
 }
 
 /** Finding (T-038): «третья колонка» чеклиста клиента; lifecycle придёт с T-039. */
@@ -180,6 +241,7 @@ export class FindingsService {
     // T-V32: авто-дедлайн по SLA-окну риск-рейтинга, если due не задан вручную
     const windows = await this.slaConfig.configOf(actor.tenantId);
     const dueDate = input.dueDate ? new Date(input.dueDate) : dueDateFor(windows, input.riskRating);
+    const editedFields = aiFindingEditedFields(input);
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       // все привязки опциональны (standalone), но заданные должны существовать
       if (input.engagementId) {
@@ -243,6 +305,7 @@ export class FindingsService {
                 ai: {
                   ...input.aiReview,
                   evidenceReferences: input.aiReview.evidenceReferences ?? [],
+                  editedFields,
                   reviewedAt: new Date().toISOString(),
                   reviewedBy: actor.userId,
                 } satisfies AiFindingReviewMetadata,
@@ -278,9 +341,34 @@ export class FindingsService {
         after: {
           reviewStatus: 'accepted',
           confidence: input.aiReview.confidence,
+          editedFieldCount: editedFields.length,
           evidenceReferences: input.aiReview.evidenceReferences ?? [],
         },
       });
+      if (editedFields.length > 0) {
+        await this.auditLogService.record({
+          tenantId: actor.tenantId,
+          actorUserId: actor.userId,
+          actorIp: actor.ip,
+          action: 'ai_finding.edited',
+          entityType: 'finding',
+          entityId: created.id,
+          before: {
+            reviewStatus: 'draft',
+            fields: editedFields.map((edit) => ({
+              field: edit.field,
+              value: edit.draftValue,
+            })),
+          },
+          after: {
+            reviewStatus: 'accepted_with_edits',
+            fields: editedFields.map((edit) => ({
+              field: edit.field,
+              value: edit.acceptedValue,
+            })),
+          },
+        });
+      }
     }
     return created;
   }

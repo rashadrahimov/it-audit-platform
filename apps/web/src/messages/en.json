@@ -393,6 +393,7 @@
       },
       "acceptedTitle": "Accepted AI decisions",
       "reviewedBy": "Reviewed by {user} · {date}",
+      "editedFields": "edited fields: {count}",
       "noAccepted": "No accepted AI findings yet. Drafts remain visible above and require auditor review."
     },
     "risk": {

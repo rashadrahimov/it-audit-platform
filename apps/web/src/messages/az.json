@@ -393,6 +393,7 @@
       },
       "acceptedTitle": "Qəbul edilmiş İİ qərarları",
       "reviewedBy": "{user} yoxladı · {date}",
+      "editedFields": "dəyişən sahələr: {count}",
       "noAccepted": "Hələ qəbul edilmiş İİ qeydi yoxdur. Yuxarıdakı qaralamalar görünür və auditor yoxlaması tələb edir."
     },
     "risk": {
