@@ -2526,6 +2526,59 @@
       "policies": "Policies",
       "remediation": "Remediation",
       "audit": "Audit"
+    },
+    "coverage": {
+      "kicker": "Requirements coverage",
+      "title": "Requirements traceability map",
+      "subtitle": "Key requirement chapters are tied to live platform modules so clients see a covered audit workflow, not a loose set of screens.",
+      "count": "{live} of {total} chapters in product",
+      "status": {
+        "live": "In product",
+        "partial": "Partial",
+        "roadmap": "Roadmap"
+      },
+      "items": {
+        "workflow": {
+          "title": "Audit engine and progress",
+          "hint": "Audit phases, control statuses, domains and progress by test work."
+        },
+        "riskRegister": {
+          "title": "Single risk register",
+          "hint": "Manual and AI-proposed risks with human approval."
+        },
+        "documentAi": {
+          "title": "AI document analysis and findings",
+          "hint": "Finding drafts are evidence-grounded, with confidence and source references."
+        },
+        "recommendations": {
+          "title": "Recommendations and action plan",
+          "hint": "Findings turn into remediation tasks with owners and due dates."
+        },
+        "deliverables": {
+          "title": "Standard document package",
+          "hint": "Audit Report, Non-Conformities, Risk Matrix, Action Plan and Executive Summary in PDF/Word/Excel."
+        },
+        "trustSecurity": {
+          "title": "Trust, security and privacy",
+          "hint": "RBAC, tenant isolation, private deployment, immutable audit log and AI guardrails."
+        },
+        "collaboration": {
+          "title": "Collaboration and evidence workflow",
+          "hint": "Audit team, tasks, DRL, evidence requests and review statuses."
+        },
+        "integrations": {
+          "title": "Integrations and mapping",
+          "hint": "REST API, connectors and cross-framework mapping for reusable controls."
+        },
+        "reportingUx": {
+          "title": "Reporting and multilingual UX",
+          "hint": "Dashboards, scheduled digest preview and RU/AZ/EN interface."
+        },
+        "advancedAi": {
+          "title": "Advanced AI loop",
+          "hint": "Conversational search, auto-DRL and continuous monitoring are already present; OCR and fuller autonomy stay on the roadmap."
+        }
+      }
     }
   },
   "trustPublic": {

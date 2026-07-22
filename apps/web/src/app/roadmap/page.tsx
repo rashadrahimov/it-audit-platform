@@ -27,11 +27,70 @@ interface Roadmap {
   items: RoadmapItem[];
 }
 
+const REQUIREMENT_COVERAGE = [
+  {
+    key: 'workflow',
+    status: 'live',
+    evidence: ['engagements', 'roadmap', 'domain-progress'],
+  },
+  {
+    key: 'riskRegister',
+    status: 'live',
+    evidence: ['risks', 'ai-risk-suggestions', 'approval'],
+  },
+  {
+    key: 'documentAi',
+    status: 'live',
+    evidence: ['evidence-grounded-findings', 'confidence', 'review'],
+  },
+  {
+    key: 'recommendations',
+    status: 'live',
+    evidence: ['findings', 'action-plan', 'tasks'],
+  },
+  {
+    key: 'deliverables',
+    status: 'live',
+    evidence: ['pdf', 'docx', 'xlsx', 'az-en-ru'],
+  },
+  {
+    key: 'trustSecurity',
+    status: 'live',
+    evidence: ['rbac', 'audit-log', 'tenant-isolation', 'private-cloud'],
+  },
+  {
+    key: 'collaboration',
+    status: 'live',
+    evidence: ['team', 'tasks', 'drl', 'evidence-requests'],
+  },
+  {
+    key: 'integrations',
+    status: 'live',
+    evidence: ['api-v1', 'connectors', 'cross-framework-mapping'],
+  },
+  {
+    key: 'reportingUx',
+    status: 'live',
+    evidence: ['dashboards', 'scheduled-preview', 'locales'],
+  },
+  {
+    key: 'advancedAi',
+    status: 'partial',
+    evidence: ['audit-query', 'auto-drl', 'continuous-summary'],
+  },
+] as const;
+
 function barTone(progress: number): string {
   if (progress >= 100) return 'bg-emerald-500';
   if (progress >= 60) return 'bg-emerald-500';
   if (progress >= 30) return 'bg-amber-500';
   return 'bg-red-400';
+}
+
+function coverageTone(status: string): string {
+  if (status === 'live') return 'bg-emerald-100 text-emerald-800';
+  if (status === 'partial') return 'bg-amber-100 text-amber-800';
+  return 'bg-muted text-secondary';
 }
 
 /** Roadmap внедрения per-framework (T-V33): фазы, прогресс от данных, audit-ready дата. */
@@ -52,10 +111,66 @@ export default async function RoadmapPage() {
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 pt-12">
+    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+
+      <section
+        className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm"
+        data-testid="requirements-coverage"
+      >
+        <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-5">
+          <p className="text-xs font-semibold tracking-[0.16em] text-emerald-700 uppercase">
+            {t('coverage.kicker')}
+          </p>
+          <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-primary">{t('coverage.title')}</h2>
+              <p className="mt-1 max-w-2xl text-sm text-secondary">{t('coverage.subtitle')}</p>
+            </div>
+            <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
+              {t('coverage.count', {
+                live: REQUIREMENT_COVERAGE.filter((item) => item.status === 'live').length,
+                total: REQUIREMENT_COVERAGE.length,
+              })}
+            </span>
+          </div>
+        </div>
+        <div className="grid gap-3 p-5 md:grid-cols-2">
+          {REQUIREMENT_COVERAGE.map((item) => (
+            <article key={item.key} className="rounded-xl border border-border bg-muted/20 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-primary">
+                    {t(`coverage.items.${item.key}.title`)}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-secondary">
+                    {t(`coverage.items.${item.key}.hint`)}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap ${coverageTone(
+                    item.status,
+                  )}`}
+                >
+                  {t(`coverage.status.${item.status}`)}
+                </span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {item.evidence.map((ev) => (
+                  <span
+                    key={ev}
+                    className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-secondary"
+                  >
+                    {ev}
+                  </span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
       {data.items.length === 0 ? (
         <section className="rounded-xl border border-border bg-white shadow-sm">
