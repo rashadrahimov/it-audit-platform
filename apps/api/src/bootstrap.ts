@@ -17,6 +17,8 @@ import { membership, role, tenant, user } from './db/schema';
 import { PasswordService } from './auth/password.service';
 import {
   seedAuditTypes,
+  seedAuditTypeTemplatesForExistingTenants,
+  seedAuditTypeTemplatesForTenant,
   seedGlobalControls,
   seedGlobalFrameworks,
   seedGlossary,
@@ -39,6 +41,7 @@ async function seedReferenceData(): Promise<void> {
   await seedGlobalFrameworks();
   await seedGlobalControls();
   await seedAuditTypes();
+  await seedAuditTypeTemplatesForExistingTenants();
   await seedGlossary();
   console.log(
     '✓ Референс-данные: пресет-роли, фреймворки (вкл. CBAR), контроли, типы аудита, глоссарий',
@@ -88,6 +91,7 @@ async function seedAdmin(): Promise<void> {
       .insert(membership)
       .values({ userId: u.id, tenantId: t.id, roleId: adminRole.id, isAuditSeat: true })
       .onConflictDoNothing();
+    await seedAuditTypeTemplatesForTenant(db, t.id);
     console.log(`✓ Bootstrap: tenant «${name}» (${slug}) + admin ${email} (роль Admin)`);
   } finally {
     await client.end().catch(() => {});

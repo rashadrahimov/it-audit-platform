@@ -137,7 +137,7 @@ async function seedPostgres(): Promise<void> {
     await seedGlobalControls();
     await seedGlobalRiskLibrary();
     await seedAuditTypes();
-    await seedDemoAuditTypeTemplates(db, demoTenant.id);
+    await seedAuditTypeTemplatesForTenant(db, demoTenant.id);
     await seedGlossary();
     await seedDemoUsers(db, demoTenant.id);
     await seedDemoDepartments(db, demoTenant.id);
@@ -587,7 +587,7 @@ export async function seedAuditTypes(): Promise<void> {
   }
 }
 
-const DEMO_IT_AUDIT_TEMPLATE = [
+const IT_AUDIT_TEMPLATE = [
   {
     ref: 'IT-SCOPE-01',
     objective: {
@@ -651,7 +651,10 @@ const DEMO_IT_AUDIT_TEMPLATE = [
   },
 ] as const;
 
-async function seedDemoAuditTypeTemplates(db: NodePgDatabase, tenantId: string): Promise<void> {
+export async function seedAuditTypeTemplatesForTenant(
+  db: NodePgDatabase,
+  tenantId: string,
+): Promise<void> {
   const [itType] = await db
     .select({ id: auditType.id })
     .from(auditType)
@@ -670,7 +673,7 @@ async function seedDemoAuditTypeTemplates(db: NodePgDatabase, tenantId: string):
         ),
       );
     const existingRefs = new Set(existing.map((item) => item.ref));
-    const missing = DEMO_IT_AUDIT_TEMPLATE.filter((item) => !existingRefs.has(item.ref));
+    const missing = IT_AUDIT_TEMPLATE.filter((item) => !existingRefs.has(item.ref));
     if (missing.length > 0) {
       await tx.insert(auditTypeTemplateItem).values(
         missing.map((item, index) => ({
@@ -684,9 +687,23 @@ async function seedDemoAuditTypeTemplates(db: NodePgDatabase, tenantId: string):
       );
     }
     console.log(
-      `✓ Демо IT audit template: ${DEMO_IT_AUDIT_TEMPLATE.length} пунктов (новых ${missing.length})`,
+      `✓ IT audit template для tenant ${tenantId}: ${IT_AUDIT_TEMPLATE.length} пунктов (новых ${missing.length})`,
     );
   });
+}
+
+export async function seedAuditTypeTemplatesForExistingTenants(): Promise<void> {
+  const client = new Client({ connectionString: env.databaseUrl, connectionTimeoutMillis: 5000 });
+  try {
+    await client.connect();
+    const db = drizzle(client);
+    const tenants = await db.select({ id: tenant.id }).from(tenant);
+    for (const row of tenants) {
+      await seedAuditTypeTemplatesForTenant(db, row.id);
+    }
+  } finally {
+    await client.end().catch(() => {});
+  }
 }
 
 /** Базовые GRC-термины глоссария (T-095, GEN-09) — глобальные (tenant_id NULL). */
