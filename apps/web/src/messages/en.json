@@ -2613,6 +2613,16 @@
           "hint": "Accepted or ready evidence feeding deliverables"
         }
       },
+      "pendingTitle": "Pending AI re-scan queue",
+      "pendingSubtitle": "Specific documents waiting to refresh evidence extraction, OCR, AI drafts or reporting readiness.",
+      "pendingCount": "{count} pending items",
+      "pendingTargets": "Targets:",
+      "pendingDue": "Due:",
+      "queueStatus": {
+        "queued": "Queued",
+        "waiting_for_evidence": "Waiting"
+      },
+      "noPending": "No pending re-scan items right now.",
       "blockersTitle": "Queue blockers",
       "blockers": {
         "requestedDocuments": "Awaiting upload",

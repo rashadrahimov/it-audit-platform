@@ -183,9 +183,11 @@ export class DocumentsController {
   @Get('rescan-plan')
   @RequirePermission('engagement', 'view')
   @ApiOperation({
-    summary: 'T-H59: read-only plan of what evidence uploads should trigger for continuous re-scan',
+    summary: 'T-H59/T-H96: read-only plan and pending queue for evidence-driven continuous re-scan',
   })
-  @ApiOkResponse({ description: '{generatedAt, status, impacted, queues, recentTriggers}' })
+  @ApiOkResponse({
+    description: '{generatedAt, status, impacted, queues, pendingItems, recentTriggers}',
+  })
   rescanPlan(@Req() req: TenantRequest) {
     return this.documentsService.rescanPlan(req.tenantId);
   }

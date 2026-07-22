@@ -105,6 +105,28 @@ interface RescanPlan {
     evidenceRequestFollowUp: number;
     reportReadinessRefresh: number;
   };
+  pendingRescans: number;
+  pendingItems: Array<{
+    id: string;
+    filename: string;
+    status: string;
+    category: string | null;
+    createdAt: string;
+    bucket: string;
+    reason: 'linked_evidence_upload' | 'draft_review_gate' | 'link_required';
+    queueStatus: 'queued' | 'waiting_for_evidence';
+    enabledQueues: Array<keyof RescanPlan['queues']>;
+    impactedTargets: Array<{
+      entityType: string;
+      entityId?: string;
+      relation: string;
+      reviewStatus: string;
+    }>;
+    humanReviewGate: 'auditor_review_required';
+    draftOnly: true;
+    dueAt: string;
+    explanation: string;
+  }>;
   blockers: {
     requestedDocuments: number;
     draftDocuments: number;
@@ -599,6 +621,79 @@ export default async function DocumentsPage({
                 <div className="mt-1 text-xs text-secondary">{t(`rescan.queues.${key}.hint`)}</div>
               </div>
             ))}
+          </div>
+
+          <div className="border-t border-border px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-primary">{t('rescan.pendingTitle')}</h3>
+                <p className="mt-1 text-xs text-secondary">{t('rescan.pendingSubtitle')}</p>
+              </div>
+              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                {t('rescan.pendingCount', { count: rescanPlan.pendingRescans })}
+              </span>
+            </div>
+            <div className="mt-3 grid gap-3 lg:grid-cols-2">
+              {rescanPlan.pendingItems.length > 0 ? (
+                rescanPlan.pendingItems.map((item) => (
+                  <article
+                    key={item.id}
+                    className="rounded-2xl border border-emerald-100 bg-[linear-gradient(135deg,#ffffff,#f2fbf6)] p-4 shadow-sm"
+                    data-testid="document-pending-rescan-item"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-foreground">
+                          {item.filename}
+                        </div>
+                        <div className="mt-1 text-xs text-secondary">
+                          {item.category ?? t('readiness.noCategory')} ·{' '}
+                          {t(`rescan.triggerReasons.${item.reason}`)}
+                        </div>
+                      </div>
+                      <span
+                        className={
+                          item.queueStatus === 'queued'
+                            ? 'rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white'
+                            : 'rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800'
+                        }
+                      >
+                        {t(`rescan.queueStatus.${item.queueStatus}`)}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {item.enabledQueues.map((queue) => (
+                        <span
+                          key={queue}
+                          className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-primary shadow-sm ring-1 ring-emerald-100"
+                        >
+                          {t(`rescan.queues.${queue}.label`)}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-3 grid gap-2 text-xs text-secondary md:grid-cols-2">
+                      <div>
+                        <span className="font-medium text-primary">
+                          {t('rescan.pendingTargets')}
+                        </span>{' '}
+                        {item.impactedTargets.length}
+                      </div>
+                      <div>
+                        <span className="font-medium text-primary">{t('rescan.pendingDue')}</span>{' '}
+                        {dateFmt.format(new Date(item.dueAt))}
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs leading-5 text-secondary">
+                      {t('rescan.triggerGate')} · {item.explanation}
+                    </p>
+                  </article>
+                ))
+              ) : (
+                <div className="rounded-xl bg-emerald-50 px-3 py-3 text-sm text-emerald-800 lg:col-span-2">
+                  {t('rescan.noPending')}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid gap-4 border-t border-border p-5 lg:grid-cols-[0.9fr_1.1fr]">

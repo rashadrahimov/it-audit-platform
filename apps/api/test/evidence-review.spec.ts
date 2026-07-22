@@ -256,4 +256,44 @@ describe('evidence review pipeline (T-112)', () => {
       },
     ]);
   });
+
+  it('T-H96: rescan plan exposes pending linked evidence refresh items', async () => {
+    const uploaded = await service.upload(
+      actor('auditor'),
+      {
+        buffer: Buffer.from('access review export'),
+        originalName: 'access-review.csv',
+        mime: 'text/csv',
+      },
+      {
+        category: 'access-review',
+        link: { entityType: 'engagement', entityId: engagementId, relation: 'evidence' },
+      },
+    );
+
+    const plan = await service.rescanPlan(tenantId);
+    const pending = plan.pendingItems.find((item) => item.id === uploaded.id);
+
+    expect(plan.pendingRescans).toBeGreaterThan(0);
+    expect(pending).toMatchObject({
+      id: uploaded.id,
+      filename: 'access-review.csv',
+      bucket: 'spreadsheet',
+      reason: 'linked_evidence_upload',
+      queueStatus: 'queued',
+      enabledQueues: ['extraction', 'aiFindingDrafts'],
+      humanReviewGate: 'auditor_review_required',
+      draftOnly: true,
+    });
+    expect(pending?.impactedTargets).toEqual([
+      {
+        entityType: 'engagement',
+        entityId: engagementId,
+        relation: 'evidence',
+        reviewStatus: 'not_ready',
+      },
+    ]);
+    expect(pending?.dueAt).toEqual(expect.any(String));
+    expect(pending?.explanation).toContain('draft-only');
+  });
 });

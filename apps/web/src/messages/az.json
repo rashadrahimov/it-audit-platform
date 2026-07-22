@@ -2621,6 +2621,16 @@
           "hint": "Qəbul edilmiş və ya hazır sübutlar hesabat sənədlərini qidalandırır"
         }
       },
+      "pendingTitle": "Gözləyən İİ təkrar skan növbəsi",
+      "pendingSubtitle": "Sübut çıxarışı, OCR, İİ qaralamaları və ya hesabat hazırlığını yeniləyəcək konkret sənədlər.",
+      "pendingCount": "{count} gözləyən element",
+      "pendingTargets": "Hədəflər:",
+      "pendingDue": "Son tarix:",
+      "queueStatus": {
+        "queued": "Növbədə",
+        "waiting_for_evidence": "Gözləyir"
+      },
+      "noPending": "Hazırda gözləyən təkrar skan tapşırığı yoxdur.",
       "blockersTitle": "Növbə blokları",
       "blockers": {
         "requestedDocuments": "Yükləmə gözləyir",

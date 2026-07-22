@@ -836,6 +836,45 @@ export class DocumentsService {
           : blockingTotal > 0
             ? 'watch'
             : 'ready';
+    const allPendingItems = docs
+      .map((doc) => {
+        const rescanTrigger = evidenceRescanTriggerForDocument(doc, doc.links);
+        const enabledQueues = Object.entries(rescanTrigger.queues)
+          .filter(([, enabled]) => enabled)
+          .map(([queue]) => queue as EvidenceRescanQueue);
+        const activeLinked = doc.status === 'active' && doc.links.length > 0;
+        const needsOcr = rescanTrigger.queues.ocr;
+        const dueAt = new Date(doc.createdAt);
+        dueAt.setHours(dueAt.getHours() + (activeLinked ? (needsOcr ? 48 : 24) : 72));
+        return {
+          id: doc.id,
+          filename: doc.filename,
+          status: doc.status,
+          category: doc.category,
+          createdAt: doc.createdAt.toISOString(),
+          bucket: rescanTrigger.bucket,
+          reason: rescanTrigger.reason,
+          queueStatus: activeLinked ? ('queued' as const) : ('waiting_for_evidence' as const),
+          enabledQueues,
+          impactedTargets: rescanTrigger.impactedTargets,
+          humanReviewGate: rescanTrigger.humanReviewGate,
+          draftOnly: rescanTrigger.draftOnly,
+          dueAt: dueAt.toISOString(),
+          explanation: rescanTrigger.explanation,
+        };
+      })
+      .filter((item) => item.enabledQueues.length > 0)
+      .sort((a, b) => {
+        const statusScore = (item: { queueStatus: string }) =>
+          item.queueStatus === 'queued' ? 0 : 1;
+        const scoreDiff = statusScore(a) - statusScore(b);
+        if (scoreDiff !== 0) return scoreDiff;
+        if (b.enabledQueues.length !== a.enabledQueues.length) {
+          return b.enabledQueues.length - a.enabledQueues.length;
+        }
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    const pendingItems = allPendingItems.slice(0, 8);
 
     return {
       generatedAt: now.toISOString(),
@@ -857,6 +896,8 @@ export class DocumentsService {
         evidenceRequestFollowUp: requestedDocs.length + draftDocs.length,
         reportReadinessRefresh: acceptedOrReadyDocs.length,
       },
+      pendingRescans: allPendingItems.length,
+      pendingItems,
       blockers,
       recentTriggers: recentlyChangedDocs.slice(0, 5).map((doc) => ({
         id: doc.id,
