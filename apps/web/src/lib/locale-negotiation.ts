@@ -27,9 +27,12 @@ export function localeFromAcceptLanguage(header: string | null | undefined): Loc
 
 /** Explicit cookie wins; first visit falls back to browser language before EN. */
 export function resolveRequestLocale(input: {
+  queryLocale?: string | null;
   cookieLocale?: string | null;
   acceptLanguage?: string | null;
 }): Locale {
+  const query = localeSchema.safeParse(input.queryLocale);
+  if (query.success) return query.data;
   const explicit = localeSchema.safeParse(input.cookieLocale);
   return explicit.success ? explicit.data : localeFromAcceptLanguage(input.acceptLanguage);
 }

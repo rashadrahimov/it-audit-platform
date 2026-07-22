@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { localeSchema, type Locale } from '@it-audit/shared';
 
 /** Переключатель языка (T-022): пишет cookie и перерисовывает серверные компоненты. */
@@ -14,9 +14,15 @@ export function LocaleSwitcher({
   compact?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const setLocale = (locale: Locale) => {
     document.cookie = `locale=${locale}; path=/; max-age=31536000; SameSite=Lax`;
     document.documentElement.lang = locale;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('locale', locale);
+    const qs = params.toString();
+    router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
     router.refresh();
   };
   return (

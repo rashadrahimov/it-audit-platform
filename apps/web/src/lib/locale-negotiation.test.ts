@@ -2,6 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { localeFromAcceptLanguage, resolveRequestLocale } from './locale-negotiation';
 
 describe('locale negotiation', () => {
+  it('lets an explicit URL locale override cookie and browser language', () => {
+    expect(
+      resolveRequestLocale({
+        queryLocale: 'ru',
+        cookieLocale: 'en',
+        acceptLanguage: 'az-AZ,az;q=0.9',
+      }),
+    ).toBe('ru');
+  });
+
   it('keeps an explicit product locale cookie above browser language', () => {
     expect(resolveRequestLocale({ cookieLocale: 'ru', acceptLanguage: 'az-AZ,az;q=0.9' })).toBe(
       'ru',
