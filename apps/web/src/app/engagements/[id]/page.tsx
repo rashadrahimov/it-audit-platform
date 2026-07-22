@@ -27,6 +27,30 @@ interface EngagementDetail {
   periodEnd: string | null;
   allowedTransitions: string[];
   milestones: Array<{ stage: string; plannedDate: string | null; actualDate: string | null }>;
+  domainProgressSummary: {
+    totalDomains: number;
+    completeDomains: number;
+    totalControls: number;
+    testedControls: number;
+    exceptionControls: number;
+    progressPercent: number;
+  };
+  domainProgress: Array<{
+    domainCode: string | null;
+    totalControls: number;
+    testedControls: number;
+    compliantControls: number;
+    exceptionControls: number;
+    notApplicableControls: number;
+    progressPercent: number;
+    complianceStatus: string;
+    controls: Array<{
+      id: string;
+      ref: string;
+      question: string;
+      status: string;
+    }>;
+  }>;
   checklist: Array<{
     id: string;
     ref: string;
@@ -110,6 +134,13 @@ const SLA_TONE: Record<string, string> = {
   soon: 'bg-amber-100 text-amber-700',
   ok: 'bg-emerald-100 text-emerald-700',
   none: 'bg-muted text-secondary',
+};
+const COMPLIANCE_TONE: Record<string, string> = {
+  compliant: 'bg-emerald-100 text-emerald-800',
+  partially_compliant: 'bg-amber-100 text-amber-800',
+  non_compliant: 'bg-red-100 text-red-800',
+  not_applicable: 'bg-slate-100 text-slate-700',
+  not_tested: 'bg-muted text-secondary',
 };
 
 /** Карточка engagement'а (T-035): состояние, переходы, вехи план/факт (ENG-03). */
@@ -197,7 +228,7 @@ export default async function EngagementDetailPage({
   const now = Date.now();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 p-6 pt-12">
+    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{eng.title}</h1>
         <Link
@@ -392,6 +423,132 @@ export default async function EngagementDetailPage({
         )}
       </section>
 
+      <section
+        className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm"
+        data-testid="engagement-domain-progress"
+      >
+        <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-6">
+          <p className="text-xs font-semibold tracking-[0.16em] text-emerald-700 uppercase">
+            {t('domainProgressKicker')}
+          </p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-primary">{t('domainProgress')}</h2>
+              <p className="mt-1 max-w-2xl text-sm text-secondary">{t('domainProgressSub')}</p>
+            </div>
+            <span className="rounded-full bg-emerald-600 px-3 py-1 text-sm font-semibold text-white shadow-sm">
+              {eng.domainProgressSummary.progressPercent}%
+            </span>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-xl border border-border bg-muted/40 p-4">
+              <p className="text-xs font-medium tracking-wide text-secondary uppercase">
+                {t('domainCoverage')}
+              </p>
+              <p className="mt-2 text-2xl font-bold text-primary">
+                {eng.domainProgressSummary.completeDomains}/{eng.domainProgressSummary.totalDomains}
+              </p>
+              <p className="mt-1 text-xs text-secondary">{t('domainCoverageHint')}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-muted/40 p-4">
+              <p className="text-xs font-medium tracking-wide text-secondary uppercase">
+                {t('testedControls')}
+              </p>
+              <p className="mt-2 text-2xl font-bold text-primary">
+                {eng.domainProgressSummary.testedControls}/{eng.domainProgressSummary.totalControls}
+              </p>
+              <p className="mt-1 text-xs text-secondary">{t('testedControlsHint')}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-muted/40 p-4">
+              <p className="text-xs font-medium tracking-wide text-secondary uppercase">
+                {t('domainExceptions')}
+              </p>
+              <p className="mt-2 text-2xl font-bold text-primary">
+                {eng.domainProgressSummary.exceptionControls}
+              </p>
+              <p className="mt-1 text-xs text-secondary">{t('domainExceptionsHint')}</p>
+            </div>
+          </div>
+
+          {eng.domainProgress.length === 0 ? (
+            <p className="mt-5 text-sm text-secondary">{t('noDomainProgress')}</p>
+          ) : (
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {eng.domainProgress.map((domain) => (
+                <article
+                  key={domain.domainCode ?? 'uncategorized'}
+                  className="rounded-2xl border border-border bg-white p-4 shadow-sm"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-medium tracking-wide text-secondary uppercase">
+                        {t('domain')}
+                      </p>
+                      <h3 className="mt-1 text-base font-semibold text-primary">
+                        {domain.domainCode ?? t('uncategorizedDomain')}
+                      </h3>
+                    </div>
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${
+                        COMPLIANCE_TONE[domain.complianceStatus] ?? COMPLIANCE_TONE.not_tested
+                      }`}
+                    >
+                      {t(`compliance.${domain.complianceStatus}`)}
+                    </span>
+                  </div>
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                      style={{ width: `${domain.progressPercent}%` }}
+                    />
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-secondary">
+                    <span className="rounded-full bg-muted px-2.5 py-1">
+                      {t('tested')}: {domain.testedControls}/{domain.totalControls}
+                    </span>
+                    <span className="rounded-full bg-muted px-2.5 py-1">
+                      {t('exceptions')}: {domain.exceptionControls}
+                    </span>
+                    <span className="rounded-full bg-muted px-2.5 py-1">
+                      {domain.progressPercent}%
+                    </span>
+                  </div>
+                  <ul className="mt-4 flex flex-col gap-2">
+                    {domain.controls.slice(0, 4).map((control) => (
+                      <li
+                        key={control.id}
+                        className="flex items-start justify-between gap-3 rounded-lg bg-muted/50 p-2"
+                      >
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">{control.ref}</p>
+                          <p className="mt-0.5 line-clamp-2 text-xs text-secondary">
+                            {control.question}
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${
+                            COMPLIANCE_TONE[control.status] ?? COMPLIANCE_TONE.not_tested
+                          }`}
+                        >
+                          {t(`compliance.${control.status}`)}
+                        </span>
+                      </li>
+                    ))}
+                    {domain.controls.length > 4 && (
+                      <li className="text-xs text-secondary">
+                        +{domain.controls.length - 4} {t('moreControls')}
+                      </li>
+                    )}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-primary">{t('checklist')}</h2>
         {eng.checklist.length === 0 ? (
@@ -427,10 +584,16 @@ export default async function EngagementDetailPage({
                       )}
                     </td>
                     <td className="py-2">
-                      <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-secondary">
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${
+                          COMPLIANCE_TONE[
+                            item.response ? item.response.complianceStatus : 'not_tested'
+                          ]
+                        }`}
+                      >
                         {item.response
                           ? t(`compliance.${item.response.complianceStatus}`)
-                          : item.status}
+                          : t('compliance.not_tested')}
                       </span>
                     </td>
                   </tr>

@@ -68,11 +68,21 @@ const WORKFLOW_PHASES = [
 type WorkflowPhaseKey = (typeof WORKFLOW_PHASES)[number]['key'];
 type WorkflowBlockerReason =
   'paused' | 'milestone_overdue' | 'no_checklist' | 'awaiting_responses' | 'findings_in_review';
+type ControlProgressStatus = ComplianceStatus | 'not_tested';
 
 function phaseForState(state: string): WorkflowPhaseKey {
   return (
     WORKFLOW_PHASES.find((p) => (p.states as readonly string[]).includes(state))?.key ?? 'scoping'
   );
+}
+
+function summarizeDomainStatus(statuses: ControlProgressStatus[]): ControlProgressStatus {
+  if (statuses.length === 0) return 'not_tested';
+  if (statuses.every((s) => s === 'not_applicable')) return 'not_applicable';
+  if (statuses.some((s) => s === 'non_compliant')) return 'non_compliant';
+  if (statuses.some((s) => s === 'partially_compliant')) return 'partially_compliant';
+  if (statuses.some((s) => s === 'not_tested')) return 'not_tested';
+  return 'compliant';
 }
 
 /** Engagement (T-035, ADR-0005): CRUD + переходы state machine с фиксацией вех. */
@@ -632,6 +642,63 @@ export class EngagementsService {
       const i = ENGAGEMENT_FLOW.indexOf(s as (typeof ENGAGEMENT_FLOW)[number]);
       return i < 0 ? ENGAGEMENT_FLOW.length : i;
     };
+    const responseByItem = new Map(data.responses.map((r) => [r.checklistItemId, r]));
+    const domainGroups = new Map<
+      string,
+      {
+        domainCode: string | null;
+        controls: Array<{
+          id: string;
+          ref: string;
+          question: string;
+          status: ControlProgressStatus;
+        }>;
+      }
+    >();
+    for (const item of data.checklist) {
+      const answer = responseByItem.get(item.id);
+      const domainKey = item.domainCode ?? 'uncategorized';
+      const group = domainGroups.get(domainKey) ?? { domainCode: item.domainCode, controls: [] };
+      group.controls.push({
+        id: item.id,
+        ref: item.ref,
+        question: resolveLocalized(item.questionI18n, locale),
+        status: (answer?.complianceStatus as ComplianceStatus | undefined) ?? 'not_tested',
+      });
+      domainGroups.set(domainKey, group);
+    }
+    const domainProgress = Array.from(domainGroups.values())
+      .sort((a, b) => {
+        if (a.domainCode === null) return 1;
+        if (b.domainCode === null) return -1;
+        return a.domainCode.localeCompare(b.domainCode);
+      })
+      .map((group) => {
+        const statuses = group.controls.map((c) => c.status);
+        const totalControls = group.controls.length;
+        const testedControls = statuses.filter((s) => s !== 'not_tested').length;
+        const exceptionControls = statuses.filter(
+          (s) => s === 'non_compliant' || s === 'partially_compliant',
+        ).length;
+        const compliantControls = statuses.filter((s) => s === 'compliant').length;
+        const notApplicableControls = statuses.filter((s) => s === 'not_applicable').length;
+        return {
+          domainCode: group.domainCode,
+          totalControls,
+          testedControls,
+          compliantControls,
+          exceptionControls,
+          notApplicableControls,
+          progressPercent:
+            totalControls === 0 ? 0 : Math.round((testedControls / totalControls) * 100),
+          complianceStatus: summarizeDomainStatus(statuses),
+          controls: group.controls,
+        };
+      });
+    const totalControls = data.checklist.length;
+    const testedControls = domainProgress.reduce((sum, d) => sum + d.testedControls, 0);
+    const exceptionControls = domainProgress.reduce((sum, d) => sum + d.exceptionControls, 0);
+
     return {
       id: data.row.id,
       title: resolveLocalized(data.row.titleI18n, locale),
@@ -655,8 +722,18 @@ export class EngagementsService {
           plannedDate: m.plannedDate?.toISOString() ?? null,
           actualDate: m.actualDate?.toISOString() ?? null,
         })),
+      domainProgressSummary: {
+        totalDomains: domainProgress.length,
+        completeDomains: domainProgress.filter((d) => d.progressPercent === 100).length,
+        totalControls,
+        testedControls,
+        exceptionControls,
+        progressPercent:
+          totalControls === 0 ? 0 : Math.round((testedControls / totalControls) * 100),
+      },
+      domainProgress,
       checklist: data.checklist.map((item) => {
-        const answer = data.responses.find((r) => r.checklistItemId === item.id);
+        const answer = responseByItem.get(item.id);
         return {
           id: item.id,
           ref: item.ref,
