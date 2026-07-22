@@ -95,6 +95,9 @@ describe('AI finding HITL edit traceability', () => {
           draftRiskRating: 'medium',
           draftRecommendation: 'Enforce MFA.',
           reason: 'Evidence-backed gap from access review.',
+          controlClause: 'ISO 27001 A.5.15',
+          riskJustification:
+            'High risk because privileged accounts without MFA can materially increase unauthorized access exposure.',
           evidenceReferences: [
             {
               documentId: evidenceDocumentId,
@@ -136,6 +139,12 @@ describe('AI finding HITL edit traceability', () => {
         .where(and(eq(auditLog.entityType, 'finding'), eq(auditLog.entityId, created.id))),
     );
     expect(logs.map((log) => log.action)).toContain('ai_finding.accepted');
+    expect(logs.find((log) => log.action === 'ai_finding.accepted')?.after).toMatchObject({
+      reason: 'Evidence-backed gap from access review.',
+      controlClause: 'ISO 27001 A.5.15',
+      riskJustification:
+        'High risk because privileged accounts without MFA can materially increase unauthorized access exposure.',
+    });
     const editLog = logs.find((log) => log.action === 'ai_finding.edited');
     expect(editLog?.after).toMatchObject({
       reviewStatus: 'accepted_with_edits',
@@ -169,12 +178,56 @@ describe('AI finding HITL edit traceability', () => {
             draftDescription: 'AI output has no source document attached.',
             draftRiskRating: 'medium',
             draftRecommendation: 'Attach evidence before acceptance.',
+            reason: 'AI output has no cited evidence.',
+            controlClause: 'AC-01',
+            riskJustification: 'Medium risk until evidence is attached and reviewed.',
           },
         },
       ),
     ).rejects.toMatchObject({
       response: {
         code: 'ai_finding_evidence_required',
+      },
+    });
+  });
+
+  it('blocks accepting an AI finding without explainability metadata', async () => {
+    await expect(
+      service.create(
+        { tenantId, userId, ip: '::1' },
+        {
+          titleI18n: { en: 'Unexplained AI finding' },
+          descriptionI18n: { en: 'AI output has evidence but no explainability.' },
+          riskRating: 'medium',
+          recommendationI18n: { en: 'Add rationale, control clause and risk justification.' },
+          aiReview: {
+            source: 'finding_suggestion',
+            decision: 'accepted',
+            confidence: 0.7,
+            expected: 'Control rationale must be visible.',
+            observed: 'No explainability metadata was provided.',
+            draftTitle: 'Unexplained AI finding',
+            draftDescription: 'AI output has evidence but no explainability.',
+            draftRiskRating: 'medium',
+            draftRecommendation: 'Add rationale.',
+            reason: '',
+            controlClause: '',
+            riskJustification: '',
+            evidenceReferences: [
+              {
+                documentId: evidenceDocumentId,
+                filename: 'access-review.xlsx',
+                relation: 'evidence',
+                location: 'Sheet Users, rows 12-13',
+              },
+            ],
+          },
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        code: 'ai_finding_explainability_required',
+        fields: ['reason', 'controlClause', 'riskJustification'],
       },
     });
   });

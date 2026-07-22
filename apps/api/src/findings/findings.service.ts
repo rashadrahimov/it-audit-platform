@@ -82,9 +82,9 @@ export interface AiFindingReviewInput {
   draftDescription?: string;
   draftRiskRating?: RiskRating;
   draftRecommendation?: string;
-  reason?: string;
-  controlClause?: string;
-  riskJustification?: string;
+  reason: string;
+  controlClause: string;
+  riskJustification: string;
   evidenceReferences?: Array<{
     documentId: string;
     filename: string;
@@ -129,10 +129,9 @@ function aiReviewFromCustom(custom: unknown): AiFindingReviewMetadata | null {
         : undefined,
     draftRecommendation:
       typeof data.draftRecommendation === 'string' ? data.draftRecommendation : undefined,
-    reason: typeof data.reason === 'string' ? data.reason : undefined,
-    controlClause: typeof data.controlClause === 'string' ? data.controlClause : undefined,
-    riskJustification:
-      typeof data.riskJustification === 'string' ? data.riskJustification : undefined,
+    reason: typeof data.reason === 'string' ? data.reason : '',
+    controlClause: typeof data.controlClause === 'string' ? data.controlClause : '',
+    riskJustification: typeof data.riskJustification === 'string' ? data.riskJustification : '',
     evidenceReferences: Array.isArray(data.evidenceReferences) ? data.evidenceReferences : [],
     reviewedAt: typeof data.reviewedAt === 'string' ? data.reviewedAt : '',
     reviewedBy: typeof data.reviewedBy === 'string' ? data.reviewedBy : '',
@@ -176,6 +175,12 @@ function aiFindingEditedFields(input: CreateFindingInput): AiFindingEditedField[
   compare('riskRating', input.aiReview.draftRiskRating, input.riskRating);
   compare('recommendation', input.aiReview.draftRecommendation, input.recommendationI18n?.en);
   return edits;
+}
+
+function missingAiFindingExplainability(input: AiFindingReviewInput): string[] {
+  return (['reason', 'controlClause', 'riskJustification'] as const).filter(
+    (field) => input[field].trim().length === 0,
+  );
 }
 
 /** Finding (T-038): «третья колонка» чеклиста клиента; lifecycle придёт с T-039. */
@@ -313,6 +318,15 @@ export class FindingsService {
             documentIds: missing,
           });
         }
+        const missingExplainability = missingAiFindingExplainability(input.aiReview);
+        if (missingExplainability.length > 0) {
+          throw new BadRequestException({
+            code: 'ai_finding_explainability_required',
+            message:
+              'Accepted AI finding requires a rationale, control clause and risk justification.',
+            fields: missingExplainability,
+          });
+        }
       }
 
       const [row] = await tx
@@ -372,6 +386,9 @@ export class FindingsService {
         after: {
           reviewStatus: 'accepted',
           confidence: input.aiReview.confidence,
+          reason: input.aiReview.reason,
+          controlClause: input.aiReview.controlClause,
+          riskJustification: input.aiReview.riskJustification,
           editedFieldCount: editedFields.length,
           evidenceReferences: input.aiReview.evidenceReferences ?? [],
         },

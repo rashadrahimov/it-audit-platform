@@ -57,9 +57,9 @@ const createFindingSchema = z.object({
       draftDescription: z.string().max(4000).optional(),
       draftRiskRating: riskRatingSchema.optional(),
       draftRecommendation: z.string().max(4000).optional(),
-      reason: z.string().max(4000).optional(),
-      controlClause: z.string().max(1000).optional(),
-      riskJustification: z.string().max(2000).optional(),
+      reason: z.string().min(1).max(4000),
+      controlClause: z.string().min(1).max(1000),
+      riskJustification: z.string().min(1).max(2000),
       evidenceReferences: z
         .array(
           z.object({
