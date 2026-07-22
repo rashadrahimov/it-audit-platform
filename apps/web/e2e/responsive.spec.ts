@@ -13,6 +13,7 @@ const ROUTES = [
   '/dashboard',
   '/dashboards',
   '/reports',
+  '/action-plans',
   '/snapshots',
   '/trends',
   '/kpi',
@@ -55,7 +56,15 @@ const ROUTES = [
   '/guide',
 ];
 
-const MOBILE_ROUTES = ['/account', '/engagements', '/risks', '/documents', '/config', '/guide'];
+const MOBILE_ROUTES = [
+  '/account',
+  '/engagements',
+  '/action-plans',
+  '/risks',
+  '/documents',
+  '/config',
+  '/guide',
+];
 
 async function login(page: Page) {
   await page.goto('/login');

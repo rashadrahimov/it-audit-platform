@@ -14,6 +14,7 @@ const ROUTES = [
   '/dashboard',
   '/dashboards',
   '/reports',
+  '/action-plans',
   '/snapshots',
   '/trends',
   '/kpi',
