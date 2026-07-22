@@ -31,6 +31,22 @@ const baseReport = (patch: Partial<ReportData> = {}): ReportData => ({
       auditor: 'Lead Auditor',
       dueDate: '2026-08-01',
       recommendation: 'Enable MFA for privileged users.',
+      aiReview: {
+        confidence: 0.82,
+        expected: 'Privileged access requires MFA.',
+        observed: 'Admin account had no MFA evidence.',
+        reason: 'The source evidence shows a privileged account without MFA enforcement.',
+        controlClause: 'ISO 27001 A.5.15',
+        riskJustification: 'Unauthorized access risk remains high until MFA evidence is attached.',
+        evidenceReferences: [
+          {
+            documentId: 'doc-1',
+            filename: 'access-review.xlsx',
+            relation: 'source_document',
+            location: 'AC-01 row 4',
+          },
+        ],
+      },
     },
   ],
   risks: [
@@ -59,8 +75,20 @@ describe('report renderers localization', () => {
       }),
     ).toString('utf8');
 
-    expect(csv.split('\n')[0]).toBe('Tədbir,Səbəb,Sahib,Son tarix,Status,Risk');
+    expect(csv.split('\n')[0]).toBe(
+      'Tədbir,Səbəb,Sahib,Son tarix,Status,Risk,Kontrol maddəsi,İİ etibarı,İİ sübutu',
+    );
     expect(csv).not.toContain('Action,Why,Owner,Due date');
+  });
+
+  it('keeps accepted AI finding traceability in finding exports', () => {
+    const csv = toCsv(baseReport()).toString('utf8');
+
+    expect(csv.split('\n')[0]).toContain('Control clause,AI confidence,AI rationale,AI evidence');
+    expect(csv).toContain('ISO 27001 A.5.15');
+    expect(csv).toContain('82%');
+    expect(csv).toContain('access-review.xlsx @ AC-01 row 4');
+    expect(csv).toContain('Unauthorized access risk remains high');
   });
 
   it('localizes executive summary metrics in Russian', () => {

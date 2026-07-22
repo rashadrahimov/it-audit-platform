@@ -62,6 +62,9 @@ const LABELS = {
     action: 'Action',
     actionPlan: 'Action Plan',
     answer: 'Answer',
+    aiConfidence: 'AI confidence',
+    aiEvidence: 'AI evidence',
+    aiRationale: 'AI rationale',
     auditType: 'Audit type',
     auditor: 'Auditor',
     category: 'Category',
@@ -91,6 +94,7 @@ const LABELS = {
     question: 'Question',
     recommendation: 'Recommendation',
     risk: 'Risk',
+    riskJustification: 'Risk justification',
     riskMatrix: 'Risk Matrix',
     risks: 'Risks',
     riskClassSummary: 'Risk Class Summary',
@@ -103,11 +107,15 @@ const LABELS = {
     treatment: 'Treatment',
     value: 'Value',
     why: 'Why',
+    controlClause: 'Control clause',
   },
   az: {
     action: 'Tədbir',
     actionPlan: 'Tədbirlər planı',
     answer: 'Cavab',
+    aiConfidence: 'İİ etibarı',
+    aiEvidence: 'İİ sübutu',
+    aiRationale: 'İİ əsaslandırması',
     auditType: 'Audit növü',
     auditor: 'Auditor',
     category: 'Kateqoriya',
@@ -137,6 +145,7 @@ const LABELS = {
     question: 'Sual',
     recommendation: 'Tövsiyə',
     risk: 'Risk',
+    riskJustification: 'Risk əsaslandırması',
     riskMatrix: 'Risk matrisi',
     risks: 'Risklər',
     riskClassSummary: 'Risk sinfi xülasəsi',
@@ -149,11 +158,15 @@ const LABELS = {
     treatment: 'Tədbir yanaşması',
     value: 'Dəyər',
     why: 'Səbəb',
+    controlClause: 'Kontrol maddəsi',
   },
   ru: {
     action: 'Действие',
     actionPlan: 'План действий',
     answer: 'Ответ',
+    aiConfidence: 'Уверенность ИИ',
+    aiEvidence: 'Доказательства ИИ',
+    aiRationale: 'Обоснование ИИ',
     auditType: 'Тип аудита',
     auditor: 'Аудитор',
     category: 'Категория',
@@ -183,6 +196,7 @@ const LABELS = {
     question: 'Вопрос',
     recommendation: 'Рекомендация',
     risk: 'Риск',
+    riskJustification: 'Обоснование риска',
     riskMatrix: 'Матрица рисков',
     risks: 'Риски',
     riskClassSummary: 'Сводка классов риска',
@@ -195,12 +209,24 @@ const LABELS = {
     treatment: 'Обработка',
     value: 'Значение',
     why: 'Почему',
+    controlClause: 'Пункт контроля',
   },
 } as const;
 
 type LabelKey = keyof (typeof LABELS)['en'];
 
 const l = (data: ReportData, key: LabelKey): string => LABELS[data.locale][key];
+
+const aiConfidence = (f: ReportFindingRow): string =>
+  f.aiReview ? `${Math.round(f.aiReview.confidence * 100)}%` : '';
+
+const aiEvidence = (f: ReportFindingRow): string =>
+  f.aiReview?.evidenceReferences
+    .map((ref) => `${ref.filename}${ref.location ? ` @ ${ref.location}` : ''}`)
+    .join('; ') ?? '';
+
+const aiRationale = (f: ReportFindingRow): string =>
+  [f.aiReview?.reason, f.aiReview?.riskJustification].filter(Boolean).join(' / ');
 
 const executiveRows = (data: ReportData): Array<{ metric: string; value: string }> => [
   { metric: l(data, 'checklistControls'), value: String(data.checklist.length) },
@@ -252,6 +278,9 @@ export function toCsv(data: ReportData): Buffer {
       l(data, 'dueDate'),
       l(data, 'status'),
       l(data, 'risk'),
+      l(data, 'controlClause'),
+      l(data, 'aiConfidence'),
+      l(data, 'aiEvidence'),
     ];
     rows = data.findings.map((f) => [
       f.recommendation ?? f.title,
@@ -260,6 +289,9 @@ export function toCsv(data: ReportData): Buffer {
       f.dueDate ?? '',
       f.status,
       f.riskRating,
+      f.aiReview?.controlClause ?? '',
+      aiConfidence(f),
+      aiEvidence(f),
     ]);
   } else if (data.deliverable === 'executive_summary') {
     header = [l(data, 'metric'), l(data, 'value')];
@@ -273,6 +305,10 @@ export function toCsv(data: ReportData): Buffer {
       l(data, 'auditor'),
       l(data, 'dueDate'),
       l(data, 'recommendation'),
+      l(data, 'controlClause'),
+      l(data, 'aiConfidence'),
+      l(data, 'aiRationale'),
+      l(data, 'aiEvidence'),
     ];
     rows = data.findings.map((f) => [
       f.title,
@@ -282,6 +318,10 @@ export function toCsv(data: ReportData): Buffer {
       f.auditor ?? '',
       f.dueDate ?? '',
       f.recommendation ?? '',
+      f.aiReview?.controlClause ?? '',
+      aiConfidence(f),
+      aiRationale(f),
+      aiEvidence(f),
     ]);
   }
   return Buffer.from(
@@ -309,6 +349,14 @@ export function toXml(data: ReportData): Buffer {
     lines.push(`      <status>${xmlEscape(f.status)}</status>`);
     lines.push(`      <owner>${xmlEscape(f.owner ?? '')}</owner>`);
     lines.push(`      <dueDate>${xmlEscape(f.dueDate ?? '')}</dueDate>`);
+    if (f.aiReview) {
+      lines.push('      <aiReview>');
+      lines.push(`        <confidence>${xmlEscape(aiConfidence(f))}</confidence>`);
+      lines.push(`        <controlClause>${xmlEscape(f.aiReview.controlClause)}</controlClause>`);
+      lines.push(`        <rationale>${xmlEscape(aiRationale(f))}</rationale>`);
+      lines.push(`        <evidence>${xmlEscape(aiEvidence(f))}</evidence>`);
+      lines.push('      </aiReview>');
+    }
     lines.push('    </finding>');
   }
   lines.push('  </findings>');
@@ -389,6 +437,10 @@ export async function toXlsx(data: ReportData): Promise<Buffer> {
     { header: l(data, 'auditor'), key: 'auditor', width: 24 },
     { header: l(data, 'dueDate'), key: 'dueDate', width: 14 },
     { header: l(data, 'recommendation'), key: 'recommendation', width: 50 },
+    { header: l(data, 'controlClause'), key: 'controlClause', width: 24 },
+    { header: l(data, 'aiConfidence'), key: 'aiConfidence', width: 16 },
+    { header: l(data, 'aiRationale'), key: 'aiRationale', width: 60 },
+    { header: l(data, 'aiEvidence'), key: 'aiEvidence', width: 60 },
   ];
   findings.addRows(
     data.findings.map((f) => ({
@@ -399,6 +451,10 @@ export async function toXlsx(data: ReportData): Promise<Buffer> {
       auditor: f.auditor ?? '',
       dueDate: f.dueDate ?? '',
       recommendation: f.recommendation ?? '',
+      controlClause: f.aiReview?.controlClause ?? '',
+      aiConfidence: aiConfidence(f),
+      aiRationale: aiRationale(f),
+      aiEvidence: aiEvidence(f),
     })),
   );
   findings.getRow(1).font = { bold: true };
@@ -467,14 +523,24 @@ export async function toDocx(data: ReportData): Promise<Buffer> {
             l(data, 'status'),
             l(data, 'owner'),
             l(data, 'dueDate'),
+            l(data, 'controlClause'),
+            l(data, 'aiConfidence'),
+            l(data, 'aiEvidence'),
           ].map((h) => cell(h, true)),
         }),
         ...data.findings.map(
           (f) =>
             new TableRow({
-              children: [f.title, f.riskRating, f.status, f.owner ?? '', f.dueDate ?? ''].map((c) =>
-                cell(String(c)),
-              ),
+              children: [
+                f.title,
+                f.riskRating,
+                f.status,
+                f.owner ?? '',
+                f.dueDate ?? '',
+                f.aiReview?.controlClause ?? '',
+                aiConfidence(f),
+                aiEvidence(f),
+              ].map((c) => cell(String(c))),
             }),
         ),
       ],
@@ -596,6 +662,13 @@ function renderPdfFindings(
           `${l(data, 'status')}: ${f.status}   ${l(data, 'owner')}: ${f.owner ?? '—'}   ${l(data, 'dueDate')}: ${f.dueDate ?? '—'}`,
         );
       if (f.recommendation) doc.text(`${l(data, 'recommendation')}: ${f.recommendation}`);
+      if (f.aiReview) {
+        doc.text(
+          `${l(data, 'aiConfidence')}: ${aiConfidence(f)}   ${l(data, 'controlClause')}: ${f.aiReview.controlClause || '—'}`,
+        );
+        if (aiRationale(f)) doc.text(`${l(data, 'aiRationale')}: ${aiRationale(f)}`);
+        if (aiEvidence(f)) doc.text(`${l(data, 'aiEvidence')}: ${aiEvidence(f)}`);
+      }
       doc.moveDown(0.4);
     }
   }

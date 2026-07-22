@@ -132,6 +132,24 @@ export interface ReportFindingRow {
   auditor: string | null;
   dueDate: string | null;
   recommendation: string | null;
+  aiReview: ReportFindingAiReview | null;
+}
+
+export interface ReportFindingEvidenceRef {
+  documentId: string;
+  filename: string;
+  relation: string;
+  location: string;
+}
+
+export interface ReportFindingAiReview {
+  confidence: number;
+  expected: string;
+  observed: string;
+  reason: string;
+  controlClause: string;
+  riskJustification: string;
+  evidenceReferences: ReportFindingEvidenceRef[];
 }
 
 export interface ReportRiskRow {
@@ -160,6 +178,63 @@ export interface ReportData {
   findings: ReportFindingRow[];
   risks: ReportRiskRow[];
   generatedAt: string;
+}
+
+function findingAiReviewForReport(custom: unknown): ReportFindingAiReview | null {
+  if (!custom || typeof custom !== 'object') return null;
+  const ai = (custom as { ai?: unknown }).ai;
+  if (!ai || typeof ai !== 'object') return null;
+  const data = ai as {
+    source?: unknown;
+    decision?: unknown;
+    confidence?: unknown;
+    expected?: unknown;
+    observed?: unknown;
+    reason?: unknown;
+    controlClause?: unknown;
+    riskJustification?: unknown;
+    evidenceReferences?: unknown;
+  };
+  if (data.source !== 'finding_suggestion' || data.decision !== 'accepted') return null;
+  if (typeof data.confidence !== 'number') return null;
+
+  const evidenceReferences = Array.isArray(data.evidenceReferences)
+    ? data.evidenceReferences
+        .map((ref) => {
+          if (!ref || typeof ref !== 'object') return null;
+          const row = ref as {
+            documentId?: unknown;
+            filename?: unknown;
+            relation?: unknown;
+            location?: unknown;
+          };
+          if (
+            typeof row.documentId !== 'string' ||
+            typeof row.filename !== 'string' ||
+            typeof row.relation !== 'string' ||
+            typeof row.location !== 'string'
+          ) {
+            return null;
+          }
+          return {
+            documentId: row.documentId,
+            filename: row.filename,
+            relation: row.relation,
+            location: row.location,
+          };
+        })
+        .filter((ref): ref is ReportFindingEvidenceRef => ref !== null)
+    : [];
+
+  return {
+    confidence: Math.max(0, Math.min(1, data.confidence)),
+    expected: typeof data.expected === 'string' ? data.expected : '',
+    observed: typeof data.observed === 'string' ? data.observed : '',
+    reason: typeof data.reason === 'string' ? data.reason : '',
+    controlClause: typeof data.controlClause === 'string' ? data.controlClause : '',
+    riskJustification: typeof data.riskJustification === 'string' ? data.riskJustification : '',
+    evidenceReferences,
+  };
 }
 
 /** Сбор данных для отчёта engagement (T-045): шапка + чеклист-с-ответами + findings. */
@@ -221,6 +296,7 @@ export class ReportDataService {
           dueDate: finding.dueDate,
           owner: ownerUser.fullName,
           auditor: auditorUser.fullName,
+          custom: finding.custom,
         })
         .from(finding)
         .leftJoin(ownerMembership, eq(finding.ownerMembershipId, ownerMembership.id))
@@ -279,6 +355,7 @@ export class ReportDataService {
           recommendation: f.recommendationI18n
             ? resolveLocalized(f.recommendationI18n, locale)
             : null,
+          aiReview: findingAiReviewForReport(f.custom),
         })),
         risks: risks.map((r) => ({
           title: resolveLocalized(r.titleI18n, locale),
