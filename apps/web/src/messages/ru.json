@@ -2821,6 +2821,12 @@
       "open": "Открыта",
       "in_progress": "В работе",
       "done": "Готова"
+    },
+    "provenance": {
+      "recommendation": "из рекомендации замечания",
+      "finding_due_date": "срок из замечания",
+      "risk_based_fallback": "{days} дн. по риску",
+      "owner": "владелец перенесён"
     }
   },
   "roadmap": {

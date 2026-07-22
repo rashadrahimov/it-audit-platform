@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   acceptedAiControlClause,
+  actionPlanTaskProvenance,
   legacyRecommendationTaskTitle,
   recommendationTaskTitle,
   suggestedDueDateForRisk,
@@ -41,5 +42,40 @@ describe('action plan recommendation seeding helpers', () => {
     expect(suggestedDueDateForRisk('medium', base).toISOString()).toBe('2026-09-20T00:00:00.000Z');
     expect(suggestedDueDateForRisk('low', base).toISOString()).toBe('2026-10-20T00:00:00.000Z');
     expect(suggestedDueDateForRisk('unknown', base).toISOString()).toBe('2026-09-20T00:00:00.000Z');
+  });
+
+  it('describes provenance for action-plan tasks seeded from finding recommendations', () => {
+    const provenance = actionPlanTaskProvenance({
+      taskTitle: '[ISO 27001 A.5.15] Define access review evidence retention.',
+      findingId: 'finding-1',
+      recommendation: 'Define access review evidence retention.',
+      riskRating: 'high',
+      findingDueDate: null,
+      findingOwnerMembershipId: 'owner-1',
+      taskAssigneeMembershipId: 'owner-1',
+      controlClause: 'ISO 27001 A.5.15',
+    });
+
+    expect(provenance).toEqual({
+      source: 'finding_recommendation',
+      sourceFindingId: 'finding-1',
+      aiAccepted: true,
+      controlClause: 'ISO 27001 A.5.15',
+      dueDatePolicy: 'risk_based_fallback',
+      timelineDays: 30,
+      ownerCarriedFromFinding: true,
+    });
+    expect(
+      actionPlanTaskProvenance({
+        taskTitle: 'Manual follow-up call',
+        findingId: 'finding-1',
+        recommendation: 'Define access review evidence retention.',
+        riskRating: 'high',
+        findingDueDate: null,
+        findingOwnerMembershipId: 'owner-1',
+        taskAssigneeMembershipId: 'owner-1',
+        controlClause: 'ISO 27001 A.5.15',
+      }),
+    ).toBeNull();
   });
 });

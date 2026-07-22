@@ -8,6 +8,15 @@ export interface TaskItem {
   assignee: string | null;
   dueDate: string | null;
   completedAt: string | null;
+  provenance: {
+    source: 'finding_recommendation';
+    sourceFindingId: string;
+    aiAccepted: boolean;
+    controlClause: string | null;
+    dueDatePolicy: 'finding_due_date' | 'risk_based_fallback';
+    timelineDays: number;
+    ownerCarriedFromFinding: boolean;
+  } | null;
 }
 
 const STATUS_TONE: Record<string, string> = {
@@ -80,6 +89,28 @@ export async function TasksSection({
                     </span>
                   )}
                 </span>
+                {task.provenance && (
+                  <span className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-800">
+                      {t('provenance.recommendation')}
+                    </span>
+                    {task.provenance.controlClause && (
+                      <span className="rounded-full bg-white px-2 py-0.5 font-medium text-secondary">
+                        {task.provenance.controlClause}
+                      </span>
+                    )}
+                    <span className="rounded-full bg-white px-2 py-0.5 font-medium text-secondary">
+                      {t(`provenance.${task.provenance.dueDatePolicy}`, {
+                        days: task.provenance.timelineDays,
+                      })}
+                    </span>
+                    {task.provenance.ownerCarriedFromFinding && (
+                      <span className="rounded-full bg-white px-2 py-0.5 font-medium text-secondary">
+                        {t('provenance.owner')}
+                      </span>
+                    )}
+                  </span>
+                )}
               </span>
               <span className="flex items-center gap-1.5">
                 <span

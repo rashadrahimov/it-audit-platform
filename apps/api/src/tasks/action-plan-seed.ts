@@ -53,3 +53,44 @@ export function recommendationTaskTitle(input: {
 export function legacyRecommendationTaskTitle(recommendation: string): string {
   return truncateTaskTitle(recommendation);
 }
+
+export interface ActionPlanTaskProvenance {
+  source: 'finding_recommendation';
+  sourceFindingId: string;
+  aiAccepted: boolean;
+  controlClause: string | null;
+  dueDatePolicy: 'finding_due_date' | 'risk_based_fallback';
+  timelineDays: number;
+  ownerCarriedFromFinding: boolean;
+}
+
+export function actionPlanTaskProvenance(input: {
+  taskTitle: string;
+  findingId: string;
+  recommendation: string;
+  riskRating: string;
+  findingDueDate: Date | null;
+  findingOwnerMembershipId: string | null;
+  taskAssigneeMembershipId: string | null;
+  controlClause?: string | null;
+}): ActionPlanTaskProvenance | null {
+  const seededTitle = recommendationTaskTitle({
+    recommendation: input.recommendation,
+    controlClause: input.controlClause,
+  });
+  const legacyTitle = legacyRecommendationTaskTitle(input.recommendation);
+  if (input.taskTitle !== seededTitle && input.taskTitle !== legacyTitle) return null;
+  const key = input.riskRating.toLowerCase() as keyof typeof ACTION_PLAN_DUE_DAYS;
+  const timelineDays = ACTION_PLAN_DUE_DAYS[key] ?? ACTION_PLAN_DUE_DAYS.default;
+  return {
+    source: 'finding_recommendation',
+    sourceFindingId: input.findingId,
+    aiAccepted: Boolean(input.controlClause),
+    controlClause: input.controlClause ?? null,
+    dueDatePolicy: input.findingDueDate ? 'finding_due_date' : 'risk_based_fallback',
+    timelineDays,
+    ownerCarriedFromFinding:
+      Boolean(input.findingOwnerMembershipId) &&
+      input.findingOwnerMembershipId === input.taskAssigneeMembershipId,
+  };
+}

@@ -2813,6 +2813,12 @@
       "open": "Open",
       "in_progress": "In progress",
       "done": "Done"
+    },
+    "provenance": {
+      "recommendation": "from finding recommendation",
+      "finding_due_date": "finding due date",
+      "risk_based_fallback": "{days}d risk timeline",
+      "owner": "owner carried over"
     }
   },
   "roadmap": {

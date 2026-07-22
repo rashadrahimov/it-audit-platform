@@ -8,6 +8,7 @@ import { localizedRecommendationTemplates } from '../seed-data/recommendation-te
 import {
   ACTION_PLAN_DUE_DAYS,
   acceptedAiControlClause,
+  actionPlanTaskProvenance,
   legacyRecommendationTaskTitle,
   recommendationTaskTitle,
   suggestedDueDateForRisk,
@@ -59,8 +60,8 @@ export class TasksService {
     if (!TASKABLE.has(entityType)) {
       throw new BadRequestException(`entityType: ожидается ${[...TASKABLE].join('|')}`);
     }
-    const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx
+    const data = await this.dbService.withTenant(tenantId, async (tx) => {
+      const rows = await tx
         .select({
           id: task.id,
           title: task.title,
@@ -74,9 +75,24 @@ export class TasksService {
         .leftJoin(membership, eq(task.assigneeMembershipId, membership.id))
         .leftJoin(user, eq(membership.userId, user.id))
         .where(and(eq(task.entityType, entityType), eq(task.entityId, entityId)))
-        .orderBy(asc(task.createdAt)),
-    );
-    return rows.map((r) => ({
+        .orderBy(asc(task.createdAt));
+      if (entityType !== 'finding' || rows.length === 0) return { rows, findingRow: null };
+      const [findingRow] = await tx
+        .select({
+          id: finding.id,
+          recommendationI18n: finding.recommendationI18n,
+          riskRating: finding.riskRating,
+          ownerMembershipId: finding.ownerMembershipId,
+          dueDate: finding.dueDate,
+          custom: finding.custom,
+        })
+        .from(finding)
+        .where(and(eq(finding.id, entityId), isNull(finding.deletedAt)));
+      return { rows, findingRow: findingRow ?? null };
+    });
+    const recommendation = data.findingRow?.recommendationI18n?.en?.trim() ?? '';
+    const controlClause = data.findingRow ? acceptedAiControlClause(data.findingRow.custom) : null;
+    return data.rows.map((r) => ({
       id: r.id,
       title: r.title,
       status: r.status,
@@ -84,6 +100,19 @@ export class TasksService {
       assignee: r.assignee,
       dueDate: r.dueDate?.toISOString() ?? null,
       completedAt: r.completedAt?.toISOString() ?? null,
+      provenance:
+        data.findingRow && recommendation
+          ? actionPlanTaskProvenance({
+              taskTitle: r.title,
+              findingId: data.findingRow.id,
+              recommendation,
+              riskRating: data.findingRow.riskRating,
+              findingDueDate: data.findingRow.dueDate,
+              findingOwnerMembershipId: data.findingRow.ownerMembershipId,
+              taskAssigneeMembershipId: r.assigneeMembershipId,
+              controlClause,
+            })
+          : null,
     }));
   }
 

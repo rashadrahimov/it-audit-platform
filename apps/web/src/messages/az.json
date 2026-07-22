@@ -2821,6 +2821,12 @@
       "open": "Açıq",
       "in_progress": "İcrada",
       "done": "Hazır"
+    },
+    "provenance": {
+      "recommendation": "qeyd tövsiyəsindən",
+      "finding_due_date": "qeydin son tarixi",
+      "risk_based_fallback": "risk üzrə {days} gün",
+      "owner": "sahib ötürüldü"
     }
   },
   "roadmap": {
