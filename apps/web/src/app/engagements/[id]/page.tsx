@@ -4,11 +4,14 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { CommentsSection } from '@/components/comments-section';
+import { TasksSection, type TaskItem } from '@/components/tasks-section';
 import { complianceStatusSchema } from '@it-audit/shared';
 import {
   addChecklistItemsAction,
+  assignEngagementMemberAction,
   createFindingFromSuggestionAction,
   duplicateEngagementAction,
+  removeEngagementMemberAction,
   seedActionPlanFromRecommendationsAction,
   saveResponseAction,
   transitionAction,
@@ -113,6 +116,22 @@ interface EvidenceReview {
   reviewer: string | null;
   reviewedAt: string | null;
 }
+interface TeamMember {
+  id: string;
+  membershipId: string;
+  engagementRole: string;
+  stagePermissions: Record<string, string> | null;
+  fullName: string;
+  email: string;
+}
+interface TenantMember {
+  id: string;
+  fullName: string;
+  email: string;
+  status: string;
+}
+
+const ENGAGEMENT_ROLES = ['lead', 'assessor', 'reviewer', 'approver', 'observer'] as const;
 
 const REVIEW_TONE: Record<string, string> = {
   not_ready: 'bg-muted text-secondary',
@@ -159,9 +178,10 @@ export default async function EngagementDetailPage({
     getActiveTenantSlug(),
   ]);
   if (!tenantSlug) redirect('/engagements');
+  const tenantHeaders = { 'X-Tenant-Slug': tenantSlug };
 
   const res = await apiFetch(`/engagements/${id}?locale=${locale}`, {
-    headers: { 'X-Tenant-Slug': tenantSlug },
+    headers: tenantHeaders,
   });
   if (res.status === 404 || res.status === 400) notFound();
   if (!res.ok) throw new Error(`API /engagements/${id}: ${res.status}`);
@@ -174,13 +194,13 @@ export default async function EngagementDetailPage({
   const addable = library.filter((c) => !inChecklist.has(c.id));
 
   const fRes = await apiFetch(`/findings?engagementId=${id}&locale=${locale}`, {
-    headers: { 'X-Tenant-Slug': tenantSlug },
+    headers: tenantHeaders,
   });
   const findings: FindingRow[] = fRes.ok ? await fRes.json() : [];
 
   // SEC/EP-AI (T-H15): детерминированные предложения findings по гэпам
   const sRes = await apiFetch(`/engagements/${id}/finding-suggestions?locale=${locale}`, {
-    headers: { 'X-Tenant-Slug': tenantSlug },
+    headers: tenantHeaders,
   });
   const suggestions: Array<{
     checklistItemId: string;
@@ -203,7 +223,7 @@ export default async function EngagementDetailPage({
 
   // T-V10: комментарии аудита (полиморфный API T-023)
   const cRes = await apiFetch(`/comments?entityType=engagement&entityId=${id}`, {
-    headers: { 'X-Tenant-Slug': tenantSlug },
+    headers: tenantHeaders,
   });
   const comments: Array<{ author: string; body: string; at: string }> = cRes.ok
     ? await cRes.json()
@@ -211,21 +231,44 @@ export default async function EngagementDetailPage({
 
   // T-V44: доказательства аудита (документы по привязке) + статус ревью (T-V29)
   const evRes = await apiFetch(`/documents?entityType=engagement&entityId=${id}`, {
-    headers: { 'X-Tenant-Slug': tenantSlug },
+    headers: tenantHeaders,
   });
   const evidence: EvidenceDoc[] = evRes.ok ? await evRes.json() : [];
   const revRes =
     evidence.length > 0
       ? await apiFetch(
           `/audit-firms/evidence-batch?entityType=document&entityIds=${evidence.map((d) => d.id).join(',')}`,
-          { headers: { 'X-Tenant-Slug': tenantSlug } },
+          { headers: tenantHeaders },
         )
       : null;
   const reviews: Record<string, EvidenceReview> = revRes && revRes.ok ? await revRes.json() : {};
+  const [teamRes, membersRes, taskRes] = await Promise.all([
+    apiFetch(`/engagements/${id}/members`, { headers: tenantHeaders }),
+    apiFetch(`/memberships?locale=${locale}`, { headers: tenantHeaders }),
+    apiFetch(`/tasks?entityType=engagement&entityId=${id}`, { headers: tenantHeaders }),
+  ]);
+  const team: TeamMember[] = teamRes.ok ? await teamRes.json() : [];
+  const tenantMembers: TenantMember[] = membersRes.ok ? await membersRes.json() : [];
+  const auditTasks: TaskItem[] = taskRes.ok ? await taskRes.json() : [];
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const fmt = (iso: string | null): string => (iso ? dateFmt.format(new Date(iso)) : '—');
   const now = Date.now();
+  const assignedMembershipIds = new Set(team.map((m) => m.membershipId));
+  const assignableMembers = tenantMembers.filter(
+    (m) => m.status === 'active' && !assignedMembershipIds.has(m.id),
+  );
+  const taskAssignees =
+    team.length > 0
+      ? team.map((m) => ({ id: m.membershipId, fullName: m.fullName }))
+      : tenantMembers
+          .filter((m) => m.status === 'active')
+          .map((m) => ({ id: m.id, fullName: m.fullName }));
+  const openAuditTasks = auditTasks.filter((task) => task.status !== 'done').length;
+  const overdueAuditTasks = auditTasks.filter(
+    (task) =>
+      task.status !== 'done' && task.dueDate !== null && new Date(task.dueDate).getTime() < now,
+  ).length;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 p-6 pt-12">
@@ -548,6 +591,125 @@ export default async function EngagementDetailPage({
           )}
         </div>
       </section>
+
+      <section
+        className="rounded-2xl border border-border bg-white p-6 shadow-sm"
+        data-testid="engagement-team-accountability"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.16em] text-emerald-700 uppercase">
+              {t('teamKicker')}
+            </p>
+            <h2 className="mt-1 text-lg font-semibold text-primary">{t('teamTitle')}</h2>
+            <p className="mt-1 max-w-2xl text-sm text-secondary">{t('teamSub')}</p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-xl bg-muted/60 px-3 py-2">
+              <p className="text-lg font-bold text-primary">{team.length}</p>
+              <p className="text-[11px] font-medium text-secondary">{t('teamMembers')}</p>
+            </div>
+            <div className="rounded-xl bg-muted/60 px-3 py-2">
+              <p className="text-lg font-bold text-primary">{openAuditTasks}</p>
+              <p className="text-[11px] font-medium text-secondary">{t('activeAuditTasks')}</p>
+            </div>
+            <div className="rounded-xl bg-muted/60 px-3 py-2">
+              <p className="text-lg font-bold text-primary">{overdueAuditTasks}</p>
+              <p className="text-[11px] font-medium text-secondary">{t('overdueAuditTasks')}</p>
+            </div>
+          </div>
+        </div>
+
+        {team.length === 0 ? (
+          <p className="mt-4 rounded-xl bg-muted/60 p-4 text-sm text-secondary">{t('teamEmpty')}</p>
+        ) : (
+          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+            {team.map((member) => (
+              <li
+                key={member.id}
+                className="flex items-start justify-between gap-3 rounded-xl border border-border bg-muted/30 p-4"
+              >
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground">{member.fullName}</p>
+                  <p className="truncate text-xs text-secondary">{member.email}</p>
+                  <span className="mt-2 inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                    {t(`roles.${member.engagementRole}`)}
+                  </span>
+                </div>
+                <form action={removeEngagementMemberAction.bind(null, eng.id, member.id)}>
+                  <button
+                    type="submit"
+                    data-testid="engagement-member-remove"
+                    className="rounded-md border border-border px-2 py-1 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    {t('removeMember')}
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {assignableMembers.length > 0 && (
+          <details className="mt-4 rounded-xl border border-border bg-muted/20 p-4">
+            <summary className="cursor-pointer text-sm font-semibold text-accent">
+              {t('addTeamMember')}
+            </summary>
+            <form
+              action={assignEngagementMemberAction.bind(null, eng.id)}
+              className="mt-3 flex flex-wrap items-end gap-3"
+            >
+              <label className="flex min-w-52 flex-1 flex-col gap-1 text-sm">
+                <span className="text-xs font-medium text-secondary">{t('memberLabel')}</span>
+                <select
+                  name="membershipId"
+                  required
+                  data-testid="engagement-member-select"
+                  className="rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {assignableMembers.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.fullName} · {member.email}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs font-medium text-secondary">{t('roleLabel')}</span>
+                <select
+                  name="engagementRole"
+                  required
+                  data-testid="engagement-role-select"
+                  className="rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {ENGAGEMENT_ROLES.map((role) => (
+                    <option key={role} value={role}>
+                      {t(`roles.${role}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="submit"
+                data-testid="engagement-member-add"
+                className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {t('addMember')}
+              </button>
+            </form>
+          </details>
+        )}
+      </section>
+
+      <TasksSection
+        entityType="engagement"
+        entityId={eng.id}
+        path={`/engagements/${eng.id}`}
+        tasks={auditTasks}
+        members={taskAssignees}
+        testid="engagement-audit-tasks"
+        title={t('auditTasks')}
+      />
 
       <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-primary">{t('checklist')}</h2>

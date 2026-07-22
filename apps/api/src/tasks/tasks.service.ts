@@ -12,7 +12,15 @@ interface Actor {
 }
 
 /** Полиморфные сущности, к которым крепятся задачи (T-V27; personnel — T-V26). */
-const TASKABLE = new Set(['finding', 'risk', 'control', 'vendor', 'policy', 'personnel']);
+const TASKABLE = new Set([
+  'engagement',
+  'finding',
+  'risk',
+  'control',
+  'vendor',
+  'policy',
+  'personnel',
+]);
 
 export interface CreateTaskInput {
   entityType: string;

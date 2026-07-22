@@ -63,6 +63,37 @@ export async function transitionAction(engagementId: string, to: string): Promis
   revalidatePath(`/engagements/${engagementId}`);
 }
 
+/** T-H49: назначить участника в команду аудита с engagement-role. */
+export async function assignEngagementMemberAction(
+  engagementId: string,
+  formData: FormData,
+): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  const membershipId = String(formData.get('membershipId') ?? '');
+  const engagementRole = String(formData.get('engagementRole') ?? '');
+  if (!tenantSlug || !membershipId || !engagementRole) return;
+  await apiFetch(`/engagements/${engagementId}/members`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
+    body: JSON.stringify({ membershipId, engagementRole }),
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}
+
+/** T-H49: снять участника с команды аудита. */
+export async function removeEngagementMemberAction(
+  engagementId: string,
+  memberId: string,
+): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch(`/engagements/${engagementId}/members/${memberId}`, {
+    method: 'DELETE',
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}
+
 /** T-V03: создать finding из детерминированного предложения (T-H15) одним кликом. */
 export async function createFindingFromSuggestionAction(
   engagementId: string,

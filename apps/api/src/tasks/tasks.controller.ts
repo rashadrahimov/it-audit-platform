@@ -27,7 +27,7 @@ import { RequirePermission } from '../rbac/require-permission.decorator';
 import { TasksService } from './tasks.service';
 
 const createSchema = z.object({
-  entityType: z.enum(['finding', 'risk', 'control', 'vendor', 'policy']),
+  entityType: z.enum(['engagement', 'finding', 'risk', 'control', 'vendor', 'policy', 'personnel']),
   entityId: z.uuid(),
   title: z.string().min(1).max(500),
   assigneeMembershipId: z.uuid().optional(),
