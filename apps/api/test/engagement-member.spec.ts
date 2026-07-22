@@ -4,9 +4,12 @@ import { DbService } from '../src/db/db.service';
 import { AuditLogService } from '../src/audit/audit-log.service';
 import { EngagementsService } from '../src/engagements/engagements.service';
 import {
+  auditLog,
+  checklistItem,
   engagement,
   engagementMember,
   membership,
+  response,
   role,
   subsidiary,
   tenant,
@@ -150,6 +153,56 @@ afterAll(async () => {
   }
   await dbService.db.delete(tenant).where(eq(tenant.id, tenantId));
   await dbService.onModuleDestroy();
+});
+
+describe('finding suggestions HITL reject (T-H77)', () => {
+  it('reject hides the AI draft and records one idempotent audit-log decision', async () => {
+    const [item] = await dbService.withTenant(tenantId, async (tx) => {
+      const [created] = await tx
+        .insert(checklistItem)
+        .values({
+          engagementId: engC,
+          ref: 'HITL-01',
+          order: 990,
+          objectiveI18n: { en: 'Human review' },
+          questionI18n: { en: 'Auditor reviews AI drafts before use' },
+        })
+        .returning();
+      await tx.insert(response).values({
+        checklistItemId: created!.id,
+        respondentMembershipId: mid.assessor!,
+        complianceStatus: 'non_compliant',
+        text: 'No human review is documented.',
+      });
+      return [created!];
+    });
+
+    const before = await service.findingSuggestions(tenantId, engC, 'en');
+    expect(before.suggestions.some((s) => s.checklistItemId === item.id)).toBe(true);
+
+    const first = await service.rejectFindingSuggestion(actor('admin'), engC, item.id, {
+      reason: 'False positive',
+    });
+    const second = await service.rejectFindingSuggestion(actor('admin'), engC, item.id, {
+      reason: 'False positive',
+    });
+    expect(first).toMatchObject({ status: 'rejected', alreadyRejected: false });
+    expect(second).toMatchObject({ status: 'rejected', alreadyRejected: true });
+
+    const after = await service.findingSuggestions(tenantId, engC, 'en');
+    expect(after.suggestions.some((s) => s.checklistItemId === item.id)).toBe(false);
+
+    const rows = await dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ id: auditLog.id, after: auditLog.after })
+        .from(auditLog)
+        .where(eq(auditLog.entityId, item.id)),
+    );
+    const rejects = rows.filter(
+      (row) => (row.after as { reviewStatus?: string })?.reviewStatus === 'rejected',
+    );
+    expect(rejects).toHaveLength(1);
+  });
 });
 
 describe('engagement members (T-116)', () => {

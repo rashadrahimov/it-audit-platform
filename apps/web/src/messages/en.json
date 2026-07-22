@@ -400,6 +400,7 @@
       "medium": "Medium"
     },
     "suggestionCreate": "Create finding",
+    "suggestionReject": "Reject draft",
     "evidence": "Evidence",
     "evidenceEmpty": "No documents linked to this audit yet.",
     "evColName": "Document",

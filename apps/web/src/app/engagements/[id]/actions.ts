@@ -158,6 +158,20 @@ export async function createFindingFromSuggestionAction(
   revalidatePath(`/engagements/${engagementId}`);
 }
 
+export async function rejectFindingSuggestionAction(
+  engagementId: string,
+  checklistItemId: string,
+): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch(`/engagements/${engagementId}/finding-suggestions/${checklistItemId}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
+    body: JSON.stringify({ reason: 'Rejected by auditor from HITL review queue' }),
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}
+
 /** T-H35: recommendations findings → live Action Plan tasks. */
 export async function seedActionPlanFromRecommendationsAction(engagementId: string): Promise<void> {
   const [tenantSlug, locale] = await Promise.all([getActiveTenantSlug(), getLocale()]);

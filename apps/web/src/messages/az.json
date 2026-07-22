@@ -393,13 +393,14 @@
       },
       "acceptedTitle": "Qəbul edilmiş İİ qərarları",
       "reviewedBy": "{user} yoxladı · {date}",
-      "noAccepted": "Hələ qəbul edilmiş İİ qeydi yoxdur. Yuxarıdakı qaralamalar görünür və auditor icmalı tələb edir."
+      "noAccepted": "Hələ qəbul edilmiş İİ qeydi yoxdur. Yuxarıdakı qaralamalar görünür və auditor yoxlaması tələb edir."
     },
     "risk": {
       "high": "Yüksək",
       "medium": "Orta"
     },
     "suggestionCreate": "Qeyd yarat",
+    "suggestionReject": "Qaralamanı rədd et",
     "evidence": "Sübutlar",
     "evidenceEmpty": "Bu audit ilə əlaqəli sənəd hələ yoxdur.",
     "evColName": "Sənəd",

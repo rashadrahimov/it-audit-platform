@@ -15,6 +15,7 @@ import {
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import {
+  auditLog,
   auditType,
   checklistItem,
   control,
@@ -829,8 +830,21 @@ export class EngagementsService {
         .select({ checklistItemId: finding.checklistItemId })
         .from(finding)
         .where(and(inArray(finding.checklistItemId, itemIds), isNull(finding.deletedAt)));
+      const rejected = await tx
+        .select({ checklistItemId: auditLog.entityId })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'ai_finding.rejected'),
+            eq(auditLog.entityType, 'checklist_item'),
+            inArray(auditLog.entityId, itemIds),
+          ),
+        );
       const responseBy = new Map(responses.map((r) => [r.checklistItemId, r]));
       const withFinding = new Set(findings.map((f) => f.checklistItemId));
+      const rejectedSuggestions = new Set(
+        rejected.map((row) => row.checklistItemId).filter((id): id is string => !!id),
+      );
       const responseIds = responses.map((r) => r.id);
       const evidenceTargets = [...itemIds, ...responseIds, id];
       const evidence =
@@ -863,7 +877,7 @@ export class EngagementsService {
         question: resolveLocalized(i.questionI18n, locale),
         responseText: responseBy.get(i.id)?.text ?? null,
         complianceStatus: responseBy.get(i.id)?.complianceStatus ?? null,
-        hasFinding: withFinding.has(i.id),
+        hasFinding: withFinding.has(i.id) || rejectedSuggestions.has(i.id),
         evidenceReferences: [
           ...evidence
             .filter((e) => e.entityType === 'checklist_item' && e.entityId === i.id)
@@ -886,6 +900,65 @@ export class EngagementsService {
       }));
       return { suggestions: suggestFindings(input) };
     });
+  }
+
+  /** T-H77: HITL reject для ИИ-черновика finding — скрывает предложение и пишет audit-log. */
+  async rejectFindingSuggestion(
+    actor: Actor,
+    engagementId: string,
+    checklistItemId: string,
+    input: { reason?: string },
+  ) {
+    const existing = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [item] = await tx
+        .select({ id: checklistItem.id, ref: checklistItem.ref })
+        .from(checklistItem)
+        .where(
+          and(eq(checklistItem.id, checklistItemId), eq(checklistItem.engagementId, engagementId)),
+        );
+      if (!item) throw new NotFoundException(`Пункт чеклиста ${checklistItemId} не найден`);
+      const [existingFinding] = await tx
+        .select({ id: finding.id })
+        .from(finding)
+        .where(and(eq(finding.checklistItemId, checklistItemId), isNull(finding.deletedAt)));
+      if (existingFinding) {
+        throw new BadRequestException('По этому пункту уже создано замечание');
+      }
+      const [previousReject] = await tx
+        .select({ id: auditLog.id })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'ai_finding.rejected'),
+            eq(auditLog.entityType, 'checklist_item'),
+            eq(auditLog.entityId, checklistItemId),
+          ),
+        );
+      return { item, alreadyRejected: !!previousReject };
+    });
+    if (!existing.alreadyRejected) {
+      await this.auditLogService.record({
+        tenantId: actor.tenantId,
+        actorUserId: actor.userId,
+        actorIp: actor.ip,
+        action: 'ai_finding.rejected',
+        entityType: 'checklist_item',
+        entityId: checklistItemId,
+        before: { reviewStatus: 'draft', source: 'finding_suggestion' },
+        after: {
+          reviewStatus: 'rejected',
+          engagementId,
+          checklistItemRef: existing.item.ref,
+          reason: input.reason ?? null,
+        },
+      });
+    }
+    return {
+      engagementId,
+      checklistItemId,
+      status: 'rejected' as const,
+      alreadyRejected: existing.alreadyRejected,
+    };
   }
 
   /**

@@ -276,4 +276,24 @@ export class EngagementsController {
   ) {
     return this.engagementsService.findingSuggestions(req.tenantId, id, parseLocale(localeQuery));
   }
+
+  @Post(':id/finding-suggestions/:checklistItemId/reject')
+  @HttpCode(200)
+  @RequirePermission('finding', 'edit', 'edit')
+  @ApiOperation({ summary: 'T-H77: HITL reject ИИ-черновика finding с audit-log trace' })
+  rejectFindingSuggestion(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('checklistItemId', ParseUUIDPipe) checklistItemId: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = z.object({ reason: z.string().max(1000).optional() }).safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.engagementsService.rejectFindingSuggestion(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      checklistItemId,
+      parsed.data,
+    );
+  }
 }

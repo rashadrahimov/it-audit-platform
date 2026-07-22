@@ -15,6 +15,7 @@ import {
   createFindingFromSuggestionAction,
   duplicateEngagementAction,
   provideEvidenceRequestAction,
+  rejectFindingSuggestionAction,
   removeEngagementMemberAction,
   seedActionPlanFromRecommendationsAction,
   seedChecklistFromAuditTypeAction,
@@ -730,38 +731,49 @@ export default async function EngagementDetailPage({
                       </span>
                     )}
                   </div>
-                  <form
-                    action={createFindingFromSuggestionAction.bind(
-                      null,
-                      id,
-                      s.checklistItemId,
-                      s.suggestedTitle,
-                      s.suggestedRisk,
-                      [
-                        s.reason,
+                  <div className="flex flex-wrap gap-2">
+                    <form
+                      action={createFindingFromSuggestionAction.bind(
+                        null,
+                        id,
+                        s.checklistItemId,
+                        s.suggestedTitle,
+                        s.suggestedRisk,
+                        [
+                          s.reason,
+                          s.expected,
+                          s.observed,
+                          ...s.evidenceReferences.map((ev) => `${ev.filename} (${ev.location})`),
+                        ].join('\n'),
                         s.expected,
                         s.observed,
-                        ...s.evidenceReferences.map((ev) => `${ev.filename} (${ev.location})`),
-                      ].join('\n'),
-                      s.expected,
-                      s.observed,
-                      t('explainability.reasoningValue', { clause: s.controlClause }),
-                      s.controlClause,
-                      t('explainability.riskJustificationValue', {
-                        risk: t(`risk.${s.suggestedRisk}`),
-                      }),
-                      s.confidence,
-                      JSON.stringify(s.evidenceReferences),
-                    )}
-                  >
-                    <button
-                      type="submit"
-                      data-testid="suggestion-create-finding"
-                      className="rounded-md border border-emerald-300 px-2.5 py-1 text-xs font-medium text-emerald-800 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring"
+                        t('explainability.reasoningValue', { clause: s.controlClause }),
+                        s.controlClause,
+                        t('explainability.riskJustificationValue', {
+                          risk: t(`risk.${s.suggestedRisk}`),
+                        }),
+                        s.confidence,
+                        JSON.stringify(s.evidenceReferences),
+                      )}
                     >
-                      {t('suggestionCreate')}
-                    </button>
-                  </form>
+                      <button
+                        type="submit"
+                        data-testid="suggestion-create-finding"
+                        className="rounded-md border border-emerald-300 px-2.5 py-1 text-xs font-medium text-emerald-800 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {t('suggestionCreate')}
+                      </button>
+                    </form>
+                    <form action={rejectFindingSuggestionAction.bind(null, id, s.checklistItemId)}>
+                      <button
+                        type="submit"
+                        data-testid="suggestion-reject-finding"
+                        className="rounded-md border border-muted-foreground/20 px-2.5 py-1 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {t('suggestionReject')}
+                      </button>
+                    </form>
+                  </div>
                 </div>
               </li>
             ))}
