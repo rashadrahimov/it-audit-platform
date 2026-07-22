@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { apiFetch, getActiveTenantSlug } from '@/lib/session';
 
 const FIELD_TYPES = new Set(['text', 'number', 'date', 'select', 'boolean']);
+const CONFIG_LIST_KEYS = new Set(['audit_opinion', 'risk_categories', 'vendor_categories']);
 
 /** Создать тег (T-076). */
 export async function createTagAction(formData: FormData): Promise<void> {
@@ -97,6 +98,45 @@ export async function createCustomFieldAction(formData: FormData): Promise<void>
       fieldType,
       options: fieldType === 'select' ? options : undefined,
       required: formData.get('required') != null,
+    }),
+  });
+  revalidatePath('/config');
+}
+
+/** GEN-06/ENG-09/T-H126: добавить значение в настраиваемый tenant lookup-список. */
+export async function createConfigListItemAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const listKey = String(formData.get('listKey') ?? '').trim();
+  const code = String(formData.get('code') ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, '_');
+  const en = String(formData.get('labelEn') ?? '').trim();
+  const ru = String(formData.get('labelRu') ?? '').trim();
+  const az = String(formData.get('labelAz') ?? '').trim();
+  if (!CONFIG_LIST_KEYS.has(listKey) || !code || !en) return;
+
+  const headers = { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' };
+  const currentRes = await apiFetch(`/config-lists/${encodeURIComponent(listKey)}`, { headers });
+  if (!currentRes.ok) return;
+  const current = (await currentRes.json()) as {
+    items?: Array<{ code: string; labelI18n: Record<string, string> }>;
+  };
+  const existing = Array.isArray(current.items) ? current.items : [];
+  if (existing.some((item) => item.code === code)) return;
+
+  await apiFetch(`/config-lists/${encodeURIComponent(listKey)}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({
+      items: [
+        ...existing,
+        {
+          code,
+          labelI18n: { en, ru: ru || en, az: az || en },
+        },
+      ],
     }),
   });
   revalidatePath('/config');

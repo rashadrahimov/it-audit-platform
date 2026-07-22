@@ -71,7 +71,7 @@
 | ENG-06 шаги из библиотеки контента | M | ✅ | Библиотека (ADR-0016, M1) |
 | ENG-07 опросники из audit file | D | 🟡 | EP-MSG |
 | ENG-08 закрытие/архив/restore/move по правам | M | 🟡 | Soft-delete (T-023) + RBAC; архив — фаза 2 |
-| ENG-09 audit opinions из списков | D | 🟡 | EP-CONFIG (настраиваемые списки) |
+| ENG-09 audit opinions из списков | D | ✅ | EP-CONFIG: `config_list.audit_opinion` + UI управления списком в `/config` (T-H126) |
 
 ## 4.6 WP — Working Papers (9M / 1D)
 | ID | Pri | Вердикт | Как отвечаем |

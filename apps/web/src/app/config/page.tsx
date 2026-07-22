@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import {
   createAuditTypeAction,
+  createConfigListItemAction,
   createCustomFieldAction,
   createTagAction,
   saveBusinessProfileAction,
@@ -29,6 +30,15 @@ interface CustomFieldDef {
   fieldType: string;
   options?: string[];
   required: boolean;
+}
+interface ConfigListItem {
+  code: string;
+  labelI18n?: Record<string, string>;
+}
+interface ConfigList {
+  listKey: string;
+  items: ConfigListItem[];
+  isDefault: boolean;
 }
 interface SlaWindows {
   critical: number;
@@ -67,6 +77,7 @@ const btnCls =
   'rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 const entityTypes = ['asset', 'engagement', 'risk', 'working_paper', 'vendor_intake'] as const;
 const fieldTypes = ['text', 'number', 'date', 'select', 'boolean'] as const;
+const configListKeys = ['audit_opinion', 'risk_categories', 'vendor_categories'] as const;
 
 /** Настройки тенанта (T-084/T-076): справочник типов аудита + теги. */
 export default async function ConfigPage() {
@@ -75,15 +86,25 @@ export default async function ConfigPage() {
   const [t, tenantSlug] = await Promise.all([getTranslations('config'), getActiveTenantSlug()]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const [typesRes, tagsRes, slaRes, bizRes, ...customFieldResponses] = await Promise.all([
-    apiFetch('/audit-types', { headers }),
-    apiFetch('/tags', { headers }),
-    apiFetch('/sla-config', { headers }),
-    apiFetch('/business-profile', { headers }),
-    ...entityTypes.map((entityType) =>
-      apiFetch(`/custom-fields?entityType=${encodeURIComponent(entityType)}`, { headers }),
-    ),
-  ]);
+  const [[typesRes, tagsRes, slaRes, bizRes], customFieldResponses, configListResponses] =
+    await Promise.all([
+      Promise.all([
+        apiFetch('/audit-types', { headers }),
+        apiFetch('/tags', { headers }),
+        apiFetch('/sla-config', { headers }),
+        apiFetch('/business-profile', { headers }),
+      ]),
+      Promise.all(
+        entityTypes.map((entityType) =>
+          apiFetch(`/custom-fields?entityType=${encodeURIComponent(entityType)}`, { headers }),
+        ),
+      ),
+      Promise.all(
+        configListKeys.map((listKey) =>
+          apiFetch(`/config-lists/${encodeURIComponent(listKey)}`, { headers }),
+        ),
+      ),
+    ]);
   const types: AuditType[] = typesRes.ok ? await typesRes.json() : [];
   const tags: Tag[] = tagsRes.ok ? await tagsRes.json() : [];
   const sla: SlaWindows = slaRes.ok ? await slaRes.json() : DEFAULT_SLA;
@@ -98,6 +119,16 @@ export default async function ConfigPage() {
       ]),
     ),
   ) as Record<(typeof entityTypes)[number], CustomFieldDef[]>;
+  const configLists = Object.fromEntries(
+    await Promise.all(
+      configListKeys.map(async (listKey, index) => [
+        listKey,
+        configListResponses[index]?.ok
+          ? ((await configListResponses[index]!.json()) as ConfigList)
+          : { listKey, items: [], isDefault: true },
+      ]),
+    ),
+  ) as Record<(typeof configListKeys)[number], ConfigList>;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 p-6 pt-12">
@@ -228,6 +259,101 @@ export default async function ConfigPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* Config-lists no-code (GEN-06/ENG-09/T-H126) */}
+      <section className="flex flex-col gap-3" data-testid="config-lists-config">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-sm font-semibold text-secondary">{t('configListsTitle')}</h2>
+          <p className="text-xs text-secondary">{t('configListsHint')}</p>
+        </div>
+        <form
+          action={createConfigListItemAction}
+          data-testid="config-list-item-create"
+          className="grid gap-3 rounded-xl border border-border bg-white p-4 shadow-sm md:grid-cols-6"
+        >
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('configListKey')}</span>
+            <select name="listKey" className={inputCls} defaultValue="audit_opinion">
+              {configListKeys.map((listKey) => (
+                <option key={listKey} value={listKey}>
+                  {t(`configListLabels.${listKey}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('configListCode')}</span>
+            <input
+              name="code"
+              required
+              placeholder={t('configListCodePh')}
+              aria-label={t('configListCode')}
+              className={inputCls}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('configListLabelEn')}</span>
+            <input name="labelEn" required placeholder="Qualified opinion" className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('configListLabelAz')}</span>
+            <input name="labelAz" placeholder="Şərtli rəy" className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('configListLabelRu')}</span>
+            <input name="labelRu" placeholder="Мнение с оговоркой" className={inputCls} />
+          </label>
+          <button type="submit" className={`${btnCls} md:col-span-2 md:self-end`}>
+            {t('configListCreate')}
+          </button>
+        </form>
+        <div className="grid gap-3 md:grid-cols-3" data-testid="config-lists-list">
+          {configListKeys.map((listKey) => {
+            const list = configLists[listKey];
+            return (
+              <article
+                key={listKey}
+                className="rounded-xl border border-border bg-white p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {t(`configListLabels.${listKey}`)}
+                    </h3>
+                    <p className="mt-1 font-mono text-[11px] text-secondary">{listKey}</p>
+                  </div>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      list.isDefault ? 'bg-muted text-secondary' : 'bg-emerald-100 text-emerald-700'
+                    }`}
+                  >
+                    {list.isDefault ? t('configListDefault') : t('configListTenant')}
+                  </span>
+                </div>
+                {list.items.length === 0 ? (
+                  <p className="mt-3 text-xs text-secondary">{t('configListEmpty')}</p>
+                ) : (
+                  <ul className="mt-3 flex flex-col gap-2">
+                    {list.items.map((item) => (
+                      <li
+                        key={item.code}
+                        className="rounded-lg border border-border bg-muted/40 px-3 py-2"
+                      >
+                        <span className="font-mono text-xs font-semibold text-foreground">
+                          {item.code}
+                        </span>
+                        <p className="mt-1 text-xs text-secondary">
+                          {item.labelI18n?.en ?? item.code}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </article>
+            );
+          })}
+        </div>
       </section>
 
       {/* Custom-fields no-code (GEN-07/T-H125) */}
