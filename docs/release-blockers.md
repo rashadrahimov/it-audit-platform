@@ -1,6 +1,6 @@
 # Release blockers register
 
-Статус: T-H141. Этот файл отделяет реально оставшиеся buildable-задачи от пунктов, которые нельзя честно закрыть без решения клиента, production secrets, инфраструктуры или внешней проверки.
+Статус: T-H145. Этот файл отделяет реально оставшиеся buildable-задачи от пунктов, которые нельзя честно закрыть без решения клиента, production secrets, инфраструктуры, production data access или внешней проверки.
 
 ## Client decisions required
 
@@ -28,6 +28,13 @@
 
 2. **Production smoke cannot run until deploy succeeds.**
    - API health/web smoke/tag smoke on prod are blocked by the missing deployment secrets or a direct SSH credential.
+
+## Production data / integrity blockers
+
+1. **Live demo/prod audit-log chain reports `needsReview`.**
+   - Evidence from site check on `http://78.47.51.200:8080/audit-log`: `reason=content-hash`, `brokenAt=019f76a3-ed8d-7239-b422-2e6d36d3273f`.
+   - Code-side LOG-01 behavior is correct: `audit-hash-chain.spec.ts` proves a tampered row is detected instead of hidden.
+   - Resolution needs production DB/backup authority, not a normal code patch. Follow [`docs/audit-log-integrity-runbook.md`](audit-log-integrity-runbook.md): preserve evidence, compare with backup/WAL/PITR, then restore/reseed demo or open a documented new trust epoch.
 
 ## Infrastructure blockers
 
