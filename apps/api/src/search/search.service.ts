@@ -27,6 +27,8 @@ export interface AuditQueryHit {
   title: string;
   riskRating: string;
   status: string;
+  slaStatus: string;
+  dueDate: string | null;
   engagementId: string | null;
   controlRef: string | null;
   checklistRef: string | null;
@@ -59,6 +61,22 @@ export interface AuditQueryEvidenceCandidate {
   reviewStatus: string | null;
 }
 
+export interface AuditQueryFindingCandidate {
+  id: string;
+  titleI18n: I18nText;
+  descriptionI18n: I18nText | null;
+  recommendationI18n: I18nText | null;
+  riskRating: string;
+  status: string;
+  slaStatus: string;
+  dueDate: Date | null;
+  engagementId: string | null;
+  checklistRef: string | null;
+  checklistQuestionI18n: I18nText | null;
+  controlRef: string | null;
+  controlObjectiveI18n: I18nText | null;
+}
+
 const RISK_ALIASES: Array<[string, string[]]> = [
   ['critical', ['critical', 'критич', 'kritik']],
   ['high', ['high', 'высок', 'yüksək']],
@@ -73,6 +91,12 @@ const STATUS_ALIASES: Array<[string, string[]]> = [
   ['remediated', ['remediated', 'устран', 'aradan']],
   ['pending_retest', ['pending retest', 'pending_retest', 'ре-тест', 'təkrar']],
   ['closed', ['closed', 'закрыт', 'bağlan']],
+];
+
+const SLA_ALIASES: Array<[string, string[]]> = [
+  ['overdue', ['overdue', 'past due', 'late', 'просроч', 'опозд', 'gecik', 'vaxtı keç']],
+  ['due_soon', ['due soon', 'due_soon', 'скоро срок', 'скоро дедлайн', 'yaxınlaşır']],
+  ['ok', ['on track', 'on_track', 'в срок', 'qrafikdə']],
 ];
 
 const TOPIC_ALIASES: Array<[string, string[]]> = [
@@ -119,6 +143,11 @@ const STOP_WORDS = new Set([
   'with',
   'about',
   'open',
+  'overdue',
+  'late',
+  'past',
+  'due',
+  'sla',
   'control',
   'controls',
   'открой',
@@ -127,6 +156,10 @@ const STOP_WORDS = new Set([
   'все',
   'замечания',
   'находки',
+  'просроченные',
+  'просрочено',
+  'срок',
+  'дедлайн',
   'контроль',
   'контроли',
   'по',
@@ -135,6 +168,13 @@ const STOP_WORDS = new Set([
   'üzrə',
   'nəzarət',
   'hamısı',
+  'gecikmiş',
+  'gecikib',
+  'qeyd',
+  'qeydlər',
+  'qeydləri',
+  'tapıntı',
+  'tapıntılar',
   'tap',
   'göstər',
 ]);
@@ -152,6 +192,7 @@ export function parseAuditQuery(raw: string) {
   const lower = query.toLowerCase();
   const riskRating = RISK_ALIASES.find(([, aliases]) => includesAny(lower, aliases))?.[0];
   const status = STATUS_ALIASES.find(([, aliases]) => includesAny(lower, aliases))?.[0];
+  const slaStatus = SLA_ALIASES.find(([, aliases]) => includesAny(lower, aliases))?.[0];
   const topic = TOPIC_ALIASES.find(
     ([name, aliases]) => lower.includes(name) || includesAny(lower, aliases),
   );
@@ -162,9 +203,18 @@ export function parseAuditQuery(raw: string) {
     .filter((term) => term.length > 2 && !STOP_WORDS.has(term))
     .filter((term) => !RISK_ALIASES.some(([, aliases]) => aliases.some((a) => term.includes(a))))
     .filter((term) => !STATUS_ALIASES.some(([, aliases]) => aliases.some((a) => term.includes(a))))
-    .filter((term) => !topicTerms.includes(term))
+    .filter((term) => !SLA_ALIASES.some(([, aliases]) => aliases.some((a) => term.includes(a))))
+    .filter((term) => !topicTerms.some((topicTerm) => term.includes(topicTerm)))
     .slice(0, 6);
-  return { query, riskRating, status, topic: topic?.[0] ?? null, topicTerms, explicitTerms };
+  return {
+    query,
+    riskRating,
+    status,
+    slaStatus,
+    topic: topic?.[0] ?? null,
+    topicTerms,
+    explicitTerms,
+  };
 }
 
 function matchesTerms(haystack: string, parsed: ReturnType<typeof parseAuditQuery>): boolean {
@@ -189,6 +239,90 @@ function evidenceReason(
     row.status ? `document ${row.status}` : null,
   ].filter(Boolean);
   return reasons.length > 0 ? reasons.join(' · ') : 'matched evidence terms';
+}
+
+function isOpenForSla(row: Pick<AuditQueryFindingCandidate, 'status'>): boolean {
+  return !['closed', 'remediated'].includes(row.status);
+}
+
+function isOverdueFinding(row: AuditQueryFindingCandidate, now: Date): boolean {
+  return (
+    row.slaStatus === 'overdue' ||
+    Boolean(row.dueDate && row.dueDate.getTime() < now.getTime() && isOpenForSla(row))
+  );
+}
+
+function findingReason(
+  row: Pick<AuditQueryFindingCandidate, 'slaStatus' | 'dueDate'>,
+  parsed: ReturnType<typeof parseAuditQuery>,
+): string {
+  const reasons = [
+    parsed.riskRating ? `${parsed.riskRating} risk` : null,
+    parsed.status ? `status ${parsed.status}` : null,
+    parsed.slaStatus ? `SLA ${parsed.slaStatus}` : null,
+    parsed.topic ? `topic ${parsed.topic}` : null,
+    parsed.slaStatus === 'overdue' && row.dueDate
+      ? `due ${row.dueDate.toISOString().slice(0, 10)}`
+      : null,
+  ].filter(Boolean);
+  return reasons.length > 0 ? reasons.join(' · ') : 'matched query terms';
+}
+
+export function auditFindingHitsForQuery(
+  rows: AuditQueryFindingCandidate[],
+  parsed: ReturnType<typeof parseAuditQuery>,
+  locale: Locale,
+  now = new Date(),
+  limit = 20,
+): AuditQueryHit[] {
+  const hits: AuditQueryHit[] = [];
+  for (const row of rows) {
+    const title = textOf(row.titleI18n, locale);
+    const description = textOf(row.descriptionI18n, locale);
+    const recommendation = textOf(row.recommendationI18n, locale);
+    const checklistQuestion = textOf(row.checklistQuestionI18n, locale);
+    const controlObjective = textOf(row.controlObjectiveI18n, locale);
+    const haystack = [
+      title,
+      description,
+      recommendation,
+      row.riskRating,
+      row.status,
+      row.slaStatus,
+      row.dueDate?.toISOString().slice(0, 10),
+      row.checklistRef,
+      row.controlRef,
+      checklistQuestion,
+      controlObjective,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    if (parsed.riskRating && row.riskRating !== parsed.riskRating) continue;
+    if (parsed.status && row.status !== parsed.status) continue;
+    if (parsed.slaStatus === 'overdue' && !isOverdueFinding(row, now)) continue;
+    if (parsed.slaStatus && parsed.slaStatus !== 'overdue' && row.slaStatus !== parsed.slaStatus) {
+      continue;
+    }
+    if (!matchesTerms(haystack, parsed)) continue;
+
+    hits.push({
+      id: row.id,
+      title,
+      riskRating: row.riskRating,
+      status: row.status,
+      slaStatus: isOverdueFinding(row, now) ? 'overdue' : row.slaStatus,
+      dueDate: row.dueDate?.toISOString() ?? null,
+      engagementId: row.engagementId,
+      controlRef: row.controlRef,
+      checklistRef: row.checklistRef,
+      snippet: description || recommendation || checklistQuestion || controlObjective,
+      reason: findingReason(row, parsed),
+    });
+    if (hits.length >= limit) break;
+  }
+  return hits;
 }
 
 export function auditEvidenceHitsForQuery(
@@ -366,6 +500,8 @@ export class SearchService {
           recommendationI18n: finding.recommendationI18n,
           riskRating: finding.riskRating,
           status: finding.status,
+          slaStatus: finding.slaStatus,
+          dueDate: finding.dueDate,
           engagementId: finding.engagementId,
           checklistRef: checklistItem.ref,
           checklistQuestionI18n: checklistItem.questionI18n,
@@ -412,50 +548,7 @@ export class SearchService {
       return { findingRows, evidenceRows };
     });
 
-    const hits: AuditQueryHit[] = [];
-    for (const row of findingRows) {
-      const title = textOf(row.titleI18n, locale);
-      const description = textOf(row.descriptionI18n, locale);
-      const recommendation = textOf(row.recommendationI18n, locale);
-      const checklistQuestion = textOf(row.checklistQuestionI18n, locale);
-      const controlObjective = textOf(row.controlObjectiveI18n, locale);
-      const haystack = [
-        title,
-        description,
-        recommendation,
-        row.riskRating,
-        row.status,
-        row.checklistRef,
-        row.controlRef,
-        checklistQuestion,
-        controlObjective,
-      ]
-        .join(' ')
-        .toLowerCase();
-
-      if (parsed.riskRating && row.riskRating !== parsed.riskRating) continue;
-      if (parsed.status && row.status !== parsed.status) continue;
-      if (!matchesTerms(haystack, parsed)) continue;
-
-      const reasons = [
-        parsed.riskRating ? `${parsed.riskRating} risk` : null,
-        parsed.status ? `status ${parsed.status}` : null,
-        parsed.topic ? `topic ${parsed.topic}` : null,
-      ].filter(Boolean);
-      hits.push({
-        id: row.id,
-        title,
-        riskRating: row.riskRating,
-        status: row.status,
-        engagementId: row.engagementId,
-        controlRef: row.controlRef,
-        checklistRef: row.checklistRef,
-        snippet: description || recommendation || checklistQuestion || controlObjective,
-        reason: reasons.length > 0 ? reasons.join(' · ') : 'matched query terms',
-      });
-      if (hits.length >= 20) break;
-    }
-
+    const hits = auditFindingHitsForQuery(findingRows, parsed, locale);
     const evidenceHits = auditEvidenceHitsForQuery(evidenceRows, parsed);
 
     const totalCount = hits.length + evidenceHits.length;
@@ -465,6 +558,7 @@ export class SearchService {
         intent: 'audit_evidence_lookup',
         riskRating: parsed.riskRating ?? null,
         status: parsed.status ?? null,
+        slaStatus: parsed.slaStatus ?? null,
         topic: parsed.topic,
         terms: parsed.explicitTerms,
       },

@@ -2732,6 +2732,8 @@
     "deterministic": "Sübuta təhlükəsiz",
     "risk": "Risk",
     "status": "Status",
+    "sla": "SLA",
+    "due": "Son tarix",
     "topic": "Mövzu",
     "types": {
       "finding": "Qeydlər",

@@ -18,6 +18,8 @@ interface AuditQueryHit {
   title: string;
   riskRating: string;
   status: string;
+  slaStatus: string;
+  dueDate: string | null;
   engagementId: string | null;
   controlRef: string | null;
   checklistRef: string | null;
@@ -44,6 +46,7 @@ interface AuditQueryAnswer {
   interpreted: {
     riskRating: string | null;
     status: string | null;
+    slaStatus: string | null;
     topic: string | null;
     terms: string[];
   };
@@ -99,6 +102,12 @@ export default async function SearchPage({
     arr.push(h);
     byType.set(h.type, arr);
   }
+  const dueDateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
+  const formatDueDate = (value: string | null) => {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : dueDateFormatter.format(date);
+  };
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 pt-12">
@@ -141,6 +150,11 @@ export default async function SearchPage({
                 {t('status')}: {ask.interpreted.status}
               </span>
             )}
+            {ask.interpreted.slaStatus && (
+              <span className="rounded-full bg-white px-2 py-1 text-emerald-800">
+                {t('sla')}: {ask.interpreted.slaStatus}
+              </span>
+            )}
             {ask.interpreted.topic && (
               <span className="rounded-full bg-white px-2 py-1 text-emerald-800">
                 {t('topic')}: {ask.interpreted.topic}
@@ -164,6 +178,14 @@ export default async function SearchPage({
                     <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-secondary">
                       {h.status}
                     </span>
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
+                      {t('sla')}: {h.slaStatus}
+                    </span>
+                    {h.dueDate && (
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                        {t('due')}: {formatDueDate(h.dueDate)}
+                      </span>
+                    )}
                     {(h.controlRef || h.checklistRef) && (
                       <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
                         {h.controlRef ?? h.checklistRef}
