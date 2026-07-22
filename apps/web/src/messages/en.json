@@ -2024,6 +2024,29 @@
         "none": "None",
         "private_network": "Private network endpoint",
         "external_provider": "External AI provider"
+      },
+      "assuranceKicker": "Assurance proof",
+      "assuranceTitle": "Auditor-readable AI privacy claims",
+      "assuranceBody": "Effective deployment class: {deploymentClass}. Claims below are generated from the active AI configuration and platform guardrails.",
+      "customerTraining": "Customer-data training",
+      "deploymentClasses": {
+        "deterministic_no_ai": "Deterministic / no AI egress",
+        "private_ai_endpoint": "Private AI endpoint",
+        "external_ai_provider": "External AI provider"
+      },
+      "claims": {
+        "no_training": "No training use",
+        "tenant_isolation": "Tenant isolation",
+        "encrypted_secrets": "Encrypted provider secrets",
+        "human_review": "Human review gate",
+        "evidence_grounded": "Evidence-grounded output",
+        "zero_retention": "Zero data retention",
+        "dpa_required": "Data-processing agreement"
+      },
+      "claimStatuses": {
+        "enforced": "Enforced",
+        "required": "Required",
+        "not_applicable": "N/A"
       }
     },
     "provider": "Provider",

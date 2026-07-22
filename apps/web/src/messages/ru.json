@@ -2024,6 +2024,29 @@
         "none": "Нет",
         "private_network": "Private endpoint",
         "external_provider": "Внешний ИИ-провайдер"
+      },
+      "assuranceKicker": "Доказательство для аудита",
+      "assuranceTitle": "Проверяемые privacy-claims по ИИ",
+      "assuranceBody": "Эффективный класс деплоя: {deploymentClass}. Ниже — claims из активной AI-настройки и guardrails платформы.",
+      "customerTraining": "Обучение на данных клиента",
+      "deploymentClasses": {
+        "deterministic_no_ai": "Детерминированный режим / без выхода в ИИ",
+        "private_ai_endpoint": "Private AI endpoint",
+        "external_ai_provider": "Внешний ИИ-провайдер"
+      },
+      "claims": {
+        "no_training": "Запрет обучения",
+        "tenant_isolation": "Изоляция тенанта",
+        "encrypted_secrets": "Шифрование секретов провайдера",
+        "human_review": "Проверка человеком",
+        "evidence_grounded": "Выводы на доказательствах",
+        "zero_retention": "Нулевое хранение данных",
+        "dpa_required": "Договор обработки данных"
+      },
+      "claimStatuses": {
+        "enforced": "Принудительно",
+        "required": "Требуется",
+        "not_applicable": "Н/П"
       }
     },
     "provider": "Провайдер",

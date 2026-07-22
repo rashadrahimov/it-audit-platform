@@ -2024,6 +2024,29 @@
         "none": "Yoxdur",
         "private_network": "Private endpoint",
         "external_provider": "Xarici İİ provayderi"
+      },
+      "assuranceKicker": "Audit sübutu",
+      "assuranceTitle": "Auditor üçün yoxlanıla bilən İİ məxfilik iddiaları",
+      "assuranceBody": "Effektiv yerləşdirmə sinfi: {deploymentClass}. Aşağıdakı iddialar aktiv İİ ayarından və platforma guardrail-lərindən yaranır.",
+      "customerTraining": "Müştəri datası ilə təlim",
+      "deploymentClasses": {
+        "deterministic_no_ai": "Deterministik / İİ çıxışı yoxdur",
+        "private_ai_endpoint": "Private İİ endpoint",
+        "external_ai_provider": "Xarici İİ provayderi"
+      },
+      "claims": {
+        "no_training": "Təlimdə istifadə qadağası",
+        "tenant_isolation": "Tenant izolyasiyası",
+        "encrypted_secrets": "Provayder sirrlərinin şifrələnməsi",
+        "human_review": "İnsan təsdiqi",
+        "evidence_grounded": "Sübuta əsaslanan nəticə",
+        "zero_retention": "Sıfır data saxlanması",
+        "dpa_required": "Data emalı müqaviləsi"
+      },
+      "claimStatuses": {
+        "enforced": "Məcburi",
+        "required": "Tələb olunur",
+        "not_applicable": "Aid deyil"
       }
     },
     "provider": "Provayder",

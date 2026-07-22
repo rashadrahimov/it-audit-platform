@@ -31,6 +31,25 @@ export interface AiPrivacyPosture {
     evidenceGroundedOutputRequired: true;
     humanReviewRequired: true;
   };
+  deploymentClass: 'deterministic_no_ai' | 'private_ai_endpoint' | 'external_ai_provider';
+  assuranceClaims: Array<{
+    key:
+      | 'no_training'
+      | 'tenant_isolation'
+      | 'encrypted_secrets'
+      | 'human_review'
+      | 'evidence_grounded'
+      | 'zero_retention'
+      | 'dpa_required';
+    status: 'enforced' | 'required' | 'not_applicable';
+    evidence: string;
+  }>;
+  processingObligations: {
+    dataProcessingAgreementRequired: boolean;
+    zeroDataRetentionRequired: boolean;
+    privateDeploymentRecommended: boolean;
+    customerDataUsedForTraining: false;
+  };
 }
 
 export interface SetTenantAiConfig {
@@ -89,6 +108,13 @@ export function aiPrivacyPosture(input: {
       : dataEgress === 'private_network'
         ? 'private_network'
         : 'external_provider';
+  const deploymentClass =
+    dataEgress === 'none'
+      ? 'deterministic_no_ai'
+      : dataEgress === 'private_network'
+        ? 'private_ai_endpoint'
+        : 'external_ai_provider';
+  const cloudObligations = dataEgress === 'external_provider';
 
   return {
     provider: input.provider,
@@ -98,13 +124,61 @@ export function aiPrivacyPosture(input: {
     dataEgress,
     residencyMode,
     trainingUseAllowed: false,
-    zeroDataRetentionRequired: dataEgress === 'external_provider',
-    requiresDpa: dataEgress === 'external_provider',
+    zeroDataRetentionRequired: cloudObligations,
+    requiresDpa: cloudObligations,
     controls: {
       tenantIsolation: true,
       encryptedSecrets: true,
       evidenceGroundedOutputRequired: true,
       humanReviewRequired: true,
+    },
+    deploymentClass,
+    assuranceClaims: [
+      {
+        key: 'no_training',
+        status: 'enforced',
+        evidence: 'trainingUseAllowed=false is hard-coded in the effective AI posture.',
+      },
+      {
+        key: 'tenant_isolation',
+        status: 'enforced',
+        evidence: 'Tenant-scoped AI config is read through tenant RLS and permission-guarded APIs.',
+      },
+      {
+        key: 'encrypted_secrets',
+        status: 'enforced',
+        evidence: 'Provider API keys are stored encrypted and only exposed as hasKey=true.',
+      },
+      {
+        key: 'human_review',
+        status: 'enforced',
+        evidence: 'AI outputs remain draft-only until auditor review and acceptance.',
+      },
+      {
+        key: 'evidence_grounded',
+        status: 'enforced',
+        evidence: 'AI findings/risks require evidence references before acceptance.',
+      },
+      {
+        key: 'zero_retention',
+        status: cloudObligations ? 'required' : 'not_applicable',
+        evidence: cloudObligations
+          ? 'External provider mode requires zero data retention terms.'
+          : 'No external AI provider receives customer prompts in this mode.',
+      },
+      {
+        key: 'dpa_required',
+        status: cloudObligations ? 'required' : 'not_applicable',
+        evidence: cloudObligations
+          ? 'External provider mode requires a data-processing agreement.'
+          : 'No external AI provider processor is active in this mode.',
+      },
+    ],
+    processingObligations: {
+      dataProcessingAgreementRequired: cloudObligations,
+      zeroDataRetentionRequired: cloudObligations,
+      privateDeploymentRecommended: cloudObligations,
+      customerDataUsedForTraining: false,
     },
   };
 }

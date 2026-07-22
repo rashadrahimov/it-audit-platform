@@ -18,12 +18,34 @@ interface AiStatus {
   model: string | null;
 }
 interface AiPrivacyPosture {
+  provider?: string;
+  model?: string | null;
   source: 'tenant_override' | 'deployment_default' | 'deterministic';
+  externalAiEnabled?: boolean;
   dataEgress: 'none' | 'private_network' | 'external_provider';
   residencyMode: 'local_only' | 'private_network' | 'external_provider';
   trainingUseAllowed: boolean;
   zeroDataRetentionRequired: boolean;
   requiresDpa: boolean;
+  deploymentClass?: 'deterministic_no_ai' | 'private_ai_endpoint' | 'external_ai_provider';
+  assuranceClaims?: Array<{
+    key:
+      | 'no_training'
+      | 'tenant_isolation'
+      | 'encrypted_secrets'
+      | 'human_review'
+      | 'evidence_grounded'
+      | 'zero_retention'
+      | 'dpa_required';
+    status: 'enforced' | 'required' | 'not_applicable';
+    evidence: string;
+  }>;
+  processingObligations?: {
+    dataProcessingAgreementRequired: boolean;
+    zeroDataRetentionRequired: boolean;
+    privateDeploymentRecommended: boolean;
+    customerDataUsedForTraining: false;
+  };
 }
 
 const PROVIDERS = ['none', 'anthropic', 'openai_compat'] as const;
@@ -59,6 +81,14 @@ export default async function AiSettingsPage() {
         trainingUseAllowed: false,
         zeroDataRetentionRequired: false,
         requiresDpa: false,
+        deploymentClass: 'deterministic_no_ai',
+        assuranceClaims: [],
+        processingObligations: {
+          dataProcessingAgreementRequired: false,
+          zeroDataRetentionRequired: false,
+          privateDeploymentRecommended: false,
+          customerDataUsedForTraining: false,
+        },
       };
   const tenantConfigured = cfg.provider !== 'none' && cfg.hasKey && Boolean(cfg.model);
   const effectiveEnabled = tenantConfigured || status.enabled;
@@ -106,6 +136,57 @@ export default async function AiSettingsPage() {
             </div>
           ))}
         </dl>
+        <div
+          data-testid="ai-assurance-claims"
+          className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.14em] text-emerald-700 uppercase">
+                {t('privacy.assuranceKicker')}
+              </p>
+              <h3 className="mt-1 text-sm font-semibold text-primary">
+                {t('privacy.assuranceTitle')}
+              </h3>
+              <p className="mt-1 text-xs text-secondary">
+                {t('privacy.assuranceBody', {
+                  deploymentClass: posture.deploymentClass
+                    ? t(`privacy.deploymentClasses.${posture.deploymentClass}`)
+                    : '—',
+                })}
+              </p>
+            </div>
+            <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800">
+              {t('privacy.customerTraining')}:{' '}
+              {posture.processingObligations?.customerDataUsedForTraining
+                ? t('privacy.allowed')
+                : t('privacy.notAllowed')}
+            </span>
+          </div>
+          <div className="mt-4 grid gap-2 md:grid-cols-2">
+            {(posture.assuranceClaims ?? []).map((claim) => (
+              <div key={claim.key} className="rounded-xl bg-white/85 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <dt className="text-xs font-semibold text-primary">
+                    {t(`privacy.claims.${claim.key}`)}
+                  </dt>
+                  <dd
+                    className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      claim.status === 'enforced'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : claim.status === 'required'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-muted text-secondary'
+                    }`}
+                  >
+                    {t(`privacy.claimStatuses.${claim.status}`)}
+                  </dd>
+                </div>
+                <p className="mt-1 text-xs leading-5 text-secondary">{claim.evidence}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Деплой-дефолт (env) — справочно */}
