@@ -32,6 +32,7 @@ import {
   documentLink,
   fieldPermission,
   framework,
+  frameworkActivation,
   frameworkRequirement,
   license,
   membership,
@@ -152,6 +153,7 @@ async function seedPostgres(): Promise<void> {
     await seedGlossary();
     await seedDemoUsers(db, demoTenant.id);
     await seedDemoDepartments(db, demoTenant.id);
+    await seedDemoFrameworkActivations(db, demoTenant.id);
     await seedDemoControlAdaptation(db, demoTenant.id);
     await seedDemoConnector(db, demoTenant.id);
     await seedDemoAutoTest(db, demoTenant.id);
@@ -287,6 +289,26 @@ async function seedDemoFieldPermissions(): Promise<void> {
   } finally {
     await owner.end().catch(() => {});
   }
+}
+
+async function seedDemoFrameworkActivations(db: NodePgDatabase, tenantId: string): Promise<void> {
+  const demoFrameworks = ['CBAR IT Audit', 'ISO/IEC 27001', 'COBIT'];
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.tenant_id', ${tenantId}, true)`);
+    const rows = await tx
+      .select({ id: framework.id, nameI18n: framework.nameI18n })
+      .from(framework)
+      .where(and(isNull(framework.tenantId), isNull(framework.deletedAt)));
+    const ids = rows.filter((row) => demoFrameworks.includes(row.nameI18n.en)).map((row) => row.id);
+    if (ids.length === 0) return;
+    await tx
+      .insert(frameworkActivation)
+      .values(ids.map((frameworkId) => ({ tenantId, frameworkId })))
+      .onConflictDoNothing({
+        target: [frameworkActivation.tenantId, frameworkActivation.frameworkId],
+      });
+  });
+  console.log(`✓ Демо-фреймворки активированы: ${demoFrameworks.join(', ')} (idempotent)`);
 }
 
 /** Глобальная библиотека (ADR-0016) — под owner: RLS-политика записи не пускает app к tenant_id NULL. */
