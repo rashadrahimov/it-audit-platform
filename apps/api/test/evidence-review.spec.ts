@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { DbService } from '../src/db/db.service';
 import { AuditLogService } from '../src/audit/audit-log.service';
 import { DocumentsService } from '../src/documents/documents.service';
 import type { FileStorageService } from '../src/files/file-storage.service';
 import {
+  auditLog,
   document,
   documentLink,
   engagement,
@@ -30,15 +31,17 @@ const emails = {
 };
 
 const dbService = new DbService();
-const service = new DocumentsService(
-  dbService,
-  {} as FileStorageService,
-  new AuditLogService(dbService),
-);
+const storage = {
+  put: async () => undefined,
+  get: async () => null,
+  onModuleDestroy: () => undefined,
+} as unknown as FileStorageService;
+const service = new DocumentsService(dbService, storage, new AuditLogService(dbService));
 
 let tenantId: string;
 let subAId: string;
 let subBId: string;
+let engagementId: string;
 let linkId: string;
 const uid: Record<string, string> = {};
 
@@ -109,6 +112,7 @@ beforeAll(async () => {
       .insert(engagement)
       .values({ tenantId, subsidiaryId: subAId, titleI18n: { en: 'Audit A' } })
       .returning();
+    engagementId = eng!.id;
     const [doc] = await tx
       .insert(document)
       .values({
@@ -136,7 +140,18 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await dbService.withTenant(tenantId, async (tx) => {
-    await tx.delete(documentLink).where(eq(documentLink.id, linkId));
+    const docs = await tx
+      .select({ id: document.id })
+      .from(document)
+      .where(eq(document.tenantId, tenantId));
+    if (docs.length > 0) {
+      await tx.delete(documentLink).where(
+        inArray(
+          documentLink.documentId,
+          docs.map((doc) => doc.id),
+        ),
+      );
+    }
     await tx.delete(document).where(eq(document.tenantId, tenantId));
     await tx.delete(engagement).where(eq(engagement.tenantId, tenantId));
     await tx.delete(subsidiary).where(eq(subsidiary.tenantId, tenantId));
@@ -183,5 +198,62 @@ describe('evidence review pipeline (T-112)', () => {
     await expect(
       service.setReviewStatus(actor('auditor'), '11111111-1111-7111-8111-111111111111', 'accepted'),
     ).rejects.toThrow(/не найдена/);
+  });
+
+  it('T-H95: linked evidence upload records a traceable rescan queue audit event', async () => {
+    const uploaded = await service.upload(
+      actor('auditor'),
+      {
+        buffer: Buffer.from('firewall deny rules'),
+        originalName: 'firewall-config.yaml',
+        mime: 'application/x-yaml',
+      },
+      {
+        category: 'evidence',
+        link: { entityType: 'engagement', entityId: engagementId, relation: 'evidence' },
+      },
+    );
+
+    expect(uploaded.rescanTrigger).toMatchObject({
+      required: true,
+      bucket: 'config_logs',
+      reason: 'linked_evidence_upload',
+      queues: { extraction: true, aiFindingDrafts: true },
+    });
+    const rows = await dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ after: auditLog.after })
+        .from(auditLog)
+        .where(eq(auditLog.action, 'document.rescan_queued')),
+    );
+    const payload = rows.find((row) => {
+      const after = row.after as { documentId?: string };
+      return after.documentId === uploaded.id;
+    })?.after as
+      | {
+          queued: boolean;
+          sourceAction: string;
+          enabledQueues: string[];
+          impactedTargets: Array<{ entityType: string; entityId: string; relation: string }>;
+          humanReviewGate: string;
+          draftOnly: boolean;
+        }
+      | undefined;
+
+    expect(payload).toMatchObject({
+      queued: true,
+      sourceAction: 'document.uploaded',
+      enabledQueues: ['extraction', 'aiFindingDrafts'],
+      humanReviewGate: 'auditor_review_required',
+      draftOnly: true,
+    });
+    expect(payload?.impactedTargets).toEqual([
+      {
+        entityType: 'engagement',
+        entityId: engagementId,
+        relation: 'evidence',
+        reviewStatus: 'not_ready',
+      },
+    ]);
   });
 });

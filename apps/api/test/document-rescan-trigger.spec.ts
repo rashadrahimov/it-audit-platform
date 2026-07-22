@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   documentIntakeBucket,
+  evidenceRescanQueueAuditPayload,
   evidenceRescanTriggerForDocument,
   supportedDocumentIntakeFormats,
 } from '../src/documents/documents.service';
@@ -34,6 +35,33 @@ describe('document evidence re-scan triggers', () => {
     });
     expect(trigger.impactedTargets).toHaveLength(1);
     expect(trigger.explanation).toContain('draft-only');
+  });
+
+  it('builds an immutable audit payload for the continuous re-scan queue signal', () => {
+    const trigger = evidenceRescanTriggerForDocument(
+      { filename: 'firewall-config.yaml', mime: 'application/x-yaml', status: 'active' },
+      [{ entityType: 'control', entityId: 'ctrl-1', relation: 'evidence', reviewStatus: 'ready' }],
+    );
+    const payload = evidenceRescanQueueAuditPayload('doc-1', trigger, 'document.uploaded');
+
+    expect(payload).toMatchObject({
+      sourceAction: 'document.uploaded',
+      documentId: 'doc-1',
+      queued: true,
+      reason: 'linked_evidence_upload',
+      bucket: 'config_logs',
+      enabledQueues: ['extraction', 'aiFindingDrafts', 'reportReadinessRefresh'],
+      humanReviewGate: 'auditor_review_required',
+      draftOnly: true,
+    });
+    expect(payload.impactedTargets).toEqual([
+      {
+        entityType: 'control',
+        entityId: 'ctrl-1',
+        relation: 'evidence',
+        reviewStatus: 'ready',
+      },
+    ]);
   });
 
   it('routes scans through OCR before AI refresh', () => {

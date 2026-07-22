@@ -137,6 +137,19 @@ export interface EvidenceRescanTrigger {
   explanation: string;
 }
 
+export interface EvidenceRescanQueueAuditPayload {
+  sourceAction: string;
+  documentId: string;
+  queued: boolean;
+  reason: EvidenceRescanTrigger['reason'];
+  bucket: EvidenceRescanTrigger['bucket'];
+  enabledQueues: EvidenceRescanQueue[];
+  impactedTargets: EvidenceRescanTrigger['impactedTargets'];
+  humanReviewGate: EvidenceRescanTrigger['humanReviewGate'];
+  draftOnly: true;
+  explanation: string;
+}
+
 function extensionOf(filename: string): string {
   const i = filename.lastIndexOf('.');
   return i === -1 ? '' : filename.slice(i + 1).toLowerCase();
@@ -229,6 +242,28 @@ export function evidenceRescanTriggerForDocument(
       enabledQueues.length > 0
         ? `Evidence upload queued ${enabledQueues.join(', ')} while keeping AI outputs draft-only until auditor review.`
         : 'Evidence upload is recorded, but no re-scan queue is enabled yet.',
+  };
+}
+
+export function evidenceRescanQueueAuditPayload(
+  documentId: string,
+  trigger: EvidenceRescanTrigger,
+  sourceAction: string,
+): EvidenceRescanQueueAuditPayload {
+  const enabledQueues = Object.entries(trigger.queues)
+    .filter(([, enabled]) => enabled)
+    .map(([queue]) => queue as EvidenceRescanQueue);
+  return {
+    sourceAction,
+    documentId,
+    queued: enabledQueues.length > 0,
+    reason: trigger.reason,
+    bucket: trigger.bucket,
+    enabledQueues,
+    impactedTargets: trigger.impactedTargets,
+    humanReviewGate: trigger.humanReviewGate,
+    draftOnly: trigger.draftOnly,
+    explanation: trigger.explanation,
   };
 }
 
@@ -388,6 +423,7 @@ export class DocumentsService {
         rescanTrigger,
       },
     });
+    await this.recordRescanQueued(actor, result.row.id, rescanTrigger, result.action);
     return { ...result.row, rescanTrigger };
   }
 
@@ -463,6 +499,8 @@ export class DocumentsService {
       entityId: documentId,
       after: { status: 'active' },
     });
+    const rescanTrigger = await this.loadRescanTrigger(actor.tenantId, documentId);
+    await this.recordRescanQueued(actor, documentId, rescanTrigger, 'document.published');
     return { id: updated.id, status: updated.status };
   }
 
@@ -490,6 +528,10 @@ export class DocumentsService {
       entityId: documentId,
       after: link,
     });
+    if (created) {
+      const rescanTrigger = await this.loadRescanTrigger(actor.tenantId, documentId);
+      await this.recordRescanQueued(actor, documentId, rescanTrigger, 'document.linked');
+    }
     return { linked: created !== null };
   }
 
@@ -1070,6 +1112,53 @@ export class DocumentsService {
       if (subsidiaryId !== null && scope.includes(subsidiaryId)) return true;
     }
     return false;
+  }
+
+  private async loadRescanTrigger(
+    tenantId: string,
+    documentId: string,
+  ): Promise<EvidenceRescanTrigger> {
+    const { doc, links } = await this.dbService.withTenant(tenantId, async (tx) => {
+      const [doc] = await tx
+        .select({
+          filename: document.filename,
+          mime: document.mime,
+          status: document.status,
+        })
+        .from(document)
+        .where(and(eq(document.id, documentId), isNull(document.deletedAt)));
+      if (!doc) throw new NotFoundException(`Документ ${documentId} не найден`);
+      const links = await tx
+        .select({
+          entityType: documentLink.entityType,
+          entityId: documentLink.entityId,
+          relation: documentLink.relation,
+          reviewStatus: documentLink.reviewStatus,
+        })
+        .from(documentLink)
+        .where(eq(documentLink.documentId, documentId));
+      return { doc, links };
+    });
+    return evidenceRescanTriggerForDocument(doc, links);
+  }
+
+  private async recordRescanQueued(
+    actor: Actor,
+    documentId: string,
+    trigger: EvidenceRescanTrigger,
+    sourceAction: string,
+  ): Promise<void> {
+    const payload = evidenceRescanQueueAuditPayload(documentId, trigger, sourceAction);
+    if (!payload.queued) return;
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'document.rescan_queued',
+      entityType: 'document',
+      entityId: documentId,
+      after: payload,
+    });
   }
 
   private validateLink(link: LinkInput): void {
