@@ -24,9 +24,23 @@ interface AuditQueryHit {
   snippet: string;
   reason: string;
 }
+interface AuditQueryEvidenceHit {
+  id: string;
+  filename: string;
+  status: string;
+  category: string | null;
+  mime: string;
+  entityType: string | null;
+  entityId: string | null;
+  relation: string | null;
+  reviewStatus: string | null;
+  reason: string;
+}
 interface AuditQueryAnswer {
   answer: string;
   count: number;
+  evidenceCount?: number;
+  totalCount?: number;
   interpreted: {
     riskRating: string | null;
     status: string | null;
@@ -34,6 +48,7 @@ interface AuditQueryAnswer {
     terms: string[];
   };
   hits: AuditQueryHit[];
+  evidenceHits?: AuditQueryEvidenceHit[];
 }
 
 /** Куда ведёт хит каждого типа (T-V09; у WP/KB/программ пока нет detail-страниц — на разделы). */
@@ -101,7 +116,13 @@ export default async function SearchPage({
                 {t('askKicker')}
               </p>
               <h2 className="text-sm font-semibold text-emerald-950">
-                {ask.count === 0 ? t('askEmpty') : t('askFound', { n: ask.count })}
+                {(ask.totalCount ?? ask.count) === 0
+                  ? t('askEmpty')
+                  : t('askFound', {
+                      findings: ask.count,
+                      evidence: ask.evidenceCount ?? 0,
+                      total: ask.totalCount ?? ask.count,
+                    })}
               </h2>
             </div>
             <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800">
@@ -153,6 +174,42 @@ export default async function SearchPage({
                 </li>
               ))}
             </ul>
+          )}
+          {(ask.evidenceHits?.length ?? 0) > 0 && (
+            <div className="mt-3 rounded-xl border border-emerald-200/80 bg-white/80 p-3">
+              <p className="text-xs font-semibold text-emerald-900">
+                {t('askEvidenceFound', { n: ask.evidenceHits!.length })}
+              </p>
+              <ul className="mt-2 grid gap-2">
+                {ask.evidenceHits!.map((h) => (
+                  <li
+                    key={h.id}
+                    className="rounded-lg border border-emerald-100 bg-emerald-50/50 p-2.5"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href="/documents"
+                        className="font-medium text-accent underline-offset-2 hover:underline"
+                      >
+                        {h.filename}
+                      </Link>
+                      <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-secondary">
+                        {h.category ?? h.mime}
+                      </span>
+                      <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-secondary">
+                        {h.reviewStatus ?? h.status}
+                      </span>
+                      {h.entityType && (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
+                          {h.entityType}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-emerald-700">{h.reason}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </section>
       )}

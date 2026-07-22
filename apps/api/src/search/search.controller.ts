@@ -33,11 +33,14 @@ export class SearchController {
   @Get('ask')
   @RequirePermission('engagement', 'view')
   @ApiOperation({
-    summary: 'T-H38: conversational audit query over findings (deterministic, explainable)',
+    summary:
+      'T-H38/T-H69: conversational audit query over findings and evidence (deterministic, explainable)',
   })
   @ApiQuery({ name: 'q', required: true })
   @ApiQuery({ name: 'locale', required: false })
-  @ApiOkResponse({ description: '{query, interpreted, answer, count, hits[]}' })
+  @ApiOkResponse({
+    description: '{query, interpreted, answer, count, evidenceCount, hits[], evidenceHits[]}',
+  })
   ask(@Req() req: TenantRequest, @Query('q') q?: string, @Query('locale') localeQuery?: string) {
     if (!q) throw new BadRequestException('Нужен параметр q');
     return this.service.askFindings(req.tenantId, q, parseLocale(localeQuery));

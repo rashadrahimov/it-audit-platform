@@ -84,6 +84,7 @@ const REQUIREMENT_COVERAGE = [
     status: 'live',
     evidence: [
       'audit-query',
+      'evidence-query',
       'auto-drl',
       'continuous-summary',
       'evidence-rescan-plan',

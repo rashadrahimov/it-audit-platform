@@ -2,7 +2,16 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { and, ilike, isNull, or, sql } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { DbService } from '../db/db.service';
-import { auditProgram, checklistItem, control, finding, kbEntry, workingPaper } from '../db/schema';
+import {
+  auditProgram,
+  checklistItem,
+  control,
+  document,
+  documentLink,
+  finding,
+  kbEntry,
+  workingPaper,
+} from '../db/schema';
 
 const PER_TYPE = 5;
 
@@ -23,6 +32,31 @@ export interface AuditQueryHit {
   checklistRef: string | null;
   snippet: string;
   reason: string;
+}
+
+export interface AuditQueryEvidenceHit {
+  id: string;
+  filename: string;
+  status: string;
+  category: string | null;
+  mime: string;
+  entityType: string | null;
+  entityId: string | null;
+  relation: string | null;
+  reviewStatus: string | null;
+  reason: string;
+}
+
+export interface AuditQueryEvidenceCandidate {
+  id: string;
+  filename: string;
+  status: string;
+  category: string | null;
+  mime: string;
+  entityType: string | null;
+  entityId: string | null;
+  relation: string | null;
+  reviewStatus: string | null;
 }
 
 const RISK_ALIASES: Array<[string, string[]]> = [
@@ -113,7 +147,7 @@ function includesAny(text: string, aliases: string[]): boolean {
   return aliases.some((a) => text.includes(a));
 }
 
-function parseAuditQuery(raw: string) {
+export function parseAuditQuery(raw: string) {
   const query = raw.trim();
   const lower = query.toLowerCase();
   const riskRating = RISK_ALIASES.find(([, aliases]) => includesAny(lower, aliases))?.[0];
@@ -131,6 +165,72 @@ function parseAuditQuery(raw: string) {
     .filter((term) => !topicTerms.includes(term))
     .slice(0, 6);
   return { query, riskRating, status, topic: topic?.[0] ?? null, topicTerms, explicitTerms };
+}
+
+function matchesTerms(haystack: string, parsed: ReturnType<typeof parseAuditQuery>): boolean {
+  if (parsed.topicTerms.length > 0 && !includesAny(haystack, parsed.topicTerms)) return false;
+  if (
+    parsed.explicitTerms.length > 0 &&
+    !parsed.explicitTerms.every((term) => haystack.includes(term))
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function evidenceReason(
+  row: { relation: string | null; reviewStatus: string | null; status: string },
+  parsed: ReturnType<typeof parseAuditQuery>,
+): string {
+  const reasons = [
+    parsed.topic ? `topic ${parsed.topic}` : null,
+    row.relation ? `relation ${row.relation}` : null,
+    row.reviewStatus ? `review ${row.reviewStatus}` : null,
+    row.status ? `document ${row.status}` : null,
+  ].filter(Boolean);
+  return reasons.length > 0 ? reasons.join(' · ') : 'matched evidence terms';
+}
+
+export function auditEvidenceHitsForQuery(
+  rows: AuditQueryEvidenceCandidate[],
+  parsed: ReturnType<typeof parseAuditQuery>,
+  limit = 12,
+): AuditQueryEvidenceHit[] {
+  const evidenceHits: AuditQueryEvidenceHit[] = [];
+  const seenEvidence = new Set<string>();
+  const canMatchEvidence = parsed.topicTerms.length > 0 || parsed.explicitTerms.length > 0;
+  for (const row of rows) {
+    if (!canMatchEvidence) break;
+    if (seenEvidence.has(row.id)) continue;
+    const haystack = [
+      row.filename,
+      row.mime,
+      row.status,
+      row.category,
+      row.entityType,
+      row.relation,
+      row.reviewStatus,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    if (!matchesTerms(haystack, parsed)) continue;
+    seenEvidence.add(row.id);
+    evidenceHits.push({
+      id: row.id,
+      filename: row.filename,
+      status: row.status,
+      category: row.category,
+      mime: row.mime,
+      entityType: row.entityType,
+      entityId: row.entityId,
+      relation: row.relation,
+      reviewStatus: row.reviewStatus,
+      reason: evidenceReason(row, parsed),
+    });
+    if (evidenceHits.length >= limit) break;
+  }
+  return evidenceHits;
 }
 
 /** Глобальный кросс-сущностный поиск (T-094, GEN-05). RLS изолирует по тенанту. */
@@ -219,13 +319,16 @@ export class SearchService {
     return { query: term, hits };
   }
 
-  /** T-H38: deterministic conversational audit query over findings; no unsupported LLM claims. */
+  /**
+   * T-H38/T-H69: deterministic conversational audit query over findings and evidence documents;
+   * no unsupported LLM claims.
+   */
   async askFindings(tenantId: string, q: string, locale: Locale) {
     const parsed = parseAuditQuery(q);
     if (!parsed.query) throw new BadRequestException('Нужен непустой параметр q');
 
-    const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx
+    const { findingRows, evidenceRows } = await this.dbService.withTenant(tenantId, async (tx) => {
+      const findingRows = await tx
         .select({
           id: finding.id,
           titleI18n: finding.titleI18n,
@@ -255,11 +358,32 @@ export class SearchService {
           ${finding.createdAt} desc
         `,
         )
-        .limit(200),
-    );
+        .limit(200);
+
+      const evidenceRows = await tx
+        .select({
+          id: document.id,
+          filename: document.filename,
+          mime: document.mime,
+          status: document.status,
+          category: document.category,
+          entityType: documentLink.entityType,
+          entityId: documentLink.entityId,
+          relation: documentLink.relation,
+          reviewStatus: documentLink.reviewStatus,
+          createdAt: document.createdAt,
+        })
+        .from(document)
+        .leftJoin(documentLink, sql`${document.id} = ${documentLink.documentId}`)
+        .where(isNull(document.deletedAt))
+        .orderBy(sql`${document.createdAt} desc`)
+        .limit(250);
+
+      return { findingRows, evidenceRows };
+    });
 
     const hits: AuditQueryHit[] = [];
-    for (const row of rows) {
+    for (const row of findingRows) {
       const title = textOf(row.titleI18n, locale);
       const description = textOf(row.descriptionI18n, locale);
       const recommendation = textOf(row.recommendationI18n, locale);
@@ -281,13 +405,7 @@ export class SearchService {
 
       if (parsed.riskRating && row.riskRating !== parsed.riskRating) continue;
       if (parsed.status && row.status !== parsed.status) continue;
-      if (parsed.topicTerms.length > 0 && !includesAny(haystack, parsed.topicTerms)) continue;
-      if (
-        parsed.explicitTerms.length > 0 &&
-        !parsed.explicitTerms.every((t) => haystack.includes(t))
-      ) {
-        continue;
-      }
+      if (!matchesTerms(haystack, parsed)) continue;
 
       const reasons = [
         parsed.riskRating ? `${parsed.riskRating} risk` : null,
@@ -308,21 +426,29 @@ export class SearchService {
       if (hits.length >= 20) break;
     }
 
+    const evidenceHits = auditEvidenceHitsForQuery(evidenceRows, parsed);
+
+    const totalCount = hits.length + evidenceHits.length;
     return {
       query: parsed.query,
       interpreted: {
-        intent: 'findings_lookup',
+        intent: 'audit_evidence_lookup',
         riskRating: parsed.riskRating ?? null,
         status: parsed.status ?? null,
         topic: parsed.topic,
         terms: parsed.explicitTerms,
       },
       answer:
-        hits.length === 0
-          ? 'No matching findings were found in the current tenant.'
-          : `Found ${hits.length} matching finding${hits.length === 1 ? '' : 's'}.`,
+        totalCount === 0
+          ? 'No matching findings or evidence documents were found in the current tenant.'
+          : `Found ${hits.length} matching finding${hits.length === 1 ? '' : 's'} and ${
+              evidenceHits.length
+            } evidence document${evidenceHits.length === 1 ? '' : 's'}.`,
       count: hits.length,
+      evidenceCount: evidenceHits.length,
+      totalCount,
       hits,
+      evidenceHits,
     };
   }
 }
