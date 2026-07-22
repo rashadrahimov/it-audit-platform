@@ -1992,6 +1992,36 @@
         }
       }
     },
+    "privacy": {
+      "kicker": "Контроль приватности",
+      "title": "Резидентность данных ИИ и запрет обучения",
+      "body": "Этот read-only статус явно показывает движение данных ИИ для аудиторов и банковских проверяющих.",
+      "source": "Источник настройки",
+      "residency": "Режим резидентности",
+      "egress": "Выход данных",
+      "training": "Использование для обучения",
+      "zeroRetention": "Нулевое хранение",
+      "dpa": "DPA",
+      "allowed": "Разрешено",
+      "notAllowed": "Запрещено",
+      "required": "Требуется",
+      "notRequired": "Не требуется",
+      "sources": {
+        "tenant_override": "Настройка тенанта",
+        "deployment_default": "Дефолт деплоя",
+        "deterministic": "Детерминированный fallback"
+      },
+      "residencyModes": {
+        "local_only": "Только локально",
+        "private_network": "Private-сеть",
+        "external_provider": "Внешний провайдер"
+      },
+      "dataEgress": {
+        "none": "Нет",
+        "private_network": "Private endpoint",
+        "external_provider": "Внешний ИИ-провайдер"
+      }
+    },
     "provider": "Провайдер",
     "providers": {
       "none": "Выключено",

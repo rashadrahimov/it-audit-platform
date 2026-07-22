@@ -1992,6 +1992,36 @@
         }
       }
     },
+    "privacy": {
+      "kicker": "Məxfilik nəzarəti",
+      "title": "İİ data rezidentliyi və təlimdə istifadə qadağası",
+      "body": "Bu yalnız-oxunan status auditorlar və bank yoxlayıcıları üçün İİ data hərəkətini açıq göstərir.",
+      "source": "Ayar mənbəyi",
+      "residency": "Rezidentlik rejimi",
+      "egress": "Data çıxışı",
+      "training": "Təlimdə istifadə",
+      "zeroRetention": "Sıfır saxlama",
+      "dpa": "DPA",
+      "allowed": "İcazəlidir",
+      "notAllowed": "İcazə verilmir",
+      "required": "Tələb olunur",
+      "notRequired": "Tələb olunmur",
+      "sources": {
+        "tenant_override": "Tenant ayarı",
+        "deployment_default": "Deploy defoltu",
+        "deterministic": "Deterministik fallback"
+      },
+      "residencyModes": {
+        "local_only": "Yalnız lokal",
+        "private_network": "Private şəbəkə",
+        "external_provider": "Xarici provayder"
+      },
+      "dataEgress": {
+        "none": "Yoxdur",
+        "private_network": "Private endpoint",
+        "external_provider": "Xarici İİ provayderi"
+      }
+    },
     "provider": "Provayder",
     "providers": {
       "none": "Söndürülüb",

@@ -15,6 +15,24 @@ export interface TenantAiConfigView {
   memory: string | null;
 }
 
+export interface AiPrivacyPosture {
+  provider: LlmProviderKind;
+  model: string | null;
+  source: 'tenant_override' | 'deployment_default' | 'deterministic';
+  externalAiEnabled: boolean;
+  dataEgress: 'none' | 'private_network' | 'external_provider';
+  residencyMode: 'local_only' | 'private_network' | 'external_provider';
+  trainingUseAllowed: false;
+  zeroDataRetentionRequired: boolean;
+  requiresDpa: boolean;
+  controls: {
+    tenantIsolation: true;
+    encryptedSecrets: true;
+    evidenceGroundedOutputRequired: true;
+    humanReviewRequired: true;
+  };
+}
+
 export interface SetTenantAiConfig {
   provider: LlmProviderKind;
   baseUrl?: string;
@@ -23,6 +41,72 @@ export interface SetTenantAiConfig {
   apiKey?: string;
   /** T-V36b: AI Memory — контекст тенанта в промпт. */
   memory?: string;
+}
+
+function hostOf(baseUrl: string | null | undefined): string {
+  if (!baseUrl) return '';
+  try {
+    return new URL(baseUrl).hostname.toLowerCase();
+  } catch {
+    return baseUrl.toLowerCase();
+  }
+}
+
+function isPrivateAiEndpoint(baseUrl: string | null | undefined): boolean {
+  const host = hostOf(baseUrl);
+  return (
+    host === 'localhost' ||
+    host === 'ollama' ||
+    host === 'vllm' ||
+    host.endsWith('.local') ||
+    host.endsWith('.internal') ||
+    /^127\./.test(host) ||
+    /^10\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(host)
+  );
+}
+
+export function aiPrivacyPosture(input: {
+  provider: LlmProviderKind;
+  baseUrl?: string | null;
+  model?: string | null;
+  source: AiPrivacyPosture['source'];
+  configured: boolean;
+}): AiPrivacyPosture {
+  const localOpenAiCompat =
+    input.provider === 'openai_compat' && isPrivateAiEndpoint(input.baseUrl ?? null);
+  const externalAiEnabled =
+    input.configured && input.provider !== 'none' && input.provider !== undefined;
+  const dataEgress = !externalAiEnabled
+    ? 'none'
+    : localOpenAiCompat
+      ? 'private_network'
+      : 'external_provider';
+  const residencyMode =
+    dataEgress === 'none'
+      ? 'local_only'
+      : dataEgress === 'private_network'
+        ? 'private_network'
+        : 'external_provider';
+
+  return {
+    provider: input.provider,
+    model: input.configured ? (input.model ?? null) : null,
+    source: input.source,
+    externalAiEnabled,
+    dataEgress,
+    residencyMode,
+    trainingUseAllowed: false,
+    zeroDataRetentionRequired: dataEgress === 'external_provider',
+    requiresDpa: dataEgress === 'external_provider',
+    controls: {
+      tenantIsolation: true,
+      encryptedSecrets: true,
+      evidenceGroundedOutputRequired: true,
+      humanReviewRequired: true,
+    },
+  };
 }
 
 /**
@@ -62,6 +146,18 @@ export class AiService {
     };
   }
 
+  privacyPostureForDeployment(): AiPrivacyPosture {
+    const cfg = this.envConfig();
+    const configured = isConfigured(cfg);
+    return aiPrivacyPosture({
+      provider: cfg.provider,
+      baseUrl: cfg.baseUrl,
+      model: cfg.model,
+      source: configured ? 'deployment_default' : 'deterministic',
+      configured,
+    });
+  }
+
   // --- Per-tenant override (T-H23) ---
 
   private async readRow(tenantId: string) {
@@ -81,6 +177,21 @@ export class AiService {
       hasKey: Boolean(row?.apiKeyEncrypted),
       memory: row?.memory ?? null,
     };
+  }
+
+  async getTenantPrivacyPosture(tenantId: string): Promise<AiPrivacyPosture> {
+    const row = await this.readRow(tenantId);
+    if (row && row.provider !== 'none') {
+      const configured = Boolean(row.apiKeyEncrypted && row.model);
+      return aiPrivacyPosture({
+        provider: row.provider as LlmProviderKind,
+        baseUrl: row.baseUrl,
+        model: row.model,
+        source: 'tenant_override',
+        configured,
+      });
+    }
+    return this.privacyPostureForDeployment();
   }
 
   /** Upsert конфига тенанта. Пустой apiKey на update → ключ сохраняется. */

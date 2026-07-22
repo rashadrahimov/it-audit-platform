@@ -17,6 +17,14 @@ interface AiStatus {
   provider: string;
   model: string | null;
 }
+interface AiPrivacyPosture {
+  source: 'tenant_override' | 'deployment_default' | 'deterministic';
+  dataEgress: 'none' | 'private_network' | 'external_provider';
+  residencyMode: 'local_only' | 'private_network' | 'external_provider';
+  trainingUseAllowed: boolean;
+  zeroDataRetentionRequired: boolean;
+  requiresDpa: boolean;
+}
 
 const PROVIDERS = ['none', 'anthropic', 'openai_compat'] as const;
 const inputCls =
@@ -31,9 +39,10 @@ export default async function AiSettingsPage() {
   const [t, tenantSlug] = await Promise.all([getTranslations('aiSettings'), getActiveTenantSlug()]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const [cfgRes, statusRes] = await Promise.all([
+  const [cfgRes, statusRes, postureRes] = await Promise.all([
     apiFetch('/ai/config', { headers }),
     apiFetch('/ai/status', { headers }),
+    apiFetch('/ai/privacy-posture', { headers }),
   ]);
   const cfg: TenantAiConfig = cfgRes.ok
     ? await cfgRes.json()
@@ -41,6 +50,16 @@ export default async function AiSettingsPage() {
   const status: AiStatus = statusRes.ok
     ? await statusRes.json()
     : { enabled: false, provider: 'none', model: null };
+  const posture: AiPrivacyPosture = postureRes.ok
+    ? await postureRes.json()
+    : {
+        source: 'deterministic',
+        dataEgress: 'none',
+        residencyMode: 'local_only',
+        trainingUseAllowed: false,
+        zeroDataRetentionRequired: false,
+        requiresDpa: false,
+      };
   const tenantConfigured = cfg.provider !== 'none' && cfg.hasKey && Boolean(cfg.model);
   const effectiveEnabled = tenantConfigured || status.enabled;
   const effectiveProvider = tenantConfigured ? cfg.provider : status.provider;
@@ -98,6 +117,57 @@ export default async function AiSettingsPage() {
         <span className="font-medium text-foreground">
           {status.enabled ? `${status.provider} · ${status.model}` : t('deployOff')}
         </span>
+      </section>
+
+      <section
+        data-testid="ai-privacy-posture"
+        className="rounded-xl border border-border bg-white p-5 shadow-sm"
+      >
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-semibold tracking-[0.16em] text-accent uppercase">
+            {t('privacy.kicker')}
+          </p>
+          <h2 className="text-lg font-semibold text-primary">{t('privacy.title')}</h2>
+          <p className="text-sm text-secondary">{t('privacy.body')}</p>
+        </div>
+        <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-lg bg-muted/50 p-3">
+            <dt className="text-xs font-medium text-secondary">{t('privacy.source')}</dt>
+            <dd className="mt-1 text-sm font-semibold text-primary">
+              {t(`privacy.sources.${posture.source}`)}
+            </dd>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <dt className="text-xs font-medium text-secondary">{t('privacy.residency')}</dt>
+            <dd className="mt-1 text-sm font-semibold text-primary">
+              {t(`privacy.residencyModes.${posture.residencyMode}`)}
+            </dd>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <dt className="text-xs font-medium text-secondary">{t('privacy.egress')}</dt>
+            <dd className="mt-1 text-sm font-semibold text-primary">
+              {t(`privacy.dataEgress.${posture.dataEgress}`)}
+            </dd>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <dt className="text-xs font-medium text-secondary">{t('privacy.training')}</dt>
+            <dd className="mt-1 text-sm font-semibold text-primary">
+              {posture.trainingUseAllowed ? t('privacy.allowed') : t('privacy.notAllowed')}
+            </dd>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <dt className="text-xs font-medium text-secondary">{t('privacy.zeroRetention')}</dt>
+            <dd className="mt-1 text-sm font-semibold text-primary">
+              {posture.zeroDataRetentionRequired ? t('privacy.required') : t('privacy.notRequired')}
+            </dd>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <dt className="text-xs font-medium text-secondary">{t('privacy.dpa')}</dt>
+            <dd className="mt-1 text-sm font-semibold text-primary">
+              {posture.requiresDpa ? t('privacy.required') : t('privacy.notRequired')}
+            </dd>
+          </div>
+        </dl>
       </section>
 
       {/* Форма выбора провайдера тенантом */}

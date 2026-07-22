@@ -52,6 +52,18 @@ export class AiController {
     return this.ai.getTenantConfig(req.tenantId);
   }
 
+  @Get('privacy-posture')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('settings', 'view')
+  @ApiHeader({ name: 'X-Tenant-Slug', required: true })
+  @ApiOperation({
+    summary:
+      'T-H109: AI privacy posture — data residency, no-training policy and external-provider controls',
+  })
+  privacyPosture(@Req() req: TenantRequest) {
+    return this.ai.getTenantPrivacyPosture(req.tenantId);
+  }
+
   @Put('config')
   @UseGuards(PermissionGuard)
   @RequirePermission('settings', 'edit', 'edit')

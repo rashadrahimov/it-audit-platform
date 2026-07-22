@@ -1992,6 +1992,36 @@
         }
       }
     },
+    "privacy": {
+      "kicker": "Privacy controls",
+      "title": "AI data residency and no-training posture",
+      "body": "This read-only posture makes AI data movement explicit for auditors and bank reviewers.",
+      "source": "Configuration source",
+      "residency": "Residency mode",
+      "egress": "Data egress",
+      "training": "Training use",
+      "zeroRetention": "Zero retention",
+      "dpa": "DPA",
+      "allowed": "Allowed",
+      "notAllowed": "Not allowed",
+      "required": "Required",
+      "notRequired": "Not required",
+      "sources": {
+        "tenant_override": "Tenant override",
+        "deployment_default": "Deployment default",
+        "deterministic": "Deterministic fallback"
+      },
+      "residencyModes": {
+        "local_only": "Local only",
+        "private_network": "Private network",
+        "external_provider": "External provider"
+      },
+      "dataEgress": {
+        "none": "None",
+        "private_network": "Private network endpoint",
+        "external_provider": "External AI provider"
+      }
+    },
     "provider": "Provider",
     "providers": {
       "none": "Off",
