@@ -18,15 +18,15 @@
 
 ### A1. UI-глубина (самое большое по объёму)
 Экранов нет у ~половины backend-доменов. Приоритетно (read-list + create/action по established-паттернам T-U16…U19):
-- [ ] **Risks-регистр** — список/создание/rescore/привязка контролей (heat-map уже есть, реестра нет).
-- [ ] **Privacy: ROPA** (`/processing-activities`) + **DPIA** (`/dpia`) — реестр + workflow.
-- [ ] **IAM:** accounts, access-requests (approve/deny), deprovisioning.
+- [x] **Risks-регистр** — список/создание/rescore/привязка контролей + карточка и удаление закрыты T-V12.
+- [x] **Privacy: ROPA + DPIA** — реестр, импорт, workflow и approval закрыты T-V41/T-V55.
+- [x] **IAM:** accounts, access-requests approve/reject и deprovisioning закрыты T-V07.
 - [x] **Assets / Processes / Universe-CRUD:** assets UI и проекция готовы; Universe create/move UI закрыт T-H129; edit/delete узла закрыты T-H130.
-- [ ] **Audit programs** + roll-forward, **code-changes** (approval), **KB + questionnaires** (reuse-flow).
+- [x] **Audit programs** + roll-forward, **code-changes** approval, **KB + questionnaires** reuse-flow реализованы и доступны в UI.
 - [x] **Config:** custom-fields UI закрыт T-H125; config-lists UI (audit_opinion/risk/vendor categories) закрыт T-H126; tags-менеджер закрыт T-H127; glossary-CRUD закрыт T-H128.
-- [ ] **Reports:** экспорт (CSV/XML), сравнение снапшотов (compare-UI), dashboards-конфигуратор (сейчас read-only).
-- [ ] **API-keys** экран (генерация/отзыв), **audit verify-chain** индикатор, **notifications**-центр, **satisfaction surveys**.
-- [ ] **Time/allocations** — тайм-трекинг + утилизация, **KPI-виджеты** контролей.
+- [x] **Reports:** CSV/XML экспорт, compare-UI снапшотов и CRUD-конфигуратор dashboards закрыты.
+- [x] **API-keys**, **audit verify-chain**, **notifications**, **satisfaction surveys** — экраны и actions реализованы.
+- [x] **Time/allocations/KPI:** тайм-трекинг, утилизация и KPI контролей реализованы.
 
 ### A2. UI-полировка (сквозное)
 - [ ] Интерактивность на оставшихся read-only экранах (devices/working-papers/personnel/access-reviews — create/transition).
