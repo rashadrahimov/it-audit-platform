@@ -3347,6 +3347,13 @@
       "internal": "Internal"
     }
   },
+  "appState": {
+    "errorTitle": "Something went wrong",
+    "errorHeading": "This screen could not be loaded",
+    "errorBody": "Retry the request. If it keeps failing, check API health and the browser console.",
+    "digest": "Error reference: {digest}",
+    "retry": "Try again"
+  },
   "auditorView": {
     "title": "Auditor view",
     "subtitle": "Review evidence, record assessments, and request documents from the client for an audit.",

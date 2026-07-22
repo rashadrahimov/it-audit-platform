@@ -3355,6 +3355,13 @@
       "internal": "Daxili"
     }
   },
+  "appState": {
+    "errorTitle": "Xəta baş verdi",
+    "errorHeading": "Bu ekran yüklənmədi",
+    "errorBody": "Sorğunu təkrar edin. Xəta davam edərsə, API health və brauzer konsolunu yoxlayın.",
+    "digest": "Xəta kodu: {digest}",
+    "retry": "Təkrar et"
+  },
   "auditorView": {
     "title": "Auditor görünüşü",
     "subtitle": "Sübutları nəzərdən keçirin, qiymətləndirmələri qeyd edin və audit üçün müştəridən sənəd tələb edin.",
