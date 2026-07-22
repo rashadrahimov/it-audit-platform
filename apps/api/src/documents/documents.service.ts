@@ -52,6 +52,31 @@ export interface LinkInput {
 type EvidenceGapReason =
   'awaiting_upload' | 'draft' | 'overdue' | 'renewal_due' | 'unlinked' | 'flagged';
 type DocumentIntakeBucket = 'office_pdf' | 'spreadsheet' | 'image_ocr' | 'config_logs';
+type EvidenceRescanQueue =
+  'extraction' | 'ocr' | 'aiFindingDrafts' | 'evidenceRequestFollowUp' | 'reportReadinessRefresh';
+
+export interface EvidenceRescanLink {
+  entityType: string;
+  entityId?: string;
+  relation: string;
+  reviewStatus: string;
+}
+
+export interface EvidenceRescanTrigger {
+  required: boolean;
+  reason: 'linked_evidence_upload' | 'draft_review_gate' | 'link_required';
+  bucket: DocumentIntakeBucket;
+  humanReviewGate: 'auditor_review_required';
+  draftOnly: true;
+  impactedTargets: Array<{
+    entityType: string;
+    entityId?: string;
+    relation: string;
+    reviewStatus: string;
+  }>;
+  queues: Record<EvidenceRescanQueue, boolean>;
+  explanation: string;
+}
 
 function extensionOf(filename: string): string {
   const i = filename.lastIndexOf('.');
@@ -78,6 +103,53 @@ function documentIntakeBucket(filename: string, mime: string): DocumentIntakeBuc
     return 'config_logs';
   }
   return 'office_pdf';
+}
+
+export function evidenceRescanTriggerForDocument(
+  doc: { filename: string; mime: string; status: string },
+  links: EvidenceRescanLink[],
+): EvidenceRescanTrigger {
+  const bucket = documentIntakeBucket(doc.filename, doc.mime);
+  const linked = links.length > 0;
+  const active = doc.status === 'active';
+  const acceptedOrReady = links.some(
+    (link) => link.reviewStatus === 'accepted' || link.reviewStatus === 'ready',
+  );
+  const flagged = links.some((link) => link.reviewStatus === 'flagged');
+  const reason =
+    active && linked
+      ? 'linked_evidence_upload'
+      : doc.status === 'draft'
+        ? 'draft_review_gate'
+        : 'link_required';
+  const queues = {
+    extraction: active && linked,
+    ocr: active && linked && bucket === 'image_ocr',
+    aiFindingDrafts: active && linked && !flagged,
+    evidenceRequestFollowUp: !active || !linked,
+    reportReadinessRefresh: active && linked && acceptedOrReady,
+  };
+  const enabledQueues = Object.entries(queues)
+    .filter(([, enabled]) => enabled)
+    .map(([queue]) => queue);
+  return {
+    required: enabledQueues.length > 0,
+    reason,
+    bucket,
+    humanReviewGate: 'auditor_review_required',
+    draftOnly: true,
+    impactedTargets: links.map((link) => ({
+      entityType: link.entityType,
+      entityId: link.entityId,
+      relation: link.relation,
+      reviewStatus: link.reviewStatus,
+    })),
+    queues,
+    explanation:
+      enabledQueues.length > 0
+        ? `Evidence upload queued ${enabledQueues.join(', ')} while keeping AI outputs draft-only until auditor review.`
+        : 'Evidence upload is recorded, but no re-scan queue is enabled yet.',
+  };
 }
 
 /** Документы-доказательства (T-034): метаданные + S3 (T-042), полиморфные привязки. */
@@ -205,6 +277,19 @@ export class DocumentsService {
       }
       return { row, action: 'document.uploaded' as const };
     });
+    const links = await this.dbService.withTenant(actor.tenantId, (tx) =>
+      tx
+        .select({
+          entityType: documentLink.entityType,
+          entityId: documentLink.entityId,
+          relation: documentLink.relation,
+          reviewStatus: documentLink.reviewStatus,
+        })
+        .from(documentLink)
+        .where(eq(documentLink.documentId, result.row.id)),
+    );
+    const rescanTrigger = evidenceRescanTriggerForDocument(result.row, links);
+
     await this.auditLogService.record({
       tenantId: actor.tenantId,
       actorUserId: actor.userId,
@@ -212,9 +297,14 @@ export class DocumentsService {
       action: result.action,
       entityType: 'document',
       entityId: result.row.id,
-      after: { filename: result.row.filename, sha256, version: result.row.version },
+      after: {
+        filename: result.row.filename,
+        sha256,
+        version: result.row.version,
+        rescanTrigger,
+      },
     });
-    return result.row;
+    return { ...result.row, rescanTrigger };
   }
 
   /** T-V02: запросить доказательство (needs_document-плейсхолдер без файла). */
@@ -648,6 +738,7 @@ export class DocumentsService {
         category: doc.category,
         createdAt: doc.createdAt.toISOString(),
         bucket: documentIntakeBucket(doc.filename, doc.mime),
+        rescanTrigger: evidenceRescanTriggerForDocument(doc, doc.links),
         links: doc.links.map((link) => ({
           entityType: link.entityType,
           relation: link.relation,

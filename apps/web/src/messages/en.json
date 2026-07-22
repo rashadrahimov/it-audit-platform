@@ -2568,6 +2568,12 @@
         "ocrDocuments": "OCR needed"
       },
       "triggersTitle": "Recent triggers",
+      "triggerGate": "AI output stays draft-only until auditor review",
+      "triggerReasons": {
+        "linked_evidence_upload": "Linked evidence starts the re-scan chain",
+        "draft_review_gate": "Draft evidence waits for review before re-scan",
+        "link_required": "Link this evidence before AI refresh"
+      },
       "linkedTargets": "{count} linked targets",
       "unlinked": "Unlinked",
       "noTriggers": "No recent document changes in the re-scan window."

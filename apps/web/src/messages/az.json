@@ -2576,6 +2576,12 @@
         "ocrDocuments": "OCR lazımdır"
       },
       "triggersTitle": "Son trigger-lər",
+      "triggerGate": "İİ nəticələri auditor yoxlamasınadək qaralama qalır",
+      "triggerReasons": {
+        "linked_evidence_upload": "Bağlı sübut təkrar skan zəncirini işə salır",
+        "draft_review_gate": "Sübut qaralaması təkrar skandan əvvəl yoxlamanı gözləyir",
+        "link_required": "İİ yenilənməsindən əvvəl sübutu bağlayın"
+      },
       "linkedTargets": "{count} bağlı hədəf",
       "unlinked": "Bağlantısız",
       "noTriggers": "Təkrar skan pəncərəsində yeni sənəd dəyişikliyi yoxdur."

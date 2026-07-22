@@ -118,6 +118,12 @@ interface RescanPlan {
     category: string | null;
     createdAt: string;
     bucket: string;
+    rescanTrigger: {
+      reason: 'linked_evidence_upload' | 'draft_review_gate' | 'link_required';
+      queues: Record<keyof RescanPlan['queues'], boolean>;
+      humanReviewGate: 'auditor_review_required';
+      draftOnly: true;
+    };
     links: Array<{ entityType: string; relation: string; reviewStatus: string }>;
   }>;
 }
@@ -535,27 +541,51 @@ export default async function DocumentsPage({
               <h3 className="text-sm font-semibold text-primary">{t('rescan.triggersTitle')}</h3>
               <div className="mt-3 flex flex-col gap-2">
                 {rescanPlan.recentTriggers.length > 0 ? (
-                  rescanPlan.recentTriggers.map((trigger) => (
-                    <div
-                      key={trigger.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/60 px-3 py-2 text-sm"
-                    >
-                      <div className="min-w-0">
-                        <div className="truncate font-medium text-foreground">
-                          {trigger.filename}
+                  rescanPlan.recentTriggers.map((trigger) => {
+                    const enabledQueues = Object.entries(trigger.rescanTrigger.queues).filter(
+                      ([, enabled]) => enabled,
+                    );
+                    return (
+                      <div
+                        key={trigger.id}
+                        className="rounded-xl bg-muted/60 px-3 py-2 text-sm"
+                        data-testid="document-rescan-trigger-proof"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="truncate font-medium text-foreground">
+                              {trigger.filename}
+                            </div>
+                            <div className="text-xs text-secondary">
+                              {trigger.category ?? t('readiness.noCategory')} ·{' '}
+                              {dateFmt.format(new Date(trigger.createdAt))}
+                            </div>
+                          </div>
+                          <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">
+                            {trigger.links.length > 0
+                              ? t('rescan.linkedTargets', { count: trigger.links.length })
+                              : t('rescan.unlinked')}
+                          </span>
                         </div>
-                        <div className="text-xs text-secondary">
-                          {trigger.category ?? t('readiness.noCategory')} ·{' '}
-                          {dateFmt.format(new Date(trigger.createdAt))}
+                        <div className="mt-2 text-xs text-secondary">
+                          {t(`rescan.triggerReasons.${trigger.rescanTrigger.reason}`)} ·{' '}
+                          {t('rescan.triggerGate')}
                         </div>
+                        {enabledQueues.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {enabledQueues.map(([queue]) => (
+                              <span
+                                key={queue}
+                                className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-primary shadow-sm"
+                              >
+                                {t(`rescan.queues.${queue}.label`)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">
-                        {trigger.links.length > 0
-                          ? t('rescan.linkedTargets', { count: trigger.links.length })
-                          : t('rescan.unlinked')}
-                      </span>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="rounded-xl bg-emerald-50 px-3 py-3 text-sm text-emerald-800">
                     {t('rescan.noTriggers')}
