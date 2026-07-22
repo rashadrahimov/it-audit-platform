@@ -190,6 +190,43 @@ export default async function ReportsPage({
               timezone: schedule.timezone,
             })}
           </p>
+          <div
+            data-testid="report-delivery-plan"
+            className="mt-5 grid gap-3 border-t border-emerald-100 pt-4 md:grid-cols-3"
+          >
+            {[
+              {
+                key: 'package',
+                value: t('schedule.delivery.packageValue', {
+                  deliverables: DELIVERABLES.length,
+                  formats: DELIVERABLE_FORMATS.map((fmt) => fmt.toUpperCase()).join(' / '),
+                }),
+              },
+              {
+                key: 'languages',
+                value: 'EN / AZ / RU',
+              },
+              {
+                key: 'trigger',
+                value: schedule.willSendIfRunNow
+                  ? t('schedule.delivery.triggerReady')
+                  : t('schedule.delivery.triggerQuiet'),
+              },
+            ].map((item) => (
+              <div
+                key={item.key}
+                className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3"
+              >
+                <div className="text-xs font-semibold tracking-wide text-emerald-800 uppercase">
+                  {t(`schedule.delivery.${item.key}.label`)}
+                </div>
+                <div className="mt-1 text-sm font-semibold text-primary">{item.value}</div>
+                <div className="mt-1 text-xs text-secondary">
+                  {t(`schedule.delivery.${item.key}.hint`)}
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 

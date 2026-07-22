@@ -1348,6 +1348,23 @@
         "overdueFindings": "Overdue findings",
         "overdueTasks": "Overdue tasks",
         "policiesDue": "Policies due"
+      },
+      "delivery": {
+        "packageValue": "{deliverables} documents · {formats}",
+        "triggerReady": "Will send if triggered now",
+        "triggerQuiet": "Stays quiet until a report signal appears",
+        "package": {
+          "label": "Package",
+          "hint": "The standard audit deliverables travel in one digest"
+        },
+        "languages": {
+          "label": "Languages",
+          "hint": "The reporting track supports client-facing UI languages"
+        },
+        "trigger": {
+          "label": "Send condition",
+          "hint": "The digest reacts to open risk, overdue work and policy renewal signals"
+        }
       }
     },
     "deliverables": {

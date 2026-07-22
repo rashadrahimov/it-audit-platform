@@ -1348,6 +1348,23 @@
         "overdueFindings": "Gecikmiş qeydlər",
         "overdueTasks": "Gecikmiş tapşırıqlar",
         "policiesDue": "Yenilənməli siyasətlər"
+      },
+      "delivery": {
+        "packageValue": "{deliverables} sənəd · {formats}",
+        "triggerReady": "İndi işə salınsa göndəriləcək",
+        "triggerQuiet": "Hesabat siqnalı yaranana qədər sakit qalacaq",
+        "package": {
+          "label": "Paket",
+          "hint": "Standart audit deliverable-ları bir digest-də göndərilir"
+        },
+        "languages": {
+          "label": "Dillər",
+          "hint": "Hesabat konturu müştəriyə görünən UI dillərini dəstəkləyir"
+        },
+        "trigger": {
+          "label": "Göndərmə şərti",
+          "hint": "Digest açıq risk, gecikmiş iş və siyasət yenilənmə siqnallarına reaksiya verir"
+        }
       }
     },
     "deliverables": {
