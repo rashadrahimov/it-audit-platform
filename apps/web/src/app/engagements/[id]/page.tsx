@@ -13,6 +13,7 @@ import {
   duplicateEngagementAction,
   removeEngagementMemberAction,
   seedActionPlanFromRecommendationsAction,
+  seedChecklistFromAuditTypeAction,
   saveResponseAction,
   transitionAction,
 } from './actions';
@@ -23,6 +24,7 @@ interface EngagementDetail {
   id: string;
   title: string;
   subsidiary: string | null;
+  auditTypeId: string | null;
   auditType: string | null;
   mode: string;
   state: string;
@@ -130,6 +132,13 @@ interface TenantMember {
   email: string;
   status: string;
 }
+interface AuditTemplateItem {
+  id: string;
+  ref: string;
+  order: number;
+  objective: string;
+  question: string;
+}
 
 const ENGAGEMENT_ROLES = ['lead', 'assessor', 'reviewer', 'approver', 'observer'] as const;
 
@@ -186,6 +195,13 @@ export default async function EngagementDetailPage({
   if (res.status === 404 || res.status === 400) notFound();
   if (!res.ok) throw new Error(`API /engagements/${id}: ${res.status}`);
   const eng: EngagementDetail = await res.json();
+  const templateRes = eng.auditTypeId
+    ? await apiFetch(`/audit-types/${eng.auditTypeId}/template-items?locale=${locale}`, {
+        headers: tenantHeaders,
+      })
+    : null;
+  const auditTemplateItems: AuditTemplateItem[] =
+    templateRes && templateRes.ok ? await templateRes.json() : [];
 
   // библиотека для формы добавления — без уже включённых контролей
   const libRes = await apiFetch(`/controls?locale=${locale}&tenantSlug=${tenantSlug}`);
@@ -268,6 +284,10 @@ export default async function EngagementDetailPage({
   const overdueAuditTasks = auditTasks.filter(
     (task) =>
       task.status !== 'done' && task.dueDate !== null && new Date(task.dueDate).getTime() < now,
+  ).length;
+  const checklistRefs = new Set(eng.checklist.map((item) => item.ref));
+  const seedableTemplateCount = auditTemplateItems.filter(
+    (item) => !checklistRefs.has(item.ref),
   ).length;
 
   return (
@@ -713,6 +733,60 @@ export default async function EngagementDetailPage({
 
       <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-primary">{t('checklist')}</h2>
+        {auditTemplateItems.length > 0 && (
+          <div
+            className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4"
+            data-testid="audit-type-template"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold tracking-[0.14em] text-emerald-700 uppercase">
+                  {t('templateKicker')}
+                </p>
+                <h3 className="mt-1 text-sm font-semibold text-emerald-950">
+                  {t('templateTitle')}
+                </h3>
+                <p className="mt-1 text-xs text-emerald-900/75">
+                  {t('templateHint', {
+                    total: auditTemplateItems.length,
+                    seedable: seedableTemplateCount,
+                  })}
+                </p>
+              </div>
+              {seedableTemplateCount > 0 && (
+                <form action={seedChecklistFromAuditTypeAction.bind(null, eng.id)}>
+                  <button
+                    type="submit"
+                    data-testid="seed-checklist-template"
+                    className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition-colors duration-150 hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    {t('seedChecklist')}
+                  </button>
+                </form>
+              )}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {auditTemplateItems.slice(0, 8).map((item) => (
+                <span
+                  key={item.id}
+                  className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
+                    checklistRefs.has(item.ref)
+                      ? 'bg-white text-emerald-800'
+                      : 'bg-emerald-600 text-white'
+                  }`}
+                  title={item.question}
+                >
+                  {item.ref}
+                </span>
+              ))}
+              {auditTemplateItems.length > 8 && (
+                <span className="rounded-full bg-white px-2 py-1 text-[11px] font-semibold text-emerald-800">
+                  +{auditTemplateItems.length - 8}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
         {eng.checklist.length === 0 ? (
           <p className="text-sm text-secondary">{t('checklistEmpty')}</p>
         ) : (

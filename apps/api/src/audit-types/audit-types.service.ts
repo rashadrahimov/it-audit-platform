@@ -82,18 +82,27 @@ export class AuditTypesService {
     return { id: created.id };
   }
 
-  async listTemplateItems(tenantId: string, auditTypeId: string) {
-    return this.dbService.withTenant(tenantId, (tx) =>
+  async listTemplateItems(tenantId: string, auditTypeId: string, locale: Locale) {
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({
           id: auditTypeTemplateItem.id,
           ref: auditTypeTemplateItem.ref,
           order: auditTypeTemplateItem.order,
+          objectiveI18n: auditTypeTemplateItem.objectiveI18n,
+          questionI18n: auditTypeTemplateItem.questionI18n,
         })
         .from(auditTypeTemplateItem)
         .where(eq(auditTypeTemplateItem.auditTypeId, auditTypeId))
         .orderBy(asc(auditTypeTemplateItem.order)),
     );
+    return rows.map((row) => ({
+      id: row.id,
+      ref: row.ref,
+      order: row.order,
+      objective: resolveLocalized(row.objectiveI18n, locale),
+      question: resolveLocalized(row.questionI18n, locale),
+    }));
   }
 
   /** Засеять checklist engagement из шаблона его типа аудита (UNI-06). */
@@ -110,18 +119,28 @@ export class AuditTypesService {
         .from(auditTypeTemplateItem)
         .where(eq(auditTypeTemplateItem.auditTypeId, eng.auditTypeId))
         .orderBy(asc(auditTypeTemplateItem.order));
-      let seeded = 0;
-      for (const t of template) {
-        await tx.insert(checklistItem).values({
-          engagementId,
-          ref: t.ref,
-          objectiveI18n: t.objectiveI18n,
-          questionI18n: t.questionI18n,
-          order: t.order,
-        });
-        seeded += 1;
+      const existing = await tx
+        .select({ ref: checklistItem.ref })
+        .from(checklistItem)
+        .where(eq(checklistItem.engagementId, engagementId));
+      const existingRefs = new Set(existing.map((item) => item.ref));
+      const toSeed = template.filter((item) => !existingRefs.has(item.ref));
+      if (toSeed.length > 0) {
+        await tx.insert(checklistItem).values(
+          toSeed.map((t) => ({
+            engagementId,
+            ref: t.ref,
+            objectiveI18n: t.objectiveI18n,
+            questionI18n: t.questionI18n,
+            order: t.order,
+          })),
+        );
       }
-      return seeded;
+      return {
+        available: template.length,
+        seeded: toSeed.length,
+        skipped: template.length - toSeed.length,
+      };
     });
     await this.auditLogService.record({
       tenantId: actor.tenantId,
@@ -130,8 +149,8 @@ export class AuditTypesService {
       action: 'audit_type.checklist_seeded',
       entityType: 'engagement',
       entityId: engagementId,
-      after: { seeded: result },
+      after: result,
     });
-    return { seeded: result };
+    return result;
   }
 }

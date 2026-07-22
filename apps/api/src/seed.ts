@@ -19,6 +19,7 @@ import { env } from './env';
 import {
   auditLog,
   auditType,
+  auditTypeTemplateItem,
   glossaryTerm,
   comment,
   connector,
@@ -136,6 +137,7 @@ async function seedPostgres(): Promise<void> {
     await seedGlobalControls();
     await seedGlobalRiskLibrary();
     await seedAuditTypes();
+    await seedDemoAuditTypeTemplates(db, demoTenant.id);
     await seedGlossary();
     await seedDemoUsers(db, demoTenant.id);
     await seedDemoDepartments(db, demoTenant.id);
@@ -583,6 +585,108 @@ export async function seedAuditTypes(): Promise<void> {
   } finally {
     await owner.end().catch(() => {});
   }
+}
+
+const DEMO_IT_AUDIT_TEMPLATE = [
+  {
+    ref: 'IT-SCOPE-01',
+    objective: {
+      en: 'Audit scope and systems',
+      az: 'Audit əhatəsi və sistemlər',
+      ru: 'Скоуп аудита и системы',
+    },
+    question: {
+      en: 'Has management confirmed the in-scope systems, owners, locations and audit period?',
+      az: 'Rəhbərlik əhatəyə daxil sistemləri, sahibləri, lokasiyaları və audit dövrünü təsdiqləyib?',
+      ru: 'Менеджмент подтвердил системы в скоупе, владельцев, локации и аудируемый период?',
+    },
+  },
+  {
+    ref: 'IT-AC-01',
+    objective: { en: 'Access governance', az: 'Giriş idarəçiliyi', ru: 'Управление доступом' },
+    question: {
+      en: 'Are privileged and business-critical access rights approved, reviewed and removed on time?',
+      az: 'İmtiyazlı və kritik giriş hüquqları təsdiqlənir, yoxlanır və vaxtında silinir?',
+      ru: 'Привилегированные и критичные доступы утверждаются, пересматриваются и вовремя удаляются?',
+    },
+  },
+  {
+    ref: 'IT-CM-01',
+    objective: {
+      en: 'Change management',
+      az: 'Dəyişiklik idarəçiliyi',
+      ru: 'Управление изменениями',
+    },
+    question: {
+      en: 'Are production changes tested, approved and traceable to tickets or release records?',
+      az: 'Prod dəyişiklikləri test olunur, təsdiqlənir və ticket/release qeydlərinə izlənir?',
+      ru: 'Продакшн-изменения тестируются, утверждаются и трассируются к тикетам или релизам?',
+    },
+  },
+  {
+    ref: 'IT-BCP-01',
+    objective: {
+      en: 'Backup and recovery',
+      az: 'Backup və bərpa',
+      ru: 'Резервное копирование и восстановление',
+    },
+    question: {
+      en: 'Are backups monitored and restore tests performed for critical systems?',
+      az: 'Backup-lar monitorinq olunur və kritik sistemlər üçün bərpa testləri keçirilir?',
+      ru: 'Резервные копии мониторятся, а восстановление критичных систем регулярно тестируется?',
+    },
+  },
+  {
+    ref: 'IT-MON-01',
+    objective: {
+      en: 'Monitoring and incident response',
+      az: 'Monitorinq və insident cavabı',
+      ru: 'Мониторинг и реагирование',
+    },
+    question: {
+      en: 'Are security and availability alerts triaged with defined ownership and response SLAs?',
+      az: 'Təhlükəsizlik və əlçatanlıq alertləri sahiblər və cavab SLA-ları ilə triage olunur?',
+      ru: 'Алерты безопасности и доступности разбираются с назначенными владельцами и SLA реагирования?',
+    },
+  },
+] as const;
+
+async function seedDemoAuditTypeTemplates(db: NodePgDatabase, tenantId: string): Promise<void> {
+  const [itType] = await db
+    .select({ id: auditType.id })
+    .from(auditType)
+    .where(and(isNull(auditType.tenantId), eq(auditType.code, 'it')));
+  if (!itType) throw new Error('Глобальный тип аудита «it» не найден — seedAuditTypes не прошёл?');
+
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.tenant_id', ${tenantId}, true)`);
+    const existing = await tx
+      .select({ ref: auditTypeTemplateItem.ref })
+      .from(auditTypeTemplateItem)
+      .where(
+        and(
+          eq(auditTypeTemplateItem.tenantId, tenantId),
+          eq(auditTypeTemplateItem.auditTypeId, itType.id),
+        ),
+      );
+    const existingRefs = new Set(existing.map((item) => item.ref));
+    const missing = DEMO_IT_AUDIT_TEMPLATE.filter((item) => !existingRefs.has(item.ref));
+    if (missing.length > 0) {
+      await tx.insert(auditTypeTemplateItem).values(
+        missing.map((item, index) => ({
+          tenantId,
+          auditTypeId: itType.id,
+          ref: item.ref,
+          objectiveI18n: item.objective,
+          questionI18n: item.question,
+          order: (index + 1) * 10,
+        })),
+      );
+    }
+    console.log(
+      `✓ Демо IT audit template: ${DEMO_IT_AUDIT_TEMPLATE.length} пунктов (новых ${missing.length})`,
+    );
+  });
 }
 
 /** Базовые GRC-термины глоссария (T-095, GEN-09) — глобальные (tenant_id NULL). */

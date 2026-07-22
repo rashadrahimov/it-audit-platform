@@ -703,6 +703,7 @@ export class EngagementsService {
       id: data.row.id,
       title: resolveLocalized(data.row.titleI18n, locale),
       subsidiary: data.sub ? resolveLocalized(data.sub.nameI18n, locale) : null,
+      auditTypeId: data.row.auditTypeId,
       auditType: data.type ? resolveLocalized(data.type.nameI18n, locale) : null,
       mode: data.row.mode,
       state: data.row.state,

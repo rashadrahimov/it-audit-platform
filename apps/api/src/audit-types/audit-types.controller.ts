@@ -95,8 +95,13 @@ export class AuditTypesController {
   @Get(':id/template-items')
   @RequirePermission('engagement', 'view')
   @ApiOperation({ summary: 'Шаблон чеклиста типа аудита' })
-  listTemplateItems(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
-    return this.service.listTemplateItems(req.tenantId, id);
+  @ApiQuery({ name: 'locale', required: false })
+  listTemplateItems(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    return this.service.listTemplateItems(req.tenantId, id, parseLocale(localeQuery));
   }
 
   @Post('seed-checklist/:engagementId')

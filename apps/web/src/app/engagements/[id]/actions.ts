@@ -164,3 +164,14 @@ export async function seedActionPlanFromRecommendationsAction(engagementId: stri
   });
   revalidatePath(`/engagements/${engagementId}`);
 }
+
+/** T-H50: засеять чеклист аудита из reusable template его типа аудита. */
+export async function seedChecklistFromAuditTypeAction(engagementId: string): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch(`/audit-types/seed-checklist/${engagementId}`, {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}
