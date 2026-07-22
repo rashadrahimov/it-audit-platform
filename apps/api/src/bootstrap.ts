@@ -11,7 +11,7 @@
  */
 import { Client } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { env } from './env';
 import { membership, role, tenant, user } from './db/schema';
 import { PasswordService } from './auth/password.service';
@@ -98,10 +98,52 @@ async function seedAdmin(): Promise<void> {
   }
 }
 
+async function normalizeExistingDemoLocale(): Promise<void> {
+  const client = new Client({ connectionString: env.databaseUrl, connectionTimeoutMillis: 5000 });
+  await client.connect();
+  try {
+    const db = drizzle(client);
+    const [demoTenant] = await db.select().from(tenant).where(eq(tenant.slug, 'demo'));
+    if (!demoTenant) return;
+
+    const settings =
+      typeof demoTenant.settings === 'object' && demoTenant.settings !== null
+        ? (demoTenant.settings as Record<string, unknown>)
+        : {};
+    const businessProfile =
+      typeof settings.businessProfile === 'object' && settings.businessProfile !== null
+        ? (settings.businessProfile as Record<string, unknown>)
+        : {};
+
+    await db
+      .update(tenant)
+      .set({
+        languageDefault: 'ru',
+        settings: {
+          ...settings,
+          businessProfile: {
+            ...businessProfile,
+            defaultLocale: 'ru',
+          },
+        },
+      })
+      .where(eq(tenant.id, demoTenant.id));
+
+    await db
+      .update(user)
+      .set({ locale: 'ru' })
+      .where(inArray(user.email, ['admin@demo.io', 'collaborator@demo.io', 'approver@demo.io']));
+    console.log('✓ Demo locale: tenant default + demo users normalized to ru');
+  } finally {
+    await client.end().catch(() => {});
+  }
+}
+
 async function main(): Promise<void> {
   console.log('Bootstrap: миграции должны быть применены (drizzle-kit migrate)');
   await seedReferenceData();
   await seedAdmin();
+  await normalizeExistingDemoLocale();
   console.log('Bootstrap завершён.');
 }
 
