@@ -20,6 +20,18 @@ export class AuditController {
     return this.auditLogService.verifyChain(req.tenantId);
   }
 
+  @Get('recent')
+  @RequirePermission('settings', 'view')
+  @ApiOperation({
+    summary: 'Последние события аудит-журнала без sensitive before/after payload (LOG-02)',
+  })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiOkResponse({ description: 'Список событий с actor/action/entity и признаками hash-chain' })
+  recent(@Req() req: TenantRequest, @Query('limit') limit?: string) {
+    const n = Number(limit);
+    return this.auditLogService.recent(req.tenantId, Number.isFinite(n) && n > 0 ? n : 50);
+  }
+
   @Get('syslog')
   @RequirePermission('settings', 'view')
   @Header('Content-Type', 'text/plain; charset=utf-8')

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { and, asc, desc, eq, isNotNull, sql } from 'drizzle-orm';
 import { DbService } from '../db/db.service';
-import { auditLog, authEvent } from '../db/schema';
+import { auditLog, authEvent, user } from '../db/schema';
 import { toSyslogLines } from './syslog';
 
 /** Каноничная строка записи для hash-chain (T-104, LOG-01). Порядок полей фиксирован. */
@@ -48,6 +48,22 @@ export interface AuthEventRecord {
   event: 'login' | 'logout' | 'failed' | 'locked' | 'concurrent_session' | 'magic_link_requested';
   ip?: string | null;
   userAgent?: string | null;
+}
+
+export interface RecentAuditEvent {
+  id: string;
+  at: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  actorUserId: string | null;
+  actorName: string | null;
+  actorEmail: string | null;
+  actorIp: string | null;
+  hasBefore: boolean;
+  hasAfter: boolean;
+  prevHashPresent: boolean;
+  hashPresent: boolean;
 }
 
 /**
@@ -168,6 +184,45 @@ export class AuditLogService {
         .limit(Math.min(Math.max(limit, 1), 1000)),
     );
     return toSyslogLines(rows);
+  }
+
+  /**
+   * Последние события аудит-журнала для UI traceability (SEC-лог без payload-секретов).
+   * before/after намеренно не отдаём наружу: в diff могут попадать чувствительные поля.
+   */
+  async recent(tenantId: string, limit = 50): Promise<RecentAuditEvent[]> {
+    const safeLimit = Math.min(Math.max(Math.floor(limit), 1), 200);
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          id: auditLog.id,
+          at: auditLog.at,
+          action: auditLog.action,
+          actorUserId: auditLog.actorUserId,
+          actorName: user.fullName,
+          actorEmail: user.email,
+          actorIp: auditLog.actorIp,
+          entityType: auditLog.entityType,
+          entityId: auditLog.entityId,
+          hasBefore: sql<boolean>`${auditLog.before} is not null`,
+          hasAfter: sql<boolean>`${auditLog.after} is not null`,
+          prevHashPresent: sql<boolean>`${auditLog.prevHash} is not null`,
+          hashPresent: sql<boolean>`${auditLog.hash} is not null`,
+        })
+        .from(auditLog)
+        .leftJoin(user, eq(auditLog.actorUserId, user.id))
+        .where(eq(auditLog.tenantId, tenantId))
+        .orderBy(desc(auditLog.at))
+        .limit(safeLimit),
+    );
+    return rows.map((r) => ({
+      ...r,
+      at: r.at.toISOString(),
+      hasBefore: Boolean(r.hasBefore),
+      hasAfter: Boolean(r.hasAfter),
+      prevHashPresent: Boolean(r.prevHashPresent),
+      hashPresent: Boolean(r.hashPresent),
+    }));
   }
 
   async recordAuthEvent(entry: AuthEventRecord): Promise<void> {
