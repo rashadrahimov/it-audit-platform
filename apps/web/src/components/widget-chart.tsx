@@ -20,7 +20,15 @@ const KEY_TONE: Record<string, string> = {
 const PALETTE = ['#07865f', '#16a36a', '#84a83e', '#d97706', '#be123c', '#78716c', '#14532d'];
 const colorOf = (key: string, i: number) => KEY_TONE[key] ?? PALETTE[i % PALETTE.length]!;
 
-function PieSvg({ entries, donut }: { entries: Array<[string, number]>; donut: boolean }) {
+function PieSvg({
+  entries,
+  donut,
+  ariaLabel,
+}: {
+  entries: Array<[string, number]>;
+  donut: boolean;
+  ariaLabel: string;
+}) {
   const total = entries.reduce((s, [, v]) => s + v, 0) || 1;
   const r = 45;
   const c = 50;
@@ -42,7 +50,7 @@ function PieSvg({ entries, donut }: { entries: Array<[string, number]>; donut: b
     return { key, d, fill: colorOf(key, i) };
   });
   return (
-    <svg viewBox="0 0 100 100" className="size-24 shrink-0" role="img" aria-label="chart">
+    <svg viewBox="0 0 100 100" className="size-24 shrink-0" role="img" aria-label={ariaLabel}>
       {slices.map((s) =>
         s.d ? (
           <path key={s.key} d={s.d} fill={s.fill} />
@@ -55,14 +63,14 @@ function PieSvg({ entries, donut }: { entries: Array<[string, number]>; donut: b
   );
 }
 
-function LineSvg({ entries }: { entries: Array<[string, number]> }) {
+function LineSvg({ entries, ariaLabel }: { entries: Array<[string, number]>; ariaLabel: string }) {
   const max = Math.max(1, ...entries.map(([, v]) => v));
   const w = 200;
   const h = 60;
   const step = entries.length > 1 ? w / (entries.length - 1) : 0;
   const points = entries.map(([, v], i) => `${i * step},${h - (v / max) * (h - 6) - 3}`).join(' ');
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-16 w-full" role="img" aria-label="chart">
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-16 w-full" role="img" aria-label={ariaLabel}>
       <polyline points={points} fill="none" stroke="#07865f" strokeWidth="2" />
       {entries.map(([key, v], i) => (
         <circle key={key} cx={i * step} cy={h - (v / max) * (h - 6) - 3} r="2.5" fill="#07865f" />
@@ -74,9 +82,11 @@ function LineSvg({ entries }: { entries: Array<[string, number]> }) {
 export function WidgetChart({
   chartType,
   data,
+  ariaLabel,
 }: {
   chartType: string;
   data: Record<string, number>;
+  ariaLabel: string;
 }) {
   const entries = Object.entries(data);
   if (entries.length === 0) return <p className="text-sm text-secondary">—</p>;
@@ -96,7 +106,7 @@ export function WidgetChart({
   if (chartType === 'pie' || chartType === 'donut') {
     return (
       <div className="flex items-center gap-4">
-        <PieSvg entries={entries} donut={chartType === 'donut'} />
+        <PieSvg entries={entries} donut={chartType === 'donut'} ariaLabel={ariaLabel} />
         <ul className="flex flex-col gap-1 text-xs">
           {entries.map(([key, value], i) => (
             <li key={key} className="flex items-center gap-1.5">
@@ -116,7 +126,7 @@ export function WidgetChart({
   if (chartType === 'line') {
     return (
       <div>
-        <LineSvg entries={entries} />
+        <LineSvg entries={entries} ariaLabel={ariaLabel} />
         <p className="mt-1 text-xs text-secondary">
           {entries.map(([k, v]) => `${k}: ${v}`).join(' · ')}
         </p>

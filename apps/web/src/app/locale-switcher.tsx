@@ -6,11 +6,11 @@ import { localeSchema, type Locale } from '@it-audit/shared';
 /** Переключатель языка (T-022): пишет cookie и перерисовывает серверные компоненты. */
 export function LocaleSwitcher({
   current,
-  ariaLabel = 'Language',
+  ariaLabel,
   compact = false,
 }: {
   current: Locale;
-  ariaLabel?: string;
+  ariaLabel: string;
   compact?: boolean;
 }) {
   const router = useRouter();

@@ -106,7 +106,7 @@ export default async function DashboardDetailPage({ params }: { params: Promise<
             data-charttype={w.chartType}
           >
             <p className="mb-3 text-sm font-medium text-secondary">{w.title}</p>
-            <WidgetChart chartType={w.chartType} data={w.data} />
+            <WidgetChart chartType={w.chartType} data={w.data} ariaLabel={w.title} />
           </div>
         ))}
       </div>

@@ -234,11 +234,11 @@ export default async function RisksPage({
         >
           <div className="flex flex-col gap-2">
             <h2 className="text-sm font-semibold text-primary">{t('byTreatment')}</h2>
-            <WidgetChart chartType="donut" data={treatmentData} />
+            <WidgetChart chartType="donut" data={treatmentData} ariaLabel={t('byTreatment')} />
           </div>
           <div className="flex flex-col gap-2">
             <h2 className="text-sm font-semibold text-primary">{t('byClass')}</h2>
-            <WidgetChart chartType="donut" data={classData} />
+            <WidgetChart chartType="donut" data={classData} ariaLabel={t('byClass')} />
           </div>
         </section>
       )}

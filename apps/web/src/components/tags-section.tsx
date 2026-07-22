@@ -24,7 +24,7 @@ export function TagsSection({
   path: string;
   current: Tag[];
   all: Tag[];
-  labels: { title: string; add: string; none: string; attach: string };
+  labels: { title: string; add: string; none: string; attach: string; remove: string };
   testid?: string;
 }) {
   const currentIds = new Set(current.map((t) => t.id));
@@ -51,7 +51,7 @@ export function TagsSection({
               <button
                 type="submit"
                 data-testid={`detach-tag-${tg.id}`}
-                aria-label="remove tag"
+                aria-label={`${labels.remove}: ${tg.name}`}
                 className="text-secondary transition-colors duration-150 hover:text-foreground"
               >
                 ✕

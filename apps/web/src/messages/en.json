@@ -12,10 +12,12 @@
     "f2d": "ISO 27001, COBIT, NIST and local regulations — adapted per subsidiary.",
     "f3t": "Reports & analytics",
     "f3d": "PDF, Word and Excel reports, dashboards, KPIs and risk heat maps.",
-    "tagline": "Trust, measured."
+    "tagline": "Trust, measured.",
+    "language": "Language"
   },
   "auth": {
     "subtitle": "Sign in to your workspace",
+    "language": "Language",
     "email": "Email",
     "password": "Password",
     "signIn": "Sign in",
@@ -2721,7 +2723,8 @@
     "tagsTitle": "Tags",
     "tagAdd": "Add tag…",
     "tagNone": "No tags",
-    "tagAttach": "Attach"
+    "tagAttach": "Attach",
+    "tagRemove": "Remove tag"
   },
   "documents": {
     "title": "Documents",

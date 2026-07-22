@@ -62,7 +62,7 @@ export default async function HomePage() {
           </span>
         </span>
         <span className="[&_a]:text-white/70 [&_a:hover]:text-white">
-          <LocaleSwitcher current={locale} />
+          <LocaleSwitcher current={locale} ariaLabel={t('language')} />
         </span>
       </header>
 

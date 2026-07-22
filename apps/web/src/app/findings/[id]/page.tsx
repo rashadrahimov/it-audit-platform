@@ -313,6 +313,7 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
           add: t('tagAdd'),
           none: t('tagNone'),
           attach: t('tagAttach'),
+          remove: t('tagRemove'),
         }}
       />
 

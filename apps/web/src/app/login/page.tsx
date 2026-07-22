@@ -104,7 +104,7 @@ export default async function LoginPage() {
           </div>
 
           <div className="flex justify-center">
-            <LocaleSwitcher current={locale} />
+            <LocaleSwitcher current={locale} ariaLabel={t('language')} />
           </div>
         </div>
       </section>

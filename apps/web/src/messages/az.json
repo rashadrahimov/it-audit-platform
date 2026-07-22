@@ -12,10 +12,12 @@
     "f2d": "ISO 27001, COBIT, NIST və yerli tənzimləmələr — törəmə şirkətə uyğunlaşdırma ilə.",
     "f3t": "Hesabatlar və analitika",
     "f3d": "PDF/Word/Excel hesabatlar, panellər, KPI-lar və risk istilik xəritələri.",
-    "tagline": "Ölçülmüş etibar."
+    "tagline": "Ölçülmüş etibar.",
+    "language": "Dil"
   },
   "auth": {
     "subtitle": "İş sahənizə daxil olun",
+    "language": "Dil",
     "email": "Email",
     "password": "Şifrə",
     "signIn": "Daxil ol",
@@ -2729,7 +2731,8 @@
     "tagsTitle": "Teqlər",
     "tagAdd": "Teq əlavə et…",
     "tagNone": "Teq yoxdur",
-    "tagAttach": "Əlavə et"
+    "tagAttach": "Əlavə et",
+    "tagRemove": "Teqi sil"
   },
   "documents": {
     "title": "Sənədlər",
