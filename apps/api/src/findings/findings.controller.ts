@@ -220,6 +220,21 @@ export class FindingsController {
     );
   }
 
+  @Get('follow-up-plan')
+  @RequirePermission('finding', 'view')
+  @ApiOperation({
+    summary:
+      'Follow-up / re-assessment plan: remediation queue, re-test queue, overdue and unassigned findings (T-H120)',
+  })
+  @ApiQuery({ name: 'locale', required: false })
+  @ApiOkResponse({
+    description:
+      '{summary:{openFindings,remediationQueue,readyForRetest,overdue,dueSoon,unassigned}, lanes:{remediation,retest,monitor}}',
+  })
+  followUpPlan(@Req() req: TenantRequest, @Query('locale') localeQuery?: string) {
+    return this.findingsService.followUpPlan(req.tenantId, req.user.sub, parseLocale(localeQuery));
+  }
+
   @Get(':id')
   @RequirePermission('finding', 'view')
   @ApiOperation({ summary: 'Карточка finding со всеми полями' })

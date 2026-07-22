@@ -2575,6 +2575,33 @@
     "aiReasoningFallback": "Замечание создано из ИИ-черновика после принятия человеком.",
     "aiRiskJustificationFallback": "Первичный риск — {risk}, исходя из наблюдаемого гэпа контроля и доступных доказательств.",
     "aiNoEvidence": "Ссылка на документ не была приложена",
+    "followUpKicker": "Рабочая панель follow-up",
+    "followUpTitle": "План ремедиации и ре-теста",
+    "followUpHint": "Приоритетная очередь: что должен исправить владелец, где собрать доказательства и что аудитору нужно перепроверить перед закрытием.",
+    "followUpRetestLink": "Открыть очередь ре-теста",
+    "followUpEmpty": "В этой очереди ничего не ждёт.",
+    "unassigned": "Не назначено",
+    "daysPastDue": "Просрочено на {days} дн.",
+    "daysUntilDue": "Осталось {days} дн.",
+    "followUpSummary": {
+      "openFindings": "Открыто",
+      "remediationQueue": "Ремедиация",
+      "readyForRetest": "Ре-тест",
+      "overdue": "Просрочено",
+      "dueSoon": "Скоро срок",
+      "unassigned": "Без владельца"
+    },
+    "followUpLanes": {
+      "remediation": "Нужно исправить",
+      "retest": "Готово к ре-тесту аудитора"
+    },
+    "nextActions": {
+      "assign_owner": "Назначить владельца",
+      "remediate_gap": "Закрыть гэп",
+      "collect_retest_evidence": "Собрать доказательства для ре-теста",
+      "auditor_retest": "Ре-тест аудитора",
+      "monitor": "Наблюдать"
+    },
     "statuses": {
       "identified": "Выявлено",
       "assigned": "Назначено",

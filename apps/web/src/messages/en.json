@@ -2567,6 +2567,33 @@
     "aiReasoningFallback": "The finding was created from an AI draft after human acceptance.",
     "aiRiskJustificationFallback": "Initial risk is {risk} based on the observed control gap and available evidence.",
     "aiNoEvidence": "No document reference was attached",
+    "followUpKicker": "Follow-up workbench",
+    "followUpTitle": "Remediation and re-test plan",
+    "followUpHint": "Prioritized queue for owner remediation, evidence collection and auditor re-test before closure.",
+    "followUpRetestLink": "Open re-test queue",
+    "followUpEmpty": "Nothing waiting in this lane.",
+    "unassigned": "Unassigned",
+    "daysPastDue": "{days}d overdue",
+    "daysUntilDue": "{days}d left",
+    "followUpSummary": {
+      "openFindings": "Open",
+      "remediationQueue": "Remediation",
+      "readyForRetest": "Re-test",
+      "overdue": "Overdue",
+      "dueSoon": "Due soon",
+      "unassigned": "Unassigned"
+    },
+    "followUpLanes": {
+      "remediation": "Needs remediation",
+      "retest": "Ready for auditor re-test"
+    },
+    "nextActions": {
+      "assign_owner": "Assign an owner",
+      "remediate_gap": "Remediate the gap",
+      "collect_retest_evidence": "Collect re-test evidence",
+      "auditor_retest": "Auditor re-test",
+      "monitor": "Monitor"
+    },
     "statuses": {
       "identified": "Identified",
       "assigned": "Assigned",

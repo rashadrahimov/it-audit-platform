@@ -21,6 +21,30 @@ interface FindingRow {
   auditor: string | null;
 }
 
+interface FollowUpItem extends FindingRow {
+  nextAction: string;
+  lane: 'remediation' | 'retest' | 'monitor';
+  priorityScore: number;
+  daysUntilDue: number | null;
+  daysPastDue: number | null;
+}
+
+interface FollowUpPlan {
+  summary: {
+    openFindings: number;
+    remediationQueue: number;
+    readyForRetest: number;
+    overdue: number;
+    dueSoon: number;
+    unassigned: number;
+  };
+  lanes: {
+    remediation: FollowUpItem[];
+    retest: FollowUpItem[];
+    monitor: FollowUpItem[];
+  };
+}
+
 const STATUSES = [
   'identified',
   'assigned',
@@ -68,21 +92,26 @@ export default async function FindingsPage({
   ]);
 
   let findings: FindingRow[] = [];
+  let followUp: FollowUpPlan | null = null;
   let templates: Array<{ key: string; title: string; riskRating: string; recommendation: string }> =
     [];
   let tags: Array<{ id: string; name: string }> = [];
   if (tenantSlug) {
-    const [res, tplRes, tagsRes] = await Promise.all([
+    const [res, followUpRes, tplRes, tagsRes] = await Promise.all([
       apiFetch(
         `/findings?locale=${locale}${filterQuery(sp, ['status', 'riskRating', 'slaStatus', 'mine', 'tagId'])}`,
         { headers: { 'X-Tenant-Slug': tenantSlug } },
       ),
+      apiFetch(`/findings/follow-up-plan?locale=${locale}`, {
+        headers: { 'X-Tenant-Slug': tenantSlug },
+      }),
       apiFetch(`/findings/templates?locale=${locale}`, {
         headers: { 'X-Tenant-Slug': tenantSlug },
       }),
       apiFetch('/tags', { headers: { 'X-Tenant-Slug': tenantSlug } }),
     ]);
     findings = res.ok ? await res.json() : [];
+    followUp = followUpRes.ok ? await followUpRes.json() : null;
     templates = tplRes.ok ? await tplRes.json() : [];
     tags = tagsRes.ok ? await tagsRes.json() : [];
   }
@@ -129,6 +158,109 @@ export default async function FindingsPage({
             : []),
         ]}
       />
+      {followUp && (
+        <section
+          className="flex flex-col gap-4 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-white via-emerald-50/70 to-teal-50/80 p-4 shadow-sm"
+          data-testid="finding-follow-up-plan"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] text-accent uppercase">
+                {t('followUpKicker')}
+              </p>
+              <h2 className="mt-1 text-lg font-semibold text-primary">{t('followUpTitle')}</h2>
+              <p className="mt-1 max-w-2xl text-sm text-secondary">{t('followUpHint')}</p>
+            </div>
+            <Link
+              href="/findings?status=pending_retest"
+              className="rounded-full border border-emerald-200 bg-white/80 px-3 py-1.5 text-xs font-semibold text-accent shadow-xs transition-colors hover:bg-emerald-50"
+            >
+              {t('followUpRetestLink')}
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
+            {(
+              [
+                ['openFindings', followUp.summary.openFindings],
+                ['remediationQueue', followUp.summary.remediationQueue],
+                ['readyForRetest', followUp.summary.readyForRetest],
+                ['overdue', followUp.summary.overdue],
+                ['dueSoon', followUp.summary.dueSoon],
+                ['unassigned', followUp.summary.unassigned],
+              ] as const
+            ).map(([key, value]) => (
+              <div key={key} className="rounded-xl bg-white/80 px-3 py-2 shadow-xs">
+                <div className="text-xl font-bold text-primary tabular-nums">{value}</div>
+                <div className="text-[11px] font-medium text-secondary">
+                  {t(`followUpSummary.${key}`)}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            {(
+              [
+                ['remediation', followUp.lanes.remediation],
+                ['retest', followUp.lanes.retest],
+              ] as const
+            ).map(([lane, items]) => (
+              <div key={lane} className="rounded-xl border border-white/70 bg-white/75 p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-primary">
+                    {t(`followUpLanes.${lane}`)}
+                  </h3>
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
+                    {items.length}
+                  </span>
+                </div>
+                <ul className="flex flex-col gap-2">
+                  {items.slice(0, 4).map((item) => (
+                    <li key={item.id} className="rounded-lg bg-white px-3 py-2 shadow-xs">
+                      <div className="flex items-start justify-between gap-2">
+                        <Link
+                          href={`/findings/${item.id}`}
+                          className="text-sm font-semibold text-accent underline-offset-2 hover:underline"
+                        >
+                          {item.title}
+                        </Link>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${RATING_TONE[item.riskRating] ?? 'bg-muted text-secondary'}`}
+                        >
+                          {t(`ratings.${item.riskRating}`)}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-secondary">
+                        <span>{t(`nextActions.${item.nextAction}`)}</span>
+                        <span>·</span>
+                        <span>{item.owner ?? t('unassigned')}</span>
+                        {item.daysPastDue !== null && (
+                          <>
+                            <span>·</span>
+                            <span className="font-semibold text-red-700">
+                              {t('daysPastDue', { days: item.daysPastDue })}
+                            </span>
+                          </>
+                        )}
+                        {item.daysUntilDue !== null && (
+                          <>
+                            <span>·</span>
+                            <span>{t('daysUntilDue', { days: item.daysUntilDue })}</span>
+                          </>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                  {items.length === 0 && (
+                    <li className="rounded-lg bg-white px-3 py-2 text-sm text-secondary shadow-xs">
+                      {t('followUpEmpty')}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       <section className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
         <table className="w-full text-left text-sm" data-testid="findings-table">
           <thead>

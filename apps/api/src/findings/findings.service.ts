@@ -35,6 +35,7 @@ import {
   tagLink,
   user,
 } from '../db/schema';
+import { buildFindingFollowUpPlan } from './follow-up-plan';
 
 interface Actor {
   tenantId: string;
@@ -671,6 +672,16 @@ export class FindingsService {
       owner: row.owner,
       auditor: row.auditor,
     }));
+  }
+
+  /**
+   * T-H120: follow-up / re-assessment workbench. It turns the finding lifecycle
+   * into a prioritized remediation + re-test queue so auditors can track what
+   * needs owner action, evidence collection, and auditor re-test before closure.
+   */
+  async followUpPlan(tenantId: string, userId: string, locale: Locale) {
+    const rows = await this.list(tenantId, userId, locale);
+    return buildFindingFollowUpPlan(rows);
   }
 
   async detail(tenantId: string, userId: string, id: string, locale: Locale) {

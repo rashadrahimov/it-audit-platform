@@ -2575,6 +2575,33 @@
     "aiReasoningFallback": "Qeyd insan qəbulundan sonra İİ qaralamasından yaradılıb.",
     "aiRiskJustificationFallback": "İlkin risk {risk}: müşahidə olunan kontrol boşluğu və mövcud sübutlara əsaslanır.",
     "aiNoEvidence": "Sənəd istinadı əlavə edilməyib",
+    "followUpKicker": "Follow-up paneli",
+    "followUpTitle": "Aradan qaldırma və təkrar yoxlama planı",
+    "followUpHint": "Sahibin aradan qaldırmalı olduğu işlər, sübutların toplanması və bağlamadan əvvəl auditorun təkrar yoxlaması üçün prioritetləşdirilmiş növbə.",
+    "followUpRetestLink": "Təkrar yoxlama növbəsini aç",
+    "followUpEmpty": "Bu növbədə gözləyən iş yoxdur.",
+    "unassigned": "Təyin olunmayıb",
+    "daysPastDue": "{days} gün gecikib",
+    "daysUntilDue": "{days} gün qalıb",
+    "followUpSummary": {
+      "openFindings": "Açıq",
+      "remediationQueue": "Aradan qaldırma",
+      "readyForRetest": "Təkrar yoxlama",
+      "overdue": "Gecikmiş",
+      "dueSoon": "Vaxt yaxınlaşır",
+      "unassigned": "Sahibsiz"
+    },
+    "followUpLanes": {
+      "remediation": "Aradan qaldırılmalıdır",
+      "retest": "Auditor təkrar yoxlamasına hazırdır"
+    },
+    "nextActions": {
+      "assign_owner": "Sahib təyin et",
+      "remediate_gap": "Boşluğu bağla",
+      "collect_retest_evidence": "Təkrar yoxlama sübutlarını topla",
+      "auditor_retest": "Auditor təkrar yoxlaması",
+      "monitor": "İzləmək"
+    },
     "statuses": {
       "identified": "Aşkarlanıb",
       "assigned": "Təyin olunub",
