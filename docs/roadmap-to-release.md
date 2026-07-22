@@ -30,7 +30,7 @@
 
 ### A2. UI-полировка (сквозное)
 - [x] Интерактивность devices/working-papers/personnel/access-reviews закрыта: последний read-only экран devices получил create/checks UI в T-H133.
-- [ ] Drill-down карточки: risk/engagement/finding/control готовы; Working Paper закрыт T-H134; остаётся Personnel.
+- [x] Drill-down карточки risk/engagement/finding/control/Working Paper/Personnel закрыты; последние WP и Personnel — T-H134/T-H135.
 - [ ] Пустые состояния, лоадеры, обработка ошибок API (сейчас частично), тосты после действий.
 - [x] Навигация: адаптивный app-shell, sidebar, mobile drawer и breadcrumbs закрыты T-H28/T-H32.
 - [ ] **a11y-проход** (фокус, aria, контраст) и **responsive/планшеты** (GEN-10) по всем экранам — скилл ui-ux-pro-max.

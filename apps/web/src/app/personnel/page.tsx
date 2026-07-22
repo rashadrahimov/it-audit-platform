@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
@@ -102,7 +103,12 @@ export default async function PersonnelPage() {
               {people.map((p) => (
                 <tr key={p.id} className="border-b border-border align-top last:border-0">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-foreground">{p.fullName}</div>
+                    <Link
+                      href={`/personnel/${p.id}`}
+                      className="font-medium text-foreground hover:text-accent hover:underline"
+                    >
+                      {p.fullName}
+                    </Link>
                     {(p.position || p.unit || p.email) && (
                       <div className="text-xs text-secondary">
                         {[p.position, p.unit, p.email].filter(Boolean).join(' · ')}
