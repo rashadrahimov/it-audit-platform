@@ -264,6 +264,9 @@
     "drlSuggestions": "AI-generated DRL",
     "drlSuggestionHint": "Suggestions are based on checklist items without linked evidence. The auditor decides whether to convert them into official requests.",
     "createRequest": "Create request",
+    "provideRequestEvidence": "Attach existing document",
+    "provideRequestEvidenceLabel": "Document from the audit evidence pool",
+    "provideRequestEvidenceSubmit": "Mark as provided",
     "acceptRequest": "Accept evidence",
     "linkedDocument": "Linked document",
     "evidenceRequestStatus": {

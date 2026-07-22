@@ -236,3 +236,20 @@ export async function acceptEvidenceRequestAction(
   });
   revalidatePath(`/engagements/${engagementId}`);
 }
+
+/** T-H52: приложить существующий документ к запросу доказательства. */
+export async function provideEvidenceRequestAction(
+  engagementId: string,
+  requestId: string,
+  formData: FormData,
+): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  const documentId = String(formData.get('documentId') ?? '').trim();
+  if (!tenantSlug || !documentId) return;
+  await apiFetch(`/evidence-requests/${requestId}/provide`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
+    body: JSON.stringify({ documentId }),
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}

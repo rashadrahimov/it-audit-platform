@@ -264,6 +264,9 @@
     "drlSuggestions": "ИИ-сформированный DRL",
     "drlSuggestionHint": "Подсказки основаны на пунктах чеклиста без привязанного доказательства. Аудитор решает, превращать ли их в официальный запрос.",
     "createRequest": "Создать запрос",
+    "provideRequestEvidence": "Приложить существующий документ",
+    "provideRequestEvidenceLabel": "Документ из evidence-пула аудита",
+    "provideRequestEvidenceSubmit": "Отметить предоставленным",
     "acceptRequest": "Принять доказательство",
     "linkedDocument": "Связанный документ",
     "evidenceRequestStatus": {

@@ -264,6 +264,9 @@
     "drlSuggestions": "AI tərəfindən yaradılan DRL",
     "drlSuggestionHint": "Təkliflər sübut bağlanmamış çeklist bəndlərinə əsaslanır. Auditor onları rəsmi sorğuya çevirmək barədə qərar verir.",
     "createRequest": "Sorğu yarat",
+    "provideRequestEvidence": "Mövcud sənədi əlavə et",
+    "provideRequestEvidenceLabel": "Audit sübut hovuzundan sənəd",
+    "provideRequestEvidenceSubmit": "Təqdim edilib kimi işarələ",
     "acceptRequest": "Sübutu qəbul et",
     "linkedDocument": "Bağlı sənəd",
     "evidenceRequestStatus": {
