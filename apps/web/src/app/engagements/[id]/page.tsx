@@ -171,6 +171,17 @@ interface EvidenceRequestSuggestion {
   source: 'ai_drl';
   reviewRequired: true;
 }
+interface RecommendationTemplate {
+  key: string;
+  controlClause: string;
+  riskRating: string;
+  title: string;
+  recommendation: string;
+  ownerRole: string;
+  suggestedDueDays: number;
+  actionPlanReady: true;
+  humanReviewRequired: true;
+}
 
 const ENGAGEMENT_ROLES = ['lead', 'assessor', 'reviewer', 'approver', 'observer'] as const;
 
@@ -297,15 +308,17 @@ export default async function EngagementDetailPage({
         )
       : null;
   const reviews: Record<string, EvidenceReview> = revRes && revRes.ok ? await revRes.json() : {};
-  const [teamRes, membersRes, taskRes, requestRes, requestSuggestionRes] = await Promise.all([
-    apiFetch(`/engagements/${id}/members`, { headers: tenantHeaders }),
-    apiFetch(`/memberships?locale=${locale}`, { headers: tenantHeaders }),
-    apiFetch(`/tasks?entityType=engagement&entityId=${id}`, { headers: tenantHeaders }),
-    apiFetch(`/evidence-requests?engagementId=${id}`, { headers: tenantHeaders }),
-    apiFetch(`/evidence-requests/suggestions?engagementId=${id}&locale=${locale}`, {
-      headers: tenantHeaders,
-    }),
-  ]);
+  const [teamRes, membersRes, taskRes, requestRes, requestSuggestionRes, recommendationTplRes] =
+    await Promise.all([
+      apiFetch(`/engagements/${id}/members`, { headers: tenantHeaders }),
+      apiFetch(`/memberships?locale=${locale}`, { headers: tenantHeaders }),
+      apiFetch(`/tasks?entityType=engagement&entityId=${id}`, { headers: tenantHeaders }),
+      apiFetch(`/evidence-requests?engagementId=${id}`, { headers: tenantHeaders }),
+      apiFetch(`/evidence-requests/suggestions?engagementId=${id}&locale=${locale}`, {
+        headers: tenantHeaders,
+      }),
+      apiFetch(`/tasks/recommendation-templates?locale=${locale}`, { headers: tenantHeaders }),
+    ]);
   const team: TeamMember[] = teamRes.ok ? await teamRes.json() : [];
   const tenantMembers: TenantMember[] = membersRes.ok ? await membersRes.json() : [];
   const auditTasks: TaskItem[] = taskRes.ok ? await taskRes.json() : [];
@@ -314,6 +327,9 @@ export default async function EngagementDetailPage({
     : { open: 0, total: 0, items: [] };
   const evidenceRequestSuggestions: EvidenceRequestSuggestion[] = requestSuggestionRes.ok
     ? (await requestSuggestionRes.json()).items
+    : [];
+  const recommendationTemplates: RecommendationTemplate[] = recommendationTplRes.ok
+    ? (await recommendationTplRes.json()).templates
     : [];
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
@@ -1563,6 +1579,32 @@ export default async function EngagementDetailPage({
               </span>
             ))}
           </div>
+          {recommendationTemplates.length > 0 && (
+            <div
+              className="mt-3 grid gap-2 border-t border-emerald-200/70 pt-3 sm:grid-cols-3"
+              data-testid="recommendation-template-proof"
+            >
+              {recommendationTemplates.slice(0, 3).map((template) => (
+                <div key={template.key} className="rounded-xl bg-white/85 p-3 shadow-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-primary">{template.title}</span>
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                      {template.controlClause}
+                    </span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-xs text-secondary">
+                    {template.recommendation}
+                  </p>
+                  <p className="mt-2 text-[11px] font-medium text-emerald-900">
+                    {t('actionPlanProof.templateMeta', {
+                      owner: template.ownerRole,
+                      days: template.suggestedDueDays,
+                    })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         {findings.length === 0 ? (
           <p className="text-sm text-secondary">{t('findingsEmpty')}</p>

@@ -301,7 +301,8 @@
       "owner": "Qeydin sahibi tapşırığın icraçısı olur",
       "timeline": "Risk SLA son tarix olmadıqda onu doldurur",
       "clause": "Qəbul edilmiş İİ kontrol bəndi tapşırıqda saxlanılır",
-      "review": "Auditor bağlamadan əvvəl hər tapşırığı redaktə edə bilər"
+      "review": "Auditor bağlamadan əvvəl hər tapşırığı redaktə edə bilər",
+      "templateMeta": "{owner} · hədəf {days} gün"
     },
     "seedActionPlan": "Tədbirlər planını qur",
     "findingsEmpty": "Hələ qeyd yoxdur",

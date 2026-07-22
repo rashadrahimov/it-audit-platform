@@ -4,6 +4,7 @@ import { resolveLocalized, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { finding, membership, task, user } from '../db/schema';
+import { localizedRecommendationTemplates } from '../seed-data/recommendation-templates';
 import {
   ACTION_PLAN_DUE_DAYS,
   acceptedAiControlClause,
@@ -84,6 +85,17 @@ export class TasksService {
       dueDate: r.dueDate?.toISOString() ?? null,
       completedAt: r.completedAt?.toISOString() ?? null,
     }));
+  }
+
+  recommendationTemplates(locale: Locale) {
+    const templates = localizedRecommendationTemplates(locale);
+    return {
+      count: templates.length,
+      templates,
+      actionPlanPolicy: ACTION_PLAN_DUE_DAYS,
+      reusable: true,
+      humanReviewRequired: true,
+    };
   }
 
   async create(actor: Actor, input: CreateTaskInput) {

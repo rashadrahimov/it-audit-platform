@@ -52,6 +52,17 @@ const actionPlanSeedSchema = z.object({
 export class TasksController {
   constructor(private readonly service: TasksService) {}
 
+  @Get('recommendation-templates')
+  @RequirePermission('control', 'view')
+  @ApiOperation({
+    summary: 'T-H73: reusable recommendation templates for Action Plan remediation',
+  })
+  recommendationTemplates(@Query('locale') localeQuery?: string) {
+    const parsed = localeSchema.safeParse(localeQuery ?? DEFAULT_LOCALE);
+    if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+    return this.service.recommendationTemplates(parsed.data);
+  }
+
   @Get()
   @RequirePermission('control', 'view')
   @ApiOperation({ summary: 'Задачи сущности (T-V27): ?entityType=&entityId=' })
