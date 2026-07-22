@@ -1,6 +1,13 @@
 # Release blockers register
 
-Статус: T-H145. Этот файл отделяет реально оставшиеся buildable-задачи от пунктов, которые нельзя честно закрыть без решения клиента, production secrets, инфраструктуры, production data access или внешней проверки.
+Статус: T-H147. Этот файл отделяет реально оставшиеся buildable-задачи от пунктов, которые нельзя честно закрыть без решения клиента, production secrets, инфраструктуры, production data access или внешней проверки.
+
+## Latest production verification
+
+- 22.07.2026 вручную развёрнут `main` на `78.47.51.200`, проверенный SHA: `8e2142d`.
+- Production worktree синхронизирован с Git: ветка `main`, чистый status.
+- `api`, `web`, `postgres`, `redis`, `minio` запущены; health и страницы `/`, `/login`, `/action-plans`, `/reports`, `/risk-heatmap` возвращают HTTP 200.
+- На корневом разделе диска осталось около 12 GiB (92% занято). Перед следующей большой сборкой требуется контролируемая очистка старых Docker-артефактов с сохранением активных образов и rollback-набора.
 
 ## Client decisions required
 
@@ -26,8 +33,9 @@
    - Optional: `DEPLOY_USER`.
    - Evidence: every deploy run after T-H136..T-H140 failed before SSH with exactly those missing secrets.
 
-2. **Production smoke cannot run until deploy succeeds.**
-   - API health/web smoke/tag smoke on prod are blocked by the missing deployment secrets or a direct SSH credential.
+2. **Автоматический production smoke через GitHub Actions пока не работает.**
+   - Ручной deploy и production smoke успешно выполнены 22.07.2026 через прямой SSH-доступ.
+   - Для полностью автоматического smoke после каждого push всё ещё нужны GitHub Actions deploy secrets.
 
 ## Production data / integrity blockers
 
