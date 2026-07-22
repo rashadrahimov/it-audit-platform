@@ -386,7 +386,7 @@ export const frameworkRequirement = pgTable(
   (table) => [uniqueIndex('framework_requirement_fw_ref_idx').on(table.frameworkId, table.ref)],
 );
 
-/** Таксономия контролей (16 доменов чеклиста клиента: GOV/AC/CM/…). tenant_id NULL = глобальная. */
+/** Таксономия контролей (32 домена CBAR/ISO-based IT audit methodology). tenant_id NULL = глобальная. */
 export const controlDomain = pgTable(
   'control_domain',
   {

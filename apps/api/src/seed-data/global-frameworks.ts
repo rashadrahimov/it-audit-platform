@@ -2,9 +2,10 @@
  * T-V47: полный контент глобальной библиотеки фреймворков (EP-FWK).
  * ISO/IEC 27001:2022 Annex A — все 93 контроля; COBIT 2019 — 40 objectives;
  * NIST CSF 2.0 — 22 категории; SOC 2 TSC — 61 критерий; PCI DSS 4.0 — 12 требований;
- * GDPR — 28 ключевых статей; HIPAA Security Rule — 19 стандартов; CBAR — 16 доменов.
+ * GDPR — 28 ключевых статей; HIPAA Security Rule — 19 стандартов; CBAR — 32 домена.
  * ru-переводы: ISO/NIST/PCI/GDPR; az — CBAR (остальные fallback en, resolveLocalized).
  */
+import { CONTROL_DOMAINS } from './global-controls';
 
 export interface FrameworkRequirementSeed {
   ref: string;
@@ -734,99 +735,12 @@ const HIPAA_SECURITY_RULE: FrameworkRequirementSeed[] = [
   { ref: '164.316', title: { en: 'Policies, procedures, and documentation requirements' } },
 ];
 
-// Местный регулятор (T-001/T-C01): CBAR — 16 доменов IT-аудита из клиентского чеклиста.
-const CBAR_DOMAINS: FrameworkRequirementSeed[] = [
-  { ref: 'GOV', title: { en: 'IT governance', az: 'İT idarəetməsi', ru: 'ИТ-управление' } },
-  { ref: 'AC', title: { en: 'Access control', az: 'Girişə nəzarət', ru: 'Управление доступом' } },
-  {
-    ref: 'CM',
-    title: {
-      en: 'Change management',
-      az: 'Dəyişikliklərin idarə edilməsi',
-      ru: 'Управление изменениями',
-    },
-  },
-  {
-    ref: 'BK',
-    title: {
-      en: 'Backup & recovery',
-      az: 'Ehtiyat nüsxə və bərpa',
-      ru: 'Резервное копирование и восстановление',
-    },
-  },
-  {
-    ref: 'DR',
-    title: { en: 'Business continuity', az: 'Biznesin fasiləsizliyi', ru: 'Непрерывность бизнеса' },
-  },
-  {
-    ref: 'NW',
-    title: { en: 'Network security', az: 'Şəbəkə təhlükəsizliyi', ru: 'Сетевая безопасность' },
-  },
-  {
-    ref: 'VM',
-    title: {
-      en: 'Vulnerability management',
-      az: 'Zəifliklərin idarə edilməsi',
-      ru: 'Управление уязвимостями',
-    },
-  },
-  {
-    ref: 'EP',
-    title: {
-      en: 'Endpoint security',
-      az: 'Son nöqtə təhlükəsizliyi',
-      ru: 'Защита конечных устройств',
-    },
-  },
-  {
-    ref: 'LM',
-    title: {
-      en: 'Logging & monitoring',
-      az: 'Jurnal və monitorinq',
-      ru: 'Логирование и мониторинг',
-    },
-  },
-  {
-    ref: 'DP',
-    title: { en: 'Data protection', az: 'Məlumatların qorunması', ru: 'Защита данных' },
-  },
-  {
-    ref: 'TP',
-    title: {
-      en: 'Third-party / vendor',
-      az: 'Üçüncü tərəf / təchizatçı',
-      ru: 'Третьи стороны / вендоры',
-    },
-  },
-  {
-    ref: 'IR',
-    title: {
-      en: 'Incident management',
-      az: 'İnsidentlərin idarə edilməsi',
-      ru: 'Управление инцидентами',
-    },
-  },
-  {
-    ref: 'AM',
-    title: { en: 'Asset management', az: 'Aktivlərin idarə edilməsi', ru: 'Управление активами' },
-  },
-  {
-    ref: 'CL',
-    title: { en: 'Cloud security', az: 'Bulud təhlükəsizliyi', ru: 'Безопасность облака' },
-  },
-  {
-    ref: 'PH',
-    title: { en: 'Physical security', az: 'Fiziki təhlükəsizlik', ru: 'Физическая безопасность' },
-  },
-  {
-    ref: 'SA',
-    title: {
-      en: 'Security awareness',
-      az: 'Təhlükəsizlik maarifləndirməsi',
-      ru: 'Осведомлённость о безопасности',
-    },
-  },
-];
+// Местный регулятор (T-001/T-C01): CBAR IT-audit backbone = те же 32 control domains,
+// что и глобальная таксономия контролей. Один источник предотвращает дрейф scope.
+export const CBAR_DOMAINS: FrameworkRequirementSeed[] = CONTROL_DOMAINS.map((domain) => ({
+  ref: domain.code,
+  title: domain.name,
+}));
 
 export const GLOBAL_FRAMEWORKS: FrameworkSeed[] = [
   {

@@ -63,6 +63,17 @@ const DEMO_GOV_POLICY_BODY = [
 const DEMO_GOV_POLICY_SHA256 = createHash('sha256').update(DEMO_GOV_POLICY_BODY).digest('hex');
 const DEMO_TENANT_SLUG = 'demo';
 
+function sameLocalizedText(
+  a: { en?: string; az?: string; ru?: string } | null | undefined,
+  b: { en?: string; az?: string; ru?: string } | null | undefined,
+): boolean {
+  return (
+    (a?.en ?? '') === (b?.en ?? '') &&
+    (a?.az ?? '') === (b?.az ?? '') &&
+    (a?.ru ?? '') === (b?.ru ?? '')
+  );
+}
+
 /** Глобальный каталог прав (T-018, без RLS): 5 ресурсов × 6 действий. Идемпотентно. */
 export async function seedPermissionCatalog(db: NodePgDatabase) {
   const RESOURCES = ['engagement', 'finding', 'control', 'report', 'settings'];
@@ -339,6 +350,25 @@ export async function seedGlobalFrameworks(): Promise<void> {
             .set({ domain: fw.domain })
             .where(eq(framework.id, existing.id));
         }
+        // T-H102: обновляем title существующих глобальных требований, чтобы расширение
+        // 32-domain CBAR backbone и локализации дошли до уже посеянного production catalog.
+        const existingRequirements = await db
+          .select({
+            id: frameworkRequirement.id,
+            ref: frameworkRequirement.ref,
+            titleI18n: frameworkRequirement.titleI18n,
+          })
+          .from(frameworkRequirement)
+          .where(eq(frameworkRequirement.frameworkId, existing.id));
+        const requirementByRef = new Map(existingRequirements.map((r) => [r.ref, r]));
+        for (const r of fw.requirements) {
+          const req = requirementByRef.get(r.ref);
+          if (!req || sameLocalizedText(req.titleI18n, r.title)) continue;
+          await db
+            .update(frameworkRequirement)
+            .set({ titleI18n: r.title })
+            .where(eq(frameworkRequirement.id, req.id));
+        }
         // T-V47: досев недостающих требований (уникальность по (framework_id, ref))
         const added = await db
           .insert(frameworkRequirement)
@@ -436,6 +466,13 @@ export async function seedGlobalControls(): Promise<void> {
         .from(controlDomain)
         .where(and(isNull(controlDomain.tenantId), eq(controlDomain.code, d.code)));
       if (existing) {
+        // T-H102: старые глобальные домены получат RU/AZ названия при следующем seed.
+        if (!sameLocalizedText(existing.nameI18n, d.name)) {
+          await db
+            .update(controlDomain)
+            .set({ nameI18n: d.name })
+            .where(eq(controlDomain.id, existing.id));
+        }
         domainIds.set(d.code, existing.id);
         continue;
       }
