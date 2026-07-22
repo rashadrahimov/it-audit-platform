@@ -38,12 +38,13 @@ describe('каталоги переводов UI (T-022, ADR-0009)', () => {
 
   it('roadmap coverage includes latest privacy and follow-up proof chips', () => {
     const evidenceKeys = new Set(REQUIREMENT_COVERAGE.flatMap((item) => item.evidence));
-    for (const key of [
+    const requiredEvidence: Array<(typeof REQUIREMENT_COVERAGE)[number]['evidence'][number]> = [
       'ai-privacy-assurance',
       'no-training',
       'finding-follow-up-plan',
       'retest-workbench',
-    ]) {
+    ];
+    for (const key of requiredEvidence) {
       expect(evidenceKeys.has(key)).toBe(true);
     }
   });
