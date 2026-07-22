@@ -7,6 +7,7 @@ import {
   checklistItem,
   control,
   controlMapping,
+  document,
   documentLink,
   engagement,
   framework,
@@ -14,6 +15,7 @@ import {
   frameworkRequirement,
   tenant,
 } from '../db/schema';
+import { summarizeEvidenceReuse } from './evidence-reuse';
 
 interface Actor {
   tenantId: string;
@@ -99,42 +101,54 @@ export class FrameworksService {
   /** T-H40: cross-framework compliance mapping — один контрол может закрывать несколько стандартов. */
   async mappingSummary(tenantSlug: string | undefined, locale: Locale) {
     const collect = async (db: Pick<typeof this.dbService.db, 'select'>) => {
-      const [frameworks, activations, controls, requirements, mappings] = await Promise.all([
-        db
-          .select({
-            id: framework.id,
-            nameI18n: framework.nameI18n,
-            version: framework.version,
-            deletedAt: framework.deletedAt,
-          })
-          .from(framework)
-          .where(isNull(framework.deletedAt)),
-        db.select({ frameworkId: frameworkActivation.frameworkId }).from(frameworkActivation),
-        db
-          .select({
-            id: control.id,
-            ref: control.ref,
-            tenantId: control.tenantId,
-            originControlId: control.originControlId,
-            objectiveI18n: control.objectiveI18n,
-          })
-          .from(control)
-          .where(isNull(control.deletedAt)),
-        db
-          .select({
-            id: frameworkRequirement.id,
-            ref: frameworkRequirement.ref,
-            frameworkId: frameworkRequirement.frameworkId,
-          })
-          .from(frameworkRequirement),
-        db
-          .select({
-            controlId: controlMapping.controlId,
-            requirementId: controlMapping.requirementId,
-          })
-          .from(controlMapping),
-      ]);
-      return { frameworks, activations, controls, requirements, mappings };
+      const [frameworks, activations, controls, requirements, mappings, evidenceLinks] =
+        await Promise.all([
+          db
+            .select({
+              id: framework.id,
+              nameI18n: framework.nameI18n,
+              version: framework.version,
+              deletedAt: framework.deletedAt,
+            })
+            .from(framework)
+            .where(isNull(framework.deletedAt)),
+          db.select({ frameworkId: frameworkActivation.frameworkId }).from(frameworkActivation),
+          db
+            .select({
+              id: control.id,
+              ref: control.ref,
+              tenantId: control.tenantId,
+              originControlId: control.originControlId,
+              objectiveI18n: control.objectiveI18n,
+            })
+            .from(control)
+            .where(isNull(control.deletedAt)),
+          db
+            .select({
+              id: frameworkRequirement.id,
+              ref: frameworkRequirement.ref,
+              frameworkId: frameworkRequirement.frameworkId,
+            })
+            .from(frameworkRequirement),
+          db
+            .select({
+              controlId: controlMapping.controlId,
+              requirementId: controlMapping.requirementId,
+            })
+            .from(controlMapping),
+          db
+            .select({
+              documentId: documentLink.documentId,
+              filename: document.filename,
+              entityId: documentLink.entityId,
+              relation: documentLink.relation,
+              reviewStatus: documentLink.reviewStatus,
+            })
+            .from(documentLink)
+            .innerJoin(document, eq(documentLink.documentId, document.id))
+            .where(and(eq(documentLink.entityType, 'control'), isNull(document.deletedAt))),
+        ]);
+      return { frameworks, activations, controls, requirements, mappings, evidenceLinks };
     };
 
     let data: Awaited<ReturnType<typeof collect>>;
@@ -188,6 +202,7 @@ export class FrameworksService {
       objective: string;
       requirementIds: Set<string>;
       frameworkIds: Set<string>;
+      originControlId: string | null;
     }> = [];
     const unmappedControls: Array<{ id: string; ref: string; objective: string }> = [];
 
@@ -208,6 +223,7 @@ export class FrameworksService {
         objective: resolveLocalized(row.objectiveI18n, locale),
         requirementIds,
         frameworkIds,
+        originControlId: row.originControlId,
       };
       if (requirementIds.size === 0) {
         unmappedControls.push({ id: item.id, ref: item.ref, objective: item.objective });
@@ -251,6 +267,17 @@ export class FrameworksService {
       }))
       .sort((a, b) => b.frameworks.length - a.frameworks.length || b.requirements - a.requirements)
       .slice(0, 10);
+    const evidenceReuse = summarizeEvidenceReuse(
+      controlsWithMappings.map((c) => ({
+        id: c.id,
+        originControlId: c.originControlId,
+        ref: c.ref,
+        requirementIds: c.requirementIds,
+        frameworkIds: c.frameworkIds,
+      })),
+      data.evidenceLinks,
+      requirements.length,
+    );
 
     return {
       activeFrameworks: activeFrameworks.length,
@@ -265,6 +292,7 @@ export class FrameworksService {
       unmappedControls: unmappedControls.length,
       byFramework,
       topReusableControls: reusableControls,
+      evidenceReuse,
       unmappedSample: unmappedControls.sort((a, b) => a.ref.localeCompare(b.ref)).slice(0, 10),
     };
   }

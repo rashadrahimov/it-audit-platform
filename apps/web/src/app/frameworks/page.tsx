@@ -41,6 +41,21 @@ interface MappingSummary {
     frameworks: string[];
     requirements: number;
   }>;
+  evidenceReuse: {
+    evidenceDocuments: number;
+    reusableEvidenceDocuments: number;
+    coveredRequirementsWithEvidence: number;
+    evidenceCoveragePercent: number;
+    topDocuments: Array<{
+      documentId: string;
+      filename: string;
+      frameworks: number;
+      requirements: number;
+      controls: string[];
+      reviewStatuses: string[];
+      relations: string[];
+    }>;
+  };
 }
 
 const DOMAINS = ['security', 'privacy', 'industry', 'custom'];
@@ -238,6 +253,61 @@ export default async function FrameworksPage() {
                 </ul>
               )}
             </div>
+          </div>
+
+          <div
+            className="mt-4 rounded-xl border border-emerald-100 bg-white/85 p-3"
+            data-testid="framework-evidence-reuse"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-primary">{t('evidenceReuse')}</h3>
+                <p className="mt-1 text-xs text-secondary">
+                  {t('evidenceReuseSub', {
+                    docs: mapping.evidenceReuse.reusableEvidenceDocuments,
+                    requirements: mapping.evidenceReuse.coveredRequirementsWithEvidence,
+                  })}
+                </p>
+              </div>
+              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900">
+                {mapping.evidenceReuse.evidenceCoveragePercent}% {t('evidenceMapped')}
+              </span>
+            </div>
+            <dl className="mt-3 grid gap-2 sm:grid-cols-3">
+              {(
+                [
+                  ['evidenceDocuments', mapping.evidenceReuse.evidenceDocuments],
+                  ['reusableEvidenceDocuments', mapping.evidenceReuse.reusableEvidenceDocuments],
+                  [
+                    'coveredRequirementsWithEvidence',
+                    mapping.evidenceReuse.coveredRequirementsWithEvidence,
+                  ],
+                ] as const
+              ).map(([key, value]) => (
+                <div key={key} className="rounded-lg bg-emerald-50/80 p-2">
+                  <dd className="text-lg font-bold tabular-nums text-primary">{value}</dd>
+                  <dt className="text-xs text-secondary">{t(key)}</dt>
+                </div>
+              ))}
+            </dl>
+            {mapping.evidenceReuse.topDocuments.length === 0 ? (
+              <p className="mt-3 text-sm text-secondary">{t('noEvidenceReuse')}</p>
+            ) : (
+              <ul className="mt-3 grid gap-2">
+                {mapping.evidenceReuse.topDocuments.slice(0, 4).map((doc) => (
+                  <li key={doc.documentId} className="rounded-lg bg-white/90 p-2 text-sm">
+                    <span className="font-medium text-foreground">{doc.filename}</span>
+                    <span className="ml-2 text-secondary">
+                      {t('evidenceCovers', {
+                        f: doc.frameworks,
+                        r: doc.requirements,
+                        c: doc.controls.join(', '),
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </section>
       )}
