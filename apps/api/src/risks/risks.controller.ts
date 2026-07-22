@@ -50,6 +50,14 @@ const aiRiskReviewSchema = z.object({
   dedupeFingerprint: z.string().optional(),
 });
 
+const rejectRiskSuggestionSchema = z.object({
+  sourceFindingId: z.uuid(),
+  title: z.string().optional(),
+  reason: z.string().optional(),
+  confidence: z.number().min(0).max(1).optional(),
+  dedupeFingerprint: z.string().optional(),
+});
+
 const createRiskSchema = z.object({
   titleI18n: i18nTextSchema,
   descriptionI18n: i18nTextSchema.optional(),
@@ -346,6 +354,19 @@ export class RisksController {
     return this.service.suggestions(req.tenantId, parseLocale(localeQuery), {
       engagementId: parsedEngagementId?.data,
     });
+  }
+
+  @Post('suggestions/reject')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'HITL: отклонить AI/business-risk proposal и убрать из очереди' })
+  rejectSuggestion(@Req() req: TenantRequest, @Body() body: unknown) {
+    const parsed = rejectRiskSuggestionSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.rejectSuggestion(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      parsed.data,
+    );
   }
 
   @Get(':id')

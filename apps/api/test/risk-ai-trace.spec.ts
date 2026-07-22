@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { DbService } from '../src/db/db.service';
 import { AuditLogService } from '../src/audit/audit-log.service';
 import { RisksService } from '../src/risks/risks.service';
-import { auditLog, risk, tenant, user } from '../src/db/schema';
+import { auditLog, finding, risk, tenant, user } from '../src/db/schema';
 
 const run = Date.now();
 const dbService = new DbService();
@@ -31,6 +31,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await dbService.withTenant(tenantId, async (tx) => {
+    await tx.delete(finding).where(eq(finding.tenantId, tenantId));
     await tx.delete(risk).where(eq(risk.tenantId, tenantId));
   });
   await dbService.db.delete(user).where(eq(user.id, userId));
@@ -101,6 +102,51 @@ describe('AI risk suggestion HITL traceability', () => {
       affectedAsset: 'Backup platform / recovery evidence',
       affectedControlRef: 'BCK-01',
       dedupeFingerprint: 'continuity:bck-01:backup-restoration',
+    });
+  });
+
+  it('records rejected AI risk proposals and removes them from the suggestion queue', async () => {
+    const [row] = await dbService.withTenant(tenantId, (tx) =>
+      tx
+        .insert(finding)
+        .values({
+          tenantId,
+          titleI18n: { en: 'Vendor backup restoration is not tested' },
+          riskRating: 'high',
+          status: 'identified',
+        })
+        .returning({ id: finding.id }),
+    );
+
+    await expect(service.suggestions(tenantId, 'en')).resolves.toMatchObject({ count: 1 });
+
+    await service.rejectSuggestion(
+      { tenantId, userId, ip: '::1' },
+      {
+        sourceFindingId: row!.id,
+        title: 'Business risk — Vendor backup restoration is not tested',
+        confidence: 0.8,
+        dedupeFingerprint: 'continuity:vendor-backup-restoration',
+      },
+    );
+
+    await expect(service.suggestions(tenantId, 'en')).resolves.toMatchObject({ count: 0 });
+
+    const logs = await dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ action: auditLog.action, after: auditLog.after })
+        .from(auditLog)
+        .where(and(eq(auditLog.entityType, 'finding'), eq(auditLog.entityId, row!.id))),
+    );
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatchObject({
+      action: 'ai_risk.rejected',
+      after: {
+        source: 'risk_suggestion',
+        decision: 'rejected',
+        reviewStatus: 'rejected_by_human',
+        sourceFindingId: row!.id,
+      },
     });
   });
 });

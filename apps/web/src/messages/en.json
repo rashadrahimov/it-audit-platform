@@ -1277,6 +1277,7 @@
     "confidence": "Confidence",
     "evidence": "Evidence",
     "addAfterReview": "Add after review",
+    "rejectSuggestion": "Reject suggestion",
     "affectedProcessAsset": "Affected process / asset",
     "affectedProcess": "Affected process",
     "affectedAsset": "Affected asset",

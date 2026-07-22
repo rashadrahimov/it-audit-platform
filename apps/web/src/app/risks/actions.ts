@@ -219,6 +219,27 @@ export async function addRiskSuggestionAction(formData: FormData): Promise<void>
   revalidatePath('/risks');
 }
 
+/** Human-in-the-loop: отклонить AI/business-risk proposal и убрать его из очереди. */
+export async function rejectRiskSuggestionAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const sourceFindingId = String(formData.get('sourceFindingId') ?? '').trim();
+  if (!sourceFindingId) return;
+  const confidence = Number(formData.get('confidence'));
+  await apiFetch('/risks/suggestions/reject', {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sourceFindingId,
+      title: String(formData.get('title') ?? '').trim() || undefined,
+      reason: String(formData.get('reason') ?? '').trim() || undefined,
+      confidence: Number.isFinite(confidence) ? confidence : undefined,
+      dedupeFingerprint: String(formData.get('dedupeFingerprint') ?? '').trim() || undefined,
+    }),
+  });
+  revalidatePath('/risks');
+}
+
 /** Настроить матрицу рисков (T-057 → UI T-V12): шкалы и пороги классов. */
 export async function setRiskMatrixAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();

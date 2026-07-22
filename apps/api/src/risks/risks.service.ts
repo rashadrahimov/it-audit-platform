@@ -62,6 +62,14 @@ export interface RiskAiReview {
   dedupeFingerprint?: string;
 }
 
+export interface RejectRiskSuggestionInput {
+  sourceFindingId: string;
+  title?: string;
+  reason?: string;
+  confidence?: number;
+  dedupeFingerprint?: string;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -310,6 +318,32 @@ export class RisksService {
       });
     }
     return created;
+  }
+
+  async rejectSuggestion(actor: Actor, input: RejectRiskSuggestionInput) {
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'ai_risk.rejected',
+      entityType: 'finding',
+      entityId: input.sourceFindingId,
+      after: {
+        source: 'risk_suggestion',
+        decision: 'rejected',
+        reviewStatus: 'rejected_by_human',
+        sourceFindingId: input.sourceFindingId,
+        title: input.title ?? null,
+        reason: input.reason ?? 'Rejected by auditor from AI risk proposal queue',
+        confidence: input.confidence ?? null,
+        dedupeFingerprint: input.dedupeFingerprint ?? null,
+      },
+    });
+    return {
+      ok: true,
+      sourceFindingId: input.sourceFindingId,
+      reviewStatus: 'rejected_by_human',
+    };
   }
 
   /** Пересчёт скоринга при изменении impact/likelihood. */
@@ -829,7 +863,21 @@ export class RisksService {
         })
         .from(risk)
         .where(and(isNotNull(risk.tenantId), isNull(risk.deletedAt)));
-      return { findings: findingRows, existingRisks: riskRows };
+      const rejectedRows = await tx
+        .select({ findingId: auditLog.entityId })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'ai_risk.rejected'),
+            eq(auditLog.entityType, 'finding'),
+            isNotNull(auditLog.entityId),
+          ),
+        );
+      const rejectedFindingIds = new Set(rejectedRows.map((row) => row.findingId).filter(Boolean));
+      return {
+        findings: findingRows.filter((row) => !rejectedFindingIds.has(row.findingId)),
+        existingRisks: riskRows,
+      };
     });
     const suggestions = suggestBusinessRisks(
       findings.map((r) => ({

@@ -7,6 +7,7 @@ import {
   addRiskFromLibraryAction,
   addRiskSuggestionAction,
   createRiskAction,
+  rejectRiskSuggestionAction,
   setRiskMatrixAction,
 } from './actions';
 import { EmptyState } from '@/components/empty-state';
@@ -373,33 +374,60 @@ export default async function RisksPage({
                       </div>
                     )}
                   </dl>
-                  {duplicate?.matchedRiskId ? (
-                    <Link
-                      href={`/risks/${duplicate.matchedRiskId}`}
-                      className="mt-3 inline-flex rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                    >
-                      {t('openDuplicate')}
-                    </Link>
-                  ) : (
-                    <form action={addRiskSuggestionAction} className="mt-3">
-                      <input type="hidden" name="title" value={s.title} />
-                      <input type="hidden" name="description" value={s.description} />
-                      <input type="hidden" name="category" value={s.category} />
-                      <input type="hidden" name="domain" value={s.affectedControlRef ?? ''} />
-                      <input type="hidden" name="inherentImpact" value={s.inherentImpact} />
-                      <input type="hidden" name="inherentLikelihood" value={s.inherentLikelihood} />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {duplicate?.matchedRiskId ? (
+                      <Link
+                        href={`/risks/${duplicate.matchedRiskId}`}
+                        className="inline-flex rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {t('openDuplicate')}
+                      </Link>
+                    ) : (
+                      <form action={addRiskSuggestionAction}>
+                        <input type="hidden" name="title" value={s.title} />
+                        <input type="hidden" name="description" value={s.description} />
+                        <input type="hidden" name="category" value={s.category} />
+                        <input type="hidden" name="domain" value={s.affectedControlRef ?? ''} />
+                        <input type="hidden" name="inherentImpact" value={s.inherentImpact} />
+                        <input
+                          type="hidden"
+                          name="inherentLikelihood"
+                          value={s.inherentLikelihood}
+                        />
+                        <input type="hidden" name="sourceFindingId" value={s.findingId} />
+                        <input type="hidden" name="confidence" value={s.confidence} />
+                        <input type="hidden" name="affectedProcess" value={s.affectedProcess} />
+                        <input type="hidden" name="affectedAsset" value={s.affectedAsset} />
+                        <input
+                          type="hidden"
+                          name="affectedControlRef"
+                          value={s.affectedControlRef ?? ''}
+                        />
+                        <input type="hidden" name="evidenceType" value={s.evidenceRef.type} />
+                        <input type="hidden" name="evidenceId" value={s.evidenceRef.id} />
+                        <input
+                          type="hidden"
+                          name="evidenceLocation"
+                          value={s.evidenceRef.location}
+                        />
+                        <input
+                          type="hidden"
+                          name="dedupeFingerprint"
+                          value={s.dedupe?.fingerprint ?? ''}
+                        />
+                        <button
+                          type="submit"
+                          data-testid="risk-suggestion-add"
+                          className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          {t('addAfterReview')}
+                        </button>
+                      </form>
+                    )}
+                    <form action={rejectRiskSuggestionAction}>
                       <input type="hidden" name="sourceFindingId" value={s.findingId} />
+                      <input type="hidden" name="title" value={s.title} />
                       <input type="hidden" name="confidence" value={s.confidence} />
-                      <input type="hidden" name="affectedProcess" value={s.affectedProcess} />
-                      <input type="hidden" name="affectedAsset" value={s.affectedAsset} />
-                      <input
-                        type="hidden"
-                        name="affectedControlRef"
-                        value={s.affectedControlRef ?? ''}
-                      />
-                      <input type="hidden" name="evidenceType" value={s.evidenceRef.type} />
-                      <input type="hidden" name="evidenceId" value={s.evidenceRef.id} />
-                      <input type="hidden" name="evidenceLocation" value={s.evidenceRef.location} />
                       <input
                         type="hidden"
                         name="dedupeFingerprint"
@@ -407,13 +435,13 @@ export default async function RisksPage({
                       />
                       <button
                         type="submit"
-                        data-testid="risk-suggestion-add"
-                        className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        data-testid="risk-suggestion-reject"
+                        className="rounded-md border border-border bg-white px-3 py-1.5 text-xs font-semibold text-secondary transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       >
-                        {t('addAfterReview')}
+                        {t('rejectSuggestion')}
                       </button>
                     </form>
-                  )}
+                  </div>
                 </li>
               );
             })}

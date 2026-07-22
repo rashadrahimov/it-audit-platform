@@ -1277,6 +1277,7 @@
     "confidence": "Уверенность",
     "evidence": "Доказательство",
     "addAfterReview": "Добавить после проверки",
+    "rejectSuggestion": "Отклонить предложение",
     "affectedProcessAsset": "Затронутый процесс / актив",
     "affectedProcess": "Затронутый процесс",
     "affectedAsset": "Затронутый актив",
