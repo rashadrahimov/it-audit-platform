@@ -4,7 +4,7 @@ import { DbService } from '../src/db/db.service';
 import { AuditLogService } from '../src/audit/audit-log.service';
 import { FindingsService } from '../src/findings/findings.service';
 import { DEFAULT_SLA_WINDOWS } from '../src/sla-config/sla-config.service';
-import { auditLog, finding, tenant, user } from '../src/db/schema';
+import { auditLog, document, finding, membership, role, tenant, user } from '../src/db/schema';
 
 const run = Date.now();
 const dbService = new DbService();
@@ -19,6 +19,8 @@ const service = new FindingsService(
 
 let tenantId: string;
 let userId: string;
+let membershipId: string;
+let evidenceDocumentId: string;
 
 beforeAll(async () => {
   const [t] = await dbService.db
@@ -35,11 +37,36 @@ beforeAll(async () => {
     })
     .returning();
   userId = u!.id;
+  const roles = await dbService.db.select().from(role).where(eq(role.isSystem, true));
+  const roleId = roles.find((r) => r.nameI18n.en === 'Auditor')?.id ?? roles[0]?.id;
+  if (!roleId) throw new Error('Нет системной роли — прогнать pnpm seed');
+  await dbService.withTenant(tenantId, async (tx) => {
+    const [m] = await tx
+      .insert(membership)
+      .values({ tenantId, userId, roleId, isAuditSeat: true, category: 'auditor' })
+      .returning();
+    membershipId = m!.id;
+    const [doc] = await tx
+      .insert(document)
+      .values({
+        tenantId,
+        storageKey: `finding-ai-trace/${run}/access-review.xlsx`,
+        filename: 'access-review.xlsx',
+        mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        size: 128,
+        sha256: 'finding-ai-trace',
+        ownerMembershipId: membershipId,
+      })
+      .returning();
+    evidenceDocumentId = doc!.id;
+  });
 });
 
 afterAll(async () => {
   await dbService.withTenant(tenantId, async (tx) => {
     await tx.delete(finding).where(eq(finding.tenantId, tenantId));
+    await tx.delete(document).where(eq(document.tenantId, tenantId));
+    await tx.delete(membership).where(eq(membership.tenantId, tenantId));
   });
   await dbService.db.delete(user).where(eq(user.id, userId));
   await dbService.db.delete(tenant).where(eq(tenant.id, tenantId));
@@ -68,6 +95,14 @@ describe('AI finding HITL edit traceability', () => {
           draftRiskRating: 'medium',
           draftRecommendation: 'Enforce MFA.',
           reason: 'Evidence-backed gap from access review.',
+          evidenceReferences: [
+            {
+              documentId: evidenceDocumentId,
+              filename: 'access-review.xlsx',
+              relation: 'evidence',
+              location: 'Sheet Users, rows 12-13',
+            },
+          ],
         },
       },
     );
@@ -112,6 +147,35 @@ describe('AI finding HITL edit traceability', () => {
           value: 'Enforce MFA for all privileged users and retain access-review evidence.',
         },
       ],
+    });
+  });
+
+  it('blocks accepting an AI finding without a source document reference', async () => {
+    await expect(
+      service.create(
+        { tenantId, userId, ip: '::1' },
+        {
+          titleI18n: { en: 'Unsupported AI finding' },
+          descriptionI18n: { en: 'AI output has no source document attached.' },
+          riskRating: 'medium',
+          recommendationI18n: { en: 'Attach evidence before acceptance.' },
+          aiReview: {
+            source: 'finding_suggestion',
+            decision: 'accepted',
+            confidence: 0.51,
+            expected: 'Control evidence must exist.',
+            observed: 'No evidence reference was provided.',
+            draftTitle: 'Unsupported AI finding',
+            draftDescription: 'AI output has no source document attached.',
+            draftRiskRating: 'medium',
+            draftRecommendation: 'Attach evidence before acceptance.',
+          },
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        code: 'ai_finding_evidence_required',
+      },
     });
   });
 });

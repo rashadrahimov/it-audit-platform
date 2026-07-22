@@ -364,6 +364,7 @@
       "riskJustificationValue": "İlkin qiymət {risk}: müşahidə olunan boşluq aradan qaldırılana və ya kompensasiyaedici sübut təsdiqlənənə qədər kontrol məqsədini zəiflədə bilər."
     },
     "noEvidenceRef": "Hələ sənəd istinadı yoxdur",
+    "evidenceRequiredToAccept": "Qəbuldan əvvəl sübut bağlayın",
     "aiAccepted": "İİ-dən qəbul edilib",
     "trace": {
       "kicker": "İİ izlənəbilirliyi",

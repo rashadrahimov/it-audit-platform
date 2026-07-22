@@ -364,6 +364,7 @@
       "riskJustificationValue": "Initial rating is {risk} because the observed gap can weaken the control objective until remediation or compensating evidence is confirmed."
     },
     "noEvidenceRef": "No document reference yet",
+    "evidenceRequiredToAccept": "Link evidence before accepting",
     "aiAccepted": "AI accepted",
     "trace": {
       "kicker": "AI traceability",

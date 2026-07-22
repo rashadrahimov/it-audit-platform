@@ -70,7 +70,7 @@ const createFindingSchema = z.object({
           }),
         )
         .max(20)
-        .default([]),
+        .optional(),
     })
     .optional(),
 });

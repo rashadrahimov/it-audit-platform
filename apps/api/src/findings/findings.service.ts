@@ -27,6 +27,7 @@ import {
   checklistItem,
   comment,
   control,
+  document,
   engagement,
   finding,
   membership,
@@ -282,6 +283,36 @@ export class FindingsService {
           .from(membership)
           .where(and(eq(membership.id, membershipId), eq(membership.tenantId, actor.tenantId)));
         if (!row) throw new BadRequestException(`${field}: membership не найден в тенанте`);
+      }
+      if (input.aiReview) {
+        const evidenceReferences = input.aiReview.evidenceReferences ?? [];
+        if (evidenceReferences.length === 0) {
+          throw new BadRequestException({
+            code: 'ai_finding_evidence_required',
+            message:
+              'Accepted AI finding requires at least one source document reference with a location.',
+          });
+        }
+        const documentIds = [...new Set(evidenceReferences.map((ev) => ev.documentId))];
+        const rows = await tx
+          .select({ id: document.id })
+          .from(document)
+          .where(
+            and(
+              eq(document.tenantId, actor.tenantId),
+              inArray(document.id, documentIds),
+              isNull(document.deletedAt),
+            ),
+          );
+        const found = new Set(rows.map((row) => row.id));
+        const missing = documentIds.filter((id) => !found.has(id));
+        if (missing.length > 0) {
+          throw new BadRequestException({
+            code: 'ai_finding_evidence_not_found',
+            message: 'AI finding evidence references must point to existing tenant documents.',
+            documentIds: missing,
+          });
+        }
       }
 
       const [row] = await tx

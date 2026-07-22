@@ -680,6 +680,7 @@ export default async function EngagementDetailPage({
               const riskJustification = t('explainability.riskJustificationValue', {
                 risk: t(`risk.${s.suggestedRisk}`),
               });
+              const canAcceptAiFinding = s.evidenceReferences.length > 0;
 
               return (
                 <li
@@ -825,9 +826,15 @@ export default async function EngagementDetailPage({
                       <button
                         type="submit"
                         data-testid="suggestion-create-finding"
-                        className="rounded-md border border-emerald-300 bg-white px-2.5 py-1 text-xs font-medium text-emerald-800 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring"
+                        disabled={!canAcceptAiFinding}
+                        title={!canAcceptAiFinding ? t('evidenceRequiredToAccept') : undefined}
+                        className={
+                          canAcceptAiFinding
+                            ? 'rounded-md border border-emerald-300 bg-white px-2.5 py-1 text-xs font-medium text-emerald-800 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring'
+                            : 'cursor-not-allowed rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 opacity-75'
+                        }
                       >
-                        {t('suggestionCreate')}
+                        {canAcceptAiFinding ? t('suggestionCreate') : t('evidenceRequiredToAccept')}
                       </button>
                     </div>
                   </form>
