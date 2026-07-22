@@ -1541,6 +1541,10 @@
         "packageValue": "{deliverables} sənəd · {formats}",
         "triggerReady": "İndi işə salınsa göndəriləcək",
         "triggerQuiet": "Hesabat siqnalı yaranana qədər sakit qalacaq",
+        "cadence": {
+          "label": "Periodiklik",
+          "hint": "Cədvəl üzrə hesabatların dəstəklənən tezlikləri"
+        },
         "package": {
           "label": "Paket",
           "hint": "Standart audit sənədləri bir icmalda göndərilir"

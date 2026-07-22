@@ -1541,6 +1541,10 @@
         "packageValue": "{deliverables} documents · {formats}",
         "triggerReady": "Will send if triggered now",
         "triggerQuiet": "Stays quiet until a report signal appears",
+        "cadence": {
+          "label": "Cadence",
+          "hint": "Supported scheduled report frequencies"
+        },
         "package": {
           "label": "Package",
           "hint": "The standard audit deliverables travel in one digest"

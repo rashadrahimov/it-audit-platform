@@ -51,6 +51,33 @@ interface SchedulePreview {
     recipientPolicy: string;
     signalGate: string;
   };
+  deliveryPlan?: {
+    enabled: boolean;
+    selectedCadence: 'weekly' | 'monthly' | 'daily' | 'off';
+    supportedCadences: Array<'weekly' | 'monthly' | 'daily' | 'off'>;
+    package: {
+      deliverables: string[];
+      formats: Array<'pdf' | 'docx' | 'xlsx'>;
+      locales: string[];
+      totalFiles: number;
+    };
+    email: {
+      enabled: boolean;
+      template: string;
+      recipientCount: number;
+      recipientPolicy: string;
+      schedule: 'anytime' | 'work_hours';
+      timezone: string;
+    };
+    automation: {
+      queue: string;
+      jobName: string;
+      intervalMs: number;
+      manualTriggerPath: string;
+      dailyWorkerEvaluatesCadence: boolean;
+      signalGate: string;
+    };
+  };
 }
 interface ReportReadiness {
   engagementId: string;
@@ -230,19 +257,36 @@ export default async function ReportsPage({
           </p>
           <div
             data-testid="report-delivery-plan"
-            className="mt-5 grid gap-3 border-t border-emerald-100 pt-4 md:grid-cols-3"
+            className="mt-5 grid gap-3 border-t border-emerald-100 pt-4 md:grid-cols-4"
           >
             {[
               {
+                key: 'cadence',
+                value: t(
+                  `schedule.digest.${schedule.deliveryPlan?.selectedCadence ?? schedule.digest}`,
+                ),
+                testId: 'report-scheduled-cadences',
+                hintSuffix: schedule.deliveryPlan
+                  ? schedule.deliveryPlan.supportedCadences
+                      .map((cadence) => t(`schedule.digest.${cadence}`))
+                      .join(' / ')
+                  : undefined,
+              },
+              {
                 key: 'package',
                 value: t('schedule.delivery.packageValue', {
-                  deliverables: DELIVERABLES.length,
-                  formats: DELIVERABLE_FORMATS.map((fmt) => fmt.toUpperCase()).join(' / '),
+                  deliverables:
+                    schedule.deliveryPlan?.package.deliverables.length ?? DELIVERABLES.length,
+                  formats: (schedule.deliveryPlan?.package.formats ?? DELIVERABLE_FORMATS)
+                    .map((fmt) => fmt.toUpperCase())
+                    .join(' / '),
                 }),
               },
               {
                 key: 'languages',
-                value: 'EN / AZ / RU',
+                value: (schedule.deliveryPlan?.package.locales ?? ['en', 'az', 'ru'])
+                  .map((l) => l.toUpperCase())
+                  .join(' / '),
               },
               {
                 key: 'trigger',
@@ -253,6 +297,7 @@ export default async function ReportsPage({
             ].map((item) => (
               <div
                 key={item.key}
+                data-testid={item.testId}
                 className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3"
               >
                 <div className="text-xs font-semibold tracking-wide text-emerald-800 uppercase">
@@ -261,6 +306,7 @@ export default async function ReportsPage({
                 <div className="mt-1 text-sm font-semibold text-primary">{item.value}</div>
                 <div className="mt-1 text-xs text-secondary">
                   {t(`schedule.delivery.${item.key}.hint`)}
+                  {item.hintSuffix ? ` · ${item.hintSuffix}` : null}
                 </div>
               </div>
             ))}

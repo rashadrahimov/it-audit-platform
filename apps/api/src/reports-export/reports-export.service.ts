@@ -15,9 +15,15 @@ import {
 } from '../db/schema';
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
+  type DigestCadence,
   type NotificationSettings,
 } from '../notifications/notification-dispatch.service';
 import { JOB_WEEKLY_DIGEST, SYSTEM_QUEUE, WEEKLY_DIGEST_EVERY_MS } from '../jobs/jobs.constants';
+import {
+  REPORT_DELIVERABLES,
+  REPORT_PACKAGE_FORMATS,
+  REPORT_PACKAGE_LOCALES,
+} from '../reports/report-data.service';
 import { diffMetrics, type MetricGroups } from './diff-metrics';
 import { csvCell, xmlEscape } from './serialize';
 import { computeGroupTrends } from './trend';
@@ -26,6 +32,12 @@ export const EXPORT_ENTITIES = ['findings', 'risks', 'controls'] as const;
 export type ExportEntity = (typeof EXPORT_ENTITIES)[number];
 export const EXPORT_FORMATS = ['csv', 'xml'] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
+export const REPORT_DIGEST_CADENCES = [
+  'weekly',
+  'monthly',
+  'daily',
+  'off',
+] as const satisfies readonly DigestCadence[];
 
 export function nextDigestRunAtForSettings(
   settings: NotificationSettings,
@@ -44,6 +56,39 @@ export function nextDigestRunAtForSettings(
     }
   }
   return next.toISOString();
+}
+
+export function buildScheduledReportDeliveryPlan(
+  settings: NotificationSettings,
+  recipientCount: number,
+) {
+  return {
+    enabled: settings.emailEnabled && settings.digest !== 'off',
+    selectedCadence: settings.digest,
+    supportedCadences: REPORT_DIGEST_CADENCES,
+    package: {
+      deliverables: REPORT_DELIVERABLES,
+      formats: REPORT_PACKAGE_FORMATS.map((format) => format.key),
+      locales: REPORT_PACKAGE_LOCALES,
+      totalFiles: REPORT_DELIVERABLES.length * REPORT_PACKAGE_FORMATS.length,
+    },
+    email: {
+      enabled: settings.emailEnabled,
+      template: 'weekly-digest',
+      recipientCount,
+      recipientPolicy: 'active tenant members with unique email addresses',
+      schedule: settings.schedule,
+      timezone: settings.timezone,
+    },
+    automation: {
+      queue: SYSTEM_QUEUE,
+      jobName: JOB_WEEKLY_DIGEST,
+      intervalMs: WEEKLY_DIGEST_EVERY_MS,
+      manualTriggerPath: 'POST /jobs/weekly-digest',
+      dailyWorkerEvaluatesCadence: true,
+      signalGate: 'open findings, overdue tasks or policies due',
+    },
+  };
 }
 
 @Injectable()
@@ -125,6 +170,7 @@ export class ReportsExportService {
     const recipientCount = new Set(recipients.map((r) => r.email).filter(Boolean)).size;
     const hasSignal =
       metrics.openFindings > 0 || metrics.overdueTasks > 0 || metrics.policiesDue > 0;
+    const deliveryPlan = buildScheduledReportDeliveryPlan(settings, recipientCount);
     return {
       tenantName: tenantRow.name,
       enabled: settings.emailEnabled && settings.digest !== 'off',
@@ -135,14 +181,15 @@ export class ReportsExportService {
       recipientCount,
       willSendIfRunNow: settings.emailEnabled && settings.digest !== 'off' && hasSignal,
       metrics,
+      deliveryPlan,
       deliveryProof: {
-        queue: SYSTEM_QUEUE,
-        jobName: JOB_WEEKLY_DIGEST,
-        intervalMs: WEEKLY_DIGEST_EVERY_MS,
+        queue: deliveryPlan.automation.queue,
+        jobName: deliveryPlan.automation.jobName,
+        intervalMs: deliveryPlan.automation.intervalMs,
         emailTemplate: 'weekly-digest',
-        manualTriggerPath: 'POST /jobs/weekly-digest',
-        recipientPolicy: 'active tenant members with unique email addresses',
-        signalGate: 'open findings, overdue tasks or policies due',
+        manualTriggerPath: deliveryPlan.automation.manualTriggerPath,
+        recipientPolicy: deliveryPlan.email.recipientPolicy,
+        signalGate: deliveryPlan.automation.signalGate,
       },
     };
   }
