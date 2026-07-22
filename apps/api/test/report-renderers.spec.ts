@@ -106,6 +106,29 @@ describe('report renderers localization', () => {
     expect(csv).not.toContain('Checklist controls');
   });
 
+  it('renders a likelihood-impact heat map in the Risk Matrix CSV and Excel export', async () => {
+    const report = baseReport({
+      deliverable: 'risk_matrix',
+      deliverableTitle: 'Risk Matrix',
+    });
+    const csv = toCsv(report).toString('utf8');
+
+    expect(csv.split('\n').slice(0, 7)).toEqual([
+      'Likelihood × Impact heat map,Impact 1,Impact 2,Impact 3,Impact 4,Impact 5',
+      'Likelihood 5,0,0,0,0,0',
+      'Likelihood 4,0,0,0,0,0',
+      'Likelihood 3,0,0,0,1,0',
+      'Likelihood 2,0,0,0,0,0',
+      'Likelihood 1,0,0,0,0,0',
+      '',
+    ]);
+
+    const xlsx = await toXlsx(report);
+    const xlsxZip = await JSZip.loadAsync(xlsx);
+    const workbookXml = await xlsxZip.file('xl/workbook.xml')!.async('string');
+    expect(workbookXml).toContain('Likelihood × Impact heat map');
+  });
+
   it('publishes a localized package manifest for all five deliverables and three formats', () => {
     const manifest = buildReportPackageManifest('019f882d-0c3f-7554-9e36-b6cba9fb56dc', 'az', {
       ready: false,

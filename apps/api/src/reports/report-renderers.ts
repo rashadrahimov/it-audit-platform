@@ -79,6 +79,7 @@ const LABELS = {
     generatedAt: 'Generated at',
     highCriticalFindings: 'High/Critical findings',
     highCriticalRisks: 'High/Critical risks',
+    heatMap: 'Likelihood × Impact heat map',
     impact: 'Impact',
     keyMetrics: 'Key metrics',
     likelihood: 'Likelihood',
@@ -130,6 +131,7 @@ const LABELS = {
     generatedAt: 'Yaradılma vaxtı',
     highCriticalFindings: 'Yüksək/Kritik tapıntılar',
     highCriticalRisks: 'Yüksək/Kritik risklər',
+    heatMap: 'Ehtimal × təsir istilik xəritəsi',
     impact: 'Təsir',
     keyMetrics: 'Əsas metriklər',
     likelihood: 'Ehtimal',
@@ -181,6 +183,7 @@ const LABELS = {
     generatedAt: 'Сформировано',
     highCriticalFindings: 'Высокие/критичные замечания',
     highCriticalRisks: 'Высокие/критичные риски',
+    heatMap: 'Тепловая карта вероятность × влияние',
     impact: 'Влияние',
     keyMetrics: 'Ключевые метрики',
     likelihood: 'Вероятность',
@@ -228,6 +231,28 @@ const aiEvidence = (f: ReportFindingRow): string =>
 const aiRationale = (f: ReportFindingRow): string =>
   [f.aiReview?.reason, f.aiReview?.riskJustification].filter(Boolean).join(' / ');
 
+const riskHeatMapGrid = (risks: ReportRiskRow[]): number[][] => {
+  const grid = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => 0));
+  for (const r of risks) {
+    const likelihood = Number(r.inherentLikelihood);
+    const impact = Number(r.inherentImpact);
+    if (
+      Number.isInteger(likelihood) &&
+      Number.isInteger(impact) &&
+      likelihood >= 1 &&
+      likelihood <= 5 &&
+      impact >= 1 &&
+      impact <= 5
+    ) {
+      const row = grid[5 - likelihood];
+      if (row) {
+        row[impact - 1] = (row[impact - 1] ?? 0) + 1;
+      }
+    }
+  }
+  return grid;
+};
+
 const executiveRows = (data: ReportData): Array<{ metric: string; value: string }> => [
   { metric: l(data, 'checklistControls'), value: String(data.checklist.length) },
   { metric: l(data, 'findings'), value: String(data.findings.length) },
@@ -250,6 +275,15 @@ export function toCsv(data: ReportData): Buffer {
   let header: string[];
   let rows: string[][];
   if (data.deliverable === 'risk_matrix') {
+    const grid = riskHeatMapGrid(data.risks);
+    const heatHeader = [
+      l(data, 'heatMap'),
+      ...[1, 2, 3, 4, 5].map((impact) => `${l(data, 'impact')} ${impact}`),
+    ];
+    const heatRows = grid.map((counts, index) => [
+      `${l(data, 'likelihood')} ${5 - index}`,
+      ...counts.map(String),
+    ]);
     header = [
       l(data, 'risk'),
       l(data, 'category'),
@@ -270,6 +304,16 @@ export function toCsv(data: ReportData): Buffer {
       r.owner ?? '',
       r.status,
     ]);
+    return Buffer.from(
+      [
+        heatHeader.join(','),
+        ...heatRows.map((row) => row.map((c) => csvEscape(String(c))).join(',')),
+        '',
+        header.join(','),
+        ...rows.map((row) => row.map((c) => csvEscape(String(c))).join(',')),
+      ].join('\n') + '\n',
+      'utf8',
+    );
   } else if (data.deliverable === 'action_plan') {
     header = [
       l(data, 'action'),
@@ -485,6 +529,27 @@ export async function toXlsx(data: ReportData): Promise<Buffer> {
     );
     risks.getRow(1).font = { bold: true };
 
+    const heatGrid = wb.addWorksheet(l(data, 'heatMap'));
+    heatGrid.columns = [
+      { header: l(data, 'likelihood'), key: 'likelihood', width: 18 },
+      ...[1, 2, 3, 4, 5].map((impact) => ({
+        header: `${l(data, 'impact')} ${impact}`,
+        key: `impact${impact}`,
+        width: 12,
+      })),
+    ];
+    heatGrid.addRows(
+      riskHeatMapGrid(data.risks).map((counts, index) => ({
+        likelihood: `${l(data, 'likelihood')} ${5 - index}`,
+        impact1: counts[0],
+        impact2: counts[1],
+        impact3: counts[2],
+        impact4: counts[3],
+        impact5: counts[4],
+      })),
+    );
+    heatGrid.getRow(1).font = { bold: true };
+
     const heat = wb.addWorksheet(l(data, 'riskClassSummary'));
     heat.columns = [
       { header: l(data, 'className'), key: 'className', width: 18 },
@@ -574,6 +639,27 @@ export async function toDocx(data: ReportData): Promise<Buffer> {
       ],
     });
 
+  const heatMapTable = (): Table =>
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            l(data, 'likelihood'),
+            ...[1, 2, 3, 4, 5].map((impact) => `${l(data, 'impact')} ${impact}`),
+          ].map((h) => cell(h, true)),
+        }),
+        ...riskHeatMapGrid(data.risks).map(
+          (counts, index) =>
+            new TableRow({
+              children: [`${l(data, 'likelihood')} ${5 - index}`, ...counts.map(String)].map((c) =>
+                cell(c),
+              ),
+            }),
+        ),
+      ],
+    });
+
   const base = [
     new Paragraph({ text: data.deliverableTitle, heading: HeadingLevel.HEADING_1 }),
     new Paragraph(data.title),
@@ -587,6 +673,8 @@ export async function toDocx(data: ReportData): Promise<Buffer> {
     data.deliverable === 'risk_matrix'
       ? [
           ...base,
+          new Paragraph({ text: l(data, 'heatMap'), heading: HeadingLevel.HEADING_2 }),
+          heatMapTable(),
           new Paragraph({ text: l(data, 'riskMatrix'), heading: HeadingLevel.HEADING_2 }),
           risksTable(),
         ]
@@ -605,6 +693,8 @@ export async function toDocx(data: ReportData): Promise<Buffer> {
                 ),
               ],
             }),
+            new Paragraph({ text: l(data, 'heatMap'), heading: HeadingLevel.HEADING_2 }),
+            heatMapTable(),
           ]
         : [
             ...base,
@@ -677,6 +767,13 @@ function renderPdfFindings(
 function renderPdfRisks(doc: PDFKit.PDFDocument, data: ReportData): void {
   doc.moveDown().font('bold').fontSize(14).text(l(data, 'riskMatrix'));
   doc.moveDown(0.3).font('body').fontSize(10);
+  const grid = riskHeatMapGrid(data.risks);
+  doc.font('bold').text(l(data, 'heatMap'));
+  doc.font('body').text(['L\\I', ...[1, 2, 3, 4, 5].map((impact) => `${impact}`)].join('  '));
+  for (const [index, counts] of grid.entries()) {
+    doc.text([String(5 - index), ...counts.map(String)].join('    '));
+  }
+  doc.moveDown(0.4);
   if (data.risks.length === 0) {
     doc.text(l(data, 'noRisks'));
   } else {
