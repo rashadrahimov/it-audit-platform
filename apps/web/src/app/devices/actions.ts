@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { setFlash } from '@/lib/flash';
 import { apiFetch, getActiveTenantSlug } from '@/lib/session';
 
 const CHECK_KEYS = ['diskEncryption', 'screenLock', 'antivirus', 'passwordPolicy'] as const;
@@ -18,7 +19,7 @@ export async function createDeviceAction(formData: FormData): Promise<void> {
   const os = String(formData.get('os') ?? '').trim();
   const serial = String(formData.get('serial') ?? '').trim();
   if (!tenantSlug || !name) return;
-  await apiFetch('/devices', {
+  const res = await apiFetch('/devices', {
     method: 'POST',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -28,16 +29,18 @@ export async function createDeviceAction(formData: FormData): Promise<void> {
       ...checks(formData),
     }),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'created' : 'failed');
   revalidatePath('/devices');
 }
 
 export async function updateDeviceChecksAction(id: string, formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
   if (!tenantSlug) return;
-  await apiFetch(`/devices/${id}/checks`, {
+  const res = await apiFetch(`/devices/${id}/checks`, {
     method: 'POST',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify(checks(formData)),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'updated' : 'failed');
   revalidatePath('/devices');
 }

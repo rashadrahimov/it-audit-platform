@@ -3347,6 +3347,15 @@
       "internal": "Internal"
     }
   },
+  "flash": {
+    "close": "Dismiss",
+    "saved": "Saved",
+    "created": "Created",
+    "updated": "Updated",
+    "deleted": "Deleted",
+    "sent": "Sent",
+    "failed": "Action failed"
+  },
   "appState": {
     "errorTitle": "Something went wrong",
     "errorHeading": "This screen could not be loaded",

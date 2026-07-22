@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { setFlash } from '@/lib/flash';
 import { apiFetch, getActiveTenantSlug } from '@/lib/session';
 
 const FIELD_TYPES = new Set(['text', 'number', 'date', 'select', 'boolean']);
@@ -13,11 +14,12 @@ export async function createTagAction(formData: FormData): Promise<void> {
   const name = String(formData.get('name') ?? '').trim();
   if (!name) return;
   const color = String(formData.get('color') ?? '').trim();
-  await apiFetch('/tags', {
+  const res = await apiFetch('/tags', {
     method: 'POST',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, color: color || undefined }),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'created' : 'failed');
   revalidatePath('/config');
 }
 
@@ -29,11 +31,12 @@ export async function updateTagAction(formData: FormData): Promise<void> {
   const name = String(formData.get('name') ?? '').trim();
   const color = String(formData.get('color') ?? '').trim();
   if (!id || !name) return;
-  await apiFetch(`/tags/${encodeURIComponent(id)}`, {
+  const res = await apiFetch(`/tags/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, color: color || null }),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'updated' : 'failed');
   revalidatePath('/config');
 }
 
@@ -43,10 +46,11 @@ export async function deleteTagAction(formData: FormData): Promise<void> {
   if (!tenantSlug) return;
   const id = String(formData.get('id') ?? '').trim();
   if (!id) return;
-  await apiFetch(`/tags/${encodeURIComponent(id)}`, {
+  const res = await apiFetch(`/tags/${encodeURIComponent(id)}`, {
     method: 'DELETE',
     headers: { 'X-Tenant-Slug': tenantSlug },
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'deleted' : 'failed');
   revalidatePath('/config');
 }
 
@@ -71,11 +75,12 @@ export async function saveBusinessProfileAction(formData: FormData): Promise<voi
   // checkbox: присутствует только когда отмечен
   body.supportAccess = formData.get('supportAccess') != null;
   body.requireMfa = formData.get('requireMfa') != null;
-  await apiFetch('/business-profile', {
+  const res = await apiFetch('/business-profile', {
     method: 'PUT',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'saved' : 'failed');
   revalidatePath('/config');
 }
 
@@ -88,11 +93,12 @@ export async function saveSlaConfigAction(formData: FormData): Promise<void> {
     const n = Number(formData.get(key));
     if (Number.isFinite(n) && n > 0) body[key] = Math.round(n);
   }
-  await apiFetch('/sla-config', {
+  const res = await apiFetch('/sla-config', {
     method: 'PUT',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'saved' : 'failed');
   revalidatePath('/config');
 }
 
@@ -117,7 +123,7 @@ export async function createCustomFieldAction(formData: FormData): Promise<void>
     .map((item) => item.trim())
     .filter(Boolean);
 
-  await apiFetch('/custom-fields', {
+  const res = await apiFetch('/custom-fields', {
     method: 'POST',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -129,6 +135,7 @@ export async function createCustomFieldAction(formData: FormData): Promise<void>
       required: formData.get('required') != null,
     }),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'created' : 'failed');
   revalidatePath('/config');
 }
 
@@ -155,7 +162,7 @@ export async function createConfigListItemAction(formData: FormData): Promise<vo
   const existing = Array.isArray(current.items) ? current.items : [];
   if (existing.some((item) => item.code === code)) return;
 
-  await apiFetch(`/config-lists/${encodeURIComponent(listKey)}`, {
+  const res = await apiFetch(`/config-lists/${encodeURIComponent(listKey)}`, {
     method: 'PUT',
     headers,
     body: JSON.stringify({
@@ -168,6 +175,7 @@ export async function createConfigListItemAction(formData: FormData): Promise<vo
       ],
     }),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'created' : 'failed');
   revalidatePath('/config');
 }
 
@@ -181,10 +189,11 @@ export async function createAuditTypeAction(formData: FormData): Promise<void> {
     .replace(/[^a-z0-9_]/g, '_');
   const name = String(formData.get('name') ?? '').trim();
   if (!code || !name) return;
-  await apiFetch('/audit-types', {
+  const res = await apiFetch('/audit-types', {
     method: 'POST',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify({ code, nameI18n: { en: name, ru: name, az: name } }),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'created' : 'failed');
   revalidatePath('/config');
 }

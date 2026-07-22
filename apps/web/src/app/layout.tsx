@@ -5,12 +5,14 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import type { Locale } from '@it-audit/shared';
 import { AppShell } from '@/components/app-shell';
+import { FlashToaster } from '@/components/flash-toaster';
 import {
   apiFetch,
   getActiveTenantCategory,
   getActiveTenantSlug,
   getSessionUser,
 } from '@/lib/session';
+import { readFlash } from '@/lib/flash';
 import { navForCategory } from '@/lib/nav';
 import './globals.css';
 
@@ -144,12 +146,29 @@ async function Shell({ children }: { children: ReactNode }) {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
+  const [locale, messages, flash, tFlash] = await Promise.all([
+    getLocale(),
+    getMessages(),
+    readFlash(),
+    getTranslations('flash'),
+  ]);
   return (
     <html lang={locale} className={font.variable}>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <NextIntlClientProvider messages={messages}>
           <Shell>{children}</Shell>
+          <FlashToaster
+            flash={flash}
+            labels={{
+              close: tFlash('close'),
+              saved: tFlash('saved'),
+              created: tFlash('created'),
+              updated: tFlash('updated'),
+              deleted: tFlash('deleted'),
+              sent: tFlash('sent'),
+              failed: tFlash('failed'),
+            }}
+          />
         </NextIntlClientProvider>
       </body>
     </html>

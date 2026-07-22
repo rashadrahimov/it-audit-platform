@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { setFlash } from '@/lib/flash';
 import { apiFetch, getActiveTenantSlug } from '@/lib/session';
 
 function value(formData: FormData, key: string): string {
@@ -23,11 +24,12 @@ export async function createGlossaryTermAction(formData: FormData): Promise<void
   const tenantSlug = await getActiveTenantSlug();
   const body = payload(formData);
   if (!tenantSlug || !body.term || !body.definitionI18n.en) return;
-  await apiFetch('/glossary', {
+  const res = await apiFetch('/glossary', {
     method: 'POST',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'created' : 'failed');
   revalidatePath('/glossary');
 }
 
@@ -35,20 +37,22 @@ export async function updateGlossaryTermAction(id: string, formData: FormData): 
   const tenantSlug = await getActiveTenantSlug();
   const body = payload(formData);
   if (!tenantSlug || !body.term || !body.definitionI18n.en) return;
-  await apiFetch(`/glossary/${id}`, {
+  const res = await apiFetch(`/glossary/${id}`, {
     method: 'PATCH',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'updated' : 'failed');
   revalidatePath('/glossary');
 }
 
 export async function deleteGlossaryTermAction(id: string): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
   if (!tenantSlug) return;
-  await apiFetch(`/glossary/${id}`, {
+  const res = await apiFetch(`/glossary/${id}`, {
     method: 'DELETE',
     headers: { 'X-Tenant-Slug': tenantSlug },
   });
+  await setFlash(res.ok ? 'success' : 'error', res.ok ? 'deleted' : 'failed');
   revalidatePath('/glossary');
 }

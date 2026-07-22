@@ -32,7 +32,7 @@
 ### A2. UI-полировка (сквозное)
 - [x] Интерактивность devices/working-papers/personnel/access-reviews закрыта: последний read-only экран devices получил create/checks UI в T-H133.
 - [x] Drill-down карточки risk/engagement/finding/control/Working Paper/Personnel закрыты; последние WP и Personnel — T-H134/T-H135.
-- [ ] Пустые состояния, лоадеры, обработка ошибок API (сейчас частично), тосты после действий. T-H140 добавил route-level `loading.tsx`/`error.tsx`; остаток — единый toast/flash слой для server actions.
+- [x] Пустые состояния, лоадеры, обработка ошибок API и тосты после действий закрыты T-H140/T-H142: reusable `EmptyState`, route-level `loading.tsx`/`error.tsx`, cookie-backed `FlashToaster` для server actions и CRUD-подключение на config/glossary/universe/devices/field-permissions.
 - [x] Навигация: адаптивный app-shell, sidebar, mobile drawer и breadcrumbs закрыты T-H28/T-H32.
 - [ ] **a11y-проход** (фокус, aria, контраст) и **responsive/планшеты** (GEN-10) по всем экранам — скилл ui-ux-pro-max.
 - [x] Полнота i18n-строк на **прежних** экранах закрыта T-H137: `check-i18n` подтверждает parity en/ru/az (2607 ключей), статический TSX-аудит не нашёл потерянных видимых строк, hardcoded a11y-labels графиков/тегов/языка вынесены в локализованные labels.

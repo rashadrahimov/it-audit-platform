@@ -3355,6 +3355,15 @@
       "internal": "Daxili"
     }
   },
+  "flash": {
+    "close": "Bağla",
+    "saved": "Saxlanıldı",
+    "created": "Yaradıldı",
+    "updated": "Yeniləndi",
+    "deleted": "Silindi",
+    "sent": "Göndərildi",
+    "failed": "Əməliyyat alınmadı"
+  },
   "appState": {
     "errorTitle": "Xəta baş verdi",
     "errorHeading": "Bu ekran yüklənmədi",

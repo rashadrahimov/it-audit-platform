@@ -4,15 +4,11 @@
 
 ## Still buildable in repo
 
-1. **A2 toast/flash слой для server actions.**
-   - Уже есть: reusable `EmptyState`, route-level `loading.tsx`/`error.tsx`, inline pending/error в ключевых client forms.
-   - Остаток: единый flash/toast механизм после server actions, чтобы create/update/delete давали одинаковый success/error feedback без ручной логики на каждой странице.
-
-2. **A2 a11y/responsive pass.**
+1. **A2 a11y/responsive pass.**
    - Уже есть: focus-visible ring во многих controls, localized aria-labels для shell/graphs/tags, audit.spec horizontal-scroll guard на всех 44 разделах.
    - Остаток: системный WCAG AA pass с keyboard/focus order, contrast review, tablet/mobile viewport screenshots и исправлениями найденных мест.
 
-3. **Q backup/restore procedure, repo-side proof.**
+2. **Q backup/restore procedure, repo-side proof.**
    - Уже есть: engagement export, engagement duplicate/restore, config transfer, docs/v1-release-docs.md.
    - Остаток: автоматизированный restore smoke на staging-like DB/object storage. Полная политика retention/RTO/RPO всё равно зависит от клиента.
 
@@ -78,4 +74,3 @@
 
 3. **WCAG AA certification.**
    - Repo-side fixes can continue, but final release claim needs full a11y audit evidence.
-
