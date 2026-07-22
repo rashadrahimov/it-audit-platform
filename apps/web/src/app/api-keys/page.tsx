@@ -38,9 +38,13 @@ export default async function ApiKeysPage() {
     'vulnerabilities',
     'security-alerts',
     'documents',
+    'report-packages',
   ];
   const API_GROUPS = [
-    { key: 'audit', endpoints: ['engagements', 'controls', 'tests', 'documents'] },
+    {
+      key: 'audit',
+      endpoints: ['engagements', 'controls', 'tests', 'documents', 'report-packages'],
+    },
     { key: 'risk', endpoints: ['findings', 'risks', 'vulnerabilities', 'security-alerts'] },
     { key: 'thirdParty', endpoints: ['vendors', 'policies', 'assets'] },
   ] as const;

@@ -17,6 +17,7 @@ import {
   vulnerability,
 } from '../db/schema';
 import { DbService } from '../db/db.service';
+import { buildReportPackageManifest, ReportDataService } from '../reports/report-data.service';
 
 /**
  * Публичный версионированный REST API (T-091/T-V37, EP-API, INT-01): read-only
@@ -28,7 +29,10 @@ import { DbService } from '../db/db.service';
 @UseGuards(ApiKeyGuard)
 @ApiSecurity('api-key')
 export class ApiV1Controller {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly reportDataService: ReportDataService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Индекс публичного API — список доступных ресурсов' })
@@ -47,6 +51,7 @@ export class ApiV1Controller {
         'vulnerabilities',
         'security-alerts',
         'documents',
+        'report-packages',
       ].map((r) => `/api/v1/${r}`),
     };
   }
@@ -192,6 +197,64 @@ export class ApiV1Controller {
       periodStart: e.periodStart,
       periodEnd: e.periodEnd,
     }));
+  }
+
+  @Get('report-packages')
+  @ApiOperation({
+    summary: 'Метаданные стандартных audit deliverables: readiness + manifest для автоматизаций',
+  })
+  async reportPackages(@Req() req: ApiKeyRequest) {
+    const rows = await this.dbService.withTenant(req.tenantId, (tx) =>
+      tx
+        .select({
+          id: engagement.id,
+          titleI18n: engagement.titleI18n,
+          state: engagement.state,
+          mode: engagement.mode,
+          periodStart: engagement.periodStart,
+          periodEnd: engagement.periodEnd,
+        })
+        .from(engagement)
+        .where(and(isNull(engagement.deletedAt), isNull(engagement.archivedAt)))
+        .orderBy(desc(engagement.createdAt)),
+    );
+    return Promise.all(
+      rows.map(async (row) => {
+        const readiness = await this.reportDataService.readiness(req.tenantId, row.id, 'en');
+        const manifest = buildReportPackageManifest(row.id, 'en', readiness);
+        return {
+          engagementId: row.id,
+          title: resolveLocalized(row.titleI18n, 'en'),
+          state: row.state,
+          mode: row.mode,
+          periodStart: row.periodStart ? row.periodStart.toISOString() : null,
+          periodEnd: row.periodEnd ? row.periodEnd.toISOString() : null,
+          readiness: {
+            score: readiness.score,
+            ready: readiness.ready,
+            checklistTotal: readiness.checklistTotal,
+            answered: readiness.answered,
+            findings: readiness.findings,
+            risks: readiness.risks,
+            evidenceLinks: readiness.evidenceLinks,
+            checks: readiness.checks,
+          },
+          package: {
+            totalFiles: manifest.totalFiles,
+            supportedLocales: manifest.supportedLocales,
+            formats: manifest.formats,
+            deliverables: manifest.deliverables.map((deliverable) => ({
+              key: deliverable.key,
+              title: deliverable.title,
+              formats: deliverable.formats.map((format) => format.key),
+            })),
+            dataSources: manifest.dataSources,
+            evidenceGrounded: manifest.evidenceGrounded,
+            humanReviewRequired: manifest.humanReviewRequired,
+          },
+        };
+      }),
+    );
   }
 
   @Get('assets')

@@ -1636,7 +1636,7 @@
       "groups": {
         "audit": {
           "title": "Audit və sübutlar",
-          "hint": "Avtomatlaşdırılmış sübut toplama üçün auditlər, nəzarətlər, testlər və sənədlər."
+          "hint": "Avtomatlaşdırılmış sübut və hesabat işləri üçün auditlər, kontrollar, testlər, sənədlər və hesabat paketi metadatası."
         },
         "risk": {
           "title": "Risklər və təhlükəsizlik siqnalları",

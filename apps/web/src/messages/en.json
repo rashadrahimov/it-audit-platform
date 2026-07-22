@@ -1636,7 +1636,7 @@
       "groups": {
         "audit": {
           "title": "Audit and evidence",
-          "hint": "Engagements, controls, tests and documents for automated evidence collection."
+          "hint": "Engagements, controls, tests, documents and report-package metadata for automated evidence and reporting workflows."
         },
         "risk": {
           "title": "Risks and security signals",
