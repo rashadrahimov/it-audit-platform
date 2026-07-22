@@ -2,12 +2,6 @@
 
 Статус: T-H141. Этот файл отделяет реально оставшиеся buildable-задачи от пунктов, которые нельзя честно закрыть без решения клиента, production secrets, инфраструктуры или внешней проверки.
 
-## Still buildable in repo
-
-1. **Q backup/restore procedure, repo-side proof.**
-   - Уже есть: engagement export, engagement duplicate/restore, config transfer, docs/v1-release-docs.md.
-   - Остаток: автоматизированный restore smoke на staging-like DB/object storage. Полная политика retention/RTO/RPO всё равно зависит от клиента.
-
 ## Client decisions required
 
 1. **Регулятор / местный стандарт.**

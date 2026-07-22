@@ -76,7 +76,7 @@
 - [ ] **Доступность (a11y)** — WCAG AA по всем экранам.
 - [ ] **UAT с клиентом** на реальных данных, обучение.
 - [x] **Документация (DOC-01..07):** админ/пользователь/API/runbook/DR-план закрыты T-H139 в `docs/v1-release-docs.md`; OpenAPI доступен на `/docs`, внешний остаток вынесен в release gates.
-- [ ] **Резервное копирование/восстановление** — проверенная процедура (BCK), гранулярный restore (BCK-04).
+- [x] **Резервное копирование/восстановление** — repo-side BCK proof закрыт T-H144: `backup-restore-smoke.spec.ts` проверяет engagement export snapshot + duplicate/restore с ремапом checklist/response/finding FK; полная retention/RTO/RPO политика остаётся клиентским infra gate.
 
 ---
 
