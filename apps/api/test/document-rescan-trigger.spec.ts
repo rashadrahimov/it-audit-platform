@@ -3,8 +3,10 @@ import {
   documentIntakeBucket,
   evidenceRescanQueueAuditPayload,
   evidenceRescanTriggerForDocument,
+  extractSearchableDocumentText,
   supportedDocumentIntakeFormats,
 } from '../src/documents/documents.service';
+import { auditEvidenceHitsForQuery, parseAuditQuery } from '../src/search/search.service';
 
 describe('document evidence re-scan triggers', () => {
   it('queues linked active evidence for extraction and draft AI refresh', () => {
@@ -111,6 +113,66 @@ describe('document evidence re-scan triggers', () => {
       queues: ['extraction', 'ocr', 'aiFindingDrafts'],
     });
     expect(contract.formats.every((format) => format.canDraftFindings)).toBe(true);
+  });
+
+  it('indexes safe text evidence immediately for DAT-04 document search', () => {
+    const extraction = extractSearchableDocumentText({
+      originalName: 'backup-control-log.txt',
+      mime: 'text/plain',
+      buffer: Buffer.from('Nightly backup completed successfully for production database.'),
+    });
+
+    expect(extraction).toMatchObject({
+      extractionStatus: 'indexed',
+      reason: 'text_inline',
+      truncated: false,
+    });
+    expect(extraction.extractedText).toContain('Nightly backup');
+    expect(extraction.extractedChars).toBeGreaterThan(20);
+  });
+
+  it('keeps binary Office/PDF evidence pending for the extraction pipeline instead of faking OCR', () => {
+    const extraction = extractSearchableDocumentText({
+      originalName: 'signed-policy.pdf',
+      mime: 'application/pdf',
+      buffer: Buffer.from('%PDF-binary'),
+    });
+
+    expect(extraction).toEqual({
+      extractedText: null,
+      extractionStatus: 'pending',
+      extractedChars: 0,
+      truncated: false,
+      reason: 'binary_pipeline_pending',
+    });
+  });
+
+  it('lets conversational evidence lookup match indexed document content', () => {
+    const hits = auditEvidenceHitsForQuery(
+      [
+        {
+          id: 'doc-1',
+          filename: 'evidence.txt',
+          mime: 'text/plain',
+          status: 'active',
+          category: 'evidence',
+          extractedText: 'Privileged access review and backup restore proof for Q3.',
+          extractionStatus: 'indexed',
+          entityType: 'control',
+          entityId: 'ctrl-1',
+          relation: 'evidence',
+          reviewStatus: 'ready',
+        },
+      ],
+      parseAuditQuery('backup restore proof'),
+    );
+
+    expect(hits).toHaveLength(1);
+    expect(hits[0]).toMatchObject({
+      id: 'doc-1',
+      extractionStatus: 'indexed',
+      reason: expect.stringContaining('content indexed'),
+    });
   });
 
   it.each([

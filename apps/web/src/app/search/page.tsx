@@ -32,6 +32,7 @@ interface AuditQueryEvidenceHit {
   status: string;
   category: string | null;
   mime: string;
+  extractionStatus?: string | null;
   entityType: string | null;
   entityId: string | null;
   relation: string | null;
@@ -241,6 +242,13 @@ export default async function SearchPage({
                       <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-secondary">
                         {h.reviewStatus ?? h.status}
                       </span>
+                      {h.extractionStatus && (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
+                          {h.extractionStatus === 'indexed'
+                            ? t('contentIndexed')
+                            : t('contentPending')}
+                        </span>
+                      )}
                       {h.entityType && (
                         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
                           {h.entityType}

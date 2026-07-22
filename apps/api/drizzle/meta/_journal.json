@@ -505,6 +505,13 @@
       "when": 1784567407676,
       "tag": "0071_merged-vparity",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1784733681294,
+      "tag": "0072_panoramic_steel_serpent",
+      "breakpoints": true
     }
   ]
 }

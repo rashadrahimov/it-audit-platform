@@ -42,6 +42,7 @@ export interface AuditQueryEvidenceHit {
   status: string;
   category: string | null;
   mime: string;
+  extractionStatus?: string | null;
   entityType: string | null;
   entityId: string | null;
   relation: string | null;
@@ -55,6 +56,8 @@ export interface AuditQueryEvidenceCandidate {
   status: string;
   category: string | null;
   mime: string;
+  extractedText?: string | null;
+  extractionStatus?: string | null;
   entityType: string | null;
   entityId: string | null;
   relation: string | null;
@@ -274,11 +277,17 @@ function matchesTerms(haystack: string, parsed: ReturnType<typeof parseAuditQuer
 }
 
 function evidenceReason(
-  row: { relation: string | null; reviewStatus: string | null; status: string },
+  row: {
+    relation: string | null;
+    reviewStatus: string | null;
+    status: string;
+    extractionStatus?: string | null;
+  },
   parsed: ReturnType<typeof parseAuditQuery>,
 ): string {
   const reasons = [
     parsed.topic ? `topic ${parsed.topic}` : null,
+    row.extractionStatus === 'indexed' ? 'content indexed' : null,
     row.relation ? `relation ${row.relation}` : null,
     row.reviewStatus ? `review ${row.reviewStatus}` : null,
     row.status ? `document ${row.status}` : null,
@@ -384,8 +393,10 @@ export function auditEvidenceHitsForQuery(
     const haystack = [
       row.filename,
       row.mime,
+      row.extractedText,
       row.status,
       row.category,
+      row.extractionStatus,
       row.entityType,
       row.relation,
       row.reviewStatus,
@@ -401,6 +412,7 @@ export function auditEvidenceHitsForQuery(
       status: row.status,
       category: row.category,
       mime: row.mime,
+      extractionStatus: row.extractionStatus,
       entityType: row.entityType,
       entityId: row.entityId,
       relation: row.relation,
@@ -410,6 +422,19 @@ export function auditEvidenceHitsForQuery(
     if (evidenceHits.length >= limit) break;
   }
   return evidenceHits;
+}
+
+function searchSnippet(text: string | null | undefined, term: string, fallback: string): string {
+  if (!text) return fallback;
+  const lowerText = text.toLowerCase();
+  const lowerTerm = term.toLowerCase();
+  const pos = lowerText.indexOf(lowerTerm);
+  if (pos === -1) return fallback;
+  const start = Math.max(0, pos - 55);
+  const end = Math.min(text.length, pos + term.length + 95);
+  const prefix = start > 0 ? '…' : '';
+  const suffix = end < text.length ? '…' : '';
+  return `${prefix}${text.slice(start, end).replace(/\s+/g, ' ').trim()}${suffix}`;
 }
 
 /** Глобальный кросс-сущностный поиск (T-094, GEN-05). RLS изолирует по тенанту. */
@@ -468,6 +493,8 @@ export class SearchService {
           mime: document.mime,
           category: document.category,
           status: document.status,
+          extractedText: document.extractedText,
+          extractionStatus: document.extractionStatus,
         })
         .from(document)
         .where(
@@ -478,6 +505,9 @@ export class SearchService {
               ilike(document.mime, like),
               ilike(document.status, like),
               ilike(document.category, like),
+              ilike(document.extractionStatus, like),
+              sql`${document.extractedText} ILIKE ${like}`,
+              sql`to_tsvector('simple', coalesce(${document.extractedText}, '')) @@ websearch_to_tsquery('simple', ${term})`,
             ),
           ),
         )
@@ -487,7 +517,11 @@ export class SearchService {
           type: 'document',
           id: d.id,
           label: d.filename,
-          snippet: [d.category, d.status, d.mime].filter(Boolean).join(' · '),
+          snippet: searchSnippet(
+            d.extractedText,
+            term,
+            [d.category, d.status, d.mime, d.extractionStatus].filter(Boolean).join(' · '),
+          ),
         });
       }
 
@@ -578,6 +612,8 @@ export class SearchService {
           mime: document.mime,
           status: document.status,
           category: document.category,
+          extractedText: document.extractedText,
+          extractionStatus: document.extractionStatus,
           entityType: documentLink.entityType,
           entityId: documentLink.entityId,
           relation: documentLink.relation,

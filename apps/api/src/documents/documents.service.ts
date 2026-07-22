@@ -150,9 +150,71 @@ export interface EvidenceRescanQueueAuditPayload {
   explanation: string;
 }
 
+const DOCUMENT_SEARCH_TEXT_LIMIT = 200_000;
+const SEARCHABLE_TEXT_EXTENSIONS = new Set([
+  'txt',
+  'log',
+  'json',
+  'xml',
+  'yaml',
+  'yml',
+  'csv',
+  'tsv',
+  'conf',
+  'cfg',
+  'ini',
+  'md',
+]);
+
 function extensionOf(filename: string): string {
   const i = filename.lastIndexOf('.');
   return i === -1 ? '' : filename.slice(i + 1).toLowerCase();
+}
+
+export function extractSearchableDocumentText(file: {
+  buffer: Buffer;
+  originalName: string;
+  mime: string;
+}): {
+  extractedText: string | null;
+  extractionStatus: 'indexed' | 'pending';
+  extractedChars: number;
+  truncated: boolean;
+  reason: 'text_inline' | 'binary_pipeline_pending';
+} {
+  const ext = extensionOf(file.originalName);
+  const mime = file.mime.toLowerCase();
+  const textLike =
+    mime.startsWith('text/') ||
+    mime.includes('json') ||
+    mime.includes('xml') ||
+    mime.includes('yaml') ||
+    mime.includes('csv') ||
+    SEARCHABLE_TEXT_EXTENSIONS.has(ext);
+  if (!textLike) {
+    return {
+      extractedText: null,
+      extractionStatus: 'pending',
+      extractedChars: 0,
+      truncated: false,
+      reason: 'binary_pipeline_pending',
+    };
+  }
+  const normalized = file.buffer
+    .toString('utf8')
+    .replace(/\u0000/g, ' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{4,}/g, '\n\n\n')
+    .trim();
+  const truncated = normalized.length > DOCUMENT_SEARCH_TEXT_LIMIT;
+  const extractedText = truncated ? normalized.slice(0, DOCUMENT_SEARCH_TEXT_LIMIT) : normalized;
+  return {
+    extractedText,
+    extractionStatus: 'indexed',
+    extractedChars: extractedText.length,
+    truncated,
+    reason: 'text_inline',
+  };
 }
 
 export function documentIntakeBucket(filename: string, mime: string): DocumentIntakeBucket {
@@ -300,6 +362,7 @@ export class DocumentsService {
     if (options.link) this.validateLink(options.link);
     const status = options.status ?? 'active';
     const sha256 = createHash('sha256').update(file.buffer).digest('hex');
+    const searchText = extractSearchableDocumentText(file);
 
     const storageKey = `documents/${randomUUID()}/${file.originalName}`;
     await this.storage.put(storageKey, file.buffer, file.mime, {
@@ -325,6 +388,8 @@ export class DocumentsService {
               mime: file.mime,
               size: file.buffer.length,
               sha256,
+              extractedText: searchText.extractedText,
+              extractionStatus: searchText.extractionStatus,
               status,
               renewBy: options.renewBy ? new Date(options.renewBy) : target.renewBy,
               category: options.category ?? target.category,
@@ -344,6 +409,8 @@ export class DocumentsService {
             mime: file.mime,
             size: file.buffer.length,
             sha256,
+            extractedText: searchText.extractedText,
+            extractionStatus: searchText.extractionStatus,
             version: target.version + 1,
             prevVersionId: target.id,
             ownerMembershipId: target.ownerMembershipId,
@@ -384,6 +451,8 @@ export class DocumentsService {
           mime: file.mime,
           size: file.buffer.length,
           sha256,
+          extractedText: searchText.extractedText,
+          extractionStatus: searchText.extractionStatus,
           ownerMembershipId: owner.id,
           renewBy: options.renewBy ? new Date(options.renewBy) : null,
           category: options.category ?? null,
@@ -420,6 +489,12 @@ export class DocumentsService {
         filename: result.row.filename,
         sha256,
         version: result.row.version,
+        searchExtraction: {
+          status: searchText.extractionStatus,
+          chars: searchText.extractedChars,
+          truncated: searchText.truncated,
+          reason: searchText.reason,
+        },
         rescanTrigger,
       },
     });
@@ -448,6 +523,8 @@ export class DocumentsService {
           mime: '',
           size: 0,
           sha256: '',
+          extractedText: null,
+          extractionStatus: 'pending_upload',
           ownerMembershipId: owner.id,
           renewBy: input.renewBy ? new Date(input.renewBy) : null,
           category: input.category ?? null,

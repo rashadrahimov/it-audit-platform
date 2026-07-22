@@ -16,6 +16,7 @@ export const REQUIREMENT_COVERAGE = [
       'evidence-grounded-findings',
       'ai-explainability',
       'document-ai-intake',
+      'document-content-search',
       'evidence-rescan-plan',
       'ocr-readiness',
     ],
@@ -64,6 +65,7 @@ export const REQUIREMENT_COVERAGE = [
     evidence: [
       'audit-query',
       'evidence-query',
+      'document-content-search',
       'auto-drl',
       'continuous-summary',
       'evidence-rescan-plan',

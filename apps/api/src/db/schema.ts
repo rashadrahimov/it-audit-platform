@@ -611,6 +611,13 @@ export const document = pgTable(
     status: text('status').notNull().default('active'),
     /** T-V02: категория документа (policy/report/evidence/contract/…). */
     category: text('category'),
+    /**
+     * T-H123 / DAT-04: извлечённый searchable text для документов, где это можно
+     * сделать безопасно в момент upload (txt/json/xml/csv/log/yaml/conf). PDF/Office
+     * помечаются pending до отдельного extraction/OCR pipeline.
+     */
+    extractedText: text('extracted_text'),
+    extractionStatus: text('extraction_status').notNull().default('pending'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
