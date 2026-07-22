@@ -390,9 +390,13 @@ export function AppShell({
           </form>
 
           <div
-            className="hidden shrink-0 rounded-xl border border-border bg-white/80 px-1 py-0.5 shadow-xs sm:block"
+            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-white/85 px-1 py-0.5 shadow-xs"
             title={labels.language}
+            data-testid="topbar-locale-switcher"
           >
+            <span className="hidden pl-2 text-[11px] font-semibold tracking-[0.08em] text-secondary uppercase lg:inline">
+              {labels.language}
+            </span>
             <LocaleSwitcher current={currentLocale} ariaLabel={labels.language} compact />
           </div>
 
