@@ -34,3 +34,26 @@ export async function moveUniverseNodeAction(id: string, formData: FormData): Pr
   });
   revalidatePath('/universe');
 }
+
+export async function updateUniverseNodeAction(id: string, formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  const kind = String(formData.get('kind') ?? '').trim();
+  const name = String(formData.get('name') ?? '').trim();
+  if (!tenantSlug || !KINDS.has(kind) || !name) return;
+  await apiFetch(`/universe/${id}`, {
+    method: 'PATCH',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ kind, nameI18n: { en: name, ru: name, az: name } }),
+  });
+  revalidatePath('/universe');
+}
+
+export async function deleteUniverseNodeAction(id: string): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch(`/universe/${id}`, {
+    method: 'DELETE',
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  revalidatePath('/universe');
+}

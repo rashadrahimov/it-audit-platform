@@ -774,6 +774,9 @@
     "createButton": "Create node",
     "move": "Move",
     "moveSave": "Save parent",
+    "edit": "Edit",
+    "editSave": "Save node",
+    "delete": "Archive node",
     "kind": {
       "subsidiary": "Subsidiary",
       "process": "Process",

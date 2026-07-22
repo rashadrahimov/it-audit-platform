@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -29,6 +31,15 @@ const createSchema = z.object({
 });
 
 const moveSchema = z.object({ parentId: z.uuid().nullable() });
+const updateSchema = z
+  .object({
+    kind: z.enum(ENTITY_KINDS).optional(),
+    nameI18n: i18nTextSchema.optional(),
+    descriptionI18n: i18nTextSchema.nullable().optional(),
+  })
+  .refine((body) => Object.keys(body).length > 0, {
+    message: 'Нужно передать хотя бы одно поле',
+  });
 
 @Controller('universe')
 @UseGuards(JwtAuthGuard, PermissionGuard)
@@ -62,6 +73,27 @@ export class UniverseController {
       id,
       parsed.data.parentId,
     );
+  }
+
+  @Patch(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Изменить узел audit universe (T-H130)' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Архивировать листовой узел audit universe (T-H130)' })
+  async remove(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    await this.service.remove({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id);
   }
 
   @Get()

@@ -3,7 +3,12 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
-import { createUniverseNodeAction, moveUniverseNodeAction } from './actions';
+import {
+  createUniverseNodeAction,
+  deleteUniverseNodeAction,
+  moveUniverseNodeAction,
+  updateUniverseNodeAction,
+} from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,6 +121,33 @@ export default async function UniversePage() {
                 ))}
             </select>
             <button className={buttonCls}>{t('moveSave')}</button>
+          </form>
+        </details>
+        <details>
+          <summary className="cursor-pointer text-xs font-medium text-accent">{t('edit')}</summary>
+          <form
+            action={updateUniverseNodeAction.bind(null, node.id)}
+            className="mt-2 grid min-w-64 gap-2"
+          >
+            <input
+              name="name"
+              required
+              defaultValue={resolveName(node.nameI18n, locale)}
+              className={inputCls}
+            />
+            <select name="kind" defaultValue={node.kind} className={inputCls}>
+              {NODE_KINDS.map((kind) => (
+                <option key={kind} value={kind}>
+                  {t(`kind.${kind}`)}
+                </option>
+              ))}
+            </select>
+            <button className={buttonCls}>{t('editSave')}</button>
+          </form>
+          <form action={deleteUniverseNodeAction.bind(null, node.id)} className="mt-2">
+            <button className="text-xs font-medium text-red-700 hover:underline">
+              {t('delete')}
+            </button>
           </form>
         </details>
       </div>

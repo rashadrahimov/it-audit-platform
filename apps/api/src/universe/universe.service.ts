@@ -31,6 +31,9 @@ interface CreateInput {
   refId?: string;
   custom?: Record<string, unknown>;
 }
+type UpdateInput = Partial<Pick<CreateInput, 'kind' | 'nameI18n'>> & {
+  descriptionI18n?: I18nText | null;
+};
 
 @Injectable()
 export class UniverseService {
@@ -111,6 +114,71 @@ export class UniverseService {
       after: { parentId: newParentId },
     });
     return { id, parentId: newParentId };
+  }
+
+  async update(actor: Actor, id: string, input: UpdateInput) {
+    const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [existing] = await tx
+        .select()
+        .from(auditableEntity)
+        .where(and(eq(auditableEntity.id, id), isNull(auditableEntity.deletedAt)));
+      if (!existing) throw new NotFoundException(`Узел ${id} не найден`);
+      const [row] = await tx
+        .update(auditableEntity)
+        .set({
+          ...(input.kind !== undefined ? { kind: input.kind } : {}),
+          ...(input.nameI18n !== undefined ? { nameI18n: input.nameI18n } : {}),
+          ...(input.descriptionI18n !== undefined
+            ? { descriptionI18n: input.descriptionI18n }
+            : {}),
+          updatedAt: new Date(),
+        })
+        .where(eq(auditableEntity.id, id))
+        .returning();
+      if (!row) throw new NotFoundException(`Узел ${id} не найден`);
+      return { existing, row };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'auditable_entity.updated',
+      entityType: 'auditable_entity',
+      entityId: id,
+      before: { kind: updated.existing.kind, nameI18n: updated.existing.nameI18n },
+      after: { kind: updated.row.kind, nameI18n: updated.row.nameI18n },
+    });
+    return { id: updated.row.id, kind: updated.row.kind, nameI18n: updated.row.nameI18n };
+  }
+
+  async remove(actor: Actor, id: string) {
+    const removed = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [existing] = await tx
+        .select({ id: auditableEntity.id, kind: auditableEntity.kind })
+        .from(auditableEntity)
+        .where(and(eq(auditableEntity.id, id), isNull(auditableEntity.deletedAt)));
+      if (!existing) throw new NotFoundException(`Узел ${id} не найден`);
+      const [child] = await tx
+        .select({ id: auditableEntity.id })
+        .from(auditableEntity)
+        .where(and(eq(auditableEntity.parentId, id), isNull(auditableEntity.deletedAt)))
+        .limit(1);
+      if (child) throw new BadRequestException('Сначала переместите или удалите дочерние узлы');
+      await tx
+        .update(auditableEntity)
+        .set({ deletedAt: new Date(), updatedAt: new Date() })
+        .where(eq(auditableEntity.id, id));
+      return existing;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'auditable_entity.deleted',
+      entityType: 'auditable_entity',
+      entityId: id,
+      before: removed,
+    });
   }
 
   /** Плоский список всех узлов тенанта (клиент строит дерево по parentId). */

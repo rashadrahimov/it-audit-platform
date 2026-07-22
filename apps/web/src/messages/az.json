@@ -774,6 +774,9 @@
     "createButton": "Qovşaq yarat",
     "move": "Köçür",
     "moveSave": "Ana qovşağı saxla",
+    "edit": "Redaktə et",
+    "editSave": "Qovşağı saxla",
+    "delete": "Qovşağı arxivləşdir",
     "kind": {
       "subsidiary": "Törəmə",
       "process": "Proses",
