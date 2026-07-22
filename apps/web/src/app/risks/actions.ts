@@ -169,6 +169,15 @@ export async function addRiskSuggestionAction(formData: FormData): Promise<void>
   const description = String(formData.get('description') ?? '').trim();
   const category = String(formData.get('category') ?? '').trim();
   const domain = String(formData.get('domain') ?? '').trim();
+  const sourceFindingId = String(formData.get('sourceFindingId') ?? '').trim();
+  const confidence = Number(formData.get('confidence'));
+  const affectedProcess = String(formData.get('affectedProcess') ?? '').trim();
+  const affectedAsset = String(formData.get('affectedAsset') ?? '').trim();
+  const affectedControlRef = String(formData.get('affectedControlRef') ?? '').trim();
+  const evidenceType = String(formData.get('evidenceType') ?? '').trim();
+  const evidenceId = String(formData.get('evidenceId') ?? '').trim();
+  const evidenceLocation = String(formData.get('evidenceLocation') ?? '').trim();
+  const dedupeFingerprint = String(formData.get('dedupeFingerprint') ?? '').trim();
   const num = (k: string) => {
     const v = Number(formData.get(k));
     return Number.isFinite(v) && v >= 1 && v <= 5 ? v : 3;
@@ -188,6 +197,23 @@ export async function addRiskSuggestionAction(formData: FormData): Promise<void>
       residualImpact: num('inherentImpact'),
       residualLikelihood: num('inherentLikelihood'),
       treatment: 'mitigate',
+      aiReview: sourceFindingId
+        ? {
+            source: 'risk_suggestion',
+            decision: 'accepted',
+            reviewStatus: 'accepted_by_human',
+            sourceFindingId,
+            confidence: Number.isFinite(confidence) ? confidence : undefined,
+            affectedProcess: affectedProcess || undefined,
+            affectedAsset: affectedAsset || undefined,
+            affectedControlRef: affectedControlRef || null,
+            evidenceRef:
+              evidenceType && evidenceId && evidenceLocation
+                ? { type: evidenceType, id: evidenceId, location: evidenceLocation }
+                : undefined,
+            dedupeFingerprint: dedupeFingerprint || undefined,
+          }
+        : undefined,
     }),
   });
   revalidatePath('/risks');

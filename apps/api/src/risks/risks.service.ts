@@ -10,6 +10,7 @@ import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import {
   auditableEntity,
+  auditLog,
   control,
   finding,
   membership,
@@ -41,6 +42,64 @@ export interface CreateRiskInput {
   treatment?: string;
   ownerMembershipId?: string;
   subsidiaryId?: string;
+  aiReview?: RiskAiReview;
+}
+
+export interface RiskAiReview {
+  source: 'risk_suggestion';
+  decision: 'accepted';
+  reviewStatus: 'accepted_by_human';
+  sourceFindingId: string;
+  confidence?: number;
+  affectedProcess?: string;
+  affectedAsset?: string;
+  affectedControlRef?: string | null;
+  evidenceRef?: {
+    type: string;
+    id: string;
+    location: string;
+  };
+  dedupeFingerprint?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function riskAiReviewFromAuditPayload(payload: unknown): RiskAiReview | null {
+  if (!isRecord(payload)) return null;
+  const aiReview = payload.aiReview;
+  if (!isRecord(aiReview)) return null;
+  if (
+    aiReview.source !== 'risk_suggestion' ||
+    aiReview.decision !== 'accepted' ||
+    aiReview.reviewStatus !== 'accepted_by_human' ||
+    typeof aiReview.sourceFindingId !== 'string'
+  ) {
+    return null;
+  }
+  const evidenceRef = isRecord(aiReview.evidenceRef)
+    ? {
+        type: String(aiReview.evidenceRef.type ?? ''),
+        id: String(aiReview.evidenceRef.id ?? ''),
+        location: String(aiReview.evidenceRef.location ?? ''),
+      }
+    : undefined;
+  return {
+    source: 'risk_suggestion',
+    decision: 'accepted',
+    reviewStatus: 'accepted_by_human',
+    sourceFindingId: aiReview.sourceFindingId,
+    confidence: typeof aiReview.confidence === 'number' ? aiReview.confidence : undefined,
+    affectedProcess:
+      typeof aiReview.affectedProcess === 'string' ? aiReview.affectedProcess : undefined,
+    affectedAsset: typeof aiReview.affectedAsset === 'string' ? aiReview.affectedAsset : undefined,
+    affectedControlRef:
+      typeof aiReview.affectedControlRef === 'string' ? aiReview.affectedControlRef : null,
+    evidenceRef,
+    dedupeFingerprint:
+      typeof aiReview.dedupeFingerprint === 'string' ? aiReview.dedupeFingerprint : undefined,
+  };
 }
 
 /** Risk register (T-057, B6): скоринг по матрице тенанта, risk_class computed. */
@@ -224,8 +283,32 @@ export class RisksService {
       action: 'risk.created',
       entityType: 'risk',
       entityId: created.id,
-      after: { title: created.titleI18n.en, riskClass: created.riskClass },
+      after: {
+        title: created.titleI18n.en,
+        riskClass: created.riskClass,
+        aiReview: input.aiReview ?? undefined,
+      },
     });
+    if (input.aiReview) {
+      await this.auditLogService.record({
+        tenantId: actor.tenantId,
+        actorUserId: actor.userId,
+        actorIp: actor.ip,
+        action: 'ai_risk.accepted',
+        entityType: 'risk',
+        entityId: created.id,
+        after: {
+          aiReview: input.aiReview,
+          reviewerAction: 'created_register_risk',
+          final: {
+            title: created.titleI18n.en,
+            riskClass: created.riskClass,
+            inherentImpact: created.inherentImpact,
+            inherentLikelihood: created.inherentLikelihood,
+          },
+        },
+      });
+    }
     return created;
   }
 
@@ -780,6 +863,20 @@ export class RisksService {
     );
     if (!row) throw new NotFoundException(`Риск ${id} не найден`);
     const r = row.risk;
+    const [aiReviewLog] = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({ after: auditLog.after })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.entityType, 'risk'),
+            eq(auditLog.entityId, id),
+            eq(auditLog.action, 'ai_risk.accepted'),
+          ),
+        )
+        .orderBy(desc(auditLog.at))
+        .limit(1),
+    );
     // T-V57: имя согласующего (approver) — отдельным запросом (over-tenant membership)
     const approverName = r.approverMembershipId
       ? await this.dbService
@@ -827,6 +924,7 @@ export class RisksService {
       approvalStatus: r.approvalStatus,
       approvedAt: r.approvedAt?.toISOString() ?? null,
       amIApprover: myMembershipId !== null && myMembershipId === r.approverMembershipId,
+      aiReview: riskAiReviewFromAuditPayload(aiReviewLog?.after) ?? null,
     };
   }
 }

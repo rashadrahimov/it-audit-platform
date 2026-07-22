@@ -31,6 +31,25 @@ import { RisksService } from './risks.service';
 
 const score = z.number().int().min(1).max(10);
 
+const aiRiskReviewSchema = z.object({
+  source: z.literal('risk_suggestion'),
+  decision: z.literal('accepted'),
+  reviewStatus: z.literal('accepted_by_human'),
+  sourceFindingId: z.uuid(),
+  confidence: z.number().min(0).max(1).optional(),
+  affectedProcess: z.string().optional(),
+  affectedAsset: z.string().optional(),
+  affectedControlRef: z.string().nullable().optional(),
+  evidenceRef: z
+    .object({
+      type: z.string(),
+      id: z.string(),
+      location: z.string(),
+    })
+    .optional(),
+  dedupeFingerprint: z.string().optional(),
+});
+
 const createRiskSchema = z.object({
   titleI18n: i18nTextSchema,
   descriptionI18n: i18nTextSchema.optional(),
@@ -43,6 +62,7 @@ const createRiskSchema = z.object({
   treatment: z.enum(['mitigate', 'transfer', 'accept', 'avoid']).optional(),
   ownerMembershipId: z.uuid().optional(),
   subsidiaryId: z.uuid().optional(),
+  aiReview: aiRiskReviewSchema.optional(),
 });
 
 // T-V12: частичное редактирование карточки риска (скоринг — отдельным rescore)

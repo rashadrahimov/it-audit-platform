@@ -1284,6 +1284,13 @@
     "initialRating": "Initial rating",
     "reviewGate": "Review gate",
     "draftOnly": "Draft only until accepted",
+    "aiTrace": {
+      "kicker": "Human-in-the-loop AI trace",
+      "title": "Accepted AI risk suggestion",
+      "accepted": "Accepted by auditor",
+      "evidence": "Evidence reference",
+      "sourceFinding": "Source finding"
+    },
     "possibleDuplicate": "Possible duplicate",
     "dedupeMatch": "Register match",
     "openDuplicate": "Open existing risk",

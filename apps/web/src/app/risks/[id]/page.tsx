@@ -42,6 +42,18 @@ interface RiskDetail {
   approvalStatus: string | null;
   approvedAt: string | null;
   amIApprover: boolean;
+  aiReview: {
+    source: 'risk_suggestion';
+    decision: 'accepted';
+    reviewStatus: 'accepted_by_human';
+    sourceFindingId: string;
+    confidence?: number;
+    affectedProcess?: string;
+    affectedAsset?: string;
+    affectedControlRef?: string | null;
+    evidenceRef?: { type: string; id: string; location: string };
+    dedupeFingerprint?: string;
+  } | null;
 }
 
 interface Matrix {
@@ -214,6 +226,62 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
           )}
         </dl>
       </section>
+
+      {r.aiReview && (
+        <section
+          className="flex flex-col gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-sm"
+          data-testid="risk-ai-review-trace"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.12em] text-accent uppercase">
+                {t('aiTrace.kicker')}
+              </p>
+              <h2 className="text-sm font-semibold text-primary">{t('aiTrace.title')}</h2>
+            </div>
+            <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+              {t('aiTrace.accepted')}
+            </span>
+          </div>
+          <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-xs font-medium text-secondary">{t('confidence')}</dt>
+              <dd className="text-foreground">
+                {r.aiReview.confidence !== undefined
+                  ? `${Math.round(r.aiReview.confidence * 100)}%`
+                  : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-secondary">{t('controlClause')}</dt>
+              <dd className="text-foreground">{r.aiReview.affectedControlRef ?? '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-secondary">{t('affectedProcess')}</dt>
+              <dd className="text-foreground">{r.aiReview.affectedProcess ?? '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-secondary">{t('affectedAsset')}</dt>
+              <dd className="text-foreground">{r.aiReview.affectedAsset ?? '—'}</dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-xs font-medium text-secondary">{t('aiTrace.evidence')}</dt>
+              <dd className="text-foreground">{r.aiReview.evidenceRef?.location ?? '—'}</dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-xs font-medium text-secondary">{t('aiTrace.sourceFinding')}</dt>
+              <dd>
+                <Link
+                  href={`/findings/${r.aiReview.sourceFindingId}`}
+                  className="text-accent underline-offset-2 transition-colors hover:underline"
+                >
+                  {r.aiReview.sourceFindingId}
+                </Link>
+              </dd>
+            </div>
+          </dl>
+        </section>
+      )}
 
       <section
         className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"

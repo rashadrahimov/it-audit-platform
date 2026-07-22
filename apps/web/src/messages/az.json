@@ -1284,6 +1284,13 @@
     "initialRating": "İlkin qiymət",
     "reviewGate": "Yoxlama qapısı",
     "draftOnly": "Auditor qəbul edənədək qaralamadır",
+    "aiTrace": {
+      "kicker": "İİ və insan yoxlaması izi",
+      "title": "Qəbul edilmiş İİ risk təklifi",
+      "accepted": "Auditor tərəfindən qəbul edilib",
+      "evidence": "Sübut istinadı",
+      "sourceFinding": "Mənbə qeyd"
+    },
     "possibleDuplicate": "Mümkün dublikat",
     "dedupeMatch": "Reyestr uyğunluğu",
     "openDuplicate": "Mövcud riski aç",

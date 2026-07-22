@@ -388,6 +388,23 @@ export default async function RisksPage({
                       <input type="hidden" name="domain" value={s.affectedControlRef ?? ''} />
                       <input type="hidden" name="inherentImpact" value={s.inherentImpact} />
                       <input type="hidden" name="inherentLikelihood" value={s.inherentLikelihood} />
+                      <input type="hidden" name="sourceFindingId" value={s.findingId} />
+                      <input type="hidden" name="confidence" value={s.confidence} />
+                      <input type="hidden" name="affectedProcess" value={s.affectedProcess} />
+                      <input type="hidden" name="affectedAsset" value={s.affectedAsset} />
+                      <input
+                        type="hidden"
+                        name="affectedControlRef"
+                        value={s.affectedControlRef ?? ''}
+                      />
+                      <input type="hidden" name="evidenceType" value={s.evidenceRef.type} />
+                      <input type="hidden" name="evidenceId" value={s.evidenceRef.id} />
+                      <input type="hidden" name="evidenceLocation" value={s.evidenceRef.location} />
+                      <input
+                        type="hidden"
+                        name="dedupeFingerprint"
+                        value={s.dedupe?.fingerprint ?? ''}
+                      />
                       <button
                         type="submit"
                         data-testid="risk-suggestion-add"
