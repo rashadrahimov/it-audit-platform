@@ -29,7 +29,7 @@
 - [x] **Time/allocations/KPI:** тайм-трекинг, утилизация и KPI контролей реализованы.
 
 ### A2. UI-полировка (сквозное)
-- [ ] Интерактивность на оставшихся read-only экранах (devices/working-papers/personnel/access-reviews — create/transition).
+- [x] Интерактивность devices/working-papers/personnel/access-reviews закрыта: последний read-only экран devices получил create/checks UI в T-H133.
 - [ ] Drill-down карточки: risk, engagement (есть), finding, control (есть detail), WP, personnel.
 - [ ] Пустые состояния, лоадеры, обработка ошибок API (сейчас частично), тосты после действий.
 - [x] Навигация: адаптивный app-shell, sidebar, mobile drawer и breadcrumbs закрыты T-H28/T-H32.

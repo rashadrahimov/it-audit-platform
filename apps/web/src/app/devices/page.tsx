@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { EmptyState } from '@/components/empty-state';
+import { createDeviceAction, updateDeviceChecksAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,10 @@ interface Device {
   source: string;
   checks: Record<CheckKey, boolean>;
 }
+const inputCls =
+  'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+const buttonCls =
+  'rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 /** Endpoint compliance (T-070): устройства с MDM-проверками; статус не только цветом. */
 export default async function DevicesPage() {
@@ -32,6 +37,27 @@ export default async function DevicesPage() {
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+
+      <section className="flex flex-col gap-3" data-testid="device-create">
+        <h2 className="text-sm font-semibold text-secondary">{t('create')}</h2>
+        <form
+          action={createDeviceAction}
+          className="grid gap-3 rounded-xl border border-border bg-white p-4 shadow-sm sm:grid-cols-3"
+        >
+          <input name="name" required placeholder={t('name')} className={inputCls} />
+          <input name="os" placeholder={t('os')} className={inputCls} />
+          <input name="serial" placeholder={t('serial')} className={inputCls} />
+          <div className="flex flex-wrap gap-3 sm:col-span-3">
+            {CHECK_KEYS.map((key) => (
+              <label key={key} className="flex items-center gap-2 text-sm text-secondary">
+                <input name={key} type="checkbox" className="h-4 w-4 rounded border-border" />
+                {t(`checks.${key}`)}
+              </label>
+            ))}
+          </div>
+          <button className={`${buttonCls} sm:justify-self-start`}>{t('createButton')}</button>
+        </form>
+      </section>
 
       {devices.length === 0 ? (
         <section className="rounded-xl border border-border bg-white shadow-sm">
@@ -72,6 +98,28 @@ export default async function DevicesPage() {
                     );
                   })}
                 </ul>
+                <details className="mt-3">
+                  <summary className="cursor-pointer text-xs font-medium text-accent">
+                    {t('editChecks')}
+                  </summary>
+                  <form
+                    action={updateDeviceChecksAction.bind(null, d.id)}
+                    className="mt-3 flex flex-wrap items-center gap-3"
+                  >
+                    {CHECK_KEYS.map((key) => (
+                      <label key={key} className="flex items-center gap-2 text-xs text-secondary">
+                        <input
+                          name={key}
+                          type="checkbox"
+                          defaultChecked={d.checks[key]}
+                          className="h-4 w-4 rounded border-border"
+                        />
+                        {t(`checks.${key}`)}
+                      </label>
+                    ))}
+                    <button className={buttonCls}>{t('saveChecks')}</button>
+                  </form>
+                </details>
               </li>
             );
           })}

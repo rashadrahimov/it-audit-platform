@@ -942,6 +942,13 @@
     "empty": "No devices yet",
     "compliant": "Compliant",
     "non_compliant": "Non-compliant",
+    "create": "Add endpoint",
+    "name": "Device name",
+    "os": "Operating system",
+    "serial": "Serial number",
+    "createButton": "Add device",
+    "editChecks": "Update compliance checks",
+    "saveChecks": "Recalculate compliance",
     "checks": {
       "diskEncryption": "Disk encryption",
       "screenLock": "Screen lock",

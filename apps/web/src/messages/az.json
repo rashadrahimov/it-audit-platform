@@ -942,6 +942,13 @@
     "empty": "Hələ cihaz yoxdur",
     "compliant": "Uyğun",
     "non_compliant": "Uyğun deyil",
+    "create": "Endpoint əlavə et",
+    "name": "Cihazın adı",
+    "os": "Əməliyyat sistemi",
+    "serial": "Seriya nömrəsi",
+    "createButton": "Cihaz əlavə et",
+    "editChecks": "Uyğunluq yoxlamalarını yenilə",
+    "saveChecks": "Uyğunluğu yenidən hesabla",
     "checks": {
       "diskEncryption": "Disk şifrələmə",
       "screenLock": "Ekran kilidi",
