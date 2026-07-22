@@ -180,6 +180,16 @@ export class DocumentsController {
     return this.documentsService.readinessSummary(req.tenantId);
   }
 
+  @Get('rescan-plan')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({
+    summary: 'T-H59: read-only plan of what evidence uploads should trigger for continuous re-scan',
+  })
+  @ApiOkResponse({ description: '{generatedAt, status, impacted, queues, recentTriggers}' })
+  rescanPlan(@Req() req: TenantRequest) {
+    return this.documentsService.rescanPlan(req.tenantId);
+  }
+
   @Get()
   @RequirePermission('engagement', 'view')
   @ApiOperation({

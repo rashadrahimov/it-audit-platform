@@ -2372,6 +2372,54 @@
         }
       }
     },
+    "rescan": {
+      "kicker": "Continuous re-scan",
+      "title": "What new evidence will refresh next",
+      "subtitle": "A read-only plan for the last {days} days: evidence extraction, OCR, AI finding drafts, request follow-up and report readiness.",
+      "recentLinked": "linked uploads",
+      "recentUploads": "{count} recent uploads",
+      "impactedSummary": "{engagements} audits · {controls} controls impacted",
+      "status": {
+        "blocked": "Waiting for linked evidence",
+        "hot": "Refresh queue is active",
+        "watch": "Refresh with blockers",
+        "ready": "Ready for scheduled re-scan"
+      },
+      "queues": {
+        "extraction": {
+          "label": "Extraction",
+          "hint": "Active linked files ready for parsing"
+        },
+        "ocr": {
+          "label": "OCR",
+          "hint": "Scans that need recognition first"
+        },
+        "aiFindingDrafts": {
+          "label": "AI drafts",
+          "hint": "Evidence-backed finding candidates to refresh"
+        },
+        "evidenceRequestFollowUp": {
+          "label": "PBC follow-up",
+          "hint": "Requests and drafts blocking the queue"
+        },
+        "reportReadinessRefresh": {
+          "label": "Reports",
+          "hint": "Accepted or ready evidence feeding deliverables"
+        }
+      },
+      "blockersTitle": "Queue blockers",
+      "blockers": {
+        "requestedDocuments": "Awaiting upload",
+        "draftDocuments": "Drafts",
+        "unlinkedDocuments": "Unlinked",
+        "flaggedDocuments": "Flagged",
+        "ocrDocuments": "OCR needed"
+      },
+      "triggersTitle": "Recent triggers",
+      "linkedTargets": "{count} linked targets",
+      "unlinked": "Unlinked",
+      "noTriggers": "No recent document changes in the re-scan window."
+    },
     "readiness": {
       "kicker": "Evidence command center",
       "title": "Evidence readiness",

@@ -51,6 +51,34 @@ export interface LinkInput {
 
 type EvidenceGapReason =
   'awaiting_upload' | 'draft' | 'overdue' | 'renewal_due' | 'unlinked' | 'flagged';
+type DocumentIntakeBucket = 'office_pdf' | 'spreadsheet' | 'image_ocr' | 'config_logs';
+
+function extensionOf(filename: string): string {
+  const i = filename.lastIndexOf('.');
+  return i === -1 ? '' : filename.slice(i + 1).toLowerCase();
+}
+
+function documentIntakeBucket(filename: string, mime: string): DocumentIntakeBucket {
+  const ext = extensionOf(filename);
+  const normalizedMime = mime.toLowerCase();
+  if (
+    normalizedMime.includes('image/') ||
+    ['png', 'jpg', 'jpeg', 'webp', 'tif', 'tiff', 'bmp', 'heic'].includes(ext)
+  ) {
+    return 'image_ocr';
+  }
+  if (
+    normalizedMime.includes('spreadsheet') ||
+    normalizedMime.includes('csv') ||
+    ['xls', 'xlsx', 'xlsm', 'csv', 'tsv'].includes(ext)
+  ) {
+    return 'spreadsheet';
+  }
+  if (['log', 'txt', 'json', 'yaml', 'yml', 'xml', 'conf', 'cfg', 'ini'].includes(ext)) {
+    return 'config_logs';
+  }
+  return 'office_pdf';
+}
 
 /** Документы-доказательства (T-034): метаданные + S3 (T-042), полиморфные привязки. */
 @Injectable()
@@ -463,6 +491,169 @@ export class DocumentsService {
       reviewAcceptancePercent,
       readyPercent: Math.max(0, Math.min(100, readyPercent)),
       topGaps,
+    };
+  }
+
+  /**
+   * T-H59: continuous evidence re-scan plan. This is intentionally read-only:
+   * it turns uploaded/linked document metadata into an operational queue so the
+   * UI can explain which AI/reporting/control surfaces should be refreshed next.
+   */
+  async rescanPlan(tenantId: string) {
+    const now = new Date();
+    const recentSince = new Date(now);
+    recentSince.setDate(recentSince.getDate() - 14);
+
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          id: document.id,
+          filename: document.filename,
+          mime: document.mime,
+          status: document.status,
+          category: document.category,
+          createdAt: document.createdAt,
+          renewBy: document.renewBy,
+          entityType: documentLink.entityType,
+          entityId: documentLink.entityId,
+          relation: documentLink.relation,
+          reviewStatus: documentLink.reviewStatus,
+        })
+        .from(document)
+        .leftJoin(documentLink, eq(documentLink.documentId, document.id))
+        .where(isNull(document.deletedAt))
+        .orderBy(desc(document.createdAt)),
+    );
+
+    const documentsById = new Map<
+      string,
+      {
+        id: string;
+        filename: string;
+        mime: string;
+        status: string;
+        category: string | null;
+        createdAt: Date;
+        renewBy: Date | null;
+        links: Array<{
+          entityType: string;
+          entityId: string;
+          relation: string;
+          reviewStatus: string;
+        }>;
+      }
+    >();
+
+    for (const row of rows) {
+      const doc = documentsById.get(row.id) ?? {
+        id: row.id,
+        filename: row.filename,
+        mime: row.mime,
+        status: row.status,
+        category: row.category,
+        createdAt: row.createdAt,
+        renewBy: row.renewBy,
+        links: [],
+      };
+      if (row.entityType && row.entityId && row.relation && row.reviewStatus) {
+        doc.links.push({
+          entityType: row.entityType,
+          entityId: row.entityId,
+          relation: row.relation,
+          reviewStatus: row.reviewStatus,
+        });
+      }
+      documentsById.set(row.id, doc);
+    }
+
+    const docs = [...documentsById.values()];
+    const uploadedDocs = docs.filter((d) => d.status !== 'needs_document');
+    const activeLinkedDocs = docs.filter((d) => d.status === 'active' && d.links.length > 0);
+    const recentlyChangedDocs = uploadedDocs.filter((d) => d.createdAt >= recentSince);
+    const recentlyChangedLinkedDocs = recentlyChangedDocs.filter((d) => d.links.length > 0);
+    const unlinkedUploadedDocs = uploadedDocs.filter((d) => d.links.length === 0);
+    const draftDocs = docs.filter((d) => d.status === 'draft');
+    const requestedDocs = docs.filter((d) => d.status === 'needs_document');
+    const ocrDocs = activeLinkedDocs.filter(
+      (d) => documentIntakeBucket(d.filename, d.mime) === 'image_ocr',
+    );
+    const acceptedOrReadyDocs = activeLinkedDocs.filter((d) =>
+      d.links.some((l) => l.reviewStatus === 'accepted' || l.reviewStatus === 'ready'),
+    );
+    const flaggedDocs = activeLinkedDocs.filter((d) =>
+      d.links.some((l) => l.reviewStatus === 'flagged'),
+    );
+
+    const impacted = activeLinkedDocs.reduce(
+      (acc, doc) => {
+        for (const link of doc.links) {
+          if (link.entityType === 'engagement') acc.engagements.add(link.entityId);
+          else if (link.entityType === 'control') acc.controls.add(link.entityId);
+          else if (link.entityType === 'response') acc.responses.add(link.entityId);
+          else if (link.entityType === 'checklist_item') acc.checklistItems.add(link.entityId);
+          else acc.otherEvidencePools.add(`${link.entityType}:${link.entityId}`);
+        }
+        return acc;
+      },
+      {
+        engagements: new Set<string>(),
+        controls: new Set<string>(),
+        responses: new Set<string>(),
+        checklistItems: new Set<string>(),
+        otherEvidencePools: new Set<string>(),
+      },
+    );
+
+    const blockers = {
+      requestedDocuments: requestedDocs.length,
+      draftDocuments: draftDocs.length,
+      unlinkedDocuments: unlinkedUploadedDocs.length,
+      flaggedDocuments: flaggedDocs.length,
+      ocrDocuments: ocrDocs.length,
+    };
+    const blockingTotal = Object.values(blockers).reduce((sum, n) => sum + n, 0);
+    const status =
+      activeLinkedDocs.length === 0
+        ? 'blocked'
+        : recentlyChangedLinkedDocs.length > 0
+          ? 'hot'
+          : blockingTotal > 0
+            ? 'watch'
+            : 'ready';
+
+    return {
+      generatedAt: now.toISOString(),
+      windowDays: 14,
+      status,
+      recentUploads: recentlyChangedDocs.length,
+      recentLinkedUploads: recentlyChangedLinkedDocs.length,
+      impacted: {
+        engagements: impacted.engagements.size,
+        controls: impacted.controls.size,
+        responses: impacted.responses.size,
+        checklistItems: impacted.checklistItems.size,
+        otherEvidencePools: impacted.otherEvidencePools.size,
+      },
+      queues: {
+        extraction: activeLinkedDocs.length,
+        ocr: ocrDocs.length,
+        aiFindingDrafts: Math.max(activeLinkedDocs.length - flaggedDocs.length, 0),
+        evidenceRequestFollowUp: requestedDocs.length + draftDocs.length,
+        reportReadinessRefresh: acceptedOrReadyDocs.length,
+      },
+      blockers,
+      recentTriggers: recentlyChangedDocs.slice(0, 5).map((doc) => ({
+        id: doc.id,
+        filename: doc.filename,
+        category: doc.category,
+        createdAt: doc.createdAt.toISOString(),
+        bucket: documentIntakeBucket(doc.filename, doc.mime),
+        links: doc.links.map((link) => ({
+          entityType: link.entityType,
+          relation: link.relation,
+          reviewStatus: link.reviewStatus,
+        })),
+      })),
     };
   }
 

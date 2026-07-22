@@ -2380,6 +2380,54 @@
         }
       }
     },
+    "rescan": {
+      "kicker": "Непрерывный перескан",
+      "title": "Что обновится после новых доказательств",
+      "subtitle": "Read-only план за последние {days} дней: извлечение evidence, OCR, AI-черновики findings, follow-up по запросам и готовность отчётов.",
+      "recentLinked": "загрузок с привязкой",
+      "recentUploads": "{count} новых загрузок",
+      "impactedSummary": "{engagements} аудитов · {controls} контролей затронуто",
+      "status": {
+        "blocked": "Ждём привязанные доказательства",
+        "hot": "Очередь обновления активна",
+        "watch": "Есть блокеры перескана",
+        "ready": "Готово к плановому перескану"
+      },
+      "queues": {
+        "extraction": {
+          "label": "Извлечение",
+          "hint": "Активные привязанные файлы готовы к парсингу"
+        },
+        "ocr": {
+          "label": "OCR",
+          "hint": "Сканы, которым сначала нужно распознавание"
+        },
+        "aiFindingDrafts": {
+          "label": "AI-черновики",
+          "hint": "Кандидаты findings, которые можно обновить по evidence"
+        },
+        "evidenceRequestFollowUp": {
+          "label": "PBC follow-up",
+          "hint": "Запросы и черновики, блокирующие очередь"
+        },
+        "reportReadinessRefresh": {
+          "label": "Отчёты",
+          "hint": "Принятые или готовые evidence питают deliverables"
+        }
+      },
+      "blockersTitle": "Блокеры очереди",
+      "blockers": {
+        "requestedDocuments": "Ожидают загрузки",
+        "draftDocuments": "Черновики",
+        "unlinkedDocuments": "Без привязки",
+        "flaggedDocuments": "С замечаниями",
+        "ocrDocuments": "Нужен OCR"
+      },
+      "triggersTitle": "Последние триггеры",
+      "linkedTargets": "{count} привязанных целей",
+      "unlinked": "Без привязки",
+      "noTriggers": "В окне перескана нет недавних изменений документов."
+    },
     "readiness": {
       "kicker": "Центр доказательств",
       "title": "Готовность доказательств",

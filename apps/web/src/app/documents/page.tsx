@@ -85,6 +85,42 @@ interface ReadinessSummary {
   readyPercent: number;
   topGaps: EvidenceGap[];
 }
+interface RescanPlan {
+  generatedAt: string;
+  windowDays: number;
+  status: 'blocked' | 'hot' | 'watch' | 'ready';
+  recentUploads: number;
+  recentLinkedUploads: number;
+  impacted: {
+    engagements: number;
+    controls: number;
+    responses: number;
+    checklistItems: number;
+    otherEvidencePools: number;
+  };
+  queues: {
+    extraction: number;
+    ocr: number;
+    aiFindingDrafts: number;
+    evidenceRequestFollowUp: number;
+    reportReadinessRefresh: number;
+  };
+  blockers: {
+    requestedDocuments: number;
+    draftDocuments: number;
+    unlinkedDocuments: number;
+    flaggedDocuments: number;
+    ocrDocuments: number;
+  };
+  recentTriggers: Array<{
+    id: string;
+    filename: string;
+    category: string | null;
+    createdAt: string;
+    bucket: string;
+    links: Array<{ entityType: string; relation: string; reviewStatus: string }>;
+  }>;
+}
 
 const REVIEW_STATUSES = ['not_ready', 'ready', 'flagged', 'accepted'] as const;
 const REVIEW_TONE: Record<string, string> = {
@@ -149,15 +185,18 @@ export default async function DocumentsPage({
   if (!tenantSlug) redirect('/account');
   const headers = { 'X-Tenant-Slug': tenantSlug };
 
-  const [docsRes, readinessRes, membersRes, controlsRes, engagementsRes] = await Promise.all([
-    apiFetch(`/documents?${filterQuery(sp, ['status']).slice(1)}`, { headers }),
-    apiFetch('/documents/readiness-summary', { headers }),
-    apiFetch(`/memberships?locale=${locale}`, { headers }),
-    apiFetch(`/controls?tenantSlug=${tenantSlug}&locale=${locale}`, { headers }),
-    apiFetch(`/engagements?locale=${locale}`, { headers }),
-  ]);
+  const [docsRes, readinessRes, rescanPlanRes, membersRes, controlsRes, engagementsRes] =
+    await Promise.all([
+      apiFetch(`/documents?${filterQuery(sp, ['status']).slice(1)}`, { headers }),
+      apiFetch('/documents/readiness-summary', { headers }),
+      apiFetch('/documents/rescan-plan', { headers }),
+      apiFetch(`/memberships?locale=${locale}`, { headers }),
+      apiFetch(`/controls?tenantSlug=${tenantSlug}&locale=${locale}`, { headers }),
+      apiFetch(`/engagements?locale=${locale}`, { headers }),
+    ]);
   const docs: DocRow[] = docsRes.ok ? await docsRes.json() : [];
   const readiness: ReadinessSummary | null = readinessRes.ok ? await readinessRes.json() : null;
+  const rescanPlan: RescanPlan | null = rescanPlanRes.ok ? await rescanPlanRes.json() : null;
   const members: Member[] = membersRes.ok ? await membersRes.json() : [];
   const controls: ControlOpt[] = controlsRes.ok ? await controlsRes.json() : [];
   const engagements: EngagementOpt[] = engagementsRes.ok ? await engagementsRes.json() : [];
@@ -411,6 +450,122 @@ export default async function DocumentsPage({
           ))}
         </div>
       </section>
+
+      {rescanPlan && (
+        <section
+          data-testid="document-rescan-plan"
+          className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-[0_18px_55px_rgba(6,78,59,0.12)]"
+        >
+          <div className="border-b border-emerald-100 bg-[radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.18),transparent_34%),linear-gradient(135deg,#f0fdf4,#ffffff)] p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold tracking-[0.2em] text-emerald-700 uppercase">
+                  {t('rescan.kicker')}
+                </p>
+                <h2 className="mt-2 text-xl font-bold text-primary">{t('rescan.title')}</h2>
+                <p className="mt-1 max-w-3xl text-sm text-secondary">
+                  {t('rescan.subtitle', { days: rescanPlan.windowDays })}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-emerald-950 px-4 py-3 text-center text-white shadow-lg shadow-emerald-950/15">
+                <div className="text-2xl font-bold">{rescanPlan.recentLinkedUploads}</div>
+                <div className="text-xs text-emerald-100">{t('rescan.recentLinked')}</div>
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                {t(`rescan.status.${rescanPlan.status}`)}
+              </span>
+              <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-secondary ring-1 ring-emerald-100">
+                {t('rescan.recentUploads', { count: rescanPlan.recentUploads })}
+              </span>
+              <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-secondary ring-1 ring-emerald-100">
+                {t('rescan.impactedSummary', {
+                  engagements: rescanPlan.impacted.engagements,
+                  controls: rescanPlan.impacted.controls,
+                })}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid gap-3 p-5 md:grid-cols-5">
+            {(
+              [
+                'extraction',
+                'ocr',
+                'aiFindingDrafts',
+                'evidenceRequestFollowUp',
+                'reportReadinessRefresh',
+              ] as const
+            ).map((key) => (
+              <div
+                key={key}
+                className="rounded-xl border border-border bg-[linear-gradient(180deg,#ffffff,#f7fbf8)] p-4"
+              >
+                <div className="text-xs font-semibold tracking-wide text-secondary uppercase">
+                  {t(`rescan.queues.${key}.label`)}
+                </div>
+                <div className="mt-2 text-2xl font-bold text-primary">{rescanPlan.queues[key]}</div>
+                <div className="mt-1 text-xs text-secondary">{t(`rescan.queues.${key}.hint`)}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-4 border-t border-border p-5 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-xl bg-muted/60 p-4">
+              <h3 className="text-sm font-semibold text-primary">{t('rescan.blockersTitle')}</h3>
+              <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                {(
+                  [
+                    'requestedDocuments',
+                    'draftDocuments',
+                    'unlinkedDocuments',
+                    'flaggedDocuments',
+                    'ocrDocuments',
+                  ] as const
+                ).map((key) => (
+                  <div key={key}>
+                    <dt className="text-xs text-secondary">{t(`rescan.blockers.${key}`)}</dt>
+                    <dd className="text-xl font-bold text-primary">{rescanPlan.blockers[key]}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-primary">{t('rescan.triggersTitle')}</h3>
+              <div className="mt-3 flex flex-col gap-2">
+                {rescanPlan.recentTriggers.length > 0 ? (
+                  rescanPlan.recentTriggers.map((trigger) => (
+                    <div
+                      key={trigger.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/60 px-3 py-2 text-sm"
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-foreground">
+                          {trigger.filename}
+                        </div>
+                        <div className="text-xs text-secondary">
+                          {trigger.category ?? t('readiness.noCategory')} ·{' '}
+                          {dateFmt.format(new Date(trigger.createdAt))}
+                        </div>
+                      </div>
+                      <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">
+                        {trigger.links.length > 0
+                          ? t('rescan.linkedTargets', { count: trigger.links.length })
+                          : t('rescan.unlinked')}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-xl bg-emerald-50 px-3 py-3 text-sm text-emerald-800">
+                    {t('rescan.noTriggers')}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <form
         action={uploadDocumentAction}

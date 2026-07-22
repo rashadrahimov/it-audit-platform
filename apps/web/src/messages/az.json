@@ -2380,6 +2380,54 @@
         }
       }
     },
+    "rescan": {
+      "kicker": "Davamlı təkrar skan",
+      "title": "Yeni sübutlardan sonra nə yenilənəcək",
+      "subtitle": "Son {days} gün üçün yalnız oxunan plan: sübut çıxarışı, OCR, İİ finding qaralamaları, sorğu follow-up-u və hesabat hazırlığı.",
+      "recentLinked": "bağlı yükləmələr",
+      "recentUploads": "{count} yeni yükləmə",
+      "impactedSummary": "{engagements} audit · {controls} nəzarət təsirlənib",
+      "status": {
+        "blocked": "Bağlı sübut gözlənilir",
+        "hot": "Yeniləmə növbəsi aktivdir",
+        "watch": "Təkrar skanda bloklar var",
+        "ready": "Planlı təkrar skana hazırdır"
+      },
+      "queues": {
+        "extraction": {
+          "label": "Çıxarış",
+          "hint": "Aktiv bağlı fayllar parsing üçün hazırdır"
+        },
+        "ocr": {
+          "label": "OCR",
+          "hint": "Əvvəl tanınmaya ehtiyacı olan skanlar"
+        },
+        "aiFindingDrafts": {
+          "label": "İİ qaralamaları",
+          "hint": "Sübutla yenilənə bilən finding namizədləri"
+        },
+        "evidenceRequestFollowUp": {
+          "label": "PBC follow-up",
+          "hint": "Növbəni bloklayan sorğular və qaralamalar"
+        },
+        "reportReadinessRefresh": {
+          "label": "Hesabatlar",
+          "hint": "Qəbul edilmiş və ya hazır sübutlar deliverable-ları qidalandırır"
+        }
+      },
+      "blockersTitle": "Növbə blokları",
+      "blockers": {
+        "requestedDocuments": "Yükləmə gözləyir",
+        "draftDocuments": "Qaralamalar",
+        "unlinkedDocuments": "Bağlantısız",
+        "flaggedDocuments": "Qeydli",
+        "ocrDocuments": "OCR lazımdır"
+      },
+      "triggersTitle": "Son trigger-lər",
+      "linkedTargets": "{count} bağlı hədəf",
+      "unlinked": "Bağlantısız",
+      "noTriggers": "Təkrar skan pəncərəsində yeni sənəd dəyişikliyi yoxdur."
+    },
     "readiness": {
       "kicker": "Sübut mərkəzi",
       "title": "Sübutların hazırlığı",
