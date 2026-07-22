@@ -159,6 +159,65 @@ describe('AI risk suggestion HITL traceability', () => {
     });
   });
 
+  it('blocks accepting an AI risk proposal that duplicates an active register risk', async () => {
+    const manual = await service.create(
+      { tenantId, userId, ip: '::1' },
+      {
+        titleI18n: { en: 'Business risk — Vendor access review is overdue' },
+        descriptionI18n: { en: 'Manual risk already reviewed by the auditor.' },
+        category: 'third_party',
+        domain: 'TP-01',
+        inherentImpact: 4,
+        inherentLikelihood: 4,
+        residualImpact: 4,
+        residualLikelihood: 4,
+        treatment: 'mitigate',
+      },
+    );
+
+    await expect(
+      service.create(
+        { tenantId, userId, ip: '::1' },
+        {
+          titleI18n: { en: 'Business risk — Vendor access review is overdue' },
+          descriptionI18n: { en: 'AI proposed the same business risk from a finding.' },
+          category: 'third_party',
+          domain: 'TP-01',
+          inherentImpact: 4,
+          inherentLikelihood: 4,
+          residualImpact: 4,
+          residualLikelihood: 4,
+          treatment: 'mitigate',
+          aiReview: {
+            source: 'risk_suggestion',
+            decision: 'accepted',
+            reviewStatus: 'accepted_by_human',
+            sourceFindingId: '00000000-0000-0000-0000-000000000002',
+            confidence: 0.8,
+            affectedProcess: 'Third-party risk management',
+            affectedAsset: 'Vendor service / outsourced system',
+            affectedControlRef: 'TP-01',
+            evidenceRef: {
+              type: 'finding',
+              id: '00000000-0000-0000-0000-000000000002',
+              location: 'Finding linked to TP-01',
+            },
+            dedupeFingerprint: 'third_party:tp-01:access-review-overdue',
+          },
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        code: 'risk_duplicate',
+        dedupe: {
+          matchedRiskId: manual.id,
+          reason: 'same_title',
+          status: 'possible_duplicate',
+        },
+      },
+    });
+  });
+
   it('records rejected AI risk proposals and removes them from the suggestion queue', async () => {
     const [row] = await dbService.withTenant(tenantId, (tx) =>
       tx

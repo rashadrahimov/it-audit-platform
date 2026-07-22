@@ -22,7 +22,12 @@ import {
 } from '../db/schema';
 import { classifyRisk, DEFAULT_THRESHOLDS } from './classify-risk';
 import { EntityAclService } from '../entity-acl/entity-acl.service';
-import { annotateRiskSuggestionDedupe, suggestBusinessRisks } from './risk-suggest';
+import {
+  annotateRiskSuggestionDedupe,
+  dedupeRiskSuggestion,
+  suggestBusinessRisks,
+  type RiskSuggestion,
+} from './risk-suggest';
 
 interface Actor {
   tenantId: string;
@@ -169,6 +174,57 @@ function editedRiskSuggestionFields(input: CreateRiskInput): RiskAiEditedField[]
       acceptedValue: normalized(acceptedValue),
     }))
     .filter((item) => item.draftValue !== item.acceptedValue);
+}
+
+const BUSINESS_RISK_CATEGORIES = new Set<RiskSuggestion['category']>([
+  'operational',
+  'financial',
+  'regulatory',
+  'third_party',
+  'continuity',
+  'reputational',
+]);
+
+function businessRiskCategory(value: string | undefined): RiskSuggestion['category'] {
+  return BUSINESS_RISK_CATEGORIES.has(value as RiskSuggestion['category'])
+    ? (value as RiskSuggestion['category'])
+    : 'operational';
+}
+
+function acceptedAiRiskAsSuggestion(
+  input: CreateRiskInput,
+  thresholds: typeof DEFAULT_THRESHOLDS,
+): RiskSuggestion {
+  const impact = input.inherentImpact ?? input.aiReview?.draft?.inherentImpact ?? 3;
+  const likelihood = input.inherentLikelihood ?? input.aiReview?.draft?.inherentLikelihood ?? 3;
+  return {
+    source: 'deterministic',
+    findingId: input.aiReview?.sourceFindingId ?? '00000000-0000-0000-0000-000000000000',
+    title: input.titleI18n.en,
+    description: input.descriptionI18n?.en ?? input.aiReview?.draft?.description ?? '',
+    category: businessRiskCategory(input.category),
+    affectedProcess:
+      input.aiReview?.affectedProcess ??
+      input.aiReview?.draft?.affectedProcess ??
+      'Unmapped process',
+    affectedAsset:
+      input.aiReview?.affectedAsset ?? input.aiReview?.draft?.affectedAsset ?? 'Unmapped asset',
+    affectedControlRef: input.aiReview?.affectedControlRef ?? input.domain ?? null,
+    domain: input.domain ?? input.aiReview?.affectedControlRef ?? null,
+    inherentImpact: impact,
+    inherentLikelihood: likelihood,
+    riskClass: classifyRisk(impact, likelihood, thresholds),
+    confidence: input.aiReview?.confidence ?? 0,
+    evidenceRef: {
+      type: 'finding',
+      id: input.aiReview?.sourceFindingId ?? '00000000-0000-0000-0000-000000000000',
+      location: input.aiReview?.evidenceRef?.location ?? 'Accepted AI risk proposal',
+    },
+    review: {
+      required: true,
+      action: 'create_or_edit_risk',
+    },
+  };
 }
 
 /** Risk register (T-057, B6): скоринг по матрице тенанта, risk_class computed. */
@@ -323,6 +379,32 @@ export class RisksService {
   async create(actor: Actor, input: CreateRiskInput) {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const thresholds = await this.thresholds(tx, actor.tenantId);
+      if (input.aiReview) {
+        const existingRisks = await tx
+          .select({
+            id: risk.id,
+            titleI18n: risk.titleI18n,
+            category: risk.category,
+            domain: risk.domain,
+            riskClass: risk.riskClass,
+            status: risk.status,
+          })
+          .from(risk)
+          .where(and(eq(risk.tenantId, actor.tenantId), isNull(risk.deletedAt)));
+        const dedupe = dedupeRiskSuggestion(
+          acceptedAiRiskAsSuggestion(input, thresholds),
+          existingRisks,
+          'en',
+        );
+        if (dedupe.status === 'possible_duplicate') {
+          throw new BadRequestException({
+            code: 'risk_duplicate',
+            message:
+              'AI risk proposal matches an active register risk; open or edit the existing risk instead.',
+            dedupe,
+          });
+        }
+      }
       const [row] = await tx
         .insert(risk)
         .values({

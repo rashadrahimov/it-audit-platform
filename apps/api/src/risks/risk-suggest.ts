@@ -197,49 +197,57 @@ function dedupeFingerprint(suggestion: RiskSuggestion): string {
   return `${suggestion.category}:${scope.toLowerCase()}:${titleTokens}`;
 }
 
+export function dedupeRiskSuggestion(
+  suggestion: RiskSuggestion,
+  existingRisks: ExistingRiskForDedupe[],
+  locale: Locale,
+): RiskSuggestionDedupe {
+  const candidates = existingRisks.filter((risk) => risk.status !== 'closed');
+  const suggestionTitle = normalizedText(suggestion.title);
+  const suggestionTokens = tokenSet(suggestion.title);
+  const scope = suggestion.domain ?? suggestion.affectedControlRef ?? null;
+  let match: ExistingRiskForDedupe | undefined;
+  let reason: RiskSuggestionDedupe['reason'] = null;
+
+  for (const existing of candidates) {
+    const existingTitle = resolveLocalized(existing.titleI18n, locale);
+    const existingNormalized = normalizedText(existingTitle);
+    if (suggestionTitle && suggestionTitle === existingNormalized) {
+      match = existing;
+      reason = 'same_title';
+      break;
+    }
+    const sameCategory = existing.category === suggestion.category;
+    const sameScope = scope !== null && existing.domain === scope;
+    if (
+      sameCategory &&
+      sameScope &&
+      overlapRatio(suggestionTokens, tokenSet(existingTitle)) >= 0.6
+    ) {
+      match = existing;
+      reason = 'same_category_domain';
+      break;
+    }
+  }
+
+  return {
+    fingerprint: dedupeFingerprint(suggestion),
+    status: match ? 'possible_duplicate' : 'new',
+    matchedRiskId: match?.id ?? null,
+    matchedTitle: match ? resolveLocalized(match.titleI18n, locale) : null,
+    reason,
+  };
+}
+
 export function annotateRiskSuggestionDedupe(
   suggestions: RiskSuggestion[],
   existingRisks: ExistingRiskForDedupe[],
   locale: Locale,
 ): RiskSuggestion[] {
-  const candidates = existingRisks.filter((risk) => risk.status !== 'closed');
   return suggestions.map((suggestion) => {
-    const suggestionTitle = normalizedText(suggestion.title);
-    const suggestionTokens = tokenSet(suggestion.title);
-    const scope = suggestion.domain ?? suggestion.affectedControlRef ?? null;
-    let match: ExistingRiskForDedupe | undefined;
-    let reason: RiskSuggestionDedupe['reason'] = null;
-
-    for (const existing of candidates) {
-      const existingTitle = resolveLocalized(existing.titleI18n, locale);
-      const existingNormalized = normalizedText(existingTitle);
-      if (suggestionTitle && suggestionTitle === existingNormalized) {
-        match = existing;
-        reason = 'same_title';
-        break;
-      }
-      const sameCategory = existing.category === suggestion.category;
-      const sameScope = scope !== null && existing.domain === scope;
-      if (
-        sameCategory &&
-        sameScope &&
-        overlapRatio(suggestionTokens, tokenSet(existingTitle)) >= 0.6
-      ) {
-        match = existing;
-        reason = 'same_category_domain';
-        break;
-      }
-    }
-
     return {
       ...suggestion,
-      dedupe: {
-        fingerprint: dedupeFingerprint(suggestion),
-        status: match ? 'possible_duplicate' : 'new',
-        matchedRiskId: match?.id ?? null,
-        matchedTitle: match ? resolveLocalized(match.titleI18n, locale) : null,
-        reason,
-      },
+      dedupe: dedupeRiskSuggestion(suggestion, existingRisks, locale),
     };
   });
 }
