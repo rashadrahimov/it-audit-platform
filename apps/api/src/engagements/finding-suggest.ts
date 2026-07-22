@@ -31,6 +31,7 @@ export interface FindingSuggestion {
   observed: string;
   controlClause: string;
   riskJustification: string;
+  suggestedRecommendation: string;
   confidence: number;
   evidenceReferences: EvidenceReference[];
   aiDraft: true;
@@ -60,6 +61,11 @@ export function suggestFindings(items: SuggestInputItem[]): FindingSuggestion[] 
       risk === 'high'
         ? 'High risk because the control is marked non-compliant and can materially weaken the audit objective until remediated.'
         : 'Medium risk because the control is only partially compliant and requires remediation or compensating evidence.';
+    const requirement = q ?? 'the control requirement';
+    const suggestedRecommendation =
+      risk === 'high'
+        ? `Prioritize remediation for ${controlClause}: assign an owner, close the observed gap, and retain evidence showing the control operates consistently (${requirement}).`
+        : `Create a remediation plan for ${controlClause}: define compensating evidence or process improvements, assign an owner, and re-test operating effectiveness (${requirement}).`;
     out.push({
       checklistItemId: it.checklistItemId,
       ref: it.ref,
@@ -70,6 +76,7 @@ export function suggestFindings(items: SuggestInputItem[]): FindingSuggestion[] 
       observed,
       controlClause,
       riskJustification,
+      suggestedRecommendation,
       confidence: it.evidenceReferences.length > 0 ? 0.82 : 0.64,
       evidenceReferences: it.evidenceReferences,
       aiDraft: true,

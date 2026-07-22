@@ -106,6 +106,7 @@ export async function createFindingFromSuggestionAction(
   explainabilityReason: string,
   controlClause: string,
   riskJustification: string,
+  draftRecommendation: string,
   confidence: number,
   evidenceReferencesJson: string,
   formData: FormData,
@@ -118,6 +119,8 @@ export async function createFindingFromSuggestionAction(
   const acceptedRisk = ['critical', 'high', 'medium', 'low'].includes(requestedRisk)
     ? requestedRisk
     : draftRisk;
+  const acceptedRecommendation =
+    String(formData.get('recommendation') ?? '').trim() || draftRecommendation;
   let evidenceReferences: Array<{
     documentId: string;
     filename: string;
@@ -149,6 +152,7 @@ export async function createFindingFromSuggestionAction(
       titleI18n: { en: acceptedTitle },
       descriptionI18n: acceptedDescription ? { en: acceptedDescription } : undefined,
       riskRating: acceptedRisk,
+      recommendationI18n: acceptedRecommendation ? { en: acceptedRecommendation } : undefined,
       aiReview: {
         source: 'finding_suggestion',
         decision: 'accepted',
@@ -158,6 +162,7 @@ export async function createFindingFromSuggestionAction(
         draftTitle,
         draftDescription,
         draftRiskRating: draftRisk,
+        draftRecommendation,
         reason: explainabilityReason || draftDescription,
         controlClause,
         riskJustification,

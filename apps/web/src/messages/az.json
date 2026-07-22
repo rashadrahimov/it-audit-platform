@@ -405,6 +405,7 @@
     "reviewDraftTitle": "Başlığı yoxla",
     "reviewDraftDescription": "Təsviri yoxla",
     "reviewDraftRisk": "Riski yoxla",
+    "reviewDraftRecommendation": "Tövsiyəni yoxla",
     "evidence": "Sübutlar",
     "evidenceEmpty": "Bu audit ilə əlaqəli sənəd hələ yoxdur.",
     "evColName": "Sənəd",

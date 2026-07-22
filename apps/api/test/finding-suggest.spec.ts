@@ -34,6 +34,8 @@ describe('suggestFindings', () => {
       controlClause: 'AC-01',
       riskJustification:
         'High risk because the control is marked non-compliant and can materially weaken the audit objective until remediated.',
+      suggestedRecommendation:
+        'Prioritize remediation for AC-01: assign an owner, close the observed gap, and retain evidence showing the control operates consistently (Access reviews are performed quarterly).',
       evidenceReferences: [{ filename: 'access-review.xlsx', location: 'response for AC-01' }],
     });
   });
@@ -53,6 +55,9 @@ describe('suggestFindings', () => {
 
     expect(suggestions[0]?.suggestedRisk).toBe('medium');
     expect(suggestions[0]?.confidence).toBe(0.64);
+    expect(suggestions[0]?.suggestedRecommendation).toBe(
+      'Create a remediation plan for BC-02: define compensating evidence or process improvements, assign an owner, and re-test operating effectiveness (Backups are tested).',
+    );
     expect(suggestions[0]?.evidenceReferences).toEqual([]);
   });
 });

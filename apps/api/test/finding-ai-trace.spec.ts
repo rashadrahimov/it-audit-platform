@@ -54,6 +54,9 @@ describe('AI finding HITL edit traceability', () => {
         titleI18n: { en: 'Auditor-refined MFA gap' },
         descriptionI18n: { en: 'AI draft was refined with more precise business context.' },
         riskRating: 'high',
+        recommendationI18n: {
+          en: 'Enforce MFA for all privileged users and retain access-review evidence.',
+        },
         aiReview: {
           source: 'finding_suggestion',
           decision: 'accepted',
@@ -63,6 +66,7 @@ describe('AI finding HITL edit traceability', () => {
           draftTitle: 'MFA gap',
           draftDescription: 'AI draft was refined with more precise business context.',
           draftRiskRating: 'medium',
+          draftRecommendation: 'Enforce MFA.',
           reason: 'Evidence-backed gap from access review.',
         },
       },
@@ -83,6 +87,11 @@ describe('AI finding HITL edit traceability', () => {
         draftValue: 'medium',
         acceptedValue: 'high',
       },
+      {
+        field: 'recommendation',
+        draftValue: 'Enforce MFA.',
+        acceptedValue: 'Enforce MFA for all privileged users and retain access-review evidence.',
+      },
     ]);
 
     const logs = await dbService.withTenant(tenantId, (tx) =>
@@ -98,6 +107,10 @@ describe('AI finding HITL edit traceability', () => {
       fields: [
         { field: 'title', value: 'Auditor-refined MFA gap' },
         { field: 'riskRating', value: 'high' },
+        {
+          field: 'recommendation',
+          value: 'Enforce MFA for all privileged users and retain access-review evidence.',
+        },
       ],
     });
   });

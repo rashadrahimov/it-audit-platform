@@ -405,6 +405,7 @@
     "reviewDraftTitle": "Review title",
     "reviewDraftDescription": "Review description",
     "reviewDraftRisk": "Review risk",
+    "reviewDraftRecommendation": "Review recommendation",
     "evidence": "Evidence",
     "evidenceEmpty": "No documents linked to this audit yet.",
     "evColName": "Document",

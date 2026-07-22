@@ -286,6 +286,7 @@ export default async function EngagementDetailPage({
     observed: string;
     controlClause: string;
     riskJustification: string;
+    suggestedRecommendation: string;
     confidence: number;
     evidenceReferences: Array<{
       documentId: string;
@@ -753,6 +754,7 @@ export default async function EngagementDetailPage({
                       explainabilityReason,
                       s.controlClause,
                       riskJustification,
+                      s.suggestedRecommendation,
                       s.confidence,
                       JSON.stringify(s.evidenceReferences),
                     )}
@@ -789,6 +791,17 @@ export default async function EngagementDetailPage({
                         name="description"
                         defaultValue={draftDescription}
                         rows={4}
+                        className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      />
+                    </label>
+                    <label className="grid gap-1 text-xs">
+                      <span className="font-semibold text-secondary">
+                        {t('reviewDraftRecommendation')}
+                      </span>
+                      <textarea
+                        name="recommendation"
+                        defaultValue={s.suggestedRecommendation}
+                        rows={3}
                         className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       />
                     </label>

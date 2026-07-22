@@ -405,6 +405,7 @@
     "reviewDraftTitle": "Проверить заголовок",
     "reviewDraftDescription": "Проверить описание",
     "reviewDraftRisk": "Проверить риск",
+    "reviewDraftRecommendation": "Проверить рекомендацию",
     "evidence": "Доказательства",
     "evidenceEmpty": "К этому аудиту ещё не привязано ни одного документа.",
     "evColName": "Документ",
