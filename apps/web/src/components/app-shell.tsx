@@ -28,6 +28,9 @@ interface Labels {
   home: string;
   searchPh: string;
   language: string;
+  closeMenu: string;
+  breadcrumbs: string;
+  tour: string;
 }
 
 /** Иконки групп (Heroicons outline, 18px). SVG, не emoji — по чеклисту ui-ux-pro-max. */
@@ -288,7 +291,7 @@ export function AppShell({
       {/* Backdrop (только mobile, когда drawer открыт) */}
       {open && (
         <button
-          aria-label="close menu"
+          aria-label={labels.closeMenu}
           onClick={() => setOpen(false)}
           className="fixed inset-0 z-30 bg-foreground/40 md:hidden"
         />
@@ -333,7 +336,8 @@ export function AppShell({
 
           {/* Хлебные крошки (desktop) */}
           <nav
-            aria-label="Breadcrumb"
+            aria-label={labels.breadcrumbs}
+            data-testid="topbar-breadcrumbs"
             className="hidden min-w-0 items-center gap-1.5 text-sm md:flex"
           >
             <Link
@@ -396,7 +400,7 @@ export function AppShell({
           <button
             type="button"
             data-testid="topbar-help"
-            aria-label="Tour"
+            aria-label={labels.tour}
             onClick={() => setHelpOpen(true)}
             className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-border bg-white/80 text-secondary shadow-xs hover:-translate-y-0.5 hover:border-accent/30 hover:bg-accent-soft hover:text-accent hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >

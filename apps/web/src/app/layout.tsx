@@ -103,6 +103,9 @@ async function Shell({ children }: { children: ReactNode }) {
         home: t('home'),
         searchPh: t('searchPh'),
         language: t('language'),
+        closeMenu: t('closeMenu'),
+        breadcrumbs: t('breadcrumbs'),
+        tour: t('tour'),
       }}
       tour={{
         steps: tourSteps,
