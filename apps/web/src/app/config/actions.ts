@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { apiFetch, getActiveTenantSlug } from '@/lib/session';
 
+const FIELD_TYPES = new Set(['text', 'number', 'date', 'select', 'boolean']);
+
 /** Создать тег (T-076). */
 export async function createTagAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
@@ -60,6 +62,42 @@ export async function saveSlaConfigAction(formData: FormData): Promise<void> {
     method: 'PUT',
     headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+  });
+  revalidatePath('/config');
+}
+
+/** GEN-07/T-H125: завести no-code custom-field definition из UI настроек. */
+export async function createCustomFieldAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const entityType = String(formData.get('entityType') ?? '').trim();
+  const key = String(formData.get('key') ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, '_');
+  const fieldType = String(formData.get('fieldType') ?? '').trim();
+  const en = String(formData.get('labelEn') ?? '').trim();
+  const ru = String(formData.get('labelRu') ?? '').trim();
+  const az = String(formData.get('labelAz') ?? '').trim();
+  if (!entityType || !key || !en || !FIELD_TYPES.has(fieldType)) return;
+
+  const rawOptions = String(formData.get('options') ?? '').trim();
+  const options = rawOptions
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  await apiFetch('/custom-fields', {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      entityType,
+      key,
+      labelI18n: { en, ru: ru || en, az: az || en },
+      fieldType,
+      options: fieldType === 'select' ? options : undefined,
+      required: formData.get('required') != null,
+    }),
   });
   revalidatePath('/config');
 }

@@ -23,7 +23,7 @@
 - [ ] **IAM:** accounts, access-requests (approve/deny), deprovisioning.
 - [ ] **Assets / Processes / Universe-CRUD** (universe-дерево read-only есть; нет создания узлов/проекции активов).
 - [ ] **Audit programs** + roll-forward, **code-changes** (approval), **KB + questionnaires** (reuse-flow).
-- [ ] **Config:** custom-fields, config-lists (audit_opinion), audit-types, tags-менеджер, glossary-CRUD.
+- [ ] **Config:** custom-fields UI закрыт T-H125; остаются config-lists (audit_opinion), tags-менеджер, glossary-CRUD.
 - [ ] **Reports:** экспорт (CSV/XML), сравнение снапшотов (compare-UI), dashboards-конфигуратор (сейчас read-only).
 - [ ] **API-keys** экран (генерация/отзыв), **audit verify-chain** индикатор, **notifications**-центр, **satisfaction surveys**.
 - [ ] **Time/allocations** — тайм-трекинг + утилизация, **KPI-виджеты** контролей.

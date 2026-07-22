@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import {
   createAuditTypeAction,
+  createCustomFieldAction,
   createTagAction,
   saveBusinessProfileAction,
   saveSlaConfigAction,
@@ -21,6 +22,13 @@ interface AuditType {
   code: string;
   name: string;
   isGlobal: boolean;
+}
+interface CustomFieldDef {
+  key: string;
+  labelI18n?: Record<string, string>;
+  fieldType: string;
+  options?: string[];
+  required: boolean;
 }
 interface SlaWindows {
   critical: number;
@@ -57,6 +65,8 @@ const inputCls =
   'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
 const btnCls =
   'rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+const entityTypes = ['asset', 'engagement', 'risk', 'working_paper', 'vendor_intake'] as const;
+const fieldTypes = ['text', 'number', 'date', 'select', 'boolean'] as const;
 
 /** Настройки тенанта (T-084/T-076): справочник типов аудита + теги. */
 export default async function ConfigPage() {
@@ -65,16 +75,29 @@ export default async function ConfigPage() {
   const [t, tenantSlug] = await Promise.all([getTranslations('config'), getActiveTenantSlug()]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
 
-  const [typesRes, tagsRes, slaRes, bizRes] = await Promise.all([
+  const [typesRes, tagsRes, slaRes, bizRes, ...customFieldResponses] = await Promise.all([
     apiFetch('/audit-types', { headers }),
     apiFetch('/tags', { headers }),
     apiFetch('/sla-config', { headers }),
     apiFetch('/business-profile', { headers }),
+    ...entityTypes.map((entityType) =>
+      apiFetch(`/custom-fields?entityType=${encodeURIComponent(entityType)}`, { headers }),
+    ),
   ]);
   const types: AuditType[] = typesRes.ok ? await typesRes.json() : [];
   const tags: Tag[] = tagsRes.ok ? await tagsRes.json() : [];
   const sla: SlaWindows = slaRes.ok ? await slaRes.json() : DEFAULT_SLA;
   const biz: BusinessProfile = bizRes.ok ? await bizRes.json() : EMPTY_PROFILE;
+  const customFields = Object.fromEntries(
+    await Promise.all(
+      entityTypes.map(async (entityType, index) => [
+        entityType,
+        customFieldResponses[index]?.ok
+          ? ((await customFieldResponses[index]!.json()) as CustomFieldDef[])
+          : [],
+      ]),
+    ),
+  ) as Record<(typeof entityTypes)[number], CustomFieldDef[]>;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 p-6 pt-12">
@@ -205,6 +228,137 @@ export default async function ConfigPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* Custom-fields no-code (GEN-07/T-H125) */}
+      <section className="flex flex-col gap-3" data-testid="custom-fields-config">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-sm font-semibold text-secondary">{t('customFieldsTitle')}</h2>
+          <p className="text-xs text-secondary">{t('customFieldsHint')}</p>
+        </div>
+        <form
+          action={createCustomFieldAction}
+          data-testid="custom-field-create"
+          className="grid gap-3 rounded-xl border border-border bg-white p-4 shadow-sm md:grid-cols-6"
+        >
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('customEntity')}</span>
+            <select name="entityType" className={inputCls} defaultValue="risk">
+              {entityTypes.map((entityType) => (
+                <option key={entityType} value={entityType}>
+                  {t(`customEntityTypes.${entityType}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('customKey')}</span>
+            <input
+              name="key"
+              required
+              placeholder={t('customKeyPh')}
+              aria-label={t('customKey')}
+              className={inputCls}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('customType')}</span>
+            <select name="fieldType" className={inputCls} defaultValue="text">
+              {fieldTypes.map((fieldType) => (
+                <option key={fieldType} value={fieldType}>
+                  {t(`fieldTypes.${fieldType}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('customLabelEn')}</span>
+            <input name="labelEn" required placeholder="Evidence owner" className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('customLabelAz')}</span>
+            <input name="labelAz" placeholder="Sübut sahibi" className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-xs font-medium text-secondary">{t('customLabelRu')}</span>
+            <input name="labelRu" placeholder="Владелец доказательства" className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm md:col-span-4">
+            <span className="text-xs font-medium text-secondary">{t('customOptions')}</span>
+            <input
+              name="options"
+              placeholder={t('customOptionsPh')}
+              aria-label={t('customOptions')}
+              className={inputCls}
+            />
+            <span className="text-[11px] text-secondary">{t('customOptionsHint')}</span>
+          </label>
+          <label className="flex items-center gap-2 text-sm md:col-span-2 md:self-end">
+            <input
+              type="checkbox"
+              name="required"
+              className="h-4 w-4 rounded border-border text-accent focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <span className="text-xs font-medium text-secondary">{t('customRequired')}</span>
+          </label>
+          <button type="submit" className={`${btnCls} md:col-span-2 md:justify-self-start`}>
+            {t('customCreate')}
+          </button>
+        </form>
+        <div className="grid gap-3 md:grid-cols-2" data-testid="custom-fields-list">
+          {entityTypes.map((entityType) => {
+            const defs = customFields[entityType];
+            return (
+              <article
+                key={entityType}
+                className="rounded-xl border border-border bg-white p-4 shadow-sm"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {t(`customEntityTypes.${entityType}`)}
+                  </h3>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-secondary">
+                    {t('customCount', { count: defs.length })}
+                  </span>
+                </div>
+                {defs.length === 0 ? (
+                  <p className="mt-3 text-xs text-secondary">{t('customEmpty')}</p>
+                ) : (
+                  <ul className="mt-3 flex flex-col gap-2">
+                    {defs.map((def) => (
+                      <li
+                        key={def.key}
+                        className="rounded-lg border border-border bg-muted/40 px-3 py-2"
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-xs font-semibold text-foreground">
+                            {def.key}
+                          </span>
+                          <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-secondary">
+                            {t(`fieldTypes.${def.fieldType}`)}
+                          </span>
+                          {def.required ? (
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                              {t('customRequiredBadge')}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="mt-1 text-xs text-secondary">
+                          {def.labelI18n?.en ?? def.key}
+                        </p>
+                        {Array.isArray(def.options) && def.options.length > 0 ? (
+                          <p className="mt-1 text-[11px] text-secondary">
+                            {t('customOptionsList', { options: def.options.join(', ') })}
+                          </p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </article>
+            );
+          })}
+        </div>
       </section>
 
       {/* SLA-окна ремедиации (T-V32) */}
