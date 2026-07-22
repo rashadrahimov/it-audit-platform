@@ -55,11 +55,12 @@ interface AuditQueryAnswer {
 const HREF: Record<string, (id: string) => string> = {
   finding: (id) => `/findings/${id}`,
   control: (id) => `/controls/${id}`,
+  document: () => '/documents',
   working_paper: () => '/working-papers',
   kb_entry: () => '/knowledge-base',
   audit_program: () => '/audit-programs',
 };
-const TYPE_ORDER = ['finding', 'control', 'working_paper', 'kb_entry', 'audit_program'];
+const TYPE_ORDER = ['finding', 'control', 'document', 'working_paper', 'kb_entry', 'audit_program'];
 
 /** Результаты глобального поиска (T-V09 поверх GEN-05 T-094). */
 export default async function SearchPage({

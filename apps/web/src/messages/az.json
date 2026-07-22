@@ -2663,7 +2663,7 @@
   },
   "search": {
     "title": "Axtarış",
-    "hint": "Yuxarıdakı sətirdə sorğu yazın — findinqlər, nəzarətlər, iş sənədləri, bilik bazası və audit proqramları üzrə axtarılır.",
+    "hint": "Yuxarıdakı sətirdə sorğu yazın — findinqlər, nəzarətlər, sənədlər, iş sənədləri, bilik bazası və audit proqramları üzrə axtarılır.",
     "empty": "Heç nə tapılmadı",
     "askKicker": "Audit sorğu köməkçisi",
     "askFound": "{total} uyğunluq · qeydlər: {findings} · sənədlər: {evidence}",
@@ -2676,6 +2676,7 @@
     "types": {
       "finding": "Qeydlər",
       "control": "Nəzarətlər",
+      "document": "Sənədlər",
       "working_paper": "İş sənədləri",
       "kb_entry": "Bilik bazası",
       "audit_program": "Audit proqramları"

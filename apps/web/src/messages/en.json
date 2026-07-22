@@ -2655,7 +2655,7 @@
   },
   "search": {
     "title": "Search",
-    "hint": "Type a query in the top bar — findings, controls, working papers, knowledge base and audit programs are searched.",
+    "hint": "Type a query in the top bar — findings, controls, documents, working papers, knowledge base and audit programs are searched.",
     "empty": "Nothing found",
     "askKicker": "Audit query assistant",
     "askFound": "{total} matches · {findings} findings · {evidence} evidence docs",
@@ -2668,6 +2668,7 @@
     "types": {
       "finding": "Findings",
       "control": "Controls",
+      "document": "Documents",
       "working_paper": "Working papers",
       "kb_entry": "Knowledge base",
       "audit_program": "Audit programs"

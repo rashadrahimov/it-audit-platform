@@ -282,6 +282,36 @@ export class SearchService {
         });
       }
 
+      const docs = await tx
+        .select({
+          id: document.id,
+          filename: document.filename,
+          mime: document.mime,
+          category: document.category,
+          status: document.status,
+        })
+        .from(document)
+        .where(
+          and(
+            isNull(document.deletedAt),
+            or(
+              ilike(document.filename, like),
+              ilike(document.mime, like),
+              ilike(document.status, like),
+              ilike(document.category, like),
+            ),
+          ),
+        )
+        .limit(PER_TYPE);
+      for (const d of docs) {
+        out.push({
+          type: 'document',
+          id: d.id,
+          label: d.filename,
+          snippet: [d.category, d.status, d.mime].filter(Boolean).join(' · '),
+        });
+      }
+
       const wps = await tx
         .select({ id: workingPaper.id, title: workingPaper.title })
         .from(workingPaper)
