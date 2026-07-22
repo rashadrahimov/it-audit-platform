@@ -176,7 +176,7 @@ export default async function RoadmapPage() {
                     key={ev}
                     className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-secondary"
                   >
-                    {ev}
+                    {t(`coverage.evidence.${ev}`)}
                   </span>
                 ))}
               </div>
