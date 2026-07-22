@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buildReportPackageManifest, type ReportData } from '../src/reports/report-data.service';
-import { toCsv } from '../src/reports/report-renderers';
+import JSZip from 'jszip';
+import {
+  buildReportPackageManifest,
+  REPORT_DELIVERABLES,
+  REPORT_PACKAGE_FORMATS,
+  type ReportData,
+} from '../src/reports/report-data.service';
+import { toCsv, toDocx, toPdf, toXlsx } from '../src/reports/report-renderers';
 
 const baseReport = (patch: Partial<ReportData> = {}): ReportData => ({
   locale: 'en',
@@ -99,5 +105,63 @@ describe('report renderers localization', () => {
     expect(manifest.deliverables.every((deliverable) => deliverable.formats.length === 3)).toBe(
       true,
     );
+  });
+
+  it('renders valid PDF, Word and Excel files for every standard deliverable', async () => {
+    for (const deliverable of REPORT_DELIVERABLES) {
+      const report = baseReport({
+        deliverable,
+        deliverableTitle: `Test ${deliverable}`,
+      });
+
+      const pdf = await toPdf(report);
+      expect(pdf.subarray(0, 5).toString('utf8')).toBe('%PDF-');
+
+      const docx = await toDocx(report);
+      const docxZip = await JSZip.loadAsync(docx);
+      expect(docxZip.file('word/document.xml')).toBeTruthy();
+
+      const xlsx = await toXlsx(report);
+      const xlsxZip = await JSZip.loadAsync(xlsx);
+      expect(xlsxZip.file('xl/workbook.xml')).toBeTruthy();
+    }
+  });
+
+  it('can package the five deliverables into the standard 15-file archive layout', async () => {
+    const zip = new JSZip();
+    zip.file(
+      'package-manifest.json',
+      JSON.stringify(
+        buildReportPackageManifest('019f882d-0c3f-7554-9e36-b6cba9fb56dc', 'en', {
+          ready: true,
+          score: 100,
+          checks: [],
+        }),
+      ),
+    );
+
+    for (const deliverable of REPORT_DELIVERABLES) {
+      const report = baseReport({
+        deliverable,
+        deliverableTitle: `Test ${deliverable}`,
+      });
+      for (const format of REPORT_PACKAGE_FORMATS) {
+        const body =
+          format.key === 'pdf'
+            ? await toPdf(report)
+            : format.key === 'docx'
+              ? await toDocx(report)
+              : await toXlsx(report);
+        zip.file(`${deliverable}/${deliverable}.${format.key}`, body);
+      }
+    }
+
+    const archive = await JSZip.loadAsync(await zip.generateAsync({ type: 'nodebuffer' }));
+    const files = Object.keys(archive.files).filter((name) => !archive.files[name]?.dir);
+    expect(files).toContain('package-manifest.json');
+    expect(files.filter((name) => name.endsWith('.pdf')).length).toBe(5);
+    expect(files.filter((name) => name.endsWith('.docx')).length).toBe(5);
+    expect(files.filter((name) => name.endsWith('.xlsx')).length).toBe(5);
+    expect(files.length).toBe(16);
   });
 });

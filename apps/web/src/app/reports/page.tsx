@@ -447,6 +447,17 @@ export default async function ReportsPage({
                 <div className="text-xs font-semibold">{t('deliverables.manifest.locales')}</div>
               </div>
             </div>
+            {selectedEngagement && (
+              <div className="mt-4">
+                <a
+                  href={`/engagements/${selectedEngagement.id}/report/package?locale=${locale}`}
+                  className="inline-flex items-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-950 shadow-lg shadow-emerald-950/15 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:outline-none"
+                  data-testid="download-report-package"
+                >
+                  {t('deliverables.downloadPackage')}
+                </a>
+              </div>
+            )}
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               {packageManifest.formats.map((format) => (
                 <div key={format.key} className="rounded-xl bg-white/10 p-3">

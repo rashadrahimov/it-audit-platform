@@ -1526,6 +1526,7 @@
       "apply": "Use engagement",
       "ready": "Ready",
       "empty": "Create an engagement first to generate the audit package.",
+      "downloadPackage": "Download full package (.zip)",
       "manifest": {
         "kicker": "Package manifest",
         "title": "{files} export files are defined",

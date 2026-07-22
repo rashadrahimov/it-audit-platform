@@ -12,11 +12,13 @@ import {
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiProduces, ApiQuery } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { DEFAULT_LOCALE, localeSchema } from '@it-audit/shared';
+import JSZip from 'jszip';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import {
   REPORT_DELIVERABLES,
+  REPORT_PACKAGE_FORMATS,
   ReportDataService,
   type ReportDeliverable,
 } from './report-data.service';
@@ -38,6 +40,16 @@ const FORMATS = {
 
 type Format = keyof typeof FORMATS;
 
+function parseLocaleQuery(localeQuery?: string) {
+  let locale = DEFAULT_LOCALE;
+  if (localeQuery !== undefined) {
+    const parsed = localeSchema.safeParse(localeQuery);
+    if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+    locale = parsed.data;
+  }
+  return locale;
+}
+
 @Controller('engagements/:id/report')
 @UseGuards(JwtAuthGuard, PermissionGuard)
 @ApiBearerAuth()
@@ -53,12 +65,7 @@ export class ReportsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('locale') localeQuery?: string,
   ) {
-    let locale = DEFAULT_LOCALE;
-    if (localeQuery !== undefined) {
-      const parsed = localeSchema.safeParse(localeQuery);
-      if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
-      locale = parsed.data;
-    }
+    const locale = parseLocaleQuery(localeQuery);
     return this.reportDataService.readiness(req.tenantId, id, locale);
   }
 
@@ -73,13 +80,57 @@ export class ReportsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('locale') localeQuery?: string,
   ) {
-    let locale = DEFAULT_LOCALE;
-    if (localeQuery !== undefined) {
-      const parsed = localeSchema.safeParse(localeQuery);
-      if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
-      locale = parsed.data;
-    }
+    const locale = parseLocaleQuery(localeQuery);
     return this.reportDataService.packageManifest(req.tenantId, id, locale);
+  }
+
+  @Get('package')
+  @RequirePermission('report', 'export', 'edit')
+  @ApiOperation({
+    summary: 'T-H78: ZIP-пакет стандартных deliverables — 5 документов × PDF/Word/Excel + manifest',
+  })
+  @ApiQuery({ name: 'locale', required: false })
+  @ApiProduces('application/zip')
+  async packageZip(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res() res: Response,
+    @Query('locale') localeQuery?: string,
+  ): Promise<void> {
+    const locale = parseLocaleQuery(localeQuery);
+    const [manifest, ...reportData] = await Promise.all([
+      this.reportDataService.packageManifest(req.tenantId, id, locale),
+      ...REPORT_DELIVERABLES.map((deliverable) =>
+        this.reportDataService.build(req.tenantId, id, locale, deliverable),
+      ),
+    ]);
+    const zip = new JSZip();
+    zip.file('package-manifest.json', JSON.stringify(manifest, null, 2));
+
+    for (const data of reportData) {
+      for (const format of REPORT_PACKAGE_FORMATS) {
+        const body =
+          format.key === 'pdf'
+            ? await toPdf(data)
+            : format.key === 'docx'
+              ? await toDocx(data)
+              : await toXlsx(data);
+        zip.file(`${data.deliverable}/${data.deliverable}.${format.key}`, body);
+      }
+    }
+
+    const body = await zip.generateAsync({
+      type: 'nodebuffer',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 6 },
+    });
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Length', String(body.length));
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename*=UTF-8''${encodeURIComponent(`audit-package-${locale}.zip`)}`,
+    );
+    res.end(body);
   }
 
   @Get()
@@ -103,12 +154,7 @@ export class ReportsController {
     if (!format || !(format in FORMATS)) {
       throw new BadRequestException(`format: ожидается ${Object.keys(FORMATS).join('|')}`);
     }
-    let locale = DEFAULT_LOCALE;
-    if (localeQuery !== undefined) {
-      const parsed = localeSchema.safeParse(localeQuery);
-      if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
-      locale = parsed.data;
-    }
+    const locale = parseLocaleQuery(localeQuery);
     let deliverable: ReportDeliverable = 'audit_report';
     if (deliverableQuery !== undefined) {
       if (!REPORT_DELIVERABLES.includes(deliverableQuery as ReportDeliverable)) {

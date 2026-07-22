@@ -1526,6 +1526,7 @@
       "apply": "Auditi seç",
       "ready": "Hazır",
       "empty": "Audit paketini yaratmaq üçün əvvəlcə audit yaradın.",
+      "downloadPackage": "Bütün paketi endir (.zip)",
       "manifest": {
         "kicker": "Paket manifesti",
         "title": "{files} ixrac faylı müəyyən edilib",
@@ -1570,7 +1571,7 @@
         },
         "risk_matrix": {
           "title": "Risk matrisi",
-          "hint": "Likelihood, impact və risk sinfi ilə prioritetləşdirilmiş risk reyestri."
+          "hint": "Ehtimal, təsir və risk sinfi ilə prioritetləşdirilmiş risk reyestri."
         },
         "action_plan": {
           "title": "Tədbirlər planı",
