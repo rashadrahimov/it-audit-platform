@@ -97,6 +97,27 @@ async function seedPostgres(): Promise<void> {
       .onConflictDoNothing({ target: tenant.slug });
     const [demoTenant] = await db.select().from(tenant).where(eq(tenant.slug, DEMO_TENANT_SLUG));
     if (!demoTenant) throw new Error(`Tenant «${DEMO_TENANT_SLUG}» не найден после вставки`);
+    const demoSettings =
+      typeof demoTenant.settings === 'object' && demoTenant.settings !== null
+        ? (demoTenant.settings as Record<string, unknown>)
+        : {};
+    const demoBusinessProfile =
+      typeof demoSettings.businessProfile === 'object' && demoSettings.businessProfile !== null
+        ? (demoSettings.businessProfile as Record<string, unknown>)
+        : {};
+    await db
+      .update(tenant)
+      .set({
+        languageDefault: 'ru',
+        settings: {
+          ...demoSettings,
+          businessProfile: {
+            ...demoBusinessProfile,
+            defaultLocale: 'ru',
+          },
+        },
+      })
+      .where(eq(tenant.id, demoTenant.id));
     console.log(`✓ Tenant «${demoTenant.name}» (${demoTenant.id})`);
 
     // subsidiary под RLS (T-011): любые чтения/записи — только с контекстом тенанта
@@ -566,6 +587,7 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       password: 'Demo-Admin-2026',
       roleEn: 'Admin',
       category: 'internal',
+      locale: 'ru',
     },
     {
       email: 'collaborator@demo.io',
@@ -573,6 +595,7 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       password: 'Demo-Collab-2026',
       roleEn: 'Collaborator',
       category: 'internal',
+      locale: 'ru',
     },
     {
       // T-052: approver политик — роль Approver (settings.view, но не settings.edit)
@@ -582,6 +605,7 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       password: 'Demo-Approver-2026',
       roleEn: 'Approver',
       category: 'auditor',
+      locale: 'ru',
     },
   ];
   const systemRoles = await db.select().from(role).where(eq(role.isSystem, true));
@@ -594,12 +618,16 @@ async function seedDemoUsers(db: NodePgDatabase, tenantId: string): Promise<void
       .values({
         email: demo.email,
         fullName: demo.fullName,
+        locale: demo.locale,
         passwordHash: await passwordService.hash(demo.password),
         passwordChangedAt: new Date(),
       })
       .onConflictDoNothing({ target: user.email });
     const [seededUser] = await db.select().from(user).where(eq(user.email, demo.email));
     if (!seededUser) throw new Error(`Демо-юзер ${demo.email} не найден после вставки`);
+    // T-H104: demo-презентация не должна внезапно открываться английским shell'ом.
+    // Cookie-переключатель языка всё равно остаётся пользовательским override в браузере.
+    await db.update(user).set({ locale: demo.locale }).where(eq(user.id, seededUser.id));
     await db
       .insert(membership)
       .values({
