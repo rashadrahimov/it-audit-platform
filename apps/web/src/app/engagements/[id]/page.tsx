@@ -339,6 +339,19 @@ export default async function EngagementDetailPage({
       request.dueDate !== null &&
       new Date(request.dueDate).getTime() < now,
   ).length;
+  const acceptedAiFindings = findings.filter((finding) => finding.aiReview !== null);
+  const aiEvidenceDocumentIds = new Set<string>();
+  for (const suggestion of suggestions) {
+    for (const ev of suggestion.evidenceReferences) aiEvidenceDocumentIds.add(ev.documentId);
+  }
+  for (const finding of acceptedAiFindings) {
+    for (const ev of finding.aiReview?.evidenceReferences ?? []) {
+      aiEvidenceDocumentIds.add(ev.documentId);
+    }
+  }
+  const evidencedSuggestions = suggestions.filter(
+    (suggestion) => suggestion.evidenceReferences.length > 0,
+  );
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 p-6 pt-12">
@@ -378,6 +391,124 @@ export default async function EngagementDetailPage({
             {t('duplicate')}
           </button>
         </form>
+      </section>
+
+      <section
+        className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-[0_18px_55px_rgba(6,78,59,0.12)]"
+        data-testid="ai-traceability-trail"
+      >
+        <div className="border-b border-emerald-100 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),linear-gradient(135deg,#ecfdf5,#ffffff)] p-5">
+          <p className="text-xs font-semibold tracking-[0.18em] text-emerald-700 uppercase">
+            {t('trace.kicker')}
+          </p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-primary">{t('trace.title')}</h2>
+              <p className="mt-1 max-w-3xl text-sm text-secondary">{t('trace.subtitle')}</p>
+            </div>
+            <div className="rounded-2xl bg-emerald-950 px-4 py-3 text-center text-white shadow-lg shadow-emerald-950/15">
+              <div className="text-2xl font-bold">{acceptedAiFindings.length}</div>
+              <div className="text-xs text-emerald-100">{t('trace.accepted')}</div>
+            </div>
+          </div>
+        </div>
+        <div className="grid gap-3 p-5 md:grid-cols-4">
+          {[
+            {
+              key: 'evidence',
+              value: aiEvidenceDocumentIds.size,
+              hintValue: evidence.length,
+            },
+            {
+              key: 'drafts',
+              value: suggestions.length,
+              hintValue: evidencedSuggestions.length,
+            },
+            {
+              key: 'review',
+              value: acceptedAiFindings.length,
+              hintValue: acceptedAiFindings.filter((f) => f.aiReview?.reviewedBy).length,
+            },
+            {
+              key: 'report',
+              value: findings.length,
+              hintValue: findings.filter((f) => f.status !== 'resolved').length,
+            },
+          ].map((step) => (
+            <div
+              key={step.key}
+              className="rounded-xl border border-border bg-[linear-gradient(180deg,#ffffff,#f7fbf8)] p-4"
+            >
+              <div className="text-xs font-semibold tracking-wide text-secondary uppercase">
+                {t(`trace.steps.${step.key}.label`)}
+              </div>
+              <div className="mt-2 text-2xl font-bold text-primary">{step.value}</div>
+              <div className="mt-1 text-xs text-secondary">
+                {t(`trace.steps.${step.key}.hint`, { count: step.hintValue })}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid gap-4 border-t border-border p-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-xl bg-emerald-50/70 p-4">
+            <h3 className="text-sm font-semibold text-primary">{t('trace.policyTitle')}</h3>
+            <ul className="mt-3 flex flex-col gap-2 text-sm text-secondary">
+              {(['grounded', 'draftOnly', 'human', 'report'] as const).map((key) => (
+                <li key={key} className="flex gap-2">
+                  <span className="mt-0.5 text-emerald-700">✓</span>
+                  <span>{t(`trace.policy.${key}`)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-primary">{t('trace.acceptedTitle')}</h3>
+            <div className="mt-3 flex flex-col gap-2">
+              {acceptedAiFindings.length > 0 ? (
+                acceptedAiFindings.slice(0, 4).map((finding) => (
+                  <div
+                    key={finding.id}
+                    className="rounded-xl bg-muted/60 px-3 py-2 text-sm"
+                    data-testid="ai-trace-accepted-finding"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-medium text-foreground">{finding.title}</span>
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                        {Math.round((finding.aiReview?.confidence ?? 0) * 100)}%
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-secondary">
+                      {t('trace.reviewedBy', {
+                        user: finding.aiReview?.reviewedBy ?? '—',
+                        date: finding.aiReview?.reviewedAt ? fmt(finding.aiReview.reviewedAt) : '—',
+                      })}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {(finding.aiReview?.evidenceReferences ?? []).length > 0 ? (
+                        (finding.aiReview?.evidenceReferences ?? []).slice(0, 3).map((ev) => (
+                          <span
+                            key={`${finding.id}-${ev.documentId}-${ev.location}`}
+                            className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-secondary"
+                          >
+                            {ev.filename} · {ev.location}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-medium text-amber-800">
+                          {t('noEvidenceRef')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-xl bg-muted/60 px-3 py-3 text-sm text-secondary">
+                  {t('trace.noAccepted')}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </section>
 
       {suggestions.length > 0 && (

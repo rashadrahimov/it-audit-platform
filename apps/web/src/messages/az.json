@@ -319,6 +319,40 @@
     "observed": "Müşahidə olunan",
     "noEvidenceRef": "Hələ sənəd istinadı yoxdur",
     "aiAccepted": "AI-dən qəbul edilib",
+    "trace": {
+      "kicker": "İİ izlənəbilirliyi",
+      "title": "Sübut → İİ qaralaması → insan qərarı",
+      "subtitle": "İİ ilə görülən işin bağlı sübutlardan finding qaralamalarına, auditor qəbuluna və hesabat nəticələrinə necə keçdiyini göstərir.",
+      "accepted": "qəbul edilmiş İİ finding-ləri",
+      "steps": {
+        "evidence": {
+          "label": "Sübut",
+          "hint": "Audit sübut hovuzunda {count} sənəd"
+        },
+        "drafts": {
+          "label": "Qaralamalar",
+          "hint": "{count} qaralamada sənəd istinadı var"
+        },
+        "review": {
+          "label": "İnsan icmalı",
+          "hint": "{count} qəbul qərarında reviewer yazılıb"
+        },
+        "report": {
+          "label": "Hesabat izi",
+          "hint": "{count} açıq finding deliverable-lara düşə bilər"
+        }
+      },
+      "policyTitle": "Etibar qaydaları aktivdir",
+      "policy": {
+        "grounded": "İİ təklifləri mümkün olduqda expected state, observed state və sübut istinadlarını göstərir.",
+        "draftOnly": "Auditor finding yaratmayınca İİ nəticəsi yalnız qaralama olaraq qalır.",
+        "human": "Qəbul edilmiş İİ finding-ləri reviewer, timestamp, confidence və mənbə metadata-sını saxlayır.",
+        "report": "Report-ready finding-lər ayrıca mətnə çevrilmir, eyni trace-i saxlayır."
+      },
+      "acceptedTitle": "Qəbul edilmiş İİ qərarları",
+      "reviewedBy": "{user} yoxladı · {date}",
+      "noAccepted": "Hələ qəbul edilmiş İİ finding-i yoxdur. Yuxarıdakı qaralamalar görünür və auditor icmalı tələb edir."
+    },
     "risk": {
       "high": "Yüksək",
       "medium": "Orta"

@@ -319,6 +319,40 @@
     "observed": "Наблюдается",
     "noEvidenceRef": "Пока нет ссылки на документ",
     "aiAccepted": "Принято из ИИ",
+    "trace": {
+      "kicker": "Трассируемость ИИ",
+      "title": "Evidence → ИИ-черновик → решение человека",
+      "subtitle": "Показывает, как работа с ИИ проходит путь от привязанных доказательств к черновикам findings, принятию аудитором и отчётным результатам.",
+      "accepted": "принятых AI findings",
+      "steps": {
+        "evidence": {
+          "label": "Evidence",
+          "hint": "{count} документов в evidence-пуле аудита"
+        },
+        "drafts": {
+          "label": "Черновики",
+          "hint": "{count} черновиков имеют ссылки на документы"
+        },
+        "review": {
+          "label": "Human review",
+          "hint": "{count} принятых решений записали reviewer"
+        },
+        "report": {
+          "label": "Отчётный след",
+          "hint": "{count} открытых findings могут попасть в deliverables"
+        }
+      },
+      "policyTitle": "Правила доверия включены",
+      "policy": {
+        "grounded": "AI-подсказки показывают expected state, observed state и evidence-ссылки, когда они доступны.",
+        "draftOnly": "AI-результат остаётся черновиком, пока аудитор не создаст finding.",
+        "human": "Принятые AI findings сохраняют reviewer, timestamp, confidence и metadata источника.",
+        "report": "Report-ready findings сохраняют тот же trace, а не превращаются в оторванный текст."
+      },
+      "acceptedTitle": "Принятые AI-решения",
+      "reviewedBy": "Проверил {user} · {date}",
+      "noAccepted": "Принятых AI findings пока нет. Черновики выше остаются видимыми и требуют ревью аудитора."
+    },
     "risk": {
       "high": "Высокий",
       "medium": "Средний"

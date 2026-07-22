@@ -319,6 +319,40 @@
     "observed": "Observed",
     "noEvidenceRef": "No document reference yet",
     "aiAccepted": "AI accepted",
+    "trace": {
+      "kicker": "AI traceability",
+      "title": "Evidence → AI draft → human decision",
+      "subtitle": "Shows exactly how AI-assisted work moves from linked evidence into draft findings, auditor acceptance and report-ready outputs.",
+      "accepted": "accepted AI findings",
+      "steps": {
+        "evidence": {
+          "label": "Evidence",
+          "hint": "{count} documents in the audit evidence pool"
+        },
+        "drafts": {
+          "label": "Drafts",
+          "hint": "{count} draft suggestions have document references"
+        },
+        "review": {
+          "label": "Human review",
+          "hint": "{count} accepted decisions record a reviewer"
+        },
+        "report": {
+          "label": "Report trail",
+          "hint": "{count} open findings can feed deliverables"
+        }
+      },
+      "policyTitle": "Trust rules enforced",
+      "policy": {
+        "grounded": "AI suggestions cite expected state, observed state and evidence references when available.",
+        "draftOnly": "AI output stays draft-only until an auditor creates the finding.",
+        "human": "Accepted AI findings store reviewer, timestamp, confidence and source metadata.",
+        "report": "Report-ready findings keep the same trace instead of becoming detached text."
+      },
+      "acceptedTitle": "Accepted AI decisions",
+      "reviewedBy": "Reviewed by {user} · {date}",
+      "noAccepted": "No accepted AI findings yet. Drafts remain visible above and require auditor review."
+    },
     "risk": {
       "high": "High",
       "medium": "Medium"
