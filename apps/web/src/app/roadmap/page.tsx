@@ -41,7 +41,7 @@ const REQUIREMENT_COVERAGE = [
   {
     key: 'documentAi',
     status: 'live',
-    evidence: ['evidence-grounded-findings', 'confidence', 'review'],
+    evidence: ['evidence-grounded-findings', 'document-ai-intake', 'ocr-readiness'],
   },
   {
     key: 'recommendations',
@@ -71,7 +71,7 @@ const REQUIREMENT_COVERAGE = [
   {
     key: 'reportingUx',
     status: 'live',
-    evidence: ['dashboards', 'scheduled-preview', 'locales'],
+    evidence: ['dashboards', 'scheduled-delivery-plan', 'locales'],
   },
   {
     key: 'advancedAi',

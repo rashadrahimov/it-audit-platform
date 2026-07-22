@@ -2611,7 +2611,7 @@
         },
         "documentAi": {
           "title": "AI document analysis and findings",
-          "hint": "Finding drafts are evidence-grounded, with confidence and source references."
+          "hint": "Finding drafts are evidence-grounded; intake shows PDF/Office, spreadsheets, configs and the OCR queue."
         },
         "recommendations": {
           "title": "Recommendations and action plan",
@@ -2635,11 +2635,11 @@
         },
         "reportingUx": {
           "title": "Reporting and multilingual UX",
-          "hint": "Dashboards, scheduled digest preview and RU/AZ/EN interface."
+          "hint": "Dashboards, scheduled report delivery plan and RU/AZ/EN interface."
         },
         "advancedAi": {
           "title": "Advanced AI loop",
-          "hint": "Conversational search, auto-DRL and continuous monitoring are already present; OCR and fuller autonomy stay on the roadmap."
+          "hint": "Conversational search, auto-DRL, intake and continuous monitoring are already present; fuller autonomy stays on the roadmap."
         }
       }
     }

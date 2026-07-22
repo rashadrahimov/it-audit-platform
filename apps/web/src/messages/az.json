@@ -2619,7 +2619,7 @@
         },
         "documentAi": {
           "title": "AI sənəd analizi və qeydlər",
-          "hint": "Qeyd qaralamaları sübuta əsaslanır, etibar göstəricisi və mənbə istinadları ilə."
+          "hint": "Qeyd qaralamaları sübuta əsaslanır; intake PDF/Office, cədvəllər, konfiqlər və OCR növbəsini göstərir."
         },
         "recommendations": {
           "title": "Tövsiyələr və tədbirlər planı",
@@ -2643,11 +2643,11 @@
         },
         "reportingUx": {
           "title": "Hesabat və çoxdilli UX",
-          "hint": "Dashboard-lar, planlı digest preview və RU/AZ/EN interfeysi."
+          "hint": "Dashboard-lar, planlı hesabat çatdırılma planı və RU/AZ/EN interfeysi."
         },
         "advancedAi": {
           "title": "Qabaqcıl AI dövrəsi",
-          "hint": "Sual ilə axtarış, auto-DRL və continuous monitoring artıq var; OCR və daha tam avtonomluq yol xəritəsində qalır."
+          "hint": "Sual ilə axtarış, auto-DRL, intake və continuous monitoring artıq var; daha tam avtonomluq yol xəritəsində qalır."
         }
       }
     }
