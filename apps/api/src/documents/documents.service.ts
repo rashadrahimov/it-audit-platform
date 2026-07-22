@@ -202,7 +202,8 @@ export function extractSearchableDocumentText(file: {
   }
   const normalized = file.buffer
     .toString('utf8')
-    .replace(/\u0000/g, ' ')
+    .split(String.fromCharCode(0))
+    .join(' ')
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{4,}/g, '\n\n\n')
     .trim();
