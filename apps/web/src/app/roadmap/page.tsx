@@ -31,7 +31,7 @@ const REQUIREMENT_COVERAGE = [
   {
     key: 'workflow',
     status: 'live',
-    evidence: ['engagements', 'roadmap', 'domain-progress'],
+    evidence: ['audit-charter', 'engagements', 'roadmap', 'domain-progress'],
   },
   {
     key: 'riskRegister',
@@ -41,7 +41,12 @@ const REQUIREMENT_COVERAGE = [
   {
     key: 'documentAi',
     status: 'live',
-    evidence: ['evidence-grounded-findings', 'document-ai-intake', 'ocr-readiness'],
+    evidence: [
+      'evidence-grounded-findings',
+      'document-ai-intake',
+      'evidence-rescan-plan',
+      'ocr-readiness',
+    ],
   },
   {
     key: 'recommendations',
@@ -56,7 +61,7 @@ const REQUIREMENT_COVERAGE = [
   {
     key: 'trustSecurity',
     status: 'live',
-    evidence: ['rbac', 'audit-log', 'tenant-isolation', 'private-cloud'],
+    evidence: ['rbac', 'audit-log', 'ai-traceability', 'tenant-isolation', 'private-cloud'],
   },
   {
     key: 'collaboration',
@@ -76,7 +81,7 @@ const REQUIREMENT_COVERAGE = [
   {
     key: 'advancedAi',
     status: 'partial',
-    evidence: ['audit-query', 'auto-drl', 'continuous-summary'],
+    evidence: ['audit-query', 'auto-drl', 'continuous-summary', 'evidence-rescan-plan'],
   },
 ] as const;
 

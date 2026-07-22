@@ -2711,7 +2711,7 @@
       "items": {
         "workflow": {
           "title": "Audit engine and progress",
-          "hint": "Audit phases, control statuses, domains and progress by test work."
+          "hint": "Audit charter, phases, control statuses, domains and progress by test work."
         },
         "riskRegister": {
           "title": "Single risk register",
@@ -2719,7 +2719,7 @@
         },
         "documentAi": {
           "title": "AI document analysis and findings",
-          "hint": "Finding drafts are evidence-grounded; intake shows PDF/Office, spreadsheets, configs and the OCR queue."
+          "hint": "Finding drafts are evidence-grounded; intake and rescan planning show PDF/Office, spreadsheets, configs and the OCR queue."
         },
         "recommendations": {
           "title": "Recommendations and action plan",
@@ -2731,7 +2731,7 @@
         },
         "trustSecurity": {
           "title": "Trust, security and privacy",
-          "hint": "RBAC, tenant isolation, private deployment, immutable audit log and AI guardrails."
+          "hint": "RBAC, tenant isolation, private deployment, immutable audit log, AI traceability and guardrails."
         },
         "collaboration": {
           "title": "Collaboration and evidence workflow",
@@ -2747,7 +2747,7 @@
         },
         "advancedAi": {
           "title": "Advanced AI loop",
-          "hint": "Conversational search, auto-DRL, intake and continuous monitoring are already present; fuller autonomy stays on the roadmap."
+          "hint": "Conversational search, auto-DRL, evidence rescan planning and continuous monitoring are already present; fuller autonomy stays on the roadmap."
         }
       }
     }

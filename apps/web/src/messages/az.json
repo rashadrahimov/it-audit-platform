@@ -2719,7 +2719,7 @@
       "items": {
         "workflow": {
           "title": "Audit mühərriki və irəliləyiş",
-          "hint": "Audit fazaları, nəzarət statusları, domenlər və test işi üzrə irəliləyiş."
+          "hint": "Audit charter, audit fazaları, nəzarət statusları, domenlər və test işi üzrə irəliləyiş."
         },
         "riskRegister": {
           "title": "Vahid risk reyestri",
@@ -2727,7 +2727,7 @@
         },
         "documentAi": {
           "title": "AI sənəd analizi və qeydlər",
-          "hint": "Qeyd qaralamaları sübuta əsaslanır; intake PDF/Office, cədvəllər, konfiqlər və OCR növbəsini göstərir."
+          "hint": "Qeyd qaralamaları sübuta əsaslanır; intake və rescan planı PDF/Office, cədvəllər, konfiqlər və OCR növbəsini göstərir."
         },
         "recommendations": {
           "title": "Tövsiyələr və tədbirlər planı",
@@ -2739,7 +2739,7 @@
         },
         "trustSecurity": {
           "title": "Etibar, təhlükəsizlik və məxfilik",
-          "hint": "RBAC, tenant izolyasiyası, şəxsi yerləşdirmə, dəyişməz audit jurnalı və AI guardrail-ləri."
+          "hint": "RBAC, tenant izolyasiyası, şəxsi yerləşdirmə, dəyişməz audit jurnalı, AI traceability və guardrail-lər."
         },
         "collaboration": {
           "title": "Komanda işi və sübut axını",
@@ -2755,7 +2755,7 @@
         },
         "advancedAi": {
           "title": "Qabaqcıl AI dövrəsi",
-          "hint": "Sual ilə axtarış, auto-DRL, intake və continuous monitoring artıq var; daha tam avtonomluq yol xəritəsində qalır."
+          "hint": "Sual ilə axtarış, auto-DRL, evidence rescan planı və continuous monitoring artıq var; daha tam avtonomluq yol xəritəsində qalır."
         }
       }
     }
