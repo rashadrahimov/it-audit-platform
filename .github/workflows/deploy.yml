@@ -1,50 +1,134 @@
 name: Deploy (prod)
 
-# Ручной деплой прод-хоста по SSH (T-H41). GH-раннер имеет прямой сетевой доступ
-# к серверу. Креды — из секретов репозитория (Settings → Secrets and variables →
-# Actions), в git их нет. Триггер — вручную (workflow_dispatch); при желании можно
-# добавить `push: branches: [main]` для авто-деплоя после мержа.
+# Автоматическая выкладка main начинается только после успешного полного CI.
+# Ручной запуск оставлен для контролируемого redeploy/rollback на конкретный ref.
 on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Git ref для выкатки на сервере (по умолчанию main)'
+        description: 'Git ref для выкладки (по умолчанию main)'
         required: false
         default: 'main'
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+
     steps:
-      - name: Deploy over SSH
+      - name: Validate deploy secrets
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-          DEPLOY_REF: ${{ github.event.inputs.ref }}
         run: |
           set -euo pipefail
-          miss=0
-          [ -n "$DEPLOY_SSH_KEY" ] || { echo "::error::секрет DEPLOY_SSH_KEY не задан"; miss=1; }
-          [ -n "$DEPLOY_HOST" ]    || { echo "::error::секрет DEPLOY_HOST не задан (напр. 78.47.51.200)"; miss=1; }
-          [ -n "$DEPLOY_PATH" ]    || { echo "::error::секрет DEPLOY_PATH не задан (каталог репо на сервере)"; miss=1; }
-          [ "$miss" = 0 ] || { echo "Добавь недостающие секреты в Settings → Secrets → Actions и перезапусти."; exit 1; }
+          test -n "$DEPLOY_SSH_KEY" || { echo '::error::DEPLOY_SSH_KEY is missing'; exit 1; }
+          test -n "$DEPLOY_HOST" || { echo '::error::DEPLOY_HOST is missing'; exit 1; }
+          test -n "$DEPLOY_USER" || { echo '::error::DEPLOY_USER is missing'; exit 1; }
+          test -n "$DEPLOY_PATH" || { echo '::error::DEPLOY_PATH is missing'; exit 1; }
+          case "$DEPLOY_PATH" in
+            /*) ;;
+            *) echo '::error::DEPLOY_PATH must be an absolute path'; exit 1 ;;
+          esac
 
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
-          user="${DEPLOY_USER:-root}"
-          ref="${DEPLOY_REF:-main}"
+      - name: Check out release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || inputs.ref }}
+          fetch-depth: 0
 
-          ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/deploy_key "$user@$DEPLOY_HOST" bash -se <<REMOTE
+      - name: Create release bundle
+        id: release
+        run: |
           set -euo pipefail
-          cd "$DEPLOY_PATH"
-          git fetch origin "$ref"
-          git checkout "$ref"
-          git pull --ff-only origin "$ref"
-          docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
-          echo '--- migrate logs ---'
-          docker compose -f docker-compose.prod.yml --env-file .env.prod logs migrate --tail=20 || true
-          echo '--- services ---'
-          docker compose -f docker-compose.prod.yml --env-file .env.prod ps
+          sha=$(git rev-parse HEAD)
+          git branch release-bundle "$sha"
+          git bundle create /tmp/it-audit-release.bundle refs/heads/release-bundle
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload release bundle
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -euo pipefail
+          scp -i ~/.ssh/deploy_key /tmp/it-audit-release.bundle \
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/it-audit-release.bundle"
+
+      - name: Deploy and smoke test
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" \
+            bash -s -- "$DEPLOY_PATH" "$DEPLOY_SHA" <<'REMOTE'
+          set -euo pipefail
+          deploy_path=$1
+          deploy_sha=$2
+          bundle=/tmp/it-audit-release.bundle
+          compose=(docker compose -f docker-compose.prod.yml --env-file .env.prod)
+
+          cd "$deploy_path"
+          test -f .env.prod
+          test -z "$(git -c safe.directory="$deploy_path" status --porcelain)" || {
+            echo 'Production worktree is not clean; refusing to overwrite it.' >&2
+            exit 1
+          }
+
+          previous_sha=$(git -c safe.directory="$deploy_path" rev-parse HEAD)
+          git -c safe.directory="$deploy_path" fetch "$bundle" refs/heads/release-bundle
+          git -c safe.directory="$deploy_path" checkout -B main "$deploy_sha"
+
+          if ! "${compose[@]}" up -d --build; then
+            echo "Deploy failed; restoring code revision $previous_sha" >&2
+            git -c safe.directory="$deploy_path" checkout -B main "$previous_sha"
+            "${compose[@]}" up -d --build || true
+            exit 1
+          fi
+
+          api_port=$("${compose[@]}" port api 3001 | awk -F: 'NR == 1 { print $NF }')
+          web_port=$("${compose[@]}" port web 3000 | awk -F: 'NR == 1 { print $NF }')
+          for attempt in $(seq 1 30); do
+            curl -fsS "http://127.0.0.1:${api_port}/health" >/dev/null \
+              && curl -fsS "http://127.0.0.1:${web_port}/login" >/dev/null \
+              && break
+            test "$attempt" -lt 30 || {
+              echo 'Production smoke test failed.' >&2
+              "${compose[@]}" ps
+              "${compose[@]}" logs api web --tail=100
+              exit 1
+            }
+            sleep 2
+          done
+
+          "${compose[@]}" ps
+          rm -f "$bundle"
+          echo "Successfully deployed $deploy_sha"
           REMOTE

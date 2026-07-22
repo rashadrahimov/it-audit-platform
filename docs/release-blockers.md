@@ -1,13 +1,13 @@
 # Release blockers register
 
-Статус: T-H147. Этот файл отделяет реально оставшиеся buildable-задачи от пунктов, которые нельзя честно закрыть без решения клиента, production secrets, инфраструктуры, production data access или внешней проверки.
+Статус: T-H149. Этот файл отделяет реально оставшиеся buildable-задачи от пунктов, которые нельзя честно закрыть без решения клиента, production secrets, инфраструктуры, production data access или внешней проверки.
 
 ## Latest production verification
 
 - 22.07.2026 вручную развёрнут `main` на `78.47.51.200`, проверенный SHA: `8e2142d`.
 - Production worktree синхронизирован с Git: ветка `main`, чистый status.
 - `api`, `web`, `postgres`, `redis`, `minio` запущены; health и страницы `/`, `/login`, `/action-plans`, `/reports`, `/risk-heatmap` возвращают HTTP 200.
-- На корневом разделе диска осталось около 12 GiB (92% занято). Перед следующей большой сборкой требуется контролируемая очистка старых Docker-артефактов с сохранением активных образов и rollback-набора.
+- 22.07.2026 выполнена контролируемая очистка build cache, остановленных контейнеров, неиспользуемых образов и пользовательских Gradle/npm caches. Свободное место выросло примерно с 12 GiB до 24 GiB (84% занято); активные контейнеры, volumes, Android SDK, репозитории и Codex worktrees сохранены.
 
 ## Client decisions required
 
@@ -26,16 +26,11 @@
 5. **UAT на реальных данных.**
    - Нужны данные клиента, пользователи, сценарии приёмки и окно обучения.
 
-## Production secrets / deployment blockers
+## Production deployment
 
-1. **GitHub Actions deploy secrets отсутствуют.**
-   - Required: `DEPLOY_SSH_KEY`, `DEPLOY_HOST`, `DEPLOY_PATH`.
-   - Optional: `DEPLOY_USER`.
-   - Evidence: every deploy run after T-H136..T-H140 failed before SSH with exactly those missing secrets.
-
-2. **Автоматический production smoke через GitHub Actions пока не работает.**
-   - Ручной deploy и production smoke успешно выполнены 22.07.2026 через прямой SSH-доступ.
-   - Для полностью автоматического smoke после каждого push всё ещё нужны GitHub Actions deploy secrets.
+1. GitHub Actions secrets `DEPLOY_SSH_KEY`, `DEPLOY_HOST`, `DEPLOY_PATH` и `DEPLOY_USER` настроены 22.07.2026.
+2. Deploy workflow передаёт проверенный Git bundle на сервер, поэтому production-хосту не нужны GitHub credentials. Выкладка `main` запускается только после успешного полного CI и завершается API/web smoke-проверкой.
+3. Предыдущие failed deploy runs относятся к периоду до настройки secrets и не описывают текущее состояние.
 
 ## Production data / integrity blockers
 
@@ -55,8 +50,8 @@
 3. **EP-HARDEN infra.**
    - Needs WORM/S3 Object Lock backend, syslog destination, retention policy and SOC/security ownership.
 
-4. **Prod deploy pipeline completion.**
-   - Repo has deploy workflow and prod compose; completion is blocked by secrets, monitoring/alerting target and rotation policy.
+4. **Production operations completion.**
+   - Deploy pipeline и prod compose находятся в repo. Остаются клиентские решения по monitoring/alerting target, backup/PITR ownership и rotation policy.
 
 ## Architecture phase-3 forks
 
