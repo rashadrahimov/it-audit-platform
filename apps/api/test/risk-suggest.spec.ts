@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { suggestBusinessRisks, type RiskSuggestionInput } from '../src/risks/risk-suggest';
+import {
+  annotateRiskSuggestionDedupe,
+  suggestBusinessRisks,
+  type ExistingRiskForDedupe,
+  type RiskSuggestionInput,
+} from '../src/risks/risk-suggest';
 
 const item = (o: Partial<RiskSuggestionInput>): RiskSuggestionInput => ({
   findingId: 'f1',
@@ -55,5 +60,54 @@ describe('suggestBusinessRisks', () => {
       'en',
     );
     expect(res.map((r) => r.category)).toEqual(['regulatory', 'financial', 'third_party']);
+  });
+
+  it('marks AI proposals as possible duplicates of existing manual risks', () => {
+    const [proposal] = suggestBusinessRisks([item({})], 'en');
+    const existing: ExistingRiskForDedupe[] = [
+      {
+        id: 'risk-1',
+        titleI18n: { en: 'Backup restoration is not tested' },
+        category: 'continuity',
+        domain: 'BCK-01',
+        riskClass: 'high',
+        status: 'open',
+      },
+    ];
+
+    const [deduped] = annotateRiskSuggestionDedupe([proposal!], existing, 'en');
+
+    expect(deduped!.dedupe).toMatchObject({
+      status: 'possible_duplicate',
+      matchedRiskId: 'risk-1',
+      matchedTitle: 'Backup restoration is not tested',
+      reason: 'same_title',
+    });
+    expect(deduped!.dedupe?.fingerprint).toContain('continuity:bck-01');
+  });
+
+  it('keeps closed matches out of the duplicate guard', () => {
+    const [proposal] = suggestBusinessRisks([item({})], 'en');
+
+    const [deduped] = annotateRiskSuggestionDedupe(
+      [proposal!],
+      [
+        {
+          id: 'closed-risk',
+          titleI18n: { en: 'Business risk — Backup restoration is not tested' },
+          category: 'continuity',
+          domain: 'BCK-01',
+          riskClass: 'high',
+          status: 'closed',
+        },
+      ],
+      'en',
+    );
+
+    expect(deduped!.dedupe).toMatchObject({
+      status: 'new',
+      matchedRiskId: null,
+      reason: null,
+    });
   });
 });

@@ -1271,12 +1271,16 @@
     "initialRating": "İlkin qiymət",
     "reviewGate": "Yoxlama qapısı",
     "draftOnly": "Auditor qəbul edənədək qaralamadır",
+    "possibleDuplicate": "Mümkün dublikat",
+    "dedupeMatch": "Reyestr uyğunluğu",
+    "openDuplicate": "Mövcud riski aç",
     "businessLens": {
       "title": "Biznes təsiri baxışı",
       "hint": "AI təklifləri insan təsdiqindən əvvəl əməliyyat, maliyyə, tənzimləyici, üçüncü tərəf, davamlılıq və reputasiya riskləri üzrə qruplaşdırır.",
       "draftQueue": "Qaralama təkliflər",
       "categoryCoverage": "Biznes kateqoriyaları",
       "mappedDomains": "Bağlı domenlər",
+      "dedupeGuard": "Dublikat qoruması",
       "highConfidence": "Yüksək etibar"
     },
     "assetByCategory": {

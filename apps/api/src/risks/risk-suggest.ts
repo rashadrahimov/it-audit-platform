@@ -10,6 +10,23 @@ export interface RiskSuggestionInput {
   domain: string | null;
 }
 
+export interface ExistingRiskForDedupe {
+  id: string;
+  titleI18n: I18nText;
+  category: string | null;
+  domain: string | null;
+  riskClass: string | null;
+  status: string;
+}
+
+export interface RiskSuggestionDedupe {
+  fingerprint: string;
+  status: 'new' | 'possible_duplicate';
+  matchedRiskId: string | null;
+  matchedTitle: string | null;
+  reason: 'same_title' | 'same_category_domain' | null;
+}
+
 export interface RiskSuggestion {
   source: 'deterministic';
   findingId: string;
@@ -32,6 +49,7 @@ export interface RiskSuggestion {
     required: true;
     action: 'create_or_edit_risk';
   };
+  dedupe?: RiskSuggestionDedupe;
 }
 
 const SCORE_BY_RATING: Record<string, { impact: number; likelihood: number; confidence: number }> =
@@ -58,6 +76,108 @@ function categoryOf(text: string, domain: string | null): RiskSuggestion['catego
     return 'reputational';
   }
   return 'operational';
+}
+
+const TITLE_PREFIX = /^business\s+risk\s*[—\-:]\s*/i;
+const STOPWORDS = new Set([
+  'a',
+  'an',
+  'and',
+  'are',
+  'as',
+  'at',
+  'be',
+  'by',
+  'for',
+  'from',
+  'in',
+  'is',
+  'not',
+  'of',
+  'or',
+  'risk',
+  'the',
+  'to',
+  'with',
+]);
+
+function normalizedText(text: string): string {
+  return text
+    .replace(TITLE_PREFIX, '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter((token) => token.length > 1 && !STOPWORDS.has(token))
+    .join(' ');
+}
+
+function tokenSet(text: string): Set<string> {
+  return new Set(normalizedText(text).split(/\s+/).filter(Boolean));
+}
+
+function overlapRatio(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 || b.size === 0) return 0;
+  const smaller = a.size < b.size ? a : b;
+  const larger = a.size < b.size ? b : a;
+  let hits = 0;
+  for (const token of smaller) {
+    if (larger.has(token)) hits += 1;
+  }
+  return hits / smaller.size;
+}
+
+function dedupeFingerprint(suggestion: RiskSuggestion): string {
+  const scope = suggestion.domain ?? suggestion.affectedControlRef ?? 'unmapped';
+  const titleTokens = [...tokenSet(suggestion.title)].sort().slice(0, 8).join('-') || 'untitled';
+  return `${suggestion.category}:${scope.toLowerCase()}:${titleTokens}`;
+}
+
+export function annotateRiskSuggestionDedupe(
+  suggestions: RiskSuggestion[],
+  existingRisks: ExistingRiskForDedupe[],
+  locale: Locale,
+): RiskSuggestion[] {
+  const candidates = existingRisks.filter((risk) => risk.status !== 'closed');
+  return suggestions.map((suggestion) => {
+    const suggestionTitle = normalizedText(suggestion.title);
+    const suggestionTokens = tokenSet(suggestion.title);
+    const scope = suggestion.domain ?? suggestion.affectedControlRef ?? null;
+    let match: ExistingRiskForDedupe | undefined;
+    let reason: RiskSuggestionDedupe['reason'] = null;
+
+    for (const existing of candidates) {
+      const existingTitle = resolveLocalized(existing.titleI18n, locale);
+      const existingNormalized = normalizedText(existingTitle);
+      if (suggestionTitle && suggestionTitle === existingNormalized) {
+        match = existing;
+        reason = 'same_title';
+        break;
+      }
+      const sameCategory = existing.category === suggestion.category;
+      const sameScope = scope !== null && existing.domain === scope;
+      if (
+        sameCategory &&
+        sameScope &&
+        overlapRatio(suggestionTokens, tokenSet(existingTitle)) >= 0.6
+      ) {
+        match = existing;
+        reason = 'same_category_domain';
+        break;
+      }
+    }
+
+    return {
+      ...suggestion,
+      dedupe: {
+        fingerprint: dedupeFingerprint(suggestion),
+        status: match ? 'possible_duplicate' : 'new',
+        matchedRiskId: match?.id ?? null,
+        matchedTitle: match ? resolveLocalized(match.titleI18n, locale) : null,
+        reason,
+      },
+    };
+  });
 }
 
 /** Детерминированные business-risk предложения из открытых findings. */

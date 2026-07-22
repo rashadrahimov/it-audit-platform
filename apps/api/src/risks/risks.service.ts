@@ -21,7 +21,7 @@ import {
 } from '../db/schema';
 import { classifyRisk, DEFAULT_THRESHOLDS } from './classify-risk';
 import { EntityAclService } from '../entity-acl/entity-acl.service';
-import { suggestBusinessRisks } from './risk-suggest';
+import { annotateRiskSuggestionDedupe, suggestBusinessRisks } from './risk-suggest';
 
 interface Actor {
   tenantId: string;
@@ -716,8 +716,8 @@ export class RisksService {
 
   /** EP-AI requirement slice: business-risk proposals from open findings, draft-only. */
   async suggestions(tenantId: string, locale: Locale, opts?: { engagementId?: string }) {
-    const rows = await this.dbService.withTenant(tenantId, (tx) =>
-      tx
+    const { findings, existingRisks } = await this.dbService.withTenant(tenantId, async (tx) => {
+      const findingRows = await tx
         .select({
           findingId: finding.id,
           titleI18n: finding.titleI18n,
@@ -734,10 +734,22 @@ export class RisksService {
             opts?.engagementId ? eq(finding.engagementId, opts.engagementId) : undefined,
           ),
         )
-        .orderBy(desc(finding.createdAt)),
-    );
+        .orderBy(desc(finding.createdAt));
+      const riskRows = await tx
+        .select({
+          id: risk.id,
+          titleI18n: risk.titleI18n,
+          category: risk.category,
+          domain: risk.domain,
+          riskClass: risk.riskClass,
+          status: risk.status,
+        })
+        .from(risk)
+        .where(and(isNotNull(risk.tenantId), isNull(risk.deletedAt)));
+      return { findings: findingRows, existingRisks: riskRows };
+    });
     const suggestions = suggestBusinessRisks(
-      rows.map((r) => ({
+      findings.map((r) => ({
         findingId: r.findingId,
         titleI18n: r.titleI18n,
         riskRating: r.riskRating,
@@ -747,10 +759,13 @@ export class RisksService {
       })),
       locale,
     );
+    const dedupedSuggestions = annotateRiskSuggestionDedupe(suggestions, existingRisks, locale);
     return {
       reviewRequired: true,
-      count: suggestions.length,
-      items: suggestions,
+      count: dedupedSuggestions.length,
+      duplicates: dedupedSuggestions.filter((item) => item.dedupe?.status === 'possible_duplicate')
+        .length,
+      items: dedupedSuggestions,
     };
   }
 

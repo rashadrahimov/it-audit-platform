@@ -41,6 +41,13 @@ interface RiskSuggestion {
   riskClass: RiskClass | null;
   confidence: number;
   evidenceRef: { type: string; id: string; location: string };
+  dedupe?: {
+    fingerprint: string;
+    status: 'new' | 'possible_duplicate';
+    matchedRiskId: string | null;
+    matchedTitle: string | null;
+    reason: 'same_title' | 'same_category_domain' | null;
+  };
 }
 
 const APPR_TONE: Record<string, StatusTone> = {
@@ -107,8 +114,12 @@ export default async function RisksPage({
   } = matrixRes.ok
     ? await matrixRes.json()
     : { impactScale: 5, likelihoodScale: 5, thresholds: { medium: 6, high: 12, critical: 20 } };
-  const suggestions: { reviewRequired: boolean; count: number; items: RiskSuggestion[] } =
-    suggestRes.ok ? await suggestRes.json() : { reviewRequired: true, count: 0, items: [] };
+  const suggestions: {
+    reviewRequired: boolean;
+    count: number;
+    duplicates?: number;
+    items: RiskSuggestion[];
+  } = suggestRes.ok ? await suggestRes.json() : { reviewRequired: true, count: 0, items: [] };
 
   // T-V59: Risk-Overview — распределение по treatment и по классу (донаты, WidgetChart)
   const tally = (fn: (r: Risk) => string | null) => {
@@ -129,6 +140,9 @@ export default async function RisksPage({
     suggestions.items.map((s) => s.domain ?? s.affectedControlRef).filter(Boolean),
   ).size;
   const highConfidence = suggestions.items.filter((s) => s.confidence >= 0.75).length;
+  const duplicateSuggestions =
+    suggestions.duplicates ??
+    suggestions.items.filter((s) => s.dedupe?.status === 'possible_duplicate').length;
   const affectedLabel = (suggestion: RiskSuggestion) => {
     if (suggestion.domain) return suggestion.domain;
     if (suggestion.affectedControlRef) return suggestion.affectedControlRef;
@@ -248,7 +262,7 @@ export default async function RisksPage({
             </StatusBadge>
           </div>
           <div
-            className="grid gap-3 rounded-2xl border border-emerald-200 bg-white/80 p-4 md:grid-cols-4"
+            className="grid gap-3 rounded-2xl border border-emerald-200 bg-white/80 p-4 md:grid-cols-5"
             data-testid="business-risk-lens"
           >
             <div>
@@ -268,12 +282,16 @@ export default async function RisksPage({
               <p className="mt-1 text-2xl font-bold text-primary">{mappedDomains}</p>
             </div>
             <div>
+              <p className="text-xs font-medium text-secondary">{t('businessLens.dedupeGuard')}</p>
+              <p className="mt-1 text-2xl font-bold text-primary">{duplicateSuggestions}</p>
+            </div>
+            <div>
               <p className="text-xs font-medium text-secondary">
                 {t('businessLens.highConfidence')}
               </p>
               <p className="mt-1 text-2xl font-bold text-primary">{highConfidence}</p>
             </div>
-            <div className="border-t border-emerald-100 pt-3 md:col-span-4">
+            <div className="border-t border-emerald-100 pt-3 md:col-span-5">
               <p className="text-xs font-semibold tracking-[0.12em] text-accent uppercase">
                 {t('businessLens.title')}
               </p>
@@ -293,67 +311,93 @@ export default async function RisksPage({
             </div>
           </div>
           <ul className="grid gap-3 lg:grid-cols-2">
-            {suggestions.items.slice(0, 6).map((s) => (
-              <li
-                key={s.findingId}
-                className="rounded-xl border border-border bg-white/90 p-4 shadow-xs"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge tone={s.riskClass ? CLASS_TONE[s.riskClass] : 'neutral'} dot>
-                    {s.riskClass ? t(`cls.${s.riskClass}`) : '—'}
-                  </StatusBadge>
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-secondary">
-                    {t(`businessCategories.${s.category}`)}
-                  </span>
-                  <span className="text-xs text-secondary">
-                    {t('confidence')}: {Math.round(s.confidence * 100)}%
-                  </span>
-                </div>
-                <h3 className="mt-2 text-sm font-semibold text-foreground">{s.title}</h3>
-                <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-secondary">
-                  {s.description}
-                </p>
-                <dl className="mt-3 grid gap-2 rounded-lg bg-muted/50 p-3 text-xs sm:grid-cols-2">
-                  <div>
-                    <dt className="font-medium text-secondary">{t('affectedProcessAsset')}</dt>
-                    <dd className="mt-0.5 text-foreground">{affectedLabel(s)}</dd>
+            {suggestions.items.slice(0, 6).map((s) => {
+              const duplicate = s.dedupe?.status === 'possible_duplicate' ? s.dedupe : null;
+              return (
+                <li
+                  key={s.findingId}
+                  className="rounded-xl border border-border bg-white/90 p-4 shadow-xs"
+                  data-testid="risk-suggestion-dedupe-proof"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusBadge tone={s.riskClass ? CLASS_TONE[s.riskClass] : 'neutral'} dot>
+                      {s.riskClass ? t(`cls.${s.riskClass}`) : '—'}
+                    </StatusBadge>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-secondary">
+                      {t(`businessCategories.${s.category}`)}
+                    </span>
+                    <span className="text-xs text-secondary">
+                      {t('confidence')}: {Math.round(s.confidence * 100)}%
+                    </span>
+                    {duplicate && (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                        {t('possibleDuplicate')}
+                      </span>
+                    )}
                   </div>
-                  <div>
-                    <dt className="font-medium text-secondary">{t('controlClause')}</dt>
-                    <dd className="mt-0.5 text-foreground">{s.affectedControlRef ?? '—'}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-secondary">{t('initialRating')}</dt>
-                    <dd className="mt-0.5 text-foreground">
-                      {s.inherentImpact}×{s.inherentLikelihood}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-secondary">{t('reviewGate')}</dt>
-                    <dd className="mt-0.5 text-foreground">{t('draftOnly')}</dd>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <dt className="font-medium text-secondary">{t('evidence')}</dt>
-                    <dd className="mt-0.5 text-foreground">{s.evidenceRef.location}</dd>
-                  </div>
-                </dl>
-                <form action={addRiskSuggestionAction} className="mt-3">
-                  <input type="hidden" name="title" value={s.title} />
-                  <input type="hidden" name="description" value={s.description} />
-                  <input type="hidden" name="category" value={s.category} />
-                  <input type="hidden" name="domain" value={s.affectedControlRef ?? ''} />
-                  <input type="hidden" name="inherentImpact" value={s.inherentImpact} />
-                  <input type="hidden" name="inherentLikelihood" value={s.inherentLikelihood} />
-                  <button
-                    type="submit"
-                    data-testid="risk-suggestion-add"
-                    className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                  >
-                    {t('addAfterReview')}
-                  </button>
-                </form>
-              </li>
-            ))}
+                  <h3 className="mt-2 text-sm font-semibold text-foreground">{s.title}</h3>
+                  <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-secondary">
+                    {s.description}
+                  </p>
+                  <dl className="mt-3 grid gap-2 rounded-lg bg-muted/50 p-3 text-xs sm:grid-cols-2">
+                    <div>
+                      <dt className="font-medium text-secondary">{t('affectedProcessAsset')}</dt>
+                      <dd className="mt-0.5 text-foreground">{affectedLabel(s)}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium text-secondary">{t('controlClause')}</dt>
+                      <dd className="mt-0.5 text-foreground">{s.affectedControlRef ?? '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium text-secondary">{t('initialRating')}</dt>
+                      <dd className="mt-0.5 text-foreground">
+                        {s.inherentImpact}×{s.inherentLikelihood}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium text-secondary">{t('reviewGate')}</dt>
+                      <dd className="mt-0.5 text-foreground">{t('draftOnly')}</dd>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <dt className="font-medium text-secondary">{t('evidence')}</dt>
+                      <dd className="mt-0.5 text-foreground">{s.evidenceRef.location}</dd>
+                    </div>
+                    {duplicate && (
+                      <div className="sm:col-span-2">
+                        <dt className="font-medium text-secondary">{t('dedupeMatch')}</dt>
+                        <dd className="mt-0.5 text-foreground">
+                          {duplicate.matchedTitle ?? t('inRegister')}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                  {duplicate?.matchedRiskId ? (
+                    <Link
+                      href={`/risks/${duplicate.matchedRiskId}`}
+                      className="mt-3 inline-flex rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      {t('openDuplicate')}
+                    </Link>
+                  ) : (
+                    <form action={addRiskSuggestionAction} className="mt-3">
+                      <input type="hidden" name="title" value={s.title} />
+                      <input type="hidden" name="description" value={s.description} />
+                      <input type="hidden" name="category" value={s.category} />
+                      <input type="hidden" name="domain" value={s.affectedControlRef ?? ''} />
+                      <input type="hidden" name="inherentImpact" value={s.inherentImpact} />
+                      <input type="hidden" name="inherentLikelihood" value={s.inherentLikelihood} />
+                      <button
+                        type="submit"
+                        data-testid="risk-suggestion-add"
+                        className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {t('addAfterReview')}
+                      </button>
+                    </form>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
