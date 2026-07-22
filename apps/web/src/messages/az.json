@@ -157,7 +157,7 @@
     "viewArchived": "Arxiv",
     "empty": "Hələ audit yoxdur",
     "modes": {
-      "formal": "Formal",
+      "formal": "Rəsmi",
       "light": "Yüngül"
     },
     "createTitle": "Audit yarat",
@@ -209,14 +209,14 @@
     "planned": "Plan",
     "actual": "Fakt",
     "modes": {
-      "formal": "Formal",
+      "formal": "Rəsmi",
       "light": "Yüngül"
     },
     "checklist": "Çeklist",
     "checklistEmpty": "Hələ çeklist bəndi yoxdur",
     "checklistRef": "İstinad",
     "checklistQuestion": "Audit sualı",
-    "checklistStatus": "Status",
+    "checklistStatus": "Statusu",
     "checklistAdd": "Kitabxanadan nəzarətlər əlavə et",
     "checklistSubmit": "Seçilənləri əlavə et",
     "templateKicker": "Audit proqramı şablonu",
@@ -311,7 +311,7 @@
     "seedActionPlan": "Tədbirlər planını qur",
     "findingsEmpty": "Hələ qeyd yoxdur",
     "findingTitle": "Qeyd",
-    "findingRating": "Risk",
+    "findingRating": "Risk səviyyəsi",
     "findingOwner": "Sahib",
     "findingDue": "Son tarix",
     "ratings": {
@@ -460,7 +460,7 @@
     "empty": "Hələ nəzarət yoxdur",
     "owner": "Sahib",
     "tests": "Testlər",
-    "statusCol": "Status",
+    "statusCol": "Statusu",
     "assigned": "Təyin edilib",
     "unassigned": "Təyin edilməyib",
     "withPassing": "Keçən sübutlu",
@@ -487,9 +487,9 @@
     "commentsEmpty": "Hələ şərh yoxdur",
     "tests": "Testlər",
     "testsEmpty": "Hələ test yoxdur",
-    "testTitle": "Test",
+    "testTitle": "Yoxlama",
     "testOwner": "Sahib",
-    "testStatus": "Status",
+    "testStatus": "Statusu",
     "testStatuses": {
       "ok": "OK",
       "failing": "Uğursuz",
@@ -500,7 +500,7 @@
     "assign": "Təyinat",
     "assignGlobalHint": "Bu qlobal kontroldur — dəyişiklikləri saxladıqda təşkilat üçün adaptasiya yaradılır.",
     "noOwner": "Sahib yoxdur",
-    "statusLabel": "Status",
+    "statusLabel": "Statusu",
     "save": "Yadda saxla",
     "st": {
       "active": "Aktiv",
@@ -524,7 +524,7 @@
     "toAccount": "Hesab",
     "name": "Ad",
     "version": "Versiya",
-    "status": "Status",
+    "status": "Statusu",
     "origin": "Mənbə",
     "global": "Qlobal kitabxana",
     "tenant": "Təşkilat",
@@ -626,7 +626,7 @@
     "close": "Bağla",
     "delete": "Sil",
     "deleteConfirm": "Bu konnektoru silmək?",
-    "status": "Status",
+    "status": "Statusu",
     "intervalMin": "Avtosinx intervalı (dəq)",
     "intervalHint": "0 = yalnız əl ilə; minimum 5 dəq",
     "configEdit": "Konfiqi yenilə (boş = saxla)",
@@ -639,8 +639,8 @@
         "hint": "Change ticket-ləri, düzəltmə tapşırıqlarını və sübutları REST/JSON presetləri ilə çəkin."
       },
       "cloud": {
-        "kicker": "Cloud config",
-        "title": "AWS / Azure / GCP posture",
+        "kicker": "Bulud konfiqurasiyası",
+        "title": "AWS / Azure / GCP vəziyyəti",
         "hint": "Daxili kollektorlar aktiv inventarını, kontrol avtotestlərini və sübut yenilənməsini qidalandırır."
       },
       "siem": {
@@ -723,7 +723,7 @@
     "name": "Ad",
     "owner": "Sahib",
     "renewBy": "Yeniləmə tarixi",
-    "status": "Status",
+    "status": "Statusu",
     "empty": "Hələ siyasət yoxdur",
     "statuses": {
       "draft": "Qaralama",
@@ -856,7 +856,7 @@
     "ct": {
       "bar": "Barlar",
       "pie": "Dairəvi",
-      "donut": "Donut",
+      "donut": "Halqavari",
       "number": "Rəqəm",
       "line": "Xətt"
     }
@@ -909,8 +909,8 @@
     "viewComposition": "Dondurulmuş tərkib",
     "noOpen": "Fiksasiya anında açıq qeyd yoxdur.",
     "colTitle": "Qeyd",
-    "colRisk": "Risk",
-    "colStatus": "Status",
+    "colRisk": "Risk səviyyəsi",
+    "colStatus": "Statusu",
     "colDue": "Son tarix",
     "openVulns": "Açıq zəifliklər",
     "count": "{n} qeyd"
@@ -924,7 +924,7 @@
     "checks": {
       "diskEncryption": "Disk şifrələmə",
       "screenLock": "Ekran kilidi",
-      "antivirus": "Antivirus",
+      "antivirus": "Antivirus qorunması",
       "passwordPolicy": "Parol siyasəti"
     }
   },
@@ -986,7 +986,7 @@
     "residual": "Qalıq risk",
     "assessments": "Qiymətləndirmələr",
     "noAssessments": "Hələ qiymətləndirmə yoxdur",
-    "statusLabel": "Status",
+    "statusLabel": "Statusu",
     "securityOwner": "Təhlükəsizlik məsulu",
     "edit": "Vendoru redaktə et",
     "save": "Yadda saxla",
@@ -1101,7 +1101,7 @@
     "byAsset": "Aktivlərə görə (SLA statusu)",
     "unassigned": "Təyin edilməyib",
     "openOfTotal": "{open} açıq / {total}",
-    "statusHead": "Status"
+    "statusHead": "Statusu"
   },
   "securityAlerts": {
     "title": "Təhlükəsizlik Bildirişləri",
@@ -1115,7 +1115,7 @@
     "catNone": "— kateqoriya —",
     "asset": "Aktiv",
     "assetNone": "— aktiv —",
-    "statusHead": "Status",
+    "statusHead": "Statusu",
     "slaHead": "SLA",
     "cat": {
       "malware": "Zərərli proqram",
@@ -1164,7 +1164,7 @@
     "add": "Əlavə et",
     "change": "Statusu dəyiş",
     "slaHead": "SLA",
-    "statusHead": "Status",
+    "statusHead": "Statusu",
     "tabCommitments": "Öhdəliklər",
     "tabContracts": "Müqavilələr",
     "contract": "Müqavilə",
@@ -1218,7 +1218,7 @@
     "inherent": "Xas",
     "residual": "Qalıq",
     "treatment": "Emal",
-    "status": "Status",
+    "status": "Statusu",
     "create": "Yeni risk",
     "titlePh": "Risk adı",
     "impact": "Təsir",
@@ -1360,7 +1360,7 @@
     "legalBasis": "Hüquqi əsas",
     "role": "Rol",
     "crossBorder": "Sərhədlərarası",
-    "status": "Status",
+    "status": "Statusu",
     "add": "Əlavə et",
     "titlePh": "Ad",
     "riskLevel": "Risk səviyyəsi",
@@ -1406,7 +1406,7 @@
     "approverNone": "— təyin edilməyib —",
     "submitApproval": "Təsdiqə göndər",
     "approve": "Təsdiq et",
-    "vendorCol": "Vendor",
+    "vendorCol": "Təchizatçı",
     "importTitle": "ROPA idxalı (CSV)",
     "importHint": "CSV sütunları: name, legal_basis, role, purpose, data_categories (\";\" ilə ayrılmış), cross_border, data_locations.",
     "importBtn": "İdxal et",
@@ -1452,8 +1452,8 @@
     "toAccount": "Hesab",
     "empty": "Hələ dəyişiklik yoxdur",
     "type": "Tip",
-    "risk": "Risk",
-    "status": "Status",
+    "risk": "Risk səviyyəsi",
+    "status": "Statusu",
     "action": "Əməliyyat",
     "create": "Yeni dəyişiklik",
     "titlePh": "Dəyişiklik adı",
@@ -1662,7 +1662,7 @@
     "name": "Ad",
     "prefix": "Prefiks",
     "lastUsed": "Son istifadə",
-    "status": "Status",
+    "status": "Statusu",
     "active": "Aktiv",
     "revoked": "Ləğv edilib",
     "revoke": "Ləğv et",
@@ -1712,7 +1712,7 @@
     "privacyBody": "İnterfeys əməliyyat izini göstərir, amma raw diff payload-u vermir; dəyişiklik tarixçəsində məxfi dəyərlər ola bilər.",
     "noPayload": "Payload gizlədilib",
     "tenantScoped": "Tenant-la məhdud",
-    "syslogReady": "Syslog-ready",
+    "syslogReady": "Syslog üçün hazır",
     "eventsTitle": "Son hadisələr",
     "eventsSubtitle": "Bu tenant üzrə ən yeni fəaliyyət yuxarıda göstərilir.",
     "empty": "Hələ audit hadisəsi yoxdur",
@@ -1721,12 +1721,12 @@
     "action": "Əməliyyat",
     "entity": "Obyekt",
     "evidence": "Sübut",
-    "hash": "Hash",
+    "hash": "Heş",
     "systemActor": "Sistem",
     "payloadRedacted": "Payload var, gizlidir",
     "metadataOnly": "Yalnız metadata",
     "hashOk": "Hash var",
-    "legacy": "Legacy"
+    "legacy": "Köhnə format"
   },
   "notifications": {
     "title": "Bildirişlər",
@@ -1773,7 +1773,7 @@
       "audit": "Audit",
       "training": "Təlim",
       "leave": "Məzuniyyət",
-      "admin": "Admin"
+      "admin": "İnzibati"
     }
   },
   "kpi": {
@@ -1948,10 +1948,10 @@
     "preview": "Önizləmə",
     "import": "İdxal",
     "parsed": "Parse edilmiş kontrollar",
-    "ref": "Ref",
+    "ref": "İstinad",
     "domain": "Domen",
     "compliance": "Uyğunluq",
-    "risk": "Risk",
+    "risk": "Risk səviyyəsi",
     "imported": "İdxal edildi",
     "domains": "domen",
     "controls": "kontrol",
@@ -2030,7 +2030,7 @@
     },
     "baseUrl": "Baza URL",
     "baseUrlHint": "/v1 ilə OpenAI-uyğun ünvan (məs. https://api.moonshot.cn/v1 və ya http://ollama:11434/v1). Anthropic buludu üçün boş buraxın.",
-    "model": "Model",
+    "model": "Modeli",
     "modelHint": "anthropic: claude-*; OpenAI-uyğun: gpt-4o, kimi-k2, deepseek-chat, …",
     "apiKey": "API açarı",
     "apiKeySet": "•••••••• (açar var — boş = saxla)",
@@ -2494,7 +2494,7 @@
   },
   "filters": {
     "all": "Hamısı",
-    "status": "Status",
+    "status": "Statusu",
     "state": "Mərhələ",
     "risk": "Xas risk",
     "scope": "Əhatə",
@@ -2507,8 +2507,8 @@
   "findings": {
     "title": "Qeydlər",
     "colTitle": "Ad",
-    "colRating": "Risk",
-    "colStatus": "Status",
+    "colRating": "Risk səviyyəsi",
+    "colStatus": "Statusu",
     "colSla": "SLA",
     "colOwner": "Sahib",
     "colDue": "Son tarix",
@@ -2613,7 +2613,7 @@
     "firmEmail": "Əlaqə e-poçtu",
     "firmAdd": "Firma əlavə et",
     "firmDelete": "Firmanı sil",
-    "colStatus": "Status",
+    "colStatus": "Statusu",
     "colCategory": "Kateqoriya",
     "colActions": "Əməllər",
     "st": {
@@ -2778,7 +2778,7 @@
     "colTitle": "Ad",
     "colControl": "Nəzarət",
     "colKind": "Növ",
-    "colStatus": "Status",
+    "colStatus": "Statusu",
     "colSla": "SLA",
     "colOwner": "Sahib",
     "colDue": "Son tarix",
@@ -2831,8 +2831,8 @@
     "askEmpty": "Uyğun qeyd və ya sübut sənədi tapılmadı",
     "askEvidenceFound": "Uyğun sübut sənədləri: {n}",
     "deterministic": "Sübuta təhlükəsiz",
-    "risk": "Risk",
-    "status": "Status",
+    "risk": "Risk səviyyəsi",
+    "status": "Statusu",
     "sla": "SLA",
     "due": "Son tarix",
     "topic": "Mövzu",
@@ -2870,7 +2870,7 @@
     "colName": "Ad",
     "colEmail": "Email",
     "colCategory": "Kateqoriya",
-    "colStatus": "Status",
+    "colStatus": "Statusu",
     "colRole": "Rol",
     "role": "Rol",
     "roleSave": "OK",
@@ -3046,9 +3046,9 @@
     "protocol": "Protokol",
     "emailDomain": "E-poçt domeni",
     "emailDomainHint": "Bu e-poçt domeni olan istifadəçilər sizin IdP-yə yönləndirilir.",
-    "entryPoint": "Issuer / metadata URL",
+    "entryPoint": "Emitent / metadata URL",
     "entryPointHint": "OIDC issuer və ya SAML metadata / entry-point URL.",
-    "clientId": "Client ID",
+    "clientId": "Müştəri ID",
     "clientSecret": "Məxfi açar",
     "secretSet": "•••••••• (saxlanılıb)",
     "secretEmpty": "Təyin edilməyib",
@@ -3104,7 +3104,7 @@
     "empty": "Hələ iştirakçı yoxdur",
     "name": "Ad",
     "category": "Kateqoriya",
-    "status": "Status",
+    "status": "Statusu",
     "allSubsidiaries": "Bütün törəmələr",
     "noSubsidiaries": "Törəmə yoxdur",
     "st": {
@@ -3146,7 +3146,7 @@
       "medium": "Orta prioritet",
       "low": "Aşağı prioritet"
     },
-    "status": "Status",
+    "status": "Statusu",
     "accept": "Qəbul et",
     "req": {
       "requested": "Tələb olunub",

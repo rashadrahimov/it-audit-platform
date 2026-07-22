@@ -16,13 +16,14 @@ import { apiFetch, getActiveTenantSlug, SESSION_COOKIE } from '@/lib/session';
 const API_URL = process.env.API_URL ?? 'http://localhost:3001';
 
 /**
- * T-V36f: при отсутствии явной cookie `locale` выставляем её из defaultLocale тенанта
- * (business-profile). Hot-path i18n не трогаем — ставим только на входе. Best-effort.
+ * T-V36f/T-H113: на входе синхронизируем cookie `locale` с языком профиля
+ * пользователя, чтобы старый браузерный EN не перебивал RU/AZ демо и клиентские
+ * аккаунты. После входа ручной переключатель языка всё равно может изменить cookie.
+ * Hot-path i18n не трогаем — ставим только на входе. Best-effort.
  */
 async function applyTenantLocale(accessToken?: string): Promise<void> {
   try {
     const store = await cookies();
-    if (store.get('locale')) return; // уважаем явный выбор пользователя
     if (accessToken) {
       const meRes = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${accessToken}` },

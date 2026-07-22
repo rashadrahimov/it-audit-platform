@@ -639,8 +639,8 @@
         "hint": "Загружайте change tickets, задачи исправления и доказательства из REST/JSON-пресетов."
       },
       "cloud": {
-        "kicker": "Cloud config",
-        "title": "AWS / Azure / GCP posture",
+        "kicker": "Конфигурация облака",
+        "title": "Позиция AWS / Azure / GCP",
         "hint": "Внутренние коллекторы питают инвентарь активов, автотесты контролей и обновление доказательств."
       },
       "siem": {
@@ -1721,12 +1721,12 @@
     "action": "Действие",
     "entity": "Сущность",
     "evidence": "Доказательство",
-    "hash": "Hash",
+    "hash": "Хеш",
     "systemActor": "Система",
     "payloadRedacted": "Payload есть, скрыт",
     "metadataOnly": "Только метаданные",
-    "hashOk": "С hash",
-    "legacy": "Legacy"
+    "hashOk": "С хешем",
+    "legacy": "Старый формат"
   },
   "notifications": {
     "title": "Уведомления",
@@ -1948,7 +1948,7 @@
     "preview": "Предпросмотр",
     "import": "Импорт",
     "parsed": "Разобрано контролей",
-    "ref": "Ref",
+    "ref": "Ссылка",
     "domain": "Домен",
     "compliance": "Комплаенс",
     "risk": "Риск",
@@ -3048,7 +3048,7 @@
     "emailDomainHint": "Пользователи с этим доменом почты направляются в ваш IdP.",
     "entryPoint": "Issuer / metadata URL",
     "entryPointHint": "OIDC issuer или SAML metadata / entry-point URL.",
-    "clientId": "Client ID",
+    "clientId": "ID клиента",
     "clientSecret": "Секрет клиента",
     "secretSet": "•••••••• (сохранён)",
     "secretEmpty": "Не задан",
