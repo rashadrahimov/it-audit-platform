@@ -67,8 +67,8 @@ export class JobsController {
   })
   @ApiCreatedResponse({ description: '{tenants, emails}' })
   weeklyDigest(): Promise<{ tenants: number; emails: number }> {
-    // ручной прогон игнорирует day-of-week: слать всем, у кого digest не off
-    return this.weeklyDigestService.send(new Date(Date.UTC(2000, 0, 3))); // понедельник
+    // ручной прогон игнорирует weekday/monthday: слать всем, у кого digest не off
+    return this.weeklyDigestService.send(new Date(), { force: true });
   }
 
   @Post('sla-recalc')

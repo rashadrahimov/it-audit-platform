@@ -1508,6 +1508,7 @@
       "meta": "{digest} · {recipients} recipients · {timezone}",
       "digest": {
         "weekly": "Weekly",
+        "monthly": "Monthly",
         "daily": "Daily",
         "off": "Off"
       },
@@ -1696,6 +1697,7 @@
     "settingsSave": "Save",
     "settingsDigest": "Compliance digest",
     "digestWeekly": "Weekly (Mondays)",
+    "digestMonthly": "Monthly (1st day)",
     "digestDaily": "Daily",
     "digestOff": "Off"
   },

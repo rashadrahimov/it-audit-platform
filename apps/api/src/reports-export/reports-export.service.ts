@@ -27,6 +27,25 @@ export type ExportEntity = (typeof EXPORT_ENTITIES)[number];
 export const EXPORT_FORMATS = ['csv', 'xml'] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
+export function nextDigestRunAtForSettings(
+  settings: NotificationSettings,
+  now = new Date(),
+): string | null {
+  if (!settings.emailEnabled || settings.digest === 'off') return null;
+  const next = new Date(now);
+  next.setUTCHours(9, 0, 0, 0);
+  if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
+  if (settings.digest === 'weekly') {
+    while (next.getUTCDay() !== 1) next.setUTCDate(next.getUTCDate() + 1);
+  } else if (settings.digest === 'monthly') {
+    if (next.getUTCDate() !== 1) {
+      next.setUTCMonth(next.getUTCMonth() + 1, 1);
+      next.setUTCHours(9, 0, 0, 0);
+    }
+  }
+  return next.toISOString();
+}
+
 @Injectable()
 export class ReportsExportService {
   constructor(private readonly dbService: DbService) {}
@@ -38,17 +57,6 @@ export class ReportsExportService {
             Partial<NotificationSettings> | undefined)
         : undefined;
     return { ...DEFAULT_NOTIFICATION_SETTINGS, ...raw };
-  }
-
-  private nextDigestRunAt(settings: NotificationSettings, now = new Date()): string | null {
-    if (!settings.emailEnabled || settings.digest === 'off') return null;
-    const next = new Date(now);
-    next.setUTCHours(9, 0, 0, 0);
-    if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
-    if (settings.digest === 'weekly') {
-      while (next.getUTCDay() !== 1) next.setUTCDate(next.getUTCDate() + 1);
-    }
-    return next.toISOString();
   }
 
   async export(tenantId: string, entity: string, format: string) {
@@ -123,7 +131,7 @@ export class ReportsExportService {
       digest: settings.digest,
       schedule: settings.schedule,
       timezone: settings.timezone,
-      nextRunAt: this.nextDigestRunAt(settings, now),
+      nextRunAt: nextDigestRunAtForSettings(settings, now),
       recipientCount,
       willSendIfRunNow: settings.emailEnabled && settings.digest !== 'off' && hasSignal,
       metrics,

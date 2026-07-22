@@ -30,7 +30,7 @@ interface EngagementRow {
 }
 interface SchedulePreview {
   enabled: boolean;
-  digest: 'weekly' | 'daily' | 'off';
+  digest: 'weekly' | 'monthly' | 'daily' | 'off';
   schedule: 'anytime' | 'work_hours';
   timezone: string;
   nextRunAt: string | null;

@@ -10,12 +10,14 @@ import { membership, notification, tenant, user } from '../db/schema';
 import { JOB_NOTIFICATION_EMAIL, SYSTEM_QUEUE } from '../jobs/jobs.constants';
 
 /** Настройки уведомлений тенанта (T-V19, Settings→Notifications у Vanta). */
+export type DigestCadence = 'weekly' | 'monthly' | 'daily' | 'off';
+
 export interface NotificationSettings {
   emailEnabled: boolean;
   schedule: 'anytime' | 'work_hours';
   timezone: string;
-  /** T-V20: периодичность еженедельного дайджеста. */
-  digest: 'weekly' | 'daily' | 'off';
+  /** T-V20/T-H98: periodic compliance digest: weekly/monthly plus daily/off operational modes. */
+  digest: DigestCadence;
 }
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {

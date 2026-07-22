@@ -27,7 +27,7 @@ export async function saveNotificationSettingsAction(formData: FormData): Promis
       emailEnabled: formData.get('emailEnabled') === 'on',
       schedule: formData.get('schedule') === 'work_hours' ? 'work_hours' : 'anytime',
       timezone: String(formData.get('timezone') ?? 'UTC') || 'UTC',
-      digest: ['weekly', 'daily', 'off'].includes(String(formData.get('digest')))
+      digest: ['weekly', 'monthly', 'daily', 'off'].includes(String(formData.get('digest')))
         ? String(formData.get('digest'))
         : 'weekly',
     }),

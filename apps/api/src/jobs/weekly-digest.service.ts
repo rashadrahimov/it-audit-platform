@@ -68,10 +68,18 @@ export function weeklyDigestReportPackageVars(
   };
 }
 
+export function complianceDigestDueToday(settings: NotificationSettings, now: Date): boolean {
+  if (!settings.emailEnabled || settings.digest === 'off') return false;
+  if (settings.digest === 'daily') return true;
+  if (settings.digest === 'monthly') return now.getUTCDate() === 1;
+  return now.getUTCDay() === 1;
+}
+
 /**
- * T-V20: еженедельный дайджест комплаенса. Прогон раз в сутки; per-tenant
- * setting digest решает, слать ли сегодня (weekly=понедельник, daily=каждый
- * день, off=никогда). Получатели — активные участники с email (дедуп).
+ * T-V20/T-H98: scheduled compliance digest. Worker runs daily; per-tenant
+ * setting digest decides whether to send today (weekly=Monday, monthly=1st day
+ * of month, daily=every day, off=never). Recipients are active members with
+ * deduplicated email addresses.
  */
 @Injectable()
 export class WeeklyDigestService {
@@ -89,11 +97,9 @@ export class WeeklyDigestService {
     return { ...DEFAULT_NOTIFICATION_SETTINGS, ...raw };
   }
 
-  /** Слать ли дайджест сегодня по настройке (weekly → только понедельник). */
+  /** Слать ли дайджест сегодня по настройке cadence. */
   private dueToday(settings: NotificationSettings, now: Date): boolean {
-    if (!settings.emailEnabled || settings.digest === 'off') return false;
-    if (settings.digest === 'daily') return true;
-    return now.getUTCDay() === 1; // понедельник
+    return complianceDigestDueToday(settings, now);
   }
 
   /**
@@ -179,7 +185,10 @@ export class WeeklyDigestService {
     });
   }
 
-  async send(now = new Date()): Promise<{ tenants: number; emails: number }> {
+  async send(
+    now = new Date(),
+    options: { force?: boolean } = {},
+  ): Promise<{ tenants: number; emails: number }> {
     const tenants = await this.dbService.db
       .select({ id: tenant.id, name: tenant.name, settings: tenant.settings })
       .from(tenant);
@@ -187,7 +196,9 @@ export class WeeklyDigestService {
     let emails = 0;
     for (const t of tenants) {
       const settings = this.settingsOf(t);
-      if (!this.dueToday(settings, now)) continue;
+      if (options.force) {
+        if (!settings.emailEnabled || settings.digest === 'off') continue;
+      } else if (!this.dueToday(settings, now)) continue;
 
       const [counts, reportPackage] = await Promise.all([
         this.dbService.withTenant(t.id, async (tx) => {

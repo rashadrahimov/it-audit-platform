@@ -1508,6 +1508,7 @@
       "meta": "{digest} · получателей: {recipients} · {timezone}",
       "digest": {
         "weekly": "Еженедельно",
+        "monthly": "Ежемесячно",
         "daily": "Ежедневно",
         "off": "Отключено"
       },
@@ -1696,6 +1697,7 @@
     "settingsSave": "Сохранить",
     "settingsDigest": "Дайджест комплаенса",
     "digestWeekly": "Еженедельно (по пн)",
+    "digestMonthly": "Ежемесячно (1-го числа)",
     "digestDaily": "Ежедневно",
     "digestOff": "Выключен"
   },

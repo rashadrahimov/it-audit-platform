@@ -144,6 +144,7 @@ export default async function NotificationsPage() {
               className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
             >
               <option value="weekly">{t('digestWeekly')}</option>
+              <option value="monthly">{t('digestMonthly')}</option>
               <option value="daily">{t('digestDaily')}</option>
               <option value="off">{t('digestOff')}</option>
             </select>

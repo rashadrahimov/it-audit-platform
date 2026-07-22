@@ -54,7 +54,7 @@ export class NotificationsController {
         emailEnabled: z.boolean().optional(),
         schedule: z.enum(['anytime', 'work_hours']).optional(),
         timezone: z.string().min(1).max(64).optional(),
-        digest: z.enum(['weekly', 'daily', 'off']).optional(),
+        digest: z.enum(['weekly', 'monthly', 'daily', 'off']).optional(),
       })
       .safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues);

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { renderEmail } from '../src/email/email.templates';
-import { weeklyDigestReportPackageVars } from '../src/jobs/weekly-digest.service';
+import {
+  complianceDigestDueToday,
+  weeklyDigestReportPackageVars,
+} from '../src/jobs/weekly-digest.service';
 
 describe('renderEmail', () => {
   it('рендерит шаблон на запрошенном языке с подстановкой', () => {
@@ -78,6 +81,27 @@ describe('renderEmail', () => {
       reportPackagePath:
         '/engagements/019f882d-0c3f-7554-9e36-b6cba9fb56dc/report/package?locale=ru',
     });
+  });
+
+  it('scheduled compliance digest supports monthly cadence on the first UTC day', () => {
+    const base = {
+      emailEnabled: true,
+      schedule: 'anytime' as const,
+      timezone: 'UTC',
+      digest: 'monthly' as const,
+    };
+
+    expect(complianceDigestDueToday(base, new Date('2026-08-01T09:00:00.000Z'))).toBe(true);
+    expect(complianceDigestDueToday(base, new Date('2026-08-02T09:00:00.000Z'))).toBe(false);
+    expect(
+      complianceDigestDueToday({ ...base, digest: 'weekly' }, new Date('2026-08-03T09:00:00.000Z')),
+    ).toBe(true);
+    expect(
+      complianceDigestDueToday(
+        { ...base, emailEnabled: false },
+        new Date('2026-08-01T09:00:00.000Z'),
+      ),
+    ).toBe(false);
   });
 });
 

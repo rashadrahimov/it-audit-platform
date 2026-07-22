@@ -1508,6 +1508,7 @@
       "meta": "{digest} · {recipients} alıcı · {timezone}",
       "digest": {
         "weekly": "Həftəlik",
+        "monthly": "Aylıq",
         "daily": "Gündəlik",
         "off": "Söndürülüb"
       },
@@ -1696,6 +1697,7 @@
     "settingsSave": "Yadda saxla",
     "settingsDigest": "Uyğunluq icmalı",
     "digestWeekly": "Həftəlik (bazar ertəsi)",
+    "digestMonthly": "Aylıq (ayın 1-i)",
     "digestDaily": "Gündəlik",
     "digestOff": "Söndürülüb"
   },
