@@ -57,17 +57,162 @@ const heatMapRows = (risks: ReportRiskRow[]): Array<{ className: string; count: 
     count,
   }));
 
+const LABELS = {
+  en: {
+    action: 'Action',
+    actionPlan: 'Action Plan',
+    answer: 'Answer',
+    auditType: 'Audit type',
+    auditor: 'Auditor',
+    category: 'Category',
+    checklist: 'Checklist',
+    checklistControls: 'Checklist controls',
+    className: 'Class',
+    compliance: 'Compliance',
+    deliverable: 'Deliverable',
+    dueDate: 'Due date',
+    field: 'Field',
+    findings: 'Findings',
+    generatedAt: 'Generated at',
+    highCriticalFindings: 'High/Critical findings',
+    highCriticalRisks: 'High/Critical risks',
+    impact: 'Impact',
+    keyMetrics: 'Key metrics',
+    likelihood: 'Likelihood',
+    metric: 'Metric',
+    mode: 'Mode',
+    noFindings: 'No findings.',
+    noRisks: 'No risks in register.',
+    nonConformities: 'Non-Conformities',
+    openFindings: 'Open findings',
+    owner: 'Owner',
+    period: 'Period',
+    priorityFindings: 'Priority findings',
+    question: 'Question',
+    recommendation: 'Recommendation',
+    risk: 'Risk',
+    riskMatrix: 'Risk Matrix',
+    risks: 'Risks',
+    riskClassSummary: 'Risk Class Summary',
+    risksInRegister: 'Risks in register',
+    state: 'State',
+    status: 'Status',
+    subsidiary: 'Subsidiary',
+    summary: 'Summary',
+    title: 'Title',
+    treatment: 'Treatment',
+    value: 'Value',
+    why: 'Why',
+  },
+  az: {
+    action: 'Tədbir',
+    actionPlan: 'Tədbirlər planı',
+    answer: 'Cavab',
+    auditType: 'Audit növü',
+    auditor: 'Auditor',
+    category: 'Kateqoriya',
+    checklist: 'Çeklist',
+    checklistControls: 'Çeklist kontrolları',
+    className: 'Sinif',
+    compliance: 'Uyğunluq',
+    deliverable: 'Sənəd',
+    dueDate: 'Son tarix',
+    field: 'Sahə',
+    findings: 'Tapıntılar',
+    generatedAt: 'Yaradılma vaxtı',
+    highCriticalFindings: 'Yüksək/Kritik tapıntılar',
+    highCriticalRisks: 'Yüksək/Kritik risklər',
+    impact: 'Təsir',
+    keyMetrics: 'Əsas metriklər',
+    likelihood: 'Ehtimal',
+    metric: 'Metrik',
+    mode: 'Rejim',
+    noFindings: 'Tapıntı yoxdur.',
+    noRisks: 'Risk reyestrində risk yoxdur.',
+    nonConformities: 'Uyğunsuzluqlar',
+    openFindings: 'Açıq tapıntılar',
+    owner: 'Sahib',
+    period: 'Dövr',
+    priorityFindings: 'Prioritet tapıntılar',
+    question: 'Sual',
+    recommendation: 'Tövsiyə',
+    risk: 'Risk',
+    riskMatrix: 'Risk matrisi',
+    risks: 'Risklər',
+    riskClassSummary: 'Risk sinfi xülasəsi',
+    risksInRegister: 'Reyestrdə risklər',
+    state: 'Status',
+    status: 'Status',
+    subsidiary: 'Törəmə şirkət',
+    summary: 'Xülasə',
+    title: 'Başlıq',
+    treatment: 'Tədbir yanaşması',
+    value: 'Dəyər',
+    why: 'Səbəb',
+  },
+  ru: {
+    action: 'Действие',
+    actionPlan: 'План действий',
+    answer: 'Ответ',
+    auditType: 'Тип аудита',
+    auditor: 'Аудитор',
+    category: 'Категория',
+    checklist: 'Чеклист',
+    checklistControls: 'Контроли чеклиста',
+    className: 'Класс',
+    compliance: 'Соответствие',
+    deliverable: 'Документ',
+    dueDate: 'Срок',
+    field: 'Поле',
+    findings: 'Замечания',
+    generatedAt: 'Сформировано',
+    highCriticalFindings: 'Высокие/критичные замечания',
+    highCriticalRisks: 'Высокие/критичные риски',
+    impact: 'Влияние',
+    keyMetrics: 'Ключевые метрики',
+    likelihood: 'Вероятность',
+    metric: 'Метрика',
+    mode: 'Режим',
+    noFindings: 'Замечаний нет.',
+    noRisks: 'В реестре рисков нет записей.',
+    nonConformities: 'Несоответствия',
+    openFindings: 'Открытые замечания',
+    owner: 'Владелец',
+    period: 'Период',
+    priorityFindings: 'Приоритетные замечания',
+    question: 'Вопрос',
+    recommendation: 'Рекомендация',
+    risk: 'Риск',
+    riskMatrix: 'Матрица рисков',
+    risks: 'Риски',
+    riskClassSummary: 'Сводка классов риска',
+    risksInRegister: 'Риски в реестре',
+    state: 'Статус',
+    status: 'Статус',
+    subsidiary: 'Дочерняя компания',
+    summary: 'Сводка',
+    title: 'Название',
+    treatment: 'Обработка',
+    value: 'Значение',
+    why: 'Почему',
+  },
+} as const;
+
+type LabelKey = keyof (typeof LABELS)['en'];
+
+const l = (data: ReportData, key: LabelKey): string => LABELS[data.locale][key];
+
 const executiveRows = (data: ReportData): Array<{ metric: string; value: string }> => [
-  { metric: 'Checklist controls', value: String(data.checklist.length) },
-  { metric: 'Findings', value: String(data.findings.length) },
-  { metric: 'Open findings', value: String(data.findings.filter(openFinding).length) },
+  { metric: l(data, 'checklistControls'), value: String(data.checklist.length) },
+  { metric: l(data, 'findings'), value: String(data.findings.length) },
+  { metric: l(data, 'openFindings'), value: String(data.findings.filter(openFinding).length) },
   {
-    metric: 'High/Critical findings',
+    metric: l(data, 'highCriticalFindings'),
     value: String(data.findings.filter((f) => ['high', 'critical'].includes(f.riskRating)).length),
   },
-  { metric: 'Risks in register', value: String(data.risks.length) },
+  { metric: l(data, 'risksInRegister'), value: String(data.risks.length) },
   {
-    metric: 'High/Critical risks',
+    metric: l(data, 'highCriticalRisks'),
     value: String(
       data.risks.filter((r) => ['high', 'critical'].includes(r.riskClass ?? '')).length,
     ),
@@ -79,7 +224,16 @@ export function toCsv(data: ReportData): Buffer {
   let header: string[];
   let rows: string[][];
   if (data.deliverable === 'risk_matrix') {
-    header = ['Risk', 'Category', 'Likelihood', 'Impact', 'Class', 'Treatment', 'Owner', 'Status'];
+    header = [
+      l(data, 'risk'),
+      l(data, 'category'),
+      l(data, 'likelihood'),
+      l(data, 'impact'),
+      l(data, 'className'),
+      l(data, 'treatment'),
+      l(data, 'owner'),
+      l(data, 'status'),
+    ];
     rows = data.risks.map((r) => [
       r.title,
       r.category ?? '',
@@ -91,7 +245,14 @@ export function toCsv(data: ReportData): Buffer {
       r.status,
     ]);
   } else if (data.deliverable === 'action_plan') {
-    header = ['Action', 'Why', 'Owner', 'Due date', 'Finding status', 'Risk'];
+    header = [
+      l(data, 'action'),
+      l(data, 'why'),
+      l(data, 'owner'),
+      l(data, 'dueDate'),
+      l(data, 'status'),
+      l(data, 'risk'),
+    ];
     rows = data.findings.map((f) => [
       f.recommendation ?? f.title,
       f.title,
@@ -101,10 +262,18 @@ export function toCsv(data: ReportData): Buffer {
       f.riskRating,
     ]);
   } else if (data.deliverable === 'executive_summary') {
-    header = ['Metric', 'Value'];
+    header = [l(data, 'metric'), l(data, 'value')];
     rows = executiveRows(data).map((r) => [r.metric, r.value]);
   } else {
-    header = ['Title', 'Risk', 'Status', 'Owner', 'Auditor', 'Due date', 'Recommendation'];
+    header = [
+      l(data, 'title'),
+      l(data, 'risk'),
+      l(data, 'status'),
+      l(data, 'owner'),
+      l(data, 'auditor'),
+      l(data, 'dueDate'),
+      l(data, 'recommendation'),
+    ];
     rows = data.findings.map((f) => [
       f.title,
       f.riskRating,
@@ -164,22 +333,25 @@ export async function toXlsx(data: ReportData): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'IT Audit Platform';
 
-  const summary = wb.addWorksheet('Summary');
+  const summary = wb.addWorksheet(l(data, 'summary'));
   summary.columns = [
-    { header: 'Field', key: 'field', width: 20 },
-    { header: 'Value', key: 'value', width: 50 },
+    { header: l(data, 'field'), key: 'field', width: 20 },
+    { header: l(data, 'value'), key: 'value', width: 50 },
   ];
   summary.addRows([
-    { field: 'Deliverable', value: data.deliverableTitle },
-    { field: 'Title', value: data.title },
-    { field: 'Subsidiary', value: data.subsidiary ?? '' },
-    { field: 'Audit type', value: data.auditType ?? '' },
-    { field: 'Mode', value: data.mode },
-    { field: 'State', value: data.state },
-    { field: 'Period', value: [data.periodStart, data.periodEnd].filter(Boolean).join(' — ') },
-    { field: 'Findings', value: data.findings.length },
-    { field: 'Risks', value: data.risks.length },
-    { field: 'Generated at', value: data.generatedAt },
+    { field: l(data, 'deliverable'), value: data.deliverableTitle },
+    { field: l(data, 'title'), value: data.title },
+    { field: l(data, 'subsidiary'), value: data.subsidiary ?? '' },
+    { field: l(data, 'auditType'), value: data.auditType ?? '' },
+    { field: l(data, 'mode'), value: data.mode },
+    { field: l(data, 'state'), value: data.state },
+    {
+      field: l(data, 'period'),
+      value: [data.periodStart, data.periodEnd].filter(Boolean).join(' — '),
+    },
+    { field: l(data, 'findings'), value: data.findings.length },
+    { field: l(data, 'risks'), value: data.risks.length },
+    { field: l(data, 'generatedAt'), value: data.generatedAt },
   ]);
   summary.getRow(1).font = { bold: true };
 
@@ -187,9 +359,9 @@ export async function toXlsx(data: ReportData): Promise<Buffer> {
     const checklist = wb.addWorksheet('Checklist');
     checklist.columns = [
       { header: 'Ref', key: 'ref', width: 12 },
-      { header: 'Question', key: 'question', width: 60 },
-      { header: 'Answer', key: 'answer', width: 50 },
-      { header: 'Compliance', key: 'compliance', width: 20 },
+      { header: l(data, 'question'), key: 'question', width: 60 },
+      { header: l(data, 'answer'), key: 'answer', width: 50 },
+      { header: l(data, 'compliance'), key: 'compliance', width: 20 },
     ];
     checklist.addRows(
       data.checklist.map((c) => ({
@@ -204,19 +376,19 @@ export async function toXlsx(data: ReportData): Promise<Buffer> {
 
   const findings = wb.addWorksheet(
     data.deliverable === 'action_plan'
-      ? 'Action Plan'
+      ? l(data, 'actionPlan')
       : data.deliverable === 'nonconformities'
-        ? 'Non-Conformities'
-        : 'Findings',
+        ? l(data, 'nonConformities')
+        : l(data, 'findings'),
   );
   findings.columns = [
-    { header: 'Title', key: 'title', width: 40 },
-    { header: 'Risk', key: 'risk', width: 12 },
-    { header: 'Status', key: 'status', width: 16 },
-    { header: 'Owner', key: 'owner', width: 24 },
-    { header: 'Auditor', key: 'auditor', width: 24 },
-    { header: 'Due date', key: 'dueDate', width: 14 },
-    { header: 'Recommendation', key: 'recommendation', width: 50 },
+    { header: l(data, 'title'), key: 'title', width: 40 },
+    { header: l(data, 'risk'), key: 'risk', width: 12 },
+    { header: l(data, 'status'), key: 'status', width: 16 },
+    { header: l(data, 'owner'), key: 'owner', width: 24 },
+    { header: l(data, 'auditor'), key: 'auditor', width: 24 },
+    { header: l(data, 'dueDate'), key: 'dueDate', width: 14 },
+    { header: l(data, 'recommendation'), key: 'recommendation', width: 50 },
   ];
   findings.addRows(
     data.findings.map((f) => ({
@@ -232,16 +404,16 @@ export async function toXlsx(data: ReportData): Promise<Buffer> {
   findings.getRow(1).font = { bold: true };
 
   if (['audit_report', 'risk_matrix', 'executive_summary'].includes(data.deliverable)) {
-    const risks = wb.addWorksheet('Risk Matrix');
+    const risks = wb.addWorksheet(l(data, 'riskMatrix'));
     risks.columns = [
-      { header: 'Risk', key: 'title', width: 42 },
-      { header: 'Category', key: 'category', width: 18 },
-      { header: 'Likelihood', key: 'likelihood', width: 12 },
-      { header: 'Impact', key: 'impact', width: 10 },
-      { header: 'Class', key: 'className', width: 14 },
-      { header: 'Treatment', key: 'treatment', width: 24 },
-      { header: 'Owner', key: 'owner', width: 24 },
-      { header: 'Status', key: 'status', width: 14 },
+      { header: l(data, 'risk'), key: 'title', width: 42 },
+      { header: l(data, 'category'), key: 'category', width: 18 },
+      { header: l(data, 'likelihood'), key: 'likelihood', width: 12 },
+      { header: l(data, 'impact'), key: 'impact', width: 10 },
+      { header: l(data, 'className'), key: 'className', width: 14 },
+      { header: l(data, 'treatment'), key: 'treatment', width: 24 },
+      { header: l(data, 'owner'), key: 'owner', width: 24 },
+      { header: l(data, 'status'), key: 'status', width: 14 },
     ];
     risks.addRows(
       data.risks.map((r) => ({
@@ -257,20 +429,20 @@ export async function toXlsx(data: ReportData): Promise<Buffer> {
     );
     risks.getRow(1).font = { bold: true };
 
-    const heat = wb.addWorksheet('Risk Class Summary');
+    const heat = wb.addWorksheet(l(data, 'riskClassSummary'));
     heat.columns = [
-      { header: 'Class', key: 'className', width: 18 },
-      { header: 'Count', key: 'count', width: 10 },
+      { header: l(data, 'className'), key: 'className', width: 18 },
+      { header: l(data, 'value'), key: 'count', width: 10 },
     ];
     heat.addRows(heatMapRows(data.risks));
     heat.getRow(1).font = { bold: true };
   }
 
   if (data.deliverable === 'executive_summary') {
-    const exec = wb.addWorksheet('Executive Metrics');
+    const exec = wb.addWorksheet(l(data, 'keyMetrics'));
     exec.columns = [
-      { header: 'Metric', key: 'metric', width: 30 },
-      { header: 'Value', key: 'value', width: 20 },
+      { header: l(data, 'metric'), key: 'metric', width: 30 },
+      { header: l(data, 'value'), key: 'value', width: 20 },
     ];
     exec.addRows(executiveRows(data));
     exec.getRow(1).font = { bold: true };
@@ -289,7 +461,13 @@ export async function toDocx(data: ReportData): Promise<Buffer> {
       width: { size: 100, type: WidthType.PERCENTAGE },
       rows: [
         new TableRow({
-          children: ['Title', 'Risk', 'Status', 'Owner', 'Due date'].map((h) => cell(h, true)),
+          children: [
+            l(data, 'title'),
+            l(data, 'risk'),
+            l(data, 'status'),
+            l(data, 'owner'),
+            l(data, 'dueDate'),
+          ].map((h) => cell(h, true)),
         }),
         ...data.findings.map(
           (f) =>
@@ -307,7 +485,13 @@ export async function toDocx(data: ReportData): Promise<Buffer> {
       width: { size: 100, type: WidthType.PERCENTAGE },
       rows: [
         new TableRow({
-          children: ['Risk', 'Category', 'Likelihood', 'Impact', 'Class'].map((h) => cell(h, true)),
+          children: [
+            l(data, 'risk'),
+            l(data, 'category'),
+            l(data, 'likelihood'),
+            l(data, 'impact'),
+            l(data, 'className'),
+          ].map((h) => cell(h, true)),
         }),
         ...data.risks.map(
           (r) =>
@@ -327,27 +511,29 @@ export async function toDocx(data: ReportData): Promise<Buffer> {
   const base = [
     new Paragraph({ text: data.deliverableTitle, heading: HeadingLevel.HEADING_1 }),
     new Paragraph(data.title),
-    new Paragraph(`Subsidiary: ${data.subsidiary ?? '—'}`),
+    new Paragraph(`${l(data, 'subsidiary')}: ${data.subsidiary ?? '—'}`),
     new Paragraph(
-      `Audit type: ${data.auditType ?? '—'}    Mode: ${data.mode}    State: ${data.state}`,
+      `${l(data, 'auditType')}: ${data.auditType ?? '—'}    ${l(data, 'mode')}: ${data.mode}    ${l(data, 'state')}: ${data.state}`,
     ),
-    new Paragraph(`Generated at: ${data.generatedAt}`),
+    new Paragraph(`${l(data, 'generatedAt')}: ${data.generatedAt}`),
   ];
   const children =
     data.deliverable === 'risk_matrix'
       ? [
           ...base,
-          new Paragraph({ text: 'Risk Matrix', heading: HeadingLevel.HEADING_2 }),
+          new Paragraph({ text: l(data, 'riskMatrix'), heading: HeadingLevel.HEADING_2 }),
           risksTable(),
         ]
       : data.deliverable === 'executive_summary'
         ? [
             ...base,
-            new Paragraph({ text: 'Key metrics', heading: HeadingLevel.HEADING_2 }),
+            new Paragraph({ text: l(data, 'keyMetrics'), heading: HeadingLevel.HEADING_2 }),
             new Table({
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: [
-                new TableRow({ children: ['Metric', 'Value'].map((h) => cell(h, true)) }),
+                new TableRow({
+                  children: [l(data, 'metric'), l(data, 'value')].map((h) => cell(h, true)),
+                }),
                 ...executiveRows(data).map(
                   (r) => new TableRow({ children: [r.metric, r.value].map((c) => cell(c)) }),
                 ),
@@ -357,7 +543,8 @@ export async function toDocx(data: ReportData): Promise<Buffer> {
         : [
             ...base,
             new Paragraph({
-              text: data.deliverable === 'action_plan' ? 'Action Plan' : 'Findings',
+              text:
+                data.deliverable === 'action_plan' ? l(data, 'actionPlan') : l(data, 'findings'),
               heading: HeadingLevel.HEADING_2,
             }),
             findingsTable(),
@@ -379,45 +566,55 @@ function renderPdfHeader(doc: PDFKit.PDFDocument, data: ReportData): void {
   doc.font('bold').fontSize(13).text(data.title);
   doc.moveDown(0.5);
   doc.font('body').fontSize(10);
-  doc.text(`Subsidiary: ${data.subsidiary ?? '—'}`);
-  doc.text(`Audit type: ${data.auditType ?? '—'}   Mode: ${data.mode}   State: ${data.state}`);
+  doc.text(`${l(data, 'subsidiary')}: ${data.subsidiary ?? '—'}`);
+  doc.text(
+    `${l(data, 'auditType')}: ${data.auditType ?? '—'}   ${l(data, 'mode')}: ${data.mode}   ${l(data, 'state')}: ${data.state}`,
+  );
   if (data.periodStart || data.periodEnd) {
-    doc.text(`Period: ${[data.periodStart, data.periodEnd].filter(Boolean).join(' — ')}`);
+    doc.text(
+      `${l(data, 'period')}: ${[data.periodStart, data.periodEnd].filter(Boolean).join(' — ')}`,
+    );
   }
-  doc.text(`Generated at: ${data.generatedAt}`);
+  doc.text(`${l(data, 'generatedAt')}: ${data.generatedAt}`);
 }
 
-function renderPdfFindings(doc: PDFKit.PDFDocument, data: ReportData, title = 'Findings'): void {
+function renderPdfFindings(
+  doc: PDFKit.PDFDocument,
+  data: ReportData,
+  title = l(data, 'findings'),
+): void {
   doc.moveDown().font('bold').fontSize(14).text(title);
   doc.moveDown(0.3).font('body').fontSize(10);
   if (data.findings.length === 0) {
-    doc.text('No findings.');
+    doc.text(l(data, 'noFindings'));
   } else {
     for (const f of data.findings) {
       doc.font('bold').text(`${f.title} [${f.riskRating}]`);
       doc
         .font('body')
-        .text(`Status: ${f.status}   Owner: ${f.owner ?? '—'}   Due: ${f.dueDate ?? '—'}`);
-      if (f.recommendation) doc.text(`Recommendation: ${f.recommendation}`);
+        .text(
+          `${l(data, 'status')}: ${f.status}   ${l(data, 'owner')}: ${f.owner ?? '—'}   ${l(data, 'dueDate')}: ${f.dueDate ?? '—'}`,
+        );
+      if (f.recommendation) doc.text(`${l(data, 'recommendation')}: ${f.recommendation}`);
       doc.moveDown(0.4);
     }
   }
 }
 
 function renderPdfRisks(doc: PDFKit.PDFDocument, data: ReportData): void {
-  doc.moveDown().font('bold').fontSize(14).text('Risk Matrix');
+  doc.moveDown().font('bold').fontSize(14).text(l(data, 'riskMatrix'));
   doc.moveDown(0.3).font('body').fontSize(10);
   if (data.risks.length === 0) {
-    doc.text('No risks in register.');
+    doc.text(l(data, 'noRisks'));
   } else {
     for (const r of data.risks) {
       doc.font('bold').text(`${r.title} [${r.riskClass ?? 'unclassified'}]`);
       doc
         .font('body')
         .text(
-          `Category: ${r.category ?? '—'}   L×I: ${r.inherentLikelihood ?? '—'}×${r.inherentImpact ?? '—'}   Owner: ${r.owner ?? '—'}`,
+          `${l(data, 'category')}: ${r.category ?? '—'}   L×I: ${r.inherentLikelihood ?? '—'}×${r.inherentImpact ?? '—'}   ${l(data, 'owner')}: ${r.owner ?? '—'}`,
         );
-      if (r.treatment) doc.text(`Treatment: ${r.treatment}`);
+      if (r.treatment) doc.text(`${l(data, 'treatment')}: ${r.treatment}`);
       doc.moveDown(0.4);
     }
   }
@@ -440,26 +637,26 @@ export function toPdf(data: ReportData): Promise<Buffer> {
       if (data.deliverable === 'risk_matrix') {
         renderPdfRisks(doc, data);
       } else if (data.deliverable === 'executive_summary') {
-        doc.moveDown().font('bold').fontSize(14).text('Key metrics');
+        doc.moveDown().font('bold').fontSize(14).text(l(data, 'keyMetrics'));
         doc.moveDown(0.3).font('body').fontSize(10);
         for (const row of executiveRows(data)) doc.text(`${row.metric}: ${row.value}`);
-        renderPdfFindings(doc, data, 'Priority findings');
+        renderPdfFindings(doc, data, l(data, 'priorityFindings'));
         renderPdfRisks(doc, data);
       } else {
         renderPdfFindings(
           doc,
           data,
-          data.deliverable === 'action_plan' ? 'Action Plan' : 'Findings',
+          data.deliverable === 'action_plan' ? l(data, 'actionPlan') : l(data, 'findings'),
         );
       }
 
       if (data.deliverable === 'audit_report') {
         renderPdfRisks(doc, data);
-        doc.moveDown().font('bold').fontSize(14).text('Checklist');
+        doc.moveDown().font('bold').fontSize(14).text(l(data, 'checklist'));
         doc.moveDown(0.3).font('body').fontSize(9);
         for (const c of data.checklist) {
           doc.font('bold').text(`${c.ref}. `, { continued: true }).font('body').text(c.question);
-          if (c.answer) doc.text(`   Answer: ${c.answer} [${c.compliance ?? '—'}]`);
+          if (c.answer) doc.text(`   ${l(data, 'answer')}: ${c.answer} [${c.compliance ?? '—'}]`);
           doc.moveDown(0.2);
         }
       }

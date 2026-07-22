@@ -84,6 +84,7 @@ export interface ReportRiskRow {
 }
 
 export interface ReportData {
+  locale: Locale;
   deliverable: ReportDeliverable;
   deliverableTitle: string;
   title: string;
@@ -187,6 +188,7 @@ export class ReportDataService {
         .orderBy(asc(risk.createdAt));
 
       return {
+        locale,
         deliverable,
         deliverableTitle: DELIVERABLE_LABELS[deliverable][locale],
         title: resolveLocalized(eng.titleI18n, locale),
