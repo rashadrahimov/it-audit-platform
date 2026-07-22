@@ -185,37 +185,79 @@ export const emailTemplates = {
     }),
   },
   'weekly-digest': {
-    en: ({ tenantName, openFindings, overdueFindings, overdueTasks, policiesDue }) => ({
+    en: ({
+      tenantName,
+      openFindings,
+      overdueFindings,
+      overdueTasks,
+      policiesDue,
+      reportPackageTitle,
+      reportPackageReadiness,
+      reportPackageStatus,
+      reportPackageFiles,
+      reportPackageFormats,
+      reportPackagePath,
+    }) => ({
       subject: `Weekly compliance digest — ${tenantName}`,
       html: wrap(
         `<p>Your weekly compliance digest for <b>${tenantName}</b>:</p>` +
           `<ul><li>Open findings: <b>${openFindings}</b> (${overdueFindings} overdue)</li>` +
           `<li>Overdue tasks: <b>${overdueTasks}</b></li>` +
-          `<li>Policies due for renewal: <b>${policiesDue}</b></li></ul>` +
+          `<li>Policies due for renewal: <b>${policiesDue}</b></li>` +
+          `<li>Report package: <b>${reportPackageTitle}</b> — ${reportPackageReadiness}% (${reportPackageStatus}), ${reportPackageFiles} files: ${reportPackageFormats}</li></ul>` +
+          `<p>Package path: <code>${reportPackagePath}</code></p>` +
           `<p>Sign in to review and act on outstanding items.</p>`,
       ),
-      text: `Weekly digest for ${tenantName}: open findings ${openFindings} (${overdueFindings} overdue), overdue tasks ${overdueTasks}, policies due ${policiesDue}.`,
+      text: `Weekly digest for ${tenantName}: open findings ${openFindings} (${overdueFindings} overdue), overdue tasks ${overdueTasks}, policies due ${policiesDue}. Report package ${reportPackageTitle}: ${reportPackageReadiness}% (${reportPackageStatus}), ${reportPackageFiles} files (${reportPackageFormats}), ${reportPackagePath}.`,
     }),
-    az: ({ tenantName, openFindings, overdueFindings, overdueTasks, policiesDue }) => ({
+    az: ({
+      tenantName,
+      openFindings,
+      overdueFindings,
+      overdueTasks,
+      policiesDue,
+      reportPackageTitle,
+      reportPackageReadiness,
+      reportPackageStatus,
+      reportPackageFiles,
+      reportPackageFormats,
+      reportPackagePath,
+    }) => ({
       subject: `Həftəlik uyğunluq icmalı — ${tenantName}`,
       html: wrap(
         `<p><b>${tenantName}</b> üçün həftəlik icmal:</p>` +
           `<ul><li>Açıq findinqlər: <b>${openFindings}</b> (${overdueFindings} gecikmiş)</li>` +
           `<li>Gecikmiş tapşırıqlar: <b>${overdueTasks}</b></li>` +
-          `<li>Yenilənməli siyasətlər: <b>${policiesDue}</b></li></ul>`,
+          `<li>Yenilənməli siyasətlər: <b>${policiesDue}</b></li>` +
+          `<li>Hesabat paketi: <b>${reportPackageTitle}</b> — ${reportPackageReadiness}% (${reportPackageStatus}), ${reportPackageFiles} fayl: ${reportPackageFormats}</li></ul>` +
+          `<p>Paket yolu: <code>${reportPackagePath}</code></p>`,
       ),
-      text: `Həftəlik icmal ${tenantName}: açıq findinqlər ${openFindings} (${overdueFindings} gecikmiş), gecikmiş tapşırıqlar ${overdueTasks}, siyasətlər ${policiesDue}.`,
+      text: `Həftəlik icmal ${tenantName}: açıq findinqlər ${openFindings} (${overdueFindings} gecikmiş), gecikmiş tapşırıqlar ${overdueTasks}, siyasətlər ${policiesDue}. Hesabat paketi ${reportPackageTitle}: ${reportPackageReadiness}% (${reportPackageStatus}), ${reportPackageFiles} fayl (${reportPackageFormats}), ${reportPackagePath}.`,
     }),
-    ru: ({ tenantName, openFindings, overdueFindings, overdueTasks, policiesDue }) => ({
+    ru: ({
+      tenantName,
+      openFindings,
+      overdueFindings,
+      overdueTasks,
+      policiesDue,
+      reportPackageTitle,
+      reportPackageReadiness,
+      reportPackageStatus,
+      reportPackageFiles,
+      reportPackageFormats,
+      reportPackagePath,
+    }) => ({
       subject: `Еженедельный дайджест комплаенса — ${tenantName}`,
       html: wrap(
         `<p>Ваш еженедельный дайджест по <b>${tenantName}</b>:</p>` +
           `<ul><li>Открытых findings: <b>${openFindings}</b> (${overdueFindings} просрочено)</li>` +
           `<li>Просроченных задач: <b>${overdueTasks}</b></li>` +
-          `<li>Политик к продлению: <b>${policiesDue}</b></li></ul>` +
+          `<li>Политик к продлению: <b>${policiesDue}</b></li>` +
+          `<li>Пакет отчётов: <b>${reportPackageTitle}</b> — ${reportPackageReadiness}% (${reportPackageStatus}), ${reportPackageFiles} файлов: ${reportPackageFormats}</li></ul>` +
+          `<p>Путь пакета: <code>${reportPackagePath}</code></p>` +
           `<p>Войдите, чтобы разобрать открытые пункты.</p>`,
       ),
-      text: `Дайджест ${tenantName}: открытых findings ${openFindings} (${overdueFindings} просрочено), просроченных задач ${overdueTasks}, политик ${policiesDue}.`,
+      text: `Дайджест ${tenantName}: открытых findings ${openFindings} (${overdueFindings} просрочено), просроченных задач ${overdueTasks}, политик ${policiesDue}. Пакет отчётов ${reportPackageTitle}: ${reportPackageReadiness}% (${reportPackageStatus}), ${reportPackageFiles} файлов (${reportPackageFormats}), ${reportPackagePath}.`,
     }),
   },
   'document-overdue': {
