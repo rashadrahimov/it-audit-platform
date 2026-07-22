@@ -2950,6 +2950,18 @@
       "finding_due_date": "срок из замечания",
       "risk_based_fallback": "{days} дн. по риску",
       "owner": "владелец перенесён"
+    },
+    "guidance": {
+      "what": "Что",
+      "why": "Почему",
+      "how": "Как",
+      "whyText": "риск {risk} · пункт {clause} · цель {days} дн.",
+      "steps": {
+        "assign_owner": "назначить владельца",
+        "remediate_gap": "закрыть обнаруженный разрыв",
+        "retain_evidence": "сохранить доказательство",
+        "retest_control": "повторно протестировать контроль"
+      }
     }
   },
   "roadmap": {

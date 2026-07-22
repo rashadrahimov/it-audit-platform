@@ -16,6 +16,15 @@ export interface TaskItem {
     dueDatePolicy: 'finding_due_date' | 'risk_based_fallback';
     timelineDays: number;
     ownerCarriedFromFinding: boolean;
+    guidance: {
+      what: string;
+      why: {
+        riskRating: string;
+        controlClause: string | null;
+        timelineDays: number;
+      };
+      how: Array<'assign_owner' | 'remediate_gap' | 'retain_evidence' | 'retest_control'>;
+    };
   } | null;
 }
 
@@ -90,25 +99,50 @@ export async function TasksSection({
                   )}
                 </span>
                 {task.provenance && (
-                  <span className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-800">
-                      {t('provenance.recommendation')}
-                    </span>
-                    {task.provenance.controlClause && (
-                      <span className="rounded-full bg-white px-2 py-0.5 font-medium text-secondary">
-                        {task.provenance.controlClause}
+                  <span className="mt-1 flex flex-col gap-2">
+                    <span className="flex flex-wrap gap-1.5 text-[11px]">
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-800">
+                        {t('provenance.recommendation')}
                       </span>
-                    )}
-                    <span className="rounded-full bg-white px-2 py-0.5 font-medium text-secondary">
-                      {t(`provenance.${task.provenance.dueDatePolicy}`, {
-                        days: task.provenance.timelineDays,
-                      })}
-                    </span>
-                    {task.provenance.ownerCarriedFromFinding && (
+                      {task.provenance.controlClause && (
+                        <span className="rounded-full bg-white px-2 py-0.5 font-medium text-secondary">
+                          {task.provenance.controlClause}
+                        </span>
+                      )}
                       <span className="rounded-full bg-white px-2 py-0.5 font-medium text-secondary">
-                        {t('provenance.owner')}
+                        {t(`provenance.${task.provenance.dueDatePolicy}`, {
+                          days: task.provenance.timelineDays,
+                        })}
                       </span>
-                    )}
+                      {task.provenance.ownerCarriedFromFinding && (
+                        <span className="rounded-full bg-white px-2 py-0.5 font-medium text-secondary">
+                          {t('provenance.owner')}
+                        </span>
+                      )}
+                    </span>
+                    <span
+                      data-testid="action-plan-guidance"
+                      className="rounded-lg border border-emerald-100 bg-white/80 p-2 text-[11px] leading-5 text-secondary"
+                    >
+                      <span className="block">
+                        <span className="font-semibold text-primary">{t('guidance.what')}:</span>{' '}
+                        {task.provenance.guidance.what}
+                      </span>
+                      <span className="block">
+                        <span className="font-semibold text-primary">{t('guidance.why')}:</span>{' '}
+                        {t('guidance.whyText', {
+                          risk: task.provenance.guidance.why.riskRating,
+                          clause: task.provenance.guidance.why.controlClause ?? '—',
+                          days: task.provenance.guidance.why.timelineDays,
+                        })}
+                      </span>
+                      <span className="block">
+                        <span className="font-semibold text-primary">{t('guidance.how')}:</span>{' '}
+                        {task.provenance.guidance.how
+                          .map((step) => t(`guidance.steps.${step}`))
+                          .join(' · ')}
+                      </span>
+                    </span>
                   </span>
                 )}
               </span>

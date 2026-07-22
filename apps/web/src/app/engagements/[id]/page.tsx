@@ -323,7 +323,9 @@ export default async function EngagementDetailPage({
     await Promise.all([
       apiFetch(`/engagements/${id}/members`, { headers: tenantHeaders }),
       apiFetch(`/memberships?locale=${locale}`, { headers: tenantHeaders }),
-      apiFetch(`/tasks?entityType=engagement&entityId=${id}`, { headers: tenantHeaders }),
+      apiFetch(`/tasks?entityType=engagement&entityId=${id}&locale=${locale}`, {
+        headers: tenantHeaders,
+      }),
       apiFetch(`/evidence-requests?engagementId=${id}`, { headers: tenantHeaders }),
       apiFetch(`/evidence-requests/suggestions?engagementId=${id}&locale=${locale}`, {
         headers: tenantHeaders,

@@ -2942,6 +2942,18 @@
       "finding_due_date": "finding due date",
       "risk_based_fallback": "{days}d risk timeline",
       "owner": "owner carried over"
+    },
+    "guidance": {
+      "what": "What",
+      "why": "Why",
+      "how": "How",
+      "whyText": "{risk} risk · clause {clause} · target {days} days",
+      "steps": {
+        "assign_owner": "assign an owner",
+        "remediate_gap": "close the observed gap",
+        "retain_evidence": "retain proof",
+        "retest_control": "re-test the control"
+      }
     }
   },
   "roadmap": {

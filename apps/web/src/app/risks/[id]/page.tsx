@@ -128,7 +128,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
     apiFetch('/universe', { headers }),
     apiFetch(`/memberships?locale=${locale}`, { headers }),
     apiFetch(`/comments?entityType=risk&entityId=${id}`, { headers }),
-    apiFetch(`/tasks?entityType=risk&entityId=${id}`, { headers }),
+    apiFetch(`/tasks?entityType=risk&entityId=${id}&locale=${locale}`, { headers }),
     apiFetch(`/entity-acl?entityType=risk&entityId=${id}`, { headers }),
   ]);
   const matrix: Matrix = matrixRes.ok

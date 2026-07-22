@@ -64,6 +64,15 @@ describe('action plan recommendation seeding helpers', () => {
       dueDatePolicy: 'risk_based_fallback',
       timelineDays: 30,
       ownerCarriedFromFinding: true,
+      guidance: {
+        what: 'Define access review evidence retention.',
+        why: {
+          riskRating: 'high',
+          controlClause: 'ISO 27001 A.5.15',
+          timelineDays: 30,
+        },
+        how: ['assign_owner', 'remediate_gap', 'retain_evidence', 'retest_control'],
+      },
     });
     expect(
       actionPlanTaskProvenance({

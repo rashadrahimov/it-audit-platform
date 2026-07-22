@@ -99,7 +99,7 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
   // список участников для assign-формы; у не-админа (403) — форма скрыта
   const [mRes, tasksRes, tagsOfRes, allTagsRes] = await Promise.all([
     apiFetch(`/memberships?locale=${locale}`, { headers }),
-    apiFetch(`/tasks?entityType=finding&entityId=${id}`, { headers }),
+    apiFetch(`/tasks?entityType=finding&entityId=${id}&locale=${locale}`, { headers }),
     apiFetch(`/tags/of?entityType=finding&entityId=${id}`, { headers }),
     apiFetch('/tags', { headers }),
   ]);

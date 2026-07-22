@@ -2950,6 +2950,18 @@
       "finding_due_date": "qeydin son tarixi",
       "risk_based_fallback": "risk üzrə {days} gün",
       "owner": "sahib ötürüldü"
+    },
+    "guidance": {
+      "what": "Nə",
+      "why": "Niyə",
+      "how": "Necə",
+      "whyText": "{risk} risk · bənd {clause} · hədəf {days} gün",
+      "steps": {
+        "assign_owner": "sahib təyin et",
+        "remediate_gap": "aşkarlanan boşluğu bağla",
+        "retain_evidence": "sübutu saxla",
+        "retest_control": "nəzarəti təkrar test et"
+      }
     }
   },
   "roadmap": {

@@ -72,9 +72,12 @@ export class TasksController {
     @Req() req: TenantRequest,
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
+    @Query('locale') localeQuery?: string,
   ) {
     if (!entityType || !entityId) throw new BadRequestException('Нужны entityType и entityId');
-    return this.service.list(req.tenantId, entityType, entityId);
+    const parsed = localeSchema.safeParse(localeQuery ?? DEFAULT_LOCALE);
+    if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+    return this.service.list(req.tenantId, entityType, entityId, parsed.data);
   }
 
   @Post()

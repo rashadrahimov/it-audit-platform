@@ -62,6 +62,15 @@ export interface ActionPlanTaskProvenance {
   dueDatePolicy: 'finding_due_date' | 'risk_based_fallback';
   timelineDays: number;
   ownerCarriedFromFinding: boolean;
+  guidance: {
+    what: string;
+    why: {
+      riskRating: string;
+      controlClause: string | null;
+      timelineDays: number;
+    };
+    how: Array<'assign_owner' | 'remediate_gap' | 'retain_evidence' | 'retest_control'>;
+  };
 }
 
 export function actionPlanTaskProvenance(input: {
@@ -92,5 +101,14 @@ export function actionPlanTaskProvenance(input: {
     ownerCarriedFromFinding:
       Boolean(input.findingOwnerMembershipId) &&
       input.findingOwnerMembershipId === input.taskAssigneeMembershipId,
+    guidance: {
+      what: input.recommendation.trim(),
+      why: {
+        riskRating: input.riskRating,
+        controlClause: input.controlClause ?? null,
+        timelineDays,
+      },
+      how: ['assign_owner', 'remediate_gap', 'retain_evidence', 'retest_control'],
+    },
   };
 }

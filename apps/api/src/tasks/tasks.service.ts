@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
-import { resolveLocalized, type Locale } from '@it-audit/shared';
+import { DEFAULT_LOCALE, resolveLocalized, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { finding, membership, task, user } from '../db/schema';
@@ -56,7 +56,12 @@ export class TasksService {
     private readonly auditLogService: AuditLogService,
   ) {}
 
-  async list(tenantId: string, entityType: string, entityId: string) {
+  async list(
+    tenantId: string,
+    entityType: string,
+    entityId: string,
+    locale: Locale = DEFAULT_LOCALE,
+  ) {
     if (!TASKABLE.has(entityType)) {
       throw new BadRequestException(`entityType: ожидается ${[...TASKABLE].join('|')}`);
     }
@@ -90,7 +95,9 @@ export class TasksService {
         .where(and(eq(finding.id, entityId), isNull(finding.deletedAt)));
       return { rows, findingRow: findingRow ?? null };
     });
-    const recommendation = data.findingRow?.recommendationI18n?.en?.trim() ?? '';
+    const recommendation = data.findingRow?.recommendationI18n
+      ? resolveLocalized(data.findingRow.recommendationI18n, locale).trim()
+      : '';
     const controlClause = data.findingRow ? acceptedAiControlClause(data.findingRow.custom) : null;
     return data.rows.map((r) => ({
       id: r.id,
