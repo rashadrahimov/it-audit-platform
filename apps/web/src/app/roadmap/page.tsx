@@ -81,8 +81,14 @@ const REQUIREMENT_COVERAGE = [
   },
   {
     key: 'advancedAi',
-    status: 'partial',
-    evidence: ['audit-query', 'auto-drl', 'continuous-summary', 'evidence-rescan-plan'],
+    status: 'live',
+    evidence: [
+      'audit-query',
+      'auto-drl',
+      'continuous-summary',
+      'evidence-rescan-plan',
+      'continuous-review-gates',
+    ],
   },
 ] as const;
 

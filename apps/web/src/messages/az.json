@@ -618,6 +618,43 @@
       "noErrors": "Konnektor xətası yoxdur",
       "errors": "{n} konnektor xətası",
       "failingTests": "{n} avtomatik test diqqət tələb edir",
+      "gatesKicker": "Davamlı audit dövrəsi",
+      "gatesTitle": "Auditor baxışı olan avtomatlaşdırma siqnalları",
+      "gatesSubtitle": "Konnektorların yenidən skanı, avtomatik testlər, sübutların reskan planı və AI-DRL auditor növbəti addımı təsdiqləyənə qədər qaralama siqnal kimi görünür.",
+      "loopTitle": "Siqnal zənciri",
+      "draftPolicy": "Avtomatlaşdırma növbələr və qaralama tövsiyələr aça bilər; sübutlar və qeydlər rəsmi olmadan əvvəl auditor onları qəbul edir, düzəldir və ya rədd edir.",
+      "failingTitle": "Baxış tələb edən avtomatik testlər",
+      "noFailingTests": "Cari monitorinq pəncərəsində uğursuz avtomatik test yoxdur.",
+      "insightStatus": {
+        "clear": "Təmiz",
+        "needs-review": "Baxış lazımdır"
+      },
+      "gateSeverity": {
+        "ok": "OK",
+        "attention": "Diqqət",
+        "review": "Auditor baxışı",
+        "blocker": "Bloklanıb"
+      },
+      "gates": {
+        "connector-errors": {
+          "title": "Konnektor xətaları",
+          "hint": "İdxal olunmuş sübuta etibar etməzdən əvvəl uğursuz sinxronizasiyalar yoxlanmalıdır."
+        },
+        "due-rescan": {
+          "title": "Reskan vaxtı çatıb",
+          "hint": "Cədvəldə olan mənbələr inventar, giriş və ya zəiflik məlumatlarının yenilənməsini gözləyir."
+        },
+        "failing-auto-tests": {
+          "title": "Uğursuz avtotestlər",
+          "hint": "Kontrol testinin uğursuzluğu auditor onu yüksəldənə qədər baxış siqnalı olaraq qalır."
+        }
+      },
+      "testStatuses": {
+        "ok": "OK",
+        "failing": "Uğursuz",
+        "needs_attention": "Diqqət tələb edir",
+        "deactivated": "Deaktiv"
+      },
       "metrics": {
         "activeConnectors": "Aktiv mənbələr",
         "scheduledConnectors": "Cədvəldə",
@@ -2803,7 +2840,7 @@
         },
         "advancedAi": {
           "title": "Qabaqcıl AI dövrəsi",
-          "hint": "Sual ilə axtarış, auto-DRL, evidence rescan planı və continuous monitoring artıq var; daha tam avtonomluq yol xəritəsində qalır."
+          "hint": "Sual ilə axtarış, AI-DRL, sübutların reskan planı, davamlı monitorinq və auditor baxış qapıları artıq işləyir."
         }
       }
     }

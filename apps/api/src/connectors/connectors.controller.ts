@@ -90,7 +90,7 @@ export class ConnectorsController {
   })
   @ApiOkResponse({
     description:
-      '{counts, scheduler, lastSyncAt, lastAutoTestAt, connectors[], recentRuns[]} без секретов',
+      '{counts, scheduler, insights, lastSyncAt, lastAutoTestAt, connectors[], recentRuns[], failingAutomatedTests[]} без секретов',
   })
   monitoringSummary(@Req() req: TenantRequest) {
     return this.connectorsService.monitoringSummary(req.tenantId);

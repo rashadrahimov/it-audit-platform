@@ -618,6 +618,43 @@
       "noErrors": "No connector errors",
       "errors": "{n} connector errors",
       "failingTests": "{n} automated tests need attention",
+      "gatesKicker": "Continuous audit loop",
+      "gatesTitle": "Automation signals with auditor review gates",
+      "gatesSubtitle": "Connector rescans, automated tests, evidence rescan planning and AI-generated DRL stay visible as draft signals until an auditor validates the next step.",
+      "loopTitle": "Signal chain",
+      "draftPolicy": "Automation can open queues and draft recommendations; auditors accept, edit or reject before evidence and findings become official.",
+      "failingTitle": "Automated tests needing review",
+      "noFailingTests": "No failing automated tests in the current monitoring window.",
+      "insightStatus": {
+        "clear": "Clear",
+        "needs-review": "Needs review"
+      },
+      "gateSeverity": {
+        "ok": "OK",
+        "attention": "Attention",
+        "review": "Auditor review",
+        "blocker": "Blocked"
+      },
+      "gates": {
+        "connector-errors": {
+          "title": "Connector errors",
+          "hint": "Failed syncs must be reviewed before imported evidence is trusted."
+        },
+        "due-rescan": {
+          "title": "Due rescans",
+          "hint": "Scheduled sources waiting for a fresh inventory, access or vulnerability pull."
+        },
+        "failing-auto-tests": {
+          "title": "Failing auto-tests",
+          "hint": "Control-test failures remain review signals until the auditor promotes them."
+        }
+      },
+      "testStatuses": {
+        "ok": "OK",
+        "failing": "Failing",
+        "needs_attention": "Needs attention",
+        "deactivated": "Deactivated"
+      },
       "metrics": {
         "activeConnectors": "Active sources",
         "scheduledConnectors": "Scheduled",
@@ -2795,7 +2832,7 @@
         },
         "advancedAi": {
           "title": "Advanced AI loop",
-          "hint": "Conversational search, auto-DRL, evidence rescan planning and continuous monitoring are already present; fuller autonomy stays on the roadmap."
+          "hint": "Conversational search, auto-DRL, evidence rescan planning, continuous monitoring and auditor review gates are live."
         }
       }
     }

@@ -7,6 +7,7 @@ import { decryptConfig, encryptConfig } from './config-crypto';
 import { ConnectorSyncService } from './connector-sync.service';
 import { AUTO_TEST_RUN_EVERY_MS, CONNECTOR_AUTOSYNC_EVERY_MS } from '../jobs/jobs.constants';
 import { clampSyncInterval, isDue, mergeConfig } from './connector-schedule';
+import { buildMonitoringInsights } from './monitoring-insights';
 
 interface Actor {
   tenantId: string;
@@ -191,22 +192,25 @@ export class ConnectorsService {
     const failingAutomatedTests = data.automatedTests.filter((t) =>
       ['failing', 'needs_attention'].includes(t.status),
     );
+    const scheduler = {
+      connectorAutosyncEveryMinutes: Math.round(CONNECTOR_AUTOSYNC_EVERY_MS / 60_000),
+      autoTestRunEveryMinutes: Math.round(AUTO_TEST_RUN_EVERY_MS / 60_000),
+    };
+    const counts = {
+      connectors: data.connectors.length,
+      activeConnectors: activeConnectors.length,
+      scheduledConnectors: scheduled.length,
+      dueForSync: dueForSync.length,
+      errorConnectors: errorConnectors.length,
+      automatedTests: data.automatedTests.length,
+      failingAutomatedTests: failingAutomatedTests.length,
+    };
 
     return {
       generatedAt: now.toISOString(),
-      scheduler: {
-        connectorAutosyncEveryMinutes: Math.round(CONNECTOR_AUTOSYNC_EVERY_MS / 60_000),
-        autoTestRunEveryMinutes: Math.round(AUTO_TEST_RUN_EVERY_MS / 60_000),
-      },
-      counts: {
-        connectors: data.connectors.length,
-        activeConnectors: activeConnectors.length,
-        scheduledConnectors: scheduled.length,
-        dueForSync: dueForSync.length,
-        errorConnectors: errorConnectors.length,
-        automatedTests: data.automatedTests.length,
-        failingAutomatedTests: failingAutomatedTests.length,
-      },
+      scheduler,
+      counts,
+      insights: buildMonitoringInsights(counts, scheduler),
       lastSyncAt: lastSyncAt?.toISOString() ?? null,
       lastAutoTestAt: lastAutoTestAt?.toISOString() ?? null,
       connectors: data.connectors.map((c) => {
@@ -231,6 +235,13 @@ export class ConnectorsService {
         outcome: r.outcome,
         stats: r.stats,
         error: r.error,
+      })),
+      failingAutomatedTests: failingAutomatedTests.slice(0, 5).map((t) => ({
+        id: t.id,
+        title: t.titleI18n,
+        status: t.status,
+        slaStatus: t.slaStatus,
+        dueDate: t.dueDate?.toISOString() ?? null,
       })),
     };
   }

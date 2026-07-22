@@ -31,6 +31,24 @@ interface MonitoringSummary {
     automatedTests: number;
     failingAutomatedTests: number;
   };
+  insights?: {
+    status: string;
+    nextAction: string;
+    gates: Array<{
+      key: string;
+      severity: string;
+      count: number;
+      action: string;
+    }>;
+    loop: {
+      signals: string[];
+      cadence: {
+        connectorAutosyncEveryMinutes: number;
+        autoTestRunEveryMinutes: number;
+      };
+      draftPolicy: string;
+    };
+  };
   lastSyncAt: string | null;
   lastAutoTestAt: string | null;
   connectors: Array<{
@@ -52,6 +70,13 @@ interface MonitoringSummary {
     outcome: string;
     stats: unknown;
     error: string | null;
+  }>;
+  failingAutomatedTests?: Array<{
+    id: string;
+    title: Record<string, string>;
+    status: string;
+    slaStatus: string;
+    dueDate: string | null;
   }>;
 }
 
@@ -212,6 +237,95 @@ export default async function ConnectorsPage() {
               </div>
             </div>
           </div>
+          {monitoring.insights && (
+            <div
+              data-testid="continuous-review-gates"
+              className="border-t border-white/10 bg-slate-950/25 p-5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.2em] text-emerald-200 uppercase">
+                    {t('monitor.gatesKicker')}
+                  </p>
+                  <h3 className="mt-1 text-lg font-semibold">{t('monitor.gatesTitle')}</h3>
+                  <p className="mt-1 max-w-2xl text-sm text-emerald-50/70">
+                    {t('monitor.gatesSubtitle')}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    monitoring.insights.status === 'clear'
+                      ? 'bg-emerald-300/15 text-emerald-50 ring-1 ring-emerald-200/25'
+                      : 'bg-amber-300/15 text-amber-100 ring-1 ring-amber-200/30'
+                  }`}
+                >
+                  {t(`monitor.insightStatus.${monitoring.insights.status}`)}
+                </span>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                {monitoring.insights.gates.map((gate) => (
+                  <article
+                    key={gate.key}
+                    className="rounded-2xl border border-white/10 bg-white/10 p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold">
+                          {t(`monitor.gates.${gate.key}.title`)}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-emerald-50/65">
+                          {t(`monitor.gates.${gate.key}.hint`)}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-slate-950/35 px-2 py-1 text-xs font-bold tabular-nums">
+                        {gate.count}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-xs font-medium text-emerald-100">
+                      {t(`monitor.gateSeverity.${gate.severity}`)}
+                    </p>
+                  </article>
+                ))}
+              </div>
+              <div className="mt-4 grid gap-3 text-sm md:grid-cols-[1fr_1fr]">
+                <div className="rounded-2xl border border-white/10 bg-slate-950/30 p-4">
+                  <h4 className="font-semibold text-emerald-50">{t('monitor.loopTitle')}</h4>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {monitoring.insights.loop.signals.map((signal) => (
+                      <span
+                        key={signal}
+                        className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-emerald-50"
+                      >
+                        {signal}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-emerald-50/70">
+                    {t('monitor.draftPolicy')}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-slate-950/30 p-4">
+                  <h4 className="font-semibold text-emerald-50">{t('monitor.failingTitle')}</h4>
+                  <div className="mt-3 space-y-2">
+                    {(monitoring.failingAutomatedTests ?? []).slice(0, 3).map((test) => (
+                      <div
+                        key={test.id}
+                        className="flex items-center justify-between gap-3 rounded-xl bg-white/10 px-3 py-2 text-xs"
+                      >
+                        <span className="font-medium">{test.title[locale] ?? test.title.en}</span>
+                        <span className="text-amber-100">
+                          {t(`monitor.testStatuses.${test.status}`)}
+                        </span>
+                      </div>
+                    ))}
+                    {(monitoring.failingAutomatedTests ?? []).length === 0 && (
+                      <p className="text-xs text-emerald-50/65">{t('monitor.noFailingTests')}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       )}
 
