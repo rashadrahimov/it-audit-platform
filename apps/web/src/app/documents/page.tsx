@@ -4,7 +4,7 @@ import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
 import { FilterBar } from '@/components/filter-bar';
-import { filterQuery, type SearchParams } from '@/lib/filters';
+import { activeFilter, filterQuery, type SearchParams } from '@/lib/filters';
 import {
   fulfillDocumentAction,
   publishDocumentAction,
@@ -146,6 +146,20 @@ export default async function DocumentsPage({
   const reviews: Record<string, EvidenceReview> =
     reviewsRes && reviewsRes.ok ? await reviewsRes.json() : {};
   const firms: AuditFirm[] = firmsRes.ok ? await firmsRes.json() : [];
+  const requestedEntityType = activeFilter(sp, 'entityType');
+  const requestedEntityId = activeFilter(sp, 'entityId');
+  const requestedTarget =
+    requestedEntityType &&
+    requestedEntityId &&
+    ['control', 'engagement'].includes(requestedEntityType)
+      ? `${requestedEntityType}:${requestedEntityId}`
+      : '';
+  const requestedTargetLabel =
+    requestedEntityType === 'engagement'
+      ? (engagements.find((e) => e.id === requestedEntityId)?.title ?? t('uploadContextAudit'))
+      : requestedEntityType === 'control'
+        ? (controls.find((c) => c.id === requestedEntityId)?.ref ?? t('uploadContextControl'))
+        : '';
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const generatedAt = readiness?.generatedAt
@@ -159,6 +173,21 @@ export default async function DocumentsPage({
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
+
+      {requestedTarget && (
+        <section
+          data-testid="document-upload-context"
+          className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-5 shadow-[0_16px_45px_rgba(6,78,59,0.10)]"
+        >
+          <p className="text-xs font-semibold tracking-[0.18em] text-emerald-700 uppercase">
+            {t('uploadContextKicker')}
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-primary">{t('uploadContextTitle')}</h2>
+          <p className="mt-1 max-w-3xl text-sm text-secondary">
+            {t('uploadContextBody', { target: requestedTargetLabel || requestedTarget })}
+          </p>
+        </section>
+      )}
 
       {readiness && (
         <section
@@ -290,6 +319,7 @@ export default async function DocumentsPage({
 
       <form
         action={uploadDocumentAction}
+        id="document-upload"
         data-testid="document-upload"
         className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
       >
@@ -306,6 +336,7 @@ export default async function DocumentsPage({
           <span className="font-medium text-secondary">{t('linkTo')}</span>
           <select
             name="target"
+            defaultValue={requestedTarget}
             className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground"
           >
             <option value="">{t('linkNone')}</option>

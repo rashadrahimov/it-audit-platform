@@ -917,6 +917,22 @@ export default async function EngagementDetailPage({
                         </form>
                       </details>
                     )}
+                    {request.status === 'requested' && (
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-100 bg-emerald-50/70 p-3">
+                        <p className="text-xs text-emerald-950/80">
+                          {evidence.length > 0
+                            ? t('uploadRequestEvidenceHint')
+                            : t('uploadRequestEvidenceEmptyHint')}
+                        </p>
+                        <Link
+                          href={`/documents?entityType=engagement&entityId=${eng.id}#document-upload`}
+                          data-testid="upload-evidence-request"
+                          className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          {t('uploadRequestEvidence')}
+                        </Link>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
