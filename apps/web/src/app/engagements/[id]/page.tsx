@@ -1541,6 +1541,29 @@ export default async function EngagementDetailPage({
             </form>
           )}
         </div>
+        <div
+          className="mb-4 rounded-2xl border border-emerald-200/80 bg-emerald-50/70 p-3"
+          data-testid="action-plan-recommendation-proof"
+        >
+          <p className="text-[11px] font-semibold tracking-[0.18em] text-emerald-800 uppercase">
+            {t('actionPlanProof.kicker')}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+            {[
+              t('actionPlanProof.owner'),
+              t('actionPlanProof.timeline'),
+              t('actionPlanProof.clause'),
+              t('actionPlanProof.review'),
+            ].map((label) => (
+              <span
+                key={label}
+                className="rounded-full border border-emerald-200 bg-white/80 px-2.5 py-1 font-medium text-emerald-900 shadow-sm"
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
         {findings.length === 0 ? (
           <p className="text-sm text-secondary">{t('findingsEmpty')}</p>
         ) : (

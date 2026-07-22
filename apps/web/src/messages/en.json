@@ -296,6 +296,13 @@
     },
     "findings": "Findings",
     "actionPlanHint": "Recommendations can be turned into live remediation tasks for the Action Plan.",
+    "actionPlanProof": {
+      "kicker": "Recommendation engine",
+      "owner": "Finding owner becomes task assignee",
+      "timeline": "Risk SLA fills missing due dates",
+      "clause": "Accepted AI control clause is kept in the task",
+      "review": "Auditor can still edit every task before closure"
+    },
     "seedActionPlan": "Build action plan",
     "findingsEmpty": "No findings yet",
     "findingTitle": "Finding",

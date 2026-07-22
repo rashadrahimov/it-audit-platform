@@ -296,6 +296,13 @@
     },
     "findings": "Qeydlər",
     "actionPlanHint": "Tövsiyələri tədbirlər planı üçün canlı aradan qaldırma tapşırıqlarına çevirmək olar.",
+    "actionPlanProof": {
+      "kicker": "Tövsiyə mühərriki",
+      "owner": "Qeydin sahibi tapşırığın icraçısı olur",
+      "timeline": "Risk SLA son tarix olmadıqda onu doldurur",
+      "clause": "Qəbul edilmiş İİ kontrol bəndi tapşırıqda saxlanılır",
+      "review": "Auditor bağlamadan əvvəl hər tapşırığı redaktə edə bilər"
+    },
     "seedActionPlan": "Tədbirlər planını qur",
     "findingsEmpty": "Hələ qeyd yoxdur",
     "findingTitle": "Qeyd",

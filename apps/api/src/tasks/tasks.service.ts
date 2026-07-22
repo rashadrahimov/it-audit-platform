@@ -4,6 +4,13 @@ import { resolveLocalized, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import { finding, membership, task, user } from '../db/schema';
+import {
+  ACTION_PLAN_DUE_DAYS,
+  acceptedAiControlClause,
+  legacyRecommendationTaskTitle,
+  recommendationTaskTitle,
+  suggestedDueDateForRisk,
+} from './action-plan-seed';
 
 interface Actor {
   tenantId: string;
@@ -33,6 +40,10 @@ export interface CreateTaskInput {
 export interface ActionPlanSeedResult {
   created: number;
   skipped: number;
+  suggestedDueDates: number;
+  withOwner: number;
+  withControlClause: number;
+  timelinePolicy: typeof ACTION_PLAN_DUE_DAYS;
 }
 
 /** Задачи ремедиации (T-V27): декомпозиция finding/risk на шаги с due/assignee. */
@@ -119,21 +130,25 @@ export class TasksService {
   }
 
   /**
-   * T-H35: recommendations → Action Plan. Создаёт remediation tasks из рекомендаций
-   * findings выбранного engagement, сохраняя owner/dueDate и не дублируя уже созданные.
+   * T-H35/T-H68: recommendations → Action Plan. Создаёт remediation tasks из рекомендаций
+   * findings выбранного engagement, сохраняя owner, добавляя risk-based dueDate fallback,
+   * control/standard clause из accepted AI review и не дублируя уже созданные.
    */
   async seedActionPlanFromFindings(
     actor: Actor,
     input: { engagementId: string; locale: Locale },
   ): Promise<ActionPlanSeedResult> {
+    const seedDate = new Date();
     const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const rows = await tx
         .select({
           id: finding.id,
           titleI18n: finding.titleI18n,
           recommendationI18n: finding.recommendationI18n,
+          riskRating: finding.riskRating,
           ownerMembershipId: finding.ownerMembershipId,
           dueDate: finding.dueDate,
+          custom: finding.custom,
         })
         .from(finding)
         .where(and(eq(finding.engagementId, input.engagementId), isNull(finding.deletedAt)));
@@ -144,17 +159,32 @@ export class TasksService {
             : '';
           if (!recommendation) return null;
           const findingTitle = resolveLocalized(f.titleI18n, input.locale);
+          const controlClause = acceptedAiControlClause(f.custom);
+          const legacyTitle = legacyRecommendationTaskTitle(recommendation);
+          const dueDate = f.dueDate ?? suggestedDueDateForRisk(f.riskRating, seedDate);
           return {
             findingId: f.id,
-            title:
-              recommendation.length > 500 ? recommendation.slice(0, 497) + '…' : recommendation,
+            title: recommendationTaskTitle({ recommendation, controlClause }),
+            legacyTitle,
             findingTitle,
+            riskRating: f.riskRating,
+            controlClause,
             ownerMembershipId: f.ownerMembershipId,
-            dueDate: f.dueDate,
+            dueDate,
+            hadExplicitDueDate: Boolean(f.dueDate),
           };
         })
         .filter((row): row is NonNullable<typeof row> => row !== null);
-      if (eligible.length === 0) return { created: 0, skipped: 0 };
+      if (eligible.length === 0) {
+        return {
+          created: 0,
+          skipped: 0,
+          suggestedDueDates: 0,
+          withOwner: 0,
+          withControlClause: 0,
+          timelinePolicy: ACTION_PLAN_DUE_DAYS,
+        };
+      }
 
       const existing = await tx
         .select({ entityId: task.entityId, title: task.title })
@@ -169,7 +199,11 @@ export class TasksService {
           ),
         );
       const existingKeys = new Set(existing.map((t) => `${t.entityId}:${t.title}`));
-      const toCreate = eligible.filter((f) => !existingKeys.has(`${f.findingId}:${f.title}`));
+      const toCreate = eligible.filter(
+        (f) =>
+          !existingKeys.has(`${f.findingId}:${f.title}`) &&
+          !existingKeys.has(`${f.findingId}:${f.legacyTitle}`),
+      );
       if (toCreate.length > 0) {
         await tx.insert(task).values(
           toCreate.map((f) => ({
@@ -178,11 +212,18 @@ export class TasksService {
             entityId: f.findingId,
             title: f.title,
             assigneeMembershipId: f.ownerMembershipId ?? null,
-            dueDate: f.dueDate ?? null,
+            dueDate: f.dueDate,
           })),
         );
       }
-      return { created: toCreate.length, skipped: eligible.length - toCreate.length };
+      return {
+        created: toCreate.length,
+        skipped: eligible.length - toCreate.length,
+        suggestedDueDates: eligible.filter((f) => !f.hadExplicitDueDate).length,
+        withOwner: eligible.filter((f) => Boolean(f.ownerMembershipId)).length,
+        withControlClause: eligible.filter((f) => Boolean(f.controlClause)).length,
+        timelinePolicy: ACTION_PLAN_DUE_DAYS,
+      };
     });
     await this.auditLogService.record({
       tenantId: actor.tenantId,
