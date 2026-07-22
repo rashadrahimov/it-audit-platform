@@ -32,14 +32,14 @@
 - [ ] Интерактивность на оставшихся read-only экранах (devices/working-papers/personnel/access-reviews — create/transition).
 - [ ] Drill-down карточки: risk, engagement (есть), finding, control (есть detail), WP, personnel.
 - [ ] Пустые состояния, лоадеры, обработка ошибок API (сейчас частично), тосты после действий.
-- [ ] Навигация: сейчас всё через /account-список — нужен нормальный сайдбар/лейаут.
+- [x] Навигация: адаптивный app-shell, sidebar, mobile drawer и breadcrumbs закрыты T-H28/T-H32.
 - [ ] **a11y-проход** (фокус, aria, контраст) и **responsive/планшеты** (GEN-10) по всем экранам — скилл ui-ux-pro-max.
 - [ ] Полнота i18n-строк на **прежних** экранах (новые — 100%, старые не аудированы).
 
 ### A3. Backend-полировка (buildable без внешних решений)
-- [ ] **SEC-07** детект конкурентных сессий (нужно решение stateful-сессий — граничит с форком, но реализуемо).
-- [ ] **ENG-08** move/retention engagement (архив есть).
-- [ ] RSK-08 trend-аналитика (частично через snapshots-compare) — полноценные тренды по снапшотам.
+- [x] **SEC-07** детект конкурентных сессий закрыт: повторный вход в TTL фиксирует `concurrent_session`, покрыт integration-тестом.
+- [x] **ENG-08** retention/archive engagement закрыт T-H25: archived-фильтр и lifecycle реализованы.
+- [x] **RSK-08 trend-аналитика** закрыта T-A22/T-H13: `/trends`, snapshot-diff и `/reports/trend`.
 - [x] Валидация custom-fields **на write доменных сущностей** — T-H124: strict после появления definitions; подключено к asset/engagement/risk/working_paper/vendor_intake.
 - [ ] Расширение автотестов E2E (сейчас 20 API + 8 shared + 2 web — добавить покрытие критичных потоков).
 
