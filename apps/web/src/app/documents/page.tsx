@@ -127,6 +127,23 @@ interface RescanPlan {
     links: Array<{ entityType: string; relation: string; reviewStatus: string }>;
   }>;
 }
+type ApiIntakeBucket = 'office_pdf' | 'spreadsheet' | 'image_ocr' | 'config_logs';
+interface IntakeFormatContract {
+  count: number;
+  formats: Array<{
+    bucket: ApiIntakeBucket;
+    examples: string[];
+    extensions: string[];
+    queues: Array<keyof RescanPlan['queues']>;
+    requiresOcr: boolean;
+    canDraftFindings: true;
+    humanReviewRequired: true;
+    draftOnly: true;
+  }>;
+  evidenceGrounded: true;
+  humanReviewRequired: true;
+  draftOnly: true;
+}
 
 const REVIEW_STATUSES = ['not_ready', 'ready', 'flagged', 'accepted'] as const;
 const REVIEW_TONE: Record<string, string> = {
@@ -145,6 +162,12 @@ const STATUS_TONE: Record<string, string> = {
 };
 
 type IntakeBucket = 'officePdf' | 'spreadsheet' | 'imageOcr' | 'configLogs';
+const API_INTAKE_BUCKETS: Record<ApiIntakeBucket, IntakeBucket> = {
+  office_pdf: 'officePdf',
+  spreadsheet: 'spreadsheet',
+  image_ocr: 'imageOcr',
+  config_logs: 'configLogs',
+};
 
 function extensionOf(filename: string): string {
   const i = filename.lastIndexOf('.');
@@ -191,18 +214,29 @@ export default async function DocumentsPage({
   if (!tenantSlug) redirect('/account');
   const headers = { 'X-Tenant-Slug': tenantSlug };
 
-  const [docsRes, readinessRes, rescanPlanRes, membersRes, controlsRes, engagementsRes] =
-    await Promise.all([
-      apiFetch(`/documents?${filterQuery(sp, ['status']).slice(1)}`, { headers }),
-      apiFetch('/documents/readiness-summary', { headers }),
-      apiFetch('/documents/rescan-plan', { headers }),
-      apiFetch(`/memberships?locale=${locale}`, { headers }),
-      apiFetch(`/controls?tenantSlug=${tenantSlug}&locale=${locale}`, { headers }),
-      apiFetch(`/engagements?locale=${locale}`, { headers }),
-    ]);
+  const [
+    docsRes,
+    readinessRes,
+    rescanPlanRes,
+    intakeFormatsRes,
+    membersRes,
+    controlsRes,
+    engagementsRes,
+  ] = await Promise.all([
+    apiFetch(`/documents?${filterQuery(sp, ['status']).slice(1)}`, { headers }),
+    apiFetch('/documents/readiness-summary', { headers }),
+    apiFetch('/documents/rescan-plan', { headers }),
+    apiFetch('/documents/intake-formats', { headers }),
+    apiFetch(`/memberships?locale=${locale}`, { headers }),
+    apiFetch(`/controls?tenantSlug=${tenantSlug}&locale=${locale}`, { headers }),
+    apiFetch(`/engagements?locale=${locale}`, { headers }),
+  ]);
   const docs: DocRow[] = docsRes.ok ? await docsRes.json() : [];
   const readiness: ReadinessSummary | null = readinessRes.ok ? await readinessRes.json() : null;
   const rescanPlan: RescanPlan | null = rescanPlanRes.ok ? await rescanPlanRes.json() : null;
+  const intakeFormatContract: IntakeFormatContract | null = intakeFormatsRes.ok
+    ? await intakeFormatsRes.json()
+    : null;
   const members: Member[] = membersRes.ok ? await membersRes.json() : [];
   const controls: ControlOpt[] = controlsRes.ok ? await controlsRes.json() : [];
   const engagements: EngagementOpt[] = engagementsRes.ok ? await engagementsRes.json() : [];
@@ -440,6 +474,56 @@ export default async function DocumentsPage({
             </div>
           ))}
         </div>
+        {intakeFormatContract && (
+          <div
+            className="border-t border-teal-100 bg-teal-50/40 p-5"
+            data-testid="document-intake-format-proof"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-primary">{t('intake.formatsTitle')}</h3>
+                <p className="mt-1 max-w-3xl text-xs text-secondary">
+                  {t('intake.formatsSubtitle')}
+                </p>
+              </div>
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-800 ring-1 ring-teal-100">
+                {t('intake.humanGate')}
+              </span>
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-4">
+              {intakeFormatContract.formats.map((format) => {
+                const bucket = API_INTAKE_BUCKETS[format.bucket];
+                return (
+                  <div key={format.bucket} className="rounded-xl bg-white/85 p-3 shadow-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-primary">
+                        {t(`intake.buckets.${bucket}.label`)}
+                      </span>
+                      <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold text-teal-800">
+                        {format.requiresOcr ? t('intake.requiresOcr') : t('intake.textExtraction')}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] text-secondary">
+                      {t('intake.supportedExt', {
+                        extensions: format.extensions.slice(0, 6).join(', '),
+                      })}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {format.queues.map((queue) => (
+                        <span
+                          key={queue}
+                          className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-secondary"
+                        >
+                          {t(`rescan.queues.${queue}.label`)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div className="grid gap-3 border-t border-border p-5 md:grid-cols-3">
           {[
             ['linked', aiReadyDocuments],

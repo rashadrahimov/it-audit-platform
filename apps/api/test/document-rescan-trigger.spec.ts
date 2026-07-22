@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { evidenceRescanTriggerForDocument } from '../src/documents/documents.service';
+import {
+  documentIntakeBucket,
+  evidenceRescanTriggerForDocument,
+  supportedDocumentIntakeFormats,
+} from '../src/documents/documents.service';
 
 describe('document evidence re-scan triggers', () => {
   it('queues linked active evidence for extraction and draft AI refresh', () => {
@@ -57,5 +61,47 @@ describe('document evidence re-scan triggers', () => {
     expect(trigger.queues.extraction).toBe(false);
     expect(trigger.queues.aiFindingDrafts).toBe(false);
     expect(trigger.queues.evidenceRequestFollowUp).toBe(true);
+  });
+
+  it('documents the supported intake formats for AI analysis', () => {
+    const contract = supportedDocumentIntakeFormats();
+
+    expect(contract).toMatchObject({
+      count: 4,
+      evidenceGrounded: true,
+      humanReviewRequired: true,
+      draftOnly: true,
+    });
+    expect(contract.formats.map((format) => format.bucket)).toEqual([
+      'office_pdf',
+      'spreadsheet',
+      'image_ocr',
+      'config_logs',
+    ]);
+    expect(contract.formats.find((format) => format.bucket === 'image_ocr')).toMatchObject({
+      requiresOcr: true,
+      queues: ['extraction', 'ocr', 'aiFindingDrafts'],
+    });
+    expect(contract.formats.every((format) => format.canDraftFindings)).toBe(true);
+  });
+
+  it.each([
+    ['audit-report.pdf', 'application/pdf', 'office_pdf'],
+    [
+      'access-policy.docx',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'office_pdf',
+    ],
+    [
+      'user-access.xlsx',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'spreadsheet',
+    ],
+    ['risk-register.csv', 'text/csv', 'spreadsheet'],
+    ['datacenter-photo.jpeg', 'image/jpeg', 'image_ocr'],
+    ['firewall-config.yaml', 'application/x-yaml', 'config_logs'],
+    ['auth-events.log', 'text/plain', 'config_logs'],
+  ])('classifies %s into %s', (filename, mime, expected) => {
+    expect(documentIntakeBucket(filename, mime)).toBe(expected);
   });
 });

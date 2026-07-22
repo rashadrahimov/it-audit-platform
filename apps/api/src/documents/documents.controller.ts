@@ -190,6 +190,16 @@ export class DocumentsController {
     return this.documentsService.rescanPlan(req.tenantId);
   }
 
+  @Get('intake-formats')
+  @RequirePermission('engagement', 'view')
+  @ApiOperation({
+    summary: 'T-H74: supported document formats for AI extraction, OCR and draft findings',
+  })
+  @ApiOkResponse({ description: '{formats, queues, evidenceGrounded, humanReviewRequired}' })
+  intakeFormats() {
+    return this.documentsService.intakeFormats();
+  }
+
   @Get()
   @RequirePermission('engagement', 'view')
   @ApiOperation({

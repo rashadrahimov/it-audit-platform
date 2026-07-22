@@ -2504,6 +2504,12 @@
       "title": "Sənədlərin İİ analizi üçün hazırlığı",
       "subtitle": "Hansı formatların toplandığını, hansının finding qaralamalarını dəstəklədiyini və harada OCR, yükləmə və ya nəzarət/audit bağlantısı lazım olduğunu göstərir.",
       "aiReady": "İİ üçün hazır",
+      "formatsTitle": "Dəstəklənən intake formatları",
+      "formatsSubtitle": "PDF, Word, Excel, CSV, şəkillər və texniki konfiq/log faylları çıxarış, OCR və sübuta əsaslanan İİ finding qaralama növbələrinə yönləndirilir.",
+      "supportedExt": "Uzantılar: {extensions}",
+      "requiresOcr": "OCR",
+      "textExtraction": "Mətn",
+      "humanGate": "Yalnız qaralama · auditor yoxlaması tələb olunur",
       "buckets": {
         "officePdf": {
           "label": "PDF / Office",

@@ -2496,6 +2496,12 @@
       "title": "Document readiness for AI analysis",
       "subtitle": "Shows which formats are already collected, what can support draft findings, and where OCR, upload or control/audit linking is still needed.",
       "aiReady": "AI-ready",
+      "formatsTitle": "Supported intake formats",
+      "formatsSubtitle": "PDF, Word, Excel, CSV, images and technical config/log files are routed into extraction, OCR and evidence-backed draft finding queues.",
+      "supportedExt": "Extensions: {extensions}",
+      "requiresOcr": "OCR",
+      "textExtraction": "Text",
+      "humanGate": "Draft-only · auditor review required",
       "buckets": {
         "officePdf": {
           "label": "PDF / Office",

@@ -51,9 +51,68 @@ export interface LinkInput {
 
 type EvidenceGapReason =
   'awaiting_upload' | 'draft' | 'overdue' | 'renewal_due' | 'unlinked' | 'flagged';
-type DocumentIntakeBucket = 'office_pdf' | 'spreadsheet' | 'image_ocr' | 'config_logs';
+export type DocumentIntakeBucket = 'office_pdf' | 'spreadsheet' | 'image_ocr' | 'config_logs';
 type EvidenceRescanQueue =
   'extraction' | 'ocr' | 'aiFindingDrafts' | 'evidenceRequestFollowUp' | 'reportReadinessRefresh';
+
+export interface DocumentIntakeFormat {
+  bucket: DocumentIntakeBucket;
+  examples: string[];
+  extensions: string[];
+  mimeHints: string[];
+  queues: EvidenceRescanQueue[];
+  requiresOcr: boolean;
+  canDraftFindings: true;
+  humanReviewRequired: true;
+  draftOnly: true;
+}
+
+export const DOCUMENT_INTAKE_FORMATS: DocumentIntakeFormat[] = [
+  {
+    bucket: 'office_pdf',
+    examples: ['policies', 'procedures', 'reports', 'standards', 'network diagrams'],
+    extensions: ['pdf', 'doc', 'docx', 'ppt', 'pptx'],
+    mimeHints: ['application/pdf', 'wordprocessingml', 'presentationml', 'msword'],
+    queues: ['extraction', 'aiFindingDrafts'],
+    requiresOcr: false,
+    canDraftFindings: true,
+    humanReviewRequired: true,
+    draftOnly: true,
+  },
+  {
+    bucket: 'spreadsheet',
+    examples: ['risk registers', 'asset exports', 'access matrices', 'inventories'],
+    extensions: ['xls', 'xlsx', 'xlsm', 'csv', 'tsv'],
+    mimeHints: ['spreadsheet', 'csv', 'tab-separated-values'],
+    queues: ['extraction', 'aiFindingDrafts'],
+    requiresOcr: false,
+    canDraftFindings: true,
+    humanReviewRequired: true,
+    draftOnly: true,
+  },
+  {
+    bucket: 'image_ocr',
+    examples: ['scans', 'screenshots', 'photos', 'signed evidence'],
+    extensions: ['png', 'jpg', 'jpeg', 'webp', 'tif', 'tiff', 'bmp', 'heic'],
+    mimeHints: ['image/'],
+    queues: ['extraction', 'ocr', 'aiFindingDrafts'],
+    requiresOcr: true,
+    canDraftFindings: true,
+    humanReviewRequired: true,
+    draftOnly: true,
+  },
+  {
+    bucket: 'config_logs',
+    examples: ['configs', 'logs', 'JSON/YAML/XML exports', 'technical evidence'],
+    extensions: ['log', 'txt', 'json', 'yaml', 'yml', 'xml', 'conf', 'cfg', 'ini'],
+    mimeHints: ['text/', 'application/json', 'application/xml', 'yaml'],
+    queues: ['extraction', 'aiFindingDrafts'],
+    requiresOcr: false,
+    canDraftFindings: true,
+    humanReviewRequired: true,
+    draftOnly: true,
+  },
+];
 
 export interface EvidenceRescanLink {
   entityType: string;
@@ -83,7 +142,7 @@ function extensionOf(filename: string): string {
   return i === -1 ? '' : filename.slice(i + 1).toLowerCase();
 }
 
-function documentIntakeBucket(filename: string, mime: string): DocumentIntakeBucket {
+export function documentIntakeBucket(filename: string, mime: string): DocumentIntakeBucket {
   const ext = extensionOf(filename);
   const normalizedMime = mime.toLowerCase();
   if (
@@ -103,6 +162,27 @@ function documentIntakeBucket(filename: string, mime: string): DocumentIntakeBuc
     return 'config_logs';
   }
   return 'office_pdf';
+}
+
+export function supportedDocumentIntakeFormats() {
+  return {
+    count: DOCUMENT_INTAKE_FORMATS.length,
+    formats: DOCUMENT_INTAKE_FORMATS,
+    sourceTypes: [
+      'policy',
+      'procedure',
+      'configuration',
+      'log',
+      'diagram',
+      'evidence',
+      'register',
+      'export',
+    ],
+    queues: ['extraction', 'ocr', 'aiFindingDrafts'] satisfies EvidenceRescanQueue[],
+    evidenceGrounded: true,
+    humanReviewRequired: true,
+    draftOnly: true,
+  };
 }
 
 export function evidenceRescanTriggerForDocument(
@@ -160,6 +240,10 @@ export class DocumentsService {
     private readonly storage: FileStorageService,
     private readonly auditLogService: AuditLogService,
   ) {}
+
+  intakeFormats() {
+    return supportedDocumentIntakeFormats();
+  }
 
   async upload(
     actor: Actor,

@@ -2504,6 +2504,12 @@
       "title": "Готовность документов к ИИ-анализу",
       "subtitle": "Показывает, какие форматы уже собраны, что можно использовать для черновиков findings, а где нужен OCR, загрузка или привязка к контролю/аудиту.",
       "aiReady": "готово для ИИ",
+      "formatsTitle": "Поддерживаемые форматы intake",
+      "formatsSubtitle": "PDF, Word, Excel, CSV, изображения и технические конфиги/логи маршрутизируются в extraction, OCR и evidence-backed AI-черновики findings.",
+      "supportedExt": "Расширения: {extensions}",
+      "requiresOcr": "OCR",
+      "textExtraction": "Текст",
+      "humanGate": "Только черновик · нужно ревью аудитора",
       "buckets": {
         "officePdf": {
           "label": "PDF / Office",
