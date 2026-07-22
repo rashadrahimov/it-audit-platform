@@ -316,6 +316,7 @@ export function AppShell({
           <button
             type="button"
             aria-label={labels.menu}
+            data-testid="mobile-menu"
             onClick={() => setOpen(true)}
             className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-border text-secondary hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:hidden"
           >

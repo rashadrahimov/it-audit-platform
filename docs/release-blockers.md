@@ -4,11 +4,7 @@
 
 ## Still buildable in repo
 
-1. **A2 a11y/responsive pass.**
-   - Уже есть: focus-visible ring во многих controls, localized aria-labels для shell/graphs/tags, audit.spec horizontal-scroll guard на всех 44 разделах.
-   - Остаток: системный WCAG AA pass с keyboard/focus order, contrast review, tablet/mobile viewport screenshots и исправлениями найденных мест.
-
-2. **Q backup/restore procedure, repo-side proof.**
+1. **Q backup/restore procedure, repo-side proof.**
    - Уже есть: engagement export, engagement duplicate/restore, config transfer, docs/v1-release-docs.md.
    - Остаток: автоматизированный restore smoke на staging-like DB/object storage. Полная политика retention/RTO/RPO всё равно зависит от клиента.
 

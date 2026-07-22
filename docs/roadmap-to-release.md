@@ -34,7 +34,7 @@
 - [x] Drill-down карточки risk/engagement/finding/control/Working Paper/Personnel закрыты; последние WP и Personnel — T-H134/T-H135.
 - [x] Пустые состояния, лоадеры, обработка ошибок API и тосты после действий закрыты T-H140/T-H142: reusable `EmptyState`, route-level `loading.tsx`/`error.tsx`, cookie-backed `FlashToaster` для server actions и CRUD-подключение на config/glossary/universe/devices/field-permissions.
 - [x] Навигация: адаптивный app-shell, sidebar, mobile drawer и breadcrumbs закрыты T-H28/T-H32.
-- [ ] **a11y-проход** (фокус, aria, контраст) и **responsive/планшеты** (GEN-10) по всем экранам — скилл ui-ux-pro-max.
+- [x] **a11y-проход** (фокус, aria) и **responsive/планшеты** (GEN-10) по repo-side guard закрыты T-H143: Playwright `responsive.spec.ts` проверяет tablet 44 раздела, mobile drawer/key screens, отсутствие horizontal overflow и keyboard focus reachability. Внешний WCAG AA остаётся release gate в Q.
 - [x] Полнота i18n-строк на **прежних** экранах закрыта T-H137: `check-i18n` подтверждает parity en/ru/az (2607 ключей), статический TSX-аудит не нашёл потерянных видимых строк, hardcoded a11y-labels графиков/тегов/языка вынесены в локализованные labels.
 
 ### A3. Backend-полировка (buildable без внешних решений)
