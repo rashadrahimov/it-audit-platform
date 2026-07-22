@@ -383,21 +383,91 @@ export default async function RisksPage({
                         {t('openDuplicate')}
                       </Link>
                     ) : (
-                      <form action={addRiskSuggestionAction}>
-                        <input type="hidden" name="title" value={s.title} />
-                        <input type="hidden" name="description" value={s.description} />
-                        <input type="hidden" name="category" value={s.category} />
-                        <input type="hidden" name="domain" value={s.affectedControlRef ?? ''} />
-                        <input type="hidden" name="inherentImpact" value={s.inherentImpact} />
+                      <form
+                        action={addRiskSuggestionAction}
+                        className="grid w-full gap-2 rounded-lg border border-emerald-100 bg-emerald-50/60 p-3"
+                      >
+                        <label className="grid gap-1 text-xs">
+                          <span className="font-medium text-secondary">{t('reviewTitle')}</span>
+                          <input
+                            name="title"
+                            defaultValue={s.title}
+                            className="rounded-md border border-border bg-white px-2 py-1.5 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                          />
+                        </label>
+                        <label className="grid gap-1 text-xs">
+                          <span className="font-medium text-secondary">
+                            {t('reviewDescription')}
+                          </span>
+                          <textarea
+                            name="description"
+                            defaultValue={s.description}
+                            rows={2}
+                            className="rounded-md border border-border bg-white px-2 py-1.5 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                          />
+                        </label>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <label className="grid gap-1 text-xs">
+                            <span className="font-medium text-secondary">
+                              {t('affectedProcess')}
+                            </span>
+                            <input
+                              name="affectedProcess"
+                              defaultValue={s.affectedProcess}
+                              className="rounded-md border border-border bg-white px-2 py-1.5 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            />
+                          </label>
+                          <label className="grid gap-1 text-xs">
+                            <span className="font-medium text-secondary">{t('affectedAsset')}</span>
+                            <input
+                              name="affectedAsset"
+                              defaultValue={s.affectedAsset}
+                              className="rounded-md border border-border bg-white px-2 py-1.5 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            />
+                          </label>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <label className="grid gap-1 text-xs">
+                            <span className="font-medium text-secondary">{t('impact')}</span>
+                            <input
+                              name="inherentImpact"
+                              type="number"
+                              min="1"
+                              max="5"
+                              defaultValue={s.inherentImpact}
+                              className="rounded-md border border-border bg-white px-2 py-1.5 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            />
+                          </label>
+                          <label className="grid gap-1 text-xs">
+                            <span className="font-medium text-secondary">{t('likelihood')}</span>
+                            <input
+                              name="inherentLikelihood"
+                              type="number"
+                              min="1"
+                              max="5"
+                              defaultValue={s.inherentLikelihood}
+                              className="rounded-md border border-border bg-white px-2 py-1.5 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            />
+                          </label>
+                        </div>
+                        <input type="hidden" name="draftTitle" value={s.title} />
+                        <input type="hidden" name="draftDescription" value={s.description} />
                         <input
                           type="hidden"
-                          name="inherentLikelihood"
+                          name="draftAffectedProcess"
+                          value={s.affectedProcess}
+                        />
+                        <input type="hidden" name="draftAffectedAsset" value={s.affectedAsset} />
+                        <input type="hidden" name="draftInherentImpact" value={s.inherentImpact} />
+                        <input
+                          type="hidden"
+                          name="draftInherentLikelihood"
                           value={s.inherentLikelihood}
                         />
+                        <input type="hidden" name="category" value={s.category} />
+                        <input type="hidden" name="domain" value={s.affectedControlRef ?? ''} />
                         <input type="hidden" name="sourceFindingId" value={s.findingId} />
                         <input type="hidden" name="confidence" value={s.confidence} />
-                        <input type="hidden" name="affectedProcess" value={s.affectedProcess} />
-                        <input type="hidden" name="affectedAsset" value={s.affectedAsset} />
                         <input
                           type="hidden"
                           name="affectedControlRef"
@@ -418,7 +488,7 @@ export default async function RisksPage({
                         <button
                           type="submit"
                           data-testid="risk-suggestion-add"
-                          className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                          className="w-fit rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         >
                           {t('addAfterReview')}
                         </button>

@@ -59,7 +59,22 @@ export interface RiskAiReview {
     id: string;
     location: string;
   };
+  draft?: {
+    title?: string;
+    description?: string;
+    affectedProcess?: string;
+    affectedAsset?: string;
+    inherentImpact?: number;
+    inherentLikelihood?: number;
+  };
+  editedFields?: RiskAiEditedField[];
   dedupeFingerprint?: string;
+}
+
+export interface RiskAiEditedField {
+  field: string;
+  draftValue: string | number | null;
+  acceptedValue: string | number | null;
 }
 
 export interface RejectRiskSuggestionInput {
@@ -93,6 +108,22 @@ function riskAiReviewFromAuditPayload(payload: unknown): RiskAiReview | null {
         location: String(aiReview.evidenceRef.location ?? ''),
       }
     : undefined;
+  const editedFields = Array.isArray(aiReview.editedFields)
+    ? aiReview.editedFields
+        .filter((item): item is Record<string, unknown> => isRecord(item))
+        .map((item) => ({
+          field: String(item.field ?? ''),
+          draftValue:
+            typeof item.draftValue === 'number' || typeof item.draftValue === 'string'
+              ? item.draftValue
+              : null,
+          acceptedValue:
+            typeof item.acceptedValue === 'number' || typeof item.acceptedValue === 'string'
+              ? item.acceptedValue
+              : null,
+        }))
+        .filter((item) => item.field.length > 0)
+    : undefined;
   return {
     source: 'risk_suggestion',
     decision: 'accepted',
@@ -105,9 +136,39 @@ function riskAiReviewFromAuditPayload(payload: unknown): RiskAiReview | null {
     affectedControlRef:
       typeof aiReview.affectedControlRef === 'string' ? aiReview.affectedControlRef : null,
     evidenceRef,
+    editedFields,
     dedupeFingerprint:
       typeof aiReview.dedupeFingerprint === 'string' ? aiReview.dedupeFingerprint : undefined,
   };
+}
+
+function normalized(value: unknown): string | number | null {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+  return null;
+}
+
+function editedRiskSuggestionFields(input: CreateRiskInput): RiskAiEditedField[] {
+  const draft = input.aiReview?.draft;
+  if (!draft) return [];
+  const pairs: Array<[string, unknown, unknown]> = [
+    ['title', draft.title, input.titleI18n.en],
+    ['description', draft.description, input.descriptionI18n?.en],
+    ['affectedProcess', draft.affectedProcess, input.aiReview?.affectedProcess],
+    ['affectedAsset', draft.affectedAsset, input.aiReview?.affectedAsset],
+    ['inherentImpact', draft.inherentImpact, input.inherentImpact],
+    ['inherentLikelihood', draft.inherentLikelihood, input.inherentLikelihood],
+  ];
+  return pairs
+    .map(([field, draftValue, acceptedValue]) => ({
+      field,
+      draftValue: normalized(draftValue),
+      acceptedValue: normalized(acceptedValue),
+    }))
+    .filter((item) => item.draftValue !== item.acceptedValue);
 }
 
 /** Risk register (T-057, B6): скоринг по матрице тенанта, risk_class computed. */
@@ -284,6 +345,9 @@ export class RisksService {
       if (!row) throw new Error('Риск не создался');
       return row;
     });
+    const aiReview = input.aiReview
+      ? { ...input.aiReview, editedFields: editedRiskSuggestionFields(input) }
+      : undefined;
     await this.auditLogService.record({
       tenantId: actor.tenantId,
       actorUserId: actor.userId,
@@ -294,10 +358,10 @@ export class RisksService {
       after: {
         title: created.titleI18n.en,
         riskClass: created.riskClass,
-        aiReview: input.aiReview ?? undefined,
+        aiReview,
       },
     });
-    if (input.aiReview) {
+    if (aiReview) {
       await this.auditLogService.record({
         tenantId: actor.tenantId,
         actorUserId: actor.userId,
@@ -306,7 +370,7 @@ export class RisksService {
         entityType: 'risk',
         entityId: created.id,
         after: {
-          aiReview: input.aiReview,
+          aiReview,
           reviewerAction: 'created_register_risk',
           final: {
             title: created.titleI18n.en,

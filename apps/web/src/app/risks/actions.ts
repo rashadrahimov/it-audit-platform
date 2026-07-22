@@ -178,6 +178,10 @@ export async function addRiskSuggestionAction(formData: FormData): Promise<void>
   const evidenceId = String(formData.get('evidenceId') ?? '').trim();
   const evidenceLocation = String(formData.get('evidenceLocation') ?? '').trim();
   const dedupeFingerprint = String(formData.get('dedupeFingerprint') ?? '').trim();
+  const draftNum = (k: string) => {
+    const v = Number(formData.get(k));
+    return Number.isFinite(v) && v >= 1 && v <= 5 ? v : undefined;
+  };
   const num = (k: string) => {
     const v = Number(formData.get(k));
     return Number.isFinite(v) && v >= 1 && v <= 5 ? v : 3;
@@ -211,6 +215,15 @@ export async function addRiskSuggestionAction(formData: FormData): Promise<void>
               evidenceType && evidenceId && evidenceLocation
                 ? { type: evidenceType, id: evidenceId, location: evidenceLocation }
                 : undefined,
+            draft: {
+              title: String(formData.get('draftTitle') ?? '').trim() || undefined,
+              description: String(formData.get('draftDescription') ?? '').trim() || undefined,
+              affectedProcess:
+                String(formData.get('draftAffectedProcess') ?? '').trim() || undefined,
+              affectedAsset: String(formData.get('draftAffectedAsset') ?? '').trim() || undefined,
+              inherentImpact: draftNum('draftInherentImpact'),
+              inherentLikelihood: draftNum('draftInherentLikelihood'),
+            },
             dedupeFingerprint: dedupeFingerprint || undefined,
           }
         : undefined,

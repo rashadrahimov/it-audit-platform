@@ -1278,6 +1278,8 @@
     "evidence": "Sübut",
     "addAfterReview": "Yoxlamadan sonra əlavə et",
     "rejectSuggestion": "Təklifi rədd et",
+    "reviewTitle": "Başlığı yoxla",
+    "reviewDescription": "Təsviri yoxla",
     "affectedProcessAsset": "Təsirə məruz qalan proses / aktiv",
     "affectedProcess": "Təsirə məruz qalan proses",
     "affectedAsset": "Təsirə məruz qalan aktiv",
@@ -1290,7 +1292,8 @@
       "title": "Qəbul edilmiş İİ risk təklifi",
       "accepted": "Auditor tərəfindən qəbul edilib",
       "evidence": "Sübut istinadı",
-      "sourceFinding": "Mənbə qeyd"
+      "sourceFinding": "Mənbə qeyd",
+      "editedFields": "Auditor düzəlişləri"
     },
     "possibleDuplicate": "Mümkün dublikat",
     "dedupeMatch": "Reyestr uyğunluğu",

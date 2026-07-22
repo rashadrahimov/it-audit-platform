@@ -1278,6 +1278,8 @@
     "evidence": "Evidence",
     "addAfterReview": "Add after review",
     "rejectSuggestion": "Reject suggestion",
+    "reviewTitle": "Review title",
+    "reviewDescription": "Review description",
     "affectedProcessAsset": "Affected process / asset",
     "affectedProcess": "Affected process",
     "affectedAsset": "Affected asset",
@@ -1290,7 +1292,8 @@
       "title": "Accepted AI risk suggestion",
       "accepted": "Accepted by auditor",
       "evidence": "Evidence reference",
-      "sourceFinding": "Source finding"
+      "sourceFinding": "Source finding",
+      "editedFields": "Auditor edits"
     },
     "possibleDuplicate": "Possible duplicate",
     "dedupeMatch": "Register match",

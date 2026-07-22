@@ -47,6 +47,16 @@ const aiRiskReviewSchema = z.object({
       location: z.string(),
     })
     .optional(),
+  draft: z
+    .object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      affectedProcess: z.string().optional(),
+      affectedAsset: z.string().optional(),
+      inherentImpact: score.optional(),
+      inherentLikelihood: score.optional(),
+    })
+    .optional(),
   dedupeFingerprint: z.string().optional(),
 });
 

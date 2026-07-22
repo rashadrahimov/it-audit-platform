@@ -67,6 +67,14 @@ describe('AI risk suggestion HITL traceability', () => {
             id: '00000000-0000-0000-0000-000000000001',
             location: 'Finding linked to BCK-01',
           },
+          draft: {
+            title: 'Business risk — Backup restore gap',
+            description: 'AI draft continuity risk.',
+            affectedProcess: 'Continuity',
+            affectedAsset: 'Backup evidence',
+            inherentImpact: 3,
+            inherentLikelihood: 4,
+          },
           dedupeFingerprint: 'continuity:bck-01:backup-restoration',
         },
       },
@@ -87,6 +95,29 @@ describe('AI risk suggestion HITL traceability', () => {
         affectedProcess: 'Business continuity and service recovery',
         affectedAsset: 'Backup platform / recovery evidence',
         affectedControlRef: 'BCK-01',
+        editedFields: [
+          {
+            field: 'title',
+            draftValue: 'Business risk — Backup restore gap',
+            acceptedValue: 'Business risk — Backup restoration is not tested',
+          },
+          {
+            field: 'description',
+            draftValue: 'AI draft continuity risk.',
+            acceptedValue: 'Potential continuity risk derived from a finding.',
+          },
+          {
+            field: 'affectedProcess',
+            draftValue: 'Continuity',
+            acceptedValue: 'Business continuity and service recovery',
+          },
+          {
+            field: 'affectedAsset',
+            draftValue: 'Backup evidence',
+            acceptedValue: 'Backup platform / recovery evidence',
+          },
+          { field: 'inherentImpact', draftValue: 3, acceptedValue: 4 },
+        ],
       },
       reviewerAction: 'created_register_risk',
     });
@@ -101,6 +132,29 @@ describe('AI risk suggestion HITL traceability', () => {
       affectedProcess: 'Business continuity and service recovery',
       affectedAsset: 'Backup platform / recovery evidence',
       affectedControlRef: 'BCK-01',
+      editedFields: [
+        {
+          field: 'title',
+          draftValue: 'Business risk — Backup restore gap',
+          acceptedValue: 'Business risk — Backup restoration is not tested',
+        },
+        {
+          field: 'description',
+          draftValue: 'AI draft continuity risk.',
+          acceptedValue: 'Potential continuity risk derived from a finding.',
+        },
+        {
+          field: 'affectedProcess',
+          draftValue: 'Continuity',
+          acceptedValue: 'Business continuity and service recovery',
+        },
+        {
+          field: 'affectedAsset',
+          draftValue: 'Backup evidence',
+          acceptedValue: 'Backup platform / recovery evidence',
+        },
+        { field: 'inherentImpact', draftValue: 3, acceptedValue: 4 },
+      ],
       dedupeFingerprint: 'continuity:bck-01:backup-restoration',
     });
   });

@@ -52,6 +52,11 @@ interface RiskDetail {
     affectedAsset?: string;
     affectedControlRef?: string | null;
     evidenceRef?: { type: string; id: string; location: string };
+    editedFields?: Array<{
+      field: string;
+      draftValue: string | number | null;
+      acceptedValue: string | number | null;
+    }>;
     dedupeFingerprint?: string;
   } | null;
 }
@@ -279,6 +284,22 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                 </Link>
               </dd>
             </div>
+            {r.aiReview.editedFields && r.aiReview.editedFields.length > 0 && (
+              <div className="sm:col-span-2">
+                <dt className="text-xs font-medium text-secondary">{t('aiTrace.editedFields')}</dt>
+                <dd className="mt-1 flex flex-wrap gap-1.5">
+                  {r.aiReview.editedFields.map((item) => (
+                    <span
+                      key={item.field}
+                      className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-emerald-800"
+                    >
+                      {item.field}: {String(item.draftValue ?? '—')} →{' '}
+                      {String(item.acceptedValue ?? '—')}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            )}
           </dl>
         </section>
       )}

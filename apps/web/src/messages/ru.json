@@ -1278,6 +1278,8 @@
     "evidence": "Доказательство",
     "addAfterReview": "Добавить после проверки",
     "rejectSuggestion": "Отклонить предложение",
+    "reviewTitle": "Проверить название",
+    "reviewDescription": "Проверить описание",
     "affectedProcessAsset": "Затронутый процесс / актив",
     "affectedProcess": "Затронутый процесс",
     "affectedAsset": "Затронутый актив",
@@ -1290,7 +1292,8 @@
       "title": "Принятое AI-предложение риска",
       "accepted": "Принято аудитором",
       "evidence": "Ссылка на доказательство",
-      "sourceFinding": "Исходное замечание"
+      "sourceFinding": "Исходное замечание",
+      "editedFields": "Правки аудитора"
     },
     "possibleDuplicate": "Возможный дубль",
     "dedupeMatch": "Совпадение в реестре",
