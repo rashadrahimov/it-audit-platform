@@ -35,4 +35,16 @@ describe('каталоги переводов UI (T-022, ADR-0009)', () => {
       expect(ru.roadmap.coverage.evidence).toHaveProperty(key);
     }
   });
+
+  it('snapshots RU keeps visible page labels localized and product-term stable', () => {
+    expect(ru.account.snapshots).toBe('Снапшоты');
+    expect(ru.snapshots.title).toBe('Снапшоты');
+    expect(ru.snapshots.create).toBe('Создать снапшот');
+    expect(ru.snapshots.labelPh).toContain('закрытие Q3 2026');
+    expect(ru.snapshots.createBtn).toBe('Зафиксировать');
+
+    for (const key of ['title', 'create', 'labelPh', 'createBtn', 'viewComposition'] as const) {
+      expect(ru.snapshots[key]).not.toBe(en.snapshots[key]);
+    }
+  });
 });
