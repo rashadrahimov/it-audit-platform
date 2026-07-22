@@ -29,6 +29,8 @@ export interface FindingSuggestion {
   reason: string;
   expected: string;
   observed: string;
+  controlClause: string;
+  riskJustification: string;
   confidence: number;
   evidenceReferences: EvidenceReference[];
   aiDraft: true;
@@ -53,6 +55,11 @@ export function suggestFindings(items: SuggestInputItem[]): FindingSuggestion[] 
     const observed = it.responseText?.trim()
       ? `Auditee response (${it.complianceStatus}): ${it.responseText.trim()}`
       : `Auditee marked the control as ${it.complianceStatus}`;
+    const controlClause = it.ref ?? '—';
+    const riskJustification =
+      risk === 'high'
+        ? 'High risk because the control is marked non-compliant and can materially weaken the audit objective until remediated.'
+        : 'Medium risk because the control is only partially compliant and requires remediation or compensating evidence.';
     out.push({
       checklistItemId: it.checklistItemId,
       ref: it.ref,
@@ -61,6 +68,8 @@ export function suggestFindings(items: SuggestInputItem[]): FindingSuggestion[] 
       reason: `Ответ «${it.complianceStatus}», finding отсутствует`,
       expected,
       observed,
+      controlClause,
+      riskJustification,
       confidence: it.evidenceReferences.length > 0 ? 0.82 : 0.64,
       evidenceReferences: it.evidenceReferences,
       aiDraft: true,

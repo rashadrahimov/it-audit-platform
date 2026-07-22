@@ -343,6 +343,14 @@
     "confidence": "Confidence",
     "expected": "Expected",
     "observed": "Observed",
+    "explainability": {
+      "kicker": "Explainability packet",
+      "controlClause": "Control clause",
+      "reasoning": "Reasoning",
+      "reasoningValue": "AI compared the auditee response with {clause} and found a control gap that still needs auditor validation.",
+      "riskJustification": "Risk justification",
+      "riskJustificationValue": "Initial rating is {risk} because the observed gap can weaken the control objective until remediation or compensating evidence is confirmed."
+    },
     "noEvidenceRef": "No document reference yet",
     "aiAccepted": "AI accepted",
     "trace": {
@@ -2329,6 +2337,13 @@
     "humanAccepted": "Accepted by auditor",
     "aiExpected": "Expected control state",
     "aiObserved": "Observed gap",
+    "aiExplainabilityKicker": "Explainability packet",
+    "aiControlClause": "Control clause",
+    "aiReasoning": "Reasoning",
+    "aiRiskJustification": "Risk justification",
+    "aiControlClauseFallback": "Control clause is inherited from the linked checklist item.",
+    "aiReasoningFallback": "The finding was created from an AI draft after human acceptance.",
+    "aiRiskJustificationFallback": "Initial risk is {risk} based on the observed control gap and available evidence.",
     "aiNoEvidence": "No document reference was attached",
     "statuses": {
       "identified": "Identified",
@@ -2740,7 +2755,7 @@
         },
         "documentAi": {
           "title": "AI document analysis and findings",
-          "hint": "Finding drafts are evidence-grounded; intake and rescan planning show PDF/Office, spreadsheets, configs and the OCR queue."
+          "hint": "Finding drafts are evidence-grounded and explainable; intake and rescan planning show PDF/Office, spreadsheets, configs and the OCR queue."
         },
         "recommendations": {
           "title": "Recommendations and action plan",

@@ -97,6 +97,9 @@ interface FindingRow {
     confidence: number;
     expected: string;
     observed: string;
+    reason?: string;
+    controlClause?: string;
+    riskJustification?: string;
     evidenceReferences: Array<{
       documentId: string;
       filename: string;
@@ -260,6 +263,8 @@ export default async function EngagementDetailPage({
     reason: string;
     expected: string;
     observed: string;
+    controlClause: string;
+    riskJustification: string;
     confidence: number;
     evidenceReferences: Array<{
       documentId: string;
@@ -658,6 +663,40 @@ export default async function EngagementDetailPage({
                     <dd className="mt-1 text-foreground">{s.observed}</dd>
                   </div>
                 </dl>
+                <div
+                  className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3"
+                  data-testid="ai-finding-explainability"
+                >
+                  <p className="text-xs font-semibold tracking-[0.12em] text-emerald-700 uppercase">
+                    {t('explainability.kicker')}
+                  </p>
+                  <dl className="mt-2 grid gap-2 text-xs md:grid-cols-3">
+                    <div>
+                      <dt className="font-semibold text-secondary">
+                        {t('explainability.controlClause')}
+                      </dt>
+                      <dd className="mt-1 text-foreground">{s.controlClause}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold text-secondary">
+                        {t('explainability.reasoning')}
+                      </dt>
+                      <dd className="mt-1 text-foreground">
+                        {t('explainability.reasoningValue', { clause: s.controlClause })}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold text-secondary">
+                        {t('explainability.riskJustification')}
+                      </dt>
+                      <dd className="mt-1 text-foreground">
+                        {t('explainability.riskJustificationValue', {
+                          risk: t(`risk.${s.suggestedRisk}`),
+                        })}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap gap-1.5">
                     {s.evidenceReferences.length > 0 ? (
@@ -690,6 +729,11 @@ export default async function EngagementDetailPage({
                       ].join('\n'),
                       s.expected,
                       s.observed,
+                      t('explainability.reasoningValue', { clause: s.controlClause }),
+                      s.controlClause,
+                      t('explainability.riskJustificationValue', {
+                        risk: t(`risk.${s.suggestedRisk}`),
+                      }),
                       s.confidence,
                       JSON.stringify(s.evidenceReferences),
                     )}

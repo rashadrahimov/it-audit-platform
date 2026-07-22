@@ -54,6 +54,8 @@ const createFindingSchema = z.object({
       expected: z.string().min(1).max(4000),
       observed: z.string().min(1).max(4000),
       reason: z.string().max(4000).optional(),
+      controlClause: z.string().max(1000).optional(),
+      riskJustification: z.string().max(2000).optional(),
       evidenceReferences: z
         .array(
           z.object({

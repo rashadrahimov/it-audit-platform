@@ -78,6 +78,8 @@ export interface AiFindingReviewInput {
   expected: string;
   observed: string;
   reason?: string;
+  controlClause?: string;
+  riskJustification?: string;
   evidenceReferences?: Array<{
     documentId: string;
     filename: string;
@@ -105,6 +107,9 @@ function aiReviewFromCustom(custom: unknown): AiFindingReviewMetadata | null {
     expected: typeof data.expected === 'string' ? data.expected : '',
     observed: typeof data.observed === 'string' ? data.observed : '',
     reason: typeof data.reason === 'string' ? data.reason : undefined,
+    controlClause: typeof data.controlClause === 'string' ? data.controlClause : undefined,
+    riskJustification:
+      typeof data.riskJustification === 'string' ? data.riskJustification : undefined,
     evidenceReferences: Array.isArray(data.evidenceReferences) ? data.evidenceReferences : [],
     reviewedAt: typeof data.reviewedAt === 'string' ? data.reviewedAt : '',
     reviewedBy: typeof data.reviewedBy === 'string' ? data.reviewedBy : '',

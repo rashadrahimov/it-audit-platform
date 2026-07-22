@@ -38,6 +38,8 @@ interface FindingDetail {
     expected: string;
     observed: string;
     reason?: string;
+    controlClause?: string;
+    riskJustification?: string;
     evidenceReferences: Array<{
       documentId: string;
       filename: string;
@@ -123,6 +125,11 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
     [t('retestResult'), f.retestResult],
     [t('resolution'), f.resolutionDate ? dateFmt.format(new Date(f.resolutionDate)) : null],
   ];
+  const aiControlClause = f.aiReview?.controlClause ?? t('aiControlClauseFallback');
+  const aiReasoning = f.aiReview?.reason ?? t('aiReasoningFallback');
+  const aiRiskJustification =
+    f.aiReview?.riskJustification ??
+    t('aiRiskJustificationFallback', { risk: t(`ratings.${f.riskRating}`) });
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 pt-12">
@@ -199,6 +206,28 @@ export default async function FindingDetailPage({ params }: { params: Promise<{ 
               <dd className="mt-1 text-foreground">{f.aiReview.observed}</dd>
             </div>
           </dl>
+          <div
+            className="mt-3 rounded-xl border border-emerald-100 bg-white/80 p-3"
+            data-testid="finding-ai-explainability"
+          >
+            <p className="text-xs font-semibold tracking-[0.12em] text-emerald-700 uppercase">
+              {t('aiExplainabilityKicker')}
+            </p>
+            <dl className="mt-2 grid gap-2 text-xs md:grid-cols-3">
+              <div>
+                <dt className="font-semibold text-secondary">{t('aiControlClause')}</dt>
+                <dd className="mt-1 text-foreground">{aiControlClause}</dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-secondary">{t('aiReasoning')}</dt>
+                <dd className="mt-1 text-foreground">{aiReasoning}</dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-secondary">{t('aiRiskJustification')}</dt>
+                <dd className="mt-1 text-foreground">{aiRiskJustification}</dd>
+              </div>
+            </dl>
+          </div>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {f.aiReview.evidenceReferences.length > 0 ? (
               f.aiReview.evidenceReferences.map((ev) => (

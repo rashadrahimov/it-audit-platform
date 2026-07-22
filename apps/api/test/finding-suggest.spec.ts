@@ -31,6 +31,9 @@ describe('suggestFindings', () => {
       reviewRequired: true,
       expected: 'Control requirement: Access reviews are performed quarterly',
       observed: 'Auditee response (non_compliant): Reviews are ad-hoc and not documented.',
+      controlClause: 'AC-01',
+      riskJustification:
+        'High risk because the control is marked non-compliant and can materially weaken the audit objective until remediated.',
       evidenceReferences: [{ filename: 'access-review.xlsx', location: 'response for AC-01' }],
     });
   });

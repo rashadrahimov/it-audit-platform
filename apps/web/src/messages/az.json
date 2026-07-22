@@ -326,16 +326,16 @@
         "period": "Dövr",
         "team": "Komanda"
       },
-      "workflowTitle": "Standart workflow",
+      "workflowTitle": "Standart proses",
       "phases": {
-        "scoping": "Scoping",
+        "scoping": "Əhatənin müəyyən edilməsi",
         "data_collection": "Məlumat toplama",
         "assessment": "Qiymətləndirmə",
-        "findings": "Finding-lər",
+        "findings": "Qeydlər",
         "reporting": "Hesabat"
       },
-      "deliverablesTitle": "Deliverable paketi",
-      "deliverablesBody": "Final nəticələr management/regulator üçün hazır hesabat faylları və working paper ixracları kimi müştəri dillərində hazırlanır."
+      "deliverablesTitle": "Nəticə paketi",
+      "deliverablesBody": "Final nəticələr rəhbərlik/tənzimləyici üçün hazır hesabat faylları və iş sənədi ixracları kimi müştəri dillərində hazırlanır."
     },
     "suggestionsKicker": "AI qaralaması · sübuta əsaslanır",
     "suggestions": "Təklif olunan qeydlər (gaplar)",
@@ -343,13 +343,21 @@
     "confidence": "Etibar",
     "expected": "Gözlənilən",
     "observed": "Müşahidə olunan",
+    "explainability": {
+      "kicker": "İzah paketi",
+      "controlClause": "Kontrol bəndi",
+      "reasoning": "Məntiq",
+      "reasoningValue": "İİ audit olunan cavabı {clause} ilə müqayisə etdi və hələ auditor təsdiqi tələb edən kontrol boşluğu tapdı.",
+      "riskJustification": "Risk əsaslandırması",
+      "riskJustificationValue": "İlkin qiymət {risk}: müşahidə olunan boşluq aradan qaldırılana və ya kompensasiyaedici sübut təsdiqlənənə qədər kontrol məqsədini zəiflədə bilər."
+    },
     "noEvidenceRef": "Hələ sənəd istinadı yoxdur",
     "aiAccepted": "AI-dən qəbul edilib",
     "trace": {
       "kicker": "İİ izlənəbilirliyi",
       "title": "Sübut → İİ qaralaması → insan qərarı",
       "subtitle": "İİ ilə görülən işin bağlı sübutlardan finding qaralamalarına, auditor qəbuluna və hesabat nəticələrinə necə keçdiyini göstərir.",
-      "accepted": "qəbul edilmiş İİ finding-ləri",
+      "accepted": "qəbul edilmiş İİ qeydləri",
       "steps": {
         "evidence": {
           "label": "Sübut",
@@ -361,23 +369,23 @@
         },
         "review": {
           "label": "İnsan icmalı",
-          "hint": "{count} qəbul qərarında reviewer yazılıb"
+          "hint": "{count} qəbul qərarında yoxlayan qeyd olunub"
         },
         "report": {
           "label": "Hesabat izi",
-          "hint": "{count} açıq finding deliverable-lara düşə bilər"
+          "hint": "{count} açıq qeyd nəticə paketinə düşə bilər"
         }
       },
       "policyTitle": "Etibar qaydaları aktivdir",
       "policy": {
-        "grounded": "İİ təklifləri mümkün olduqda expected state, observed state və sübut istinadlarını göstərir.",
-        "draftOnly": "Auditor finding yaratmayınca İİ nəticəsi yalnız qaralama olaraq qalır.",
-        "human": "Qəbul edilmiş İİ finding-ləri reviewer, timestamp, confidence və mənbə metadata-sını saxlayır.",
-        "report": "Report-ready finding-lər ayrıca mətnə çevrilmir, eyni trace-i saxlayır."
+        "grounded": "İİ təklifləri mümkün olduqda gözlənilən vəziyyəti, müşahidə olunan boşluğu və sübut istinadlarını göstərir.",
+        "draftOnly": "Auditor qeyd yaratmayınca İİ nəticəsi yalnız qaralama olaraq qalır.",
+        "human": "Qəbul edilmiş İİ qeydləri yoxlayanı, vaxtı, etibar göstəricisini və mənbə metadatasını saxlayır.",
+        "report": "Hesabata hazır qeydlər ayrıca mətnə çevrilmir, eyni izi saxlayır."
       },
       "acceptedTitle": "Qəbul edilmiş İİ qərarları",
       "reviewedBy": "{user} yoxladı · {date}",
-      "noAccepted": "Hələ qəbul edilmiş İİ finding-i yoxdur. Yuxarıdakı qaralamalar görünür və auditor icmalı tələb edir."
+      "noAccepted": "Hələ qəbul edilmiş İİ qeydi yoxdur. Yuxarıdakı qaralamalar görünür və auditor icmalı tələb edir."
     },
     "risk": {
       "high": "Yüksək",
@@ -2337,6 +2345,13 @@
     "humanAccepted": "Auditor tərəfindən qəbul edilib",
     "aiExpected": "Gözlənilən nəzarət vəziyyəti",
     "aiObserved": "Müşahidə olunan boşluq",
+    "aiExplainabilityKicker": "İzah paketi",
+    "aiControlClause": "Kontrol bəndi",
+    "aiReasoning": "Məntiq",
+    "aiRiskJustification": "Risk əsaslandırması",
+    "aiControlClauseFallback": "Kontrol bəndi bağlı çeklist maddəsindən götürülür.",
+    "aiReasoningFallback": "Qeyd insan qəbulundan sonra İİ qaralamasından yaradılıb.",
+    "aiRiskJustificationFallback": "İlkin risk {risk}: müşahidə olunan kontrol boşluğu və mövcud sübutlara əsaslanır.",
     "aiNoEvidence": "Sənəd istinadı əlavə edilməyib",
     "statuses": {
       "identified": "Aşkarlanıb",
@@ -2748,7 +2763,7 @@
         },
         "documentAi": {
           "title": "AI sənəd analizi və qeydlər",
-          "hint": "Qeyd qaralamaları sübuta əsaslanır; intake və rescan planı PDF/Office, cədvəllər, konfiqlər və OCR növbəsini göstərir."
+          "hint": "Qeyd qaralamaları sübuta əsaslanır və izahlıdır; sənəd qəbulu və yenidən skan planı PDF/Office, cədvəllər, konfiqlər və OCR növbəsini göstərir."
         },
         "recommendations": {
           "title": "Tövsiyələr və tədbirlər planı",

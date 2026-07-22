@@ -43,6 +43,7 @@ const REQUIREMENT_COVERAGE = [
     status: 'live',
     evidence: [
       'evidence-grounded-findings',
+      'ai-explainability',
       'document-ai-intake',
       'evidence-rescan-plan',
       'ocr-readiness',
