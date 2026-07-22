@@ -666,135 +666,173 @@ export default async function EngagementDetailPage({
             </span>
           </div>
           <ul className="flex flex-col gap-3">
-            {suggestions.map((s) => (
-              <li
-                key={s.checklistItemId}
-                className="rounded-xl border border-emerald-200/80 bg-white p-3 text-sm shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-foreground">{s.suggestedTitle}</p>
-                    <p className="mt-1 text-xs text-secondary">
-                      {t('confidence')}: {Math.round(s.confidence * 100)}%
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      s.suggestedRisk === 'high'
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-amber-100 text-amber-700'
-                    }`}
-                  >
-                    {t(`risk.${s.suggestedRisk}`)}
-                  </span>
-                </div>
-                <dl className="mt-3 grid gap-2 text-xs md:grid-cols-2">
-                  <div className="rounded-lg bg-muted/50 p-2">
-                    <dt className="font-semibold text-secondary">{t('expected')}</dt>
-                    <dd className="mt-1 text-foreground">{s.expected}</dd>
-                  </div>
-                  <div className="rounded-lg bg-muted/50 p-2">
-                    <dt className="font-semibold text-secondary">{t('observed')}</dt>
-                    <dd className="mt-1 text-foreground">{s.observed}</dd>
-                  </div>
-                </dl>
-                <div
-                  className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3"
-                  data-testid="ai-finding-explainability"
+            {suggestions.map((s) => {
+              const draftDescription = [
+                s.reason,
+                s.expected,
+                s.observed,
+                ...s.evidenceReferences.map((ev) => `${ev.filename} (${ev.location})`),
+              ].join('\n');
+              const explainabilityReason = t('explainability.reasoningValue', {
+                clause: s.controlClause,
+              });
+              const riskJustification = t('explainability.riskJustificationValue', {
+                risk: t(`risk.${s.suggestedRisk}`),
+              });
+
+              return (
+                <li
+                  key={s.checklistItemId}
+                  className="rounded-xl border border-emerald-200/80 bg-white p-3 text-sm shadow-sm"
                 >
-                  <p className="text-xs font-semibold tracking-[0.12em] text-emerald-700 uppercase">
-                    {t('explainability.kicker')}
-                  </p>
-                  <dl className="mt-2 grid gap-2 text-xs md:grid-cols-3">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
-                      <dt className="font-semibold text-secondary">
-                        {t('explainability.controlClause')}
-                      </dt>
-                      <dd className="mt-1 text-foreground">{s.controlClause}</dd>
+                      <p className="font-medium text-foreground">{s.suggestedTitle}</p>
+                      <p className="mt-1 text-xs text-secondary">
+                        {t('confidence')}: {Math.round(s.confidence * 100)}%
+                      </p>
                     </div>
-                    <div>
-                      <dt className="font-semibold text-secondary">
-                        {t('explainability.reasoning')}
-                      </dt>
-                      <dd className="mt-1 text-foreground">
-                        {t('explainability.reasoningValue', { clause: s.controlClause })}
-                      </dd>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        s.suggestedRisk === 'high'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-amber-100 text-amber-700'
+                      }`}
+                    >
+                      {t(`risk.${s.suggestedRisk}`)}
+                    </span>
+                  </div>
+                  <dl className="mt-3 grid gap-2 text-xs md:grid-cols-2">
+                    <div className="rounded-lg bg-muted/50 p-2">
+                      <dt className="font-semibold text-secondary">{t('expected')}</dt>
+                      <dd className="mt-1 text-foreground">{s.expected}</dd>
                     </div>
-                    <div>
-                      <dt className="font-semibold text-secondary">
-                        {t('explainability.riskJustification')}
-                      </dt>
-                      <dd className="mt-1 text-foreground">
-                        {t('explainability.riskJustificationValue', {
-                          risk: t(`risk.${s.suggestedRisk}`),
-                        })}
-                      </dd>
+                    <div className="rounded-lg bg-muted/50 p-2">
+                      <dt className="font-semibold text-secondary">{t('observed')}</dt>
+                      <dd className="mt-1 text-foreground">{s.observed}</dd>
                     </div>
                   </dl>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {s.evidenceReferences.length > 0 ? (
-                      s.evidenceReferences.map((ev) => (
-                        <span
-                          key={`${s.checklistItemId}-${ev.documentId}-${ev.location}`}
-                          className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800"
-                        >
-                          {ev.filename} · {ev.location}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-medium text-amber-800">
-                        {t('noEvidenceRef')}
-                      </span>
-                    )}
+                  <div
+                    className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3"
+                    data-testid="ai-finding-explainability"
+                  >
+                    <p className="text-xs font-semibold tracking-[0.12em] text-emerald-700 uppercase">
+                      {t('explainability.kicker')}
+                    </p>
+                    <dl className="mt-2 grid gap-2 text-xs md:grid-cols-3">
+                      <div>
+                        <dt className="font-semibold text-secondary">
+                          {t('explainability.controlClause')}
+                        </dt>
+                        <dd className="mt-1 text-foreground">{s.controlClause}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-secondary">
+                          {t('explainability.reasoning')}
+                        </dt>
+                        <dd className="mt-1 text-foreground">{explainabilityReason}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-secondary">
+                          {t('explainability.riskJustification')}
+                        </dt>
+                        <dd className="mt-1 text-foreground">{riskJustification}</dd>
+                      </div>
+                    </dl>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <form
-                      action={createFindingFromSuggestionAction.bind(
-                        null,
-                        id,
-                        s.checklistItemId,
-                        s.suggestedTitle,
-                        s.suggestedRisk,
-                        [
-                          s.reason,
-                          s.expected,
-                          s.observed,
-                          ...s.evidenceReferences.map((ev) => `${ev.filename} (${ev.location})`),
-                        ].join('\n'),
-                        s.expected,
-                        s.observed,
-                        t('explainability.reasoningValue', { clause: s.controlClause }),
-                        s.controlClause,
-                        t('explainability.riskJustificationValue', {
-                          risk: t(`risk.${s.suggestedRisk}`),
-                        }),
-                        s.confidence,
-                        JSON.stringify(s.evidenceReferences),
-                      )}
-                    >
+                  <form
+                    action={createFindingFromSuggestionAction.bind(
+                      null,
+                      id,
+                      s.checklistItemId,
+                      s.suggestedTitle,
+                      s.suggestedRisk,
+                      draftDescription,
+                      s.expected,
+                      s.observed,
+                      explainabilityReason,
+                      s.controlClause,
+                      riskJustification,
+                      s.confidence,
+                      JSON.stringify(s.evidenceReferences),
+                    )}
+                    className="mt-3 grid gap-2 rounded-xl border border-emerald-100 bg-emerald-50/50 p-3"
+                  >
+                    <div className="grid gap-2 md:grid-cols-[1fr_180px]">
+                      <label className="grid gap-1 text-xs">
+                        <span className="font-semibold text-secondary">
+                          {t('reviewDraftTitle')}
+                        </span>
+                        <input
+                          name="title"
+                          defaultValue={s.suggestedTitle}
+                          className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        />
+                      </label>
+                      <label className="grid gap-1 text-xs">
+                        <span className="font-semibold text-secondary">{t('reviewDraftRisk')}</span>
+                        <select
+                          name="riskRating"
+                          defaultValue={s.suggestedRisk}
+                          className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          <option value="medium">{t('risk.medium')}</option>
+                          <option value="high">{t('risk.high')}</option>
+                        </select>
+                      </label>
+                    </div>
+                    <label className="grid gap-1 text-xs">
+                      <span className="font-semibold text-secondary">
+                        {t('reviewDraftDescription')}
+                      </span>
+                      <textarea
+                        name="description"
+                        defaultValue={draftDescription}
+                        rows={4}
+                        className="rounded-md border border-border bg-white px-2 py-1.5 text-sm text-foreground shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      />
+                    </label>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {s.evidenceReferences.length > 0 ? (
+                          s.evidenceReferences.map((ev) => (
+                            <span
+                              key={`${s.checklistItemId}-${ev.documentId}-${ev.location}`}
+                              className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800"
+                            >
+                              {ev.filename} · {ev.location}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-medium text-amber-800">
+                            {t('noEvidenceRef')}
+                          </span>
+                        )}
+                      </div>
                       <button
                         type="submit"
                         data-testid="suggestion-create-finding"
-                        className="rounded-md border border-emerald-300 px-2.5 py-1 text-xs font-medium text-emerald-800 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring"
+                        className="rounded-md border border-emerald-300 bg-white px-2.5 py-1 text-xs font-medium text-emerald-800 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {t('suggestionCreate')}
                       </button>
-                    </form>
-                    <form action={rejectFindingSuggestionAction.bind(null, id, s.checklistItemId)}>
-                      <button
-                        type="submit"
-                        data-testid="suggestion-reject-finding"
-                        className="rounded-md border border-muted-foreground/20 px-2.5 py-1 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        {t('suggestionReject')}
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </li>
-            ))}
+                    </div>
+                  </form>
+                  <form
+                    action={rejectFindingSuggestionAction.bind(null, id, s.checklistItemId)}
+                    className="mt-2 flex justify-end"
+                  >
+                    <button
+                      type="submit"
+                      data-testid="suggestion-reject-finding"
+                      className="rounded-md border border-muted-foreground/20 px-2.5 py-1 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {t('suggestionReject')}
+                    </button>
+                  </form>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}

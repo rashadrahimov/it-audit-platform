@@ -98,9 +98,9 @@ export async function removeEngagementMemberAction(
 export async function createFindingFromSuggestionAction(
   engagementId: string,
   checklistItemId: string,
-  suggestedTitle: string,
-  suggestedRisk: string,
-  reason: string,
+  draftTitle: string,
+  draftRisk: string,
+  draftDescription: string,
   expected: string,
   observed: string,
   explainabilityReason: string,
@@ -108,9 +108,16 @@ export async function createFindingFromSuggestionAction(
   riskJustification: string,
   confidence: number,
   evidenceReferencesJson: string,
+  formData: FormData,
 ): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
   if (!tenantSlug) return;
+  const acceptedTitle = String(formData.get('title') ?? '').trim() || draftTitle;
+  const acceptedDescription = String(formData.get('description') ?? '').trim() || draftDescription;
+  const requestedRisk = String(formData.get('riskRating') ?? '').trim();
+  const acceptedRisk = ['critical', 'high', 'medium', 'low'].includes(requestedRisk)
+    ? requestedRisk
+    : draftRisk;
   let evidenceReferences: Array<{
     documentId: string;
     filename: string;
@@ -139,19 +146,19 @@ export async function createFindingFromSuggestionAction(
     body: JSON.stringify({
       engagementId,
       checklistItemId,
-      titleI18n: { en: suggestedTitle },
-      descriptionI18n: reason ? { en: reason } : undefined,
-      riskRating: suggestedRisk,
+      titleI18n: { en: acceptedTitle },
+      descriptionI18n: acceptedDescription ? { en: acceptedDescription } : undefined,
+      riskRating: acceptedRisk,
       aiReview: {
         source: 'finding_suggestion',
         decision: 'accepted',
         confidence,
         expected,
         observed,
-        draftTitle: suggestedTitle,
-        draftDescription: reason,
-        draftRiskRating: suggestedRisk,
-        reason: explainabilityReason || reason,
+        draftTitle,
+        draftDescription,
+        draftRiskRating: draftRisk,
+        reason: explainabilityReason || draftDescription,
         controlClause,
         riskJustification,
         evidenceReferences,
