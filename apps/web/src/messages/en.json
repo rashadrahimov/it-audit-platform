@@ -1278,6 +1278,8 @@
     "evidence": "Evidence",
     "addAfterReview": "Add after review",
     "affectedProcessAsset": "Affected process / asset",
+    "affectedProcess": "Affected process",
+    "affectedAsset": "Affected asset",
     "controlClause": "Control clause",
     "initialRating": "Initial rating",
     "reviewGate": "Review gate",

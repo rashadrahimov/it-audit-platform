@@ -1278,6 +1278,8 @@
     "evidence": "Доказательство",
     "addAfterReview": "Добавить после проверки",
     "affectedProcessAsset": "Затронутый процесс / актив",
+    "affectedProcess": "Затронутый процесс",
+    "affectedAsset": "Затронутый актив",
     "controlClause": "Пункт контроля",
     "initialRating": "Первичная оценка",
     "reviewGate": "Контроль проверки",

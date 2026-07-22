@@ -34,6 +34,8 @@ export interface RiskSuggestion {
   description: string;
   category:
     'operational' | 'financial' | 'regulatory' | 'third_party' | 'continuity' | 'reputational';
+  affectedProcess: string;
+  affectedAsset: string;
   affectedControlRef: string | null;
   domain: string | null;
   inherentImpact: number;
@@ -76,6 +78,68 @@ function categoryOf(text: string, domain: string | null): RiskSuggestion['catego
     return 'reputational';
   }
   return 'operational';
+}
+
+function affectedProcessOf(category: RiskSuggestion['category'], text: string): string {
+  const s = text.toLowerCase();
+  if (/(vendor|supplier|third.?party|outsourc|подряд|поставщик)/i.test(s)) {
+    return 'Third-party risk management';
+  }
+  if (/(access|identity|iam|mfa|privileg|user|роль|доступ)/i.test(s)) {
+    return 'Identity and access management';
+  }
+  if (/(backup|restore|continuity|drp|bcp|availability|резерв|восстанов|непрерыв)/i.test(s)) {
+    return 'Business continuity and service recovery';
+  }
+  if (/(invoice|payment|revenue|budget|financial|финанс|платеж)/i.test(s)) {
+    return 'Finance and payment operations';
+  }
+  if (/(regulat|compliance|privacy|gdpr|cbar|iso|pci|nist|закон|регулятор|соответств)/i.test(s)) {
+    return 'Compliance obligation management';
+  }
+  if (/(customer|client|public|breach|утеч|клиент|репутац)/i.test(s)) {
+    return 'Customer trust and incident communications';
+  }
+  const byCategory: Record<RiskSuggestion['category'], string> = {
+    operational: 'Core operating process',
+    financial: 'Finance and payment operations',
+    regulatory: 'Compliance obligation management',
+    third_party: 'Third-party risk management',
+    continuity: 'Business continuity and service recovery',
+    reputational: 'Customer trust and incident communications',
+  };
+  return byCategory[category];
+}
+
+function affectedAssetOf(category: RiskSuggestion['category'], text: string): string {
+  const s = text.toLowerCase();
+  if (/(vendor|supplier|third.?party|outsourc|подряд|поставщик)/i.test(s)) {
+    return 'Vendor service / outsourced system';
+  }
+  if (/(access|identity|iam|mfa|privileg|user|роль|доступ)/i.test(s)) {
+    return 'IAM directory / privileged accounts';
+  }
+  if (/(backup|restore|drp|bcp|резерв|восстанов)/i.test(s)) {
+    return 'Backup platform / recovery evidence';
+  }
+  if (/(invoice|payment|revenue|budget|финанс|платеж)/i.test(s)) {
+    return 'Finance system / payment workflow';
+  }
+  if (/(privacy|gdpr|pci|iso|cbar|nist|regulat|compliance|закон|регулятор)/i.test(s)) {
+    return 'Compliance evidence repository';
+  }
+  if (/(customer|client|public|breach|утеч|клиент|репутац)/i.test(s)) {
+    return 'Customer data / public trust channel';
+  }
+  const byCategory: Record<RiskSuggestion['category'], string> = {
+    operational: 'Critical business application or workflow',
+    financial: 'Finance system / payment workflow',
+    regulatory: 'Compliance evidence repository',
+    third_party: 'Vendor service / outsourced system',
+    continuity: 'Backup platform / recovery evidence',
+    reputational: 'Customer data / public trust channel',
+  };
+  return byCategory[category];
 }
 
 const TITLE_PREFIX = /^business\s+risk\s*[—\-:]\s*/i;
@@ -200,6 +264,8 @@ export function suggestBusinessRisks(
           `Potential ${category.replace('_', '-')} risk derived from finding “${findingTitle}”. ` +
           `Review the business impact, map it to ${control}, assign an owner and confirm treatment before adding it to the final risk register.`,
         category,
+        affectedProcess: affectedProcessOf(category, findingTitle),
+        affectedAsset: affectedAssetOf(category, findingTitle),
         affectedControlRef: f.controlRef,
         domain: f.domain,
         inherentImpact: score.impact,

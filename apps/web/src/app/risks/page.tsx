@@ -34,6 +34,8 @@ interface RiskSuggestion {
   title: string;
   description: string;
   category: BusinessCategory;
+  affectedProcess: string;
+  affectedAsset: string;
   affectedControlRef: string | null;
   domain: string | null;
   inherentImpact: number;
@@ -137,18 +139,14 @@ export default async function RisksPage({
     count: suggestions.items.filter((s) => s.category === category).length,
   })).filter((item) => item.count > 0);
   const mappedDomains = new Set(
-    suggestions.items.map((s) => s.domain ?? s.affectedControlRef).filter(Boolean),
+    suggestions.items
+      .map((s) => s.affectedProcess ?? s.domain ?? s.affectedControlRef)
+      .filter(Boolean),
   ).size;
   const highConfidence = suggestions.items.filter((s) => s.confidence >= 0.75).length;
   const duplicateSuggestions =
     suggestions.duplicates ??
     suggestions.items.filter((s) => s.dedupe?.status === 'possible_duplicate').length;
-  const affectedLabel = (suggestion: RiskSuggestion) => {
-    if (suggestion.domain) return suggestion.domain;
-    if (suggestion.affectedControlRef) return suggestion.affectedControlRef;
-    return t(`assetByCategory.${suggestion.category}`);
-  };
-
   const classBadge = (c: RiskClass | null) =>
     c ? (
       <StatusBadge tone={CLASS_TONE[c]} dot>
@@ -341,8 +339,12 @@ export default async function RisksPage({
                   </p>
                   <dl className="mt-3 grid gap-2 rounded-lg bg-muted/50 p-3 text-xs sm:grid-cols-2">
                     <div>
-                      <dt className="font-medium text-secondary">{t('affectedProcessAsset')}</dt>
-                      <dd className="mt-0.5 text-foreground">{affectedLabel(s)}</dd>
+                      <dt className="font-medium text-secondary">{t('affectedProcess')}</dt>
+                      <dd className="mt-0.5 text-foreground">{s.affectedProcess}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium text-secondary">{t('affectedAsset')}</dt>
+                      <dd className="mt-0.5 text-foreground">{s.affectedAsset}</dd>
                     </div>
                     <div>
                       <dt className="font-medium text-secondary">{t('controlClause')}</dt>

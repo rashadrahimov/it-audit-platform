@@ -1278,6 +1278,8 @@
     "evidence": "Sübut",
     "addAfterReview": "Yoxlamadan sonra əlavə et",
     "affectedProcessAsset": "Təsirə məruz qalan proses / aktiv",
+    "affectedProcess": "Təsirə məruz qalan proses",
+    "affectedAsset": "Təsirə məruz qalan aktiv",
     "controlClause": "Kontrol bəndi",
     "initialRating": "İlkin qiymət",
     "reviewGate": "Yoxlama qapısı",

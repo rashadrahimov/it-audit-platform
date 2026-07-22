@@ -26,6 +26,8 @@ describe('suggestBusinessRisks', () => {
     expect(s!.source).toBe('deterministic');
     expect(s!.review.required).toBe(true);
     expect(s!.review.action).toBe('create_or_edit_risk');
+    expect(s!.affectedProcess).toBe('Business continuity and service recovery');
+    expect(s!.affectedAsset).toBe('Backup platform / recovery evidence');
     expect(s!.evidenceRef).toEqual({
       type: 'finding',
       id: 'f1',
@@ -36,6 +38,8 @@ describe('suggestBusinessRisks', () => {
   it('maps continuity keywords and high rating to high class', () => {
     const [s] = suggestBusinessRisks([item({})], 'en');
     expect(s!.category).toBe('continuity');
+    expect(s!.affectedProcess).toBe('Business continuity and service recovery');
+    expect(s!.affectedAsset).toBe('Backup platform / recovery evidence');
     expect(s!.inherentImpact).toBe(4);
     expect(s!.inherentLikelihood).toBe(4);
     expect(s!.riskClass).toBe('high');
@@ -60,6 +64,16 @@ describe('suggestBusinessRisks', () => {
       'en',
     );
     expect(res.map((r) => r.category)).toEqual(['regulatory', 'financial', 'third_party']);
+    expect(res.map((r) => r.affectedProcess)).toEqual([
+      'Compliance obligation management',
+      'Finance and payment operations',
+      'Third-party risk management',
+    ]);
+    expect(res.map((r) => r.affectedAsset)).toEqual([
+      'Compliance evidence repository',
+      'Finance system / payment workflow',
+      'Vendor service / outsourced system',
+    ]);
   });
 
   it('marks AI proposals as possible duplicates of existing manual risks', () => {
