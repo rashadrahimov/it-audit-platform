@@ -175,3 +175,64 @@ export async function seedChecklistFromAuditTypeAction(engagementId: string): Pr
   });
   revalidatePath(`/engagements/${engagementId}`);
 }
+
+/** T-H51: ручной запрос доказательства из карточки аудита. */
+export async function createEvidenceRequestAction(
+  engagementId: string,
+  formData: FormData,
+): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  const title = String(formData.get('title') ?? '').trim();
+  const description = String(formData.get('description') ?? '').trim();
+  const assigneeMembershipId = String(formData.get('assigneeMembershipId') ?? '').trim();
+  const dueDate = String(formData.get('dueDate') ?? '').trim();
+  if (!tenantSlug || !title) return;
+  await apiFetch('/evidence-requests', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
+    body: JSON.stringify({
+      engagementId,
+      title,
+      description: description || undefined,
+      assigneeMembershipId: assigneeMembershipId || undefined,
+      dueDate: dueDate ? new Date(`${dueDate}T17:00:00.000Z`).toISOString() : undefined,
+    }),
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}
+
+/** T-H51: human-reviewed AI-DRL подсказка → официальный запрос доказательства. */
+export async function createEvidenceRequestFromSuggestionAction(
+  engagementId: string,
+  checklistItemId: string,
+  title: string,
+  description: string,
+  reason: string,
+): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug || !title.trim()) return;
+  await apiFetch('/evidence-requests', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': tenantSlug },
+    body: JSON.stringify({
+      engagementId,
+      title,
+      description: [`AI-DRL:${checklistItemId}`, reason, description].filter(Boolean).join('\n\n'),
+    }),
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}
+
+/** T-H51: принять предоставленное доказательство по запросу. */
+export async function acceptEvidenceRequestAction(
+  engagementId: string,
+  requestId: string,
+): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  await apiFetch(`/evidence-requests/${requestId}/accept`, {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  revalidatePath(`/engagements/${engagementId}`);
+}

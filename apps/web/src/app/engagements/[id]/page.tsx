@@ -7,8 +7,11 @@ import { CommentsSection } from '@/components/comments-section';
 import { TasksSection, type TaskItem } from '@/components/tasks-section';
 import { complianceStatusSchema } from '@it-audit/shared';
 import {
+  acceptEvidenceRequestAction,
   addChecklistItemsAction,
   assignEngagementMemberAction,
+  createEvidenceRequestAction,
+  createEvidenceRequestFromSuggestionAction,
   createFindingFromSuggestionAction,
   duplicateEngagementAction,
   removeEngagementMemberAction,
@@ -139,6 +142,31 @@ interface AuditTemplateItem {
   objective: string;
   question: string;
 }
+interface EvidenceRequestRow {
+  id: string;
+  title: string;
+  description: string | null;
+  status: 'requested' | 'provided' | 'accepted';
+  documentId: string | null;
+  dueDate: string | null;
+  assignee: string | null;
+  createdAt: string;
+}
+interface EvidenceRequestList {
+  open: number;
+  total: number;
+  items: EvidenceRequestRow[];
+}
+interface EvidenceRequestSuggestion {
+  checklistItemId: string;
+  ref: string;
+  title: string;
+  description: string;
+  priority: 'high' | 'medium';
+  reason: string;
+  source: 'ai_drl';
+  reviewRequired: true;
+}
 
 const ENGAGEMENT_ROLES = ['lead', 'assessor', 'reviewer', 'approver', 'observer'] as const;
 
@@ -169,6 +197,11 @@ const COMPLIANCE_TONE: Record<string, string> = {
   non_compliant: 'bg-red-100 text-red-800',
   not_applicable: 'bg-slate-100 text-slate-700',
   not_tested: 'bg-muted text-secondary',
+};
+const EVIDENCE_REQUEST_TONE: Record<string, string> = {
+  requested: 'bg-amber-100 text-amber-800',
+  provided: 'bg-teal-100 text-teal-800',
+  accepted: 'bg-emerald-100 text-emerald-800',
 };
 
 /** Карточка engagement'а (T-035): состояние, переходы, вехи план/факт (ENG-03). */
@@ -258,14 +291,24 @@ export default async function EngagementDetailPage({
         )
       : null;
   const reviews: Record<string, EvidenceReview> = revRes && revRes.ok ? await revRes.json() : {};
-  const [teamRes, membersRes, taskRes] = await Promise.all([
+  const [teamRes, membersRes, taskRes, requestRes, requestSuggestionRes] = await Promise.all([
     apiFetch(`/engagements/${id}/members`, { headers: tenantHeaders }),
     apiFetch(`/memberships?locale=${locale}`, { headers: tenantHeaders }),
     apiFetch(`/tasks?entityType=engagement&entityId=${id}`, { headers: tenantHeaders }),
+    apiFetch(`/evidence-requests?engagementId=${id}`, { headers: tenantHeaders }),
+    apiFetch(`/evidence-requests/suggestions?engagementId=${id}&locale=${locale}`, {
+      headers: tenantHeaders,
+    }),
   ]);
   const team: TeamMember[] = teamRes.ok ? await teamRes.json() : [];
   const tenantMembers: TenantMember[] = membersRes.ok ? await membersRes.json() : [];
   const auditTasks: TaskItem[] = taskRes.ok ? await taskRes.json() : [];
+  const evidenceRequests: EvidenceRequestList = requestRes.ok
+    ? await requestRes.json()
+    : { open: 0, total: 0, items: [] };
+  const evidenceRequestSuggestions: EvidenceRequestSuggestion[] = requestSuggestionRes.ok
+    ? (await requestSuggestionRes.json()).items
+    : [];
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const fmt = (iso: string | null): string => (iso ? dateFmt.format(new Date(iso)) : '—');
@@ -288,6 +331,12 @@ export default async function EngagementDetailPage({
   const checklistRefs = new Set(eng.checklist.map((item) => item.ref));
   const seedableTemplateCount = auditTemplateItems.filter(
     (item) => !checklistRefs.has(item.ref),
+  ).length;
+  const overdueEvidenceRequests = evidenceRequests.items.filter(
+    (request) =>
+      request.status !== 'accepted' &&
+      request.dueDate !== null &&
+      new Date(request.dueDate).getTime() < now,
   ).length;
 
   return (
@@ -730,6 +779,237 @@ export default async function EngagementDetailPage({
         testid="engagement-audit-tasks"
         title={t('auditTasks')}
       />
+
+      <section
+        className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm"
+        data-testid="engagement-evidence-requests"
+      >
+        <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.16em] text-emerald-700 uppercase">
+                {t('evidenceRequestsKicker')}
+              </p>
+              <h2 className="mt-1 text-lg font-semibold text-primary">
+                {t('evidenceRequestsTitle')}
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm text-secondary">{t('evidenceRequestsSub')}</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-xl bg-white px-3 py-2 shadow-sm">
+                <p className="text-lg font-bold text-primary">{evidenceRequests.open}</p>
+                <p className="text-[11px] font-medium text-secondary">
+                  {t('evidenceRequestsOpen')}
+                </p>
+              </div>
+              <div className="rounded-xl bg-white px-3 py-2 shadow-sm">
+                <p className="text-lg font-bold text-primary">
+                  {evidenceRequestSuggestions.length}
+                </p>
+                <p className="text-[11px] font-medium text-secondary">
+                  {t('evidenceRequestsSuggested')}
+                </p>
+              </div>
+              <div className="rounded-xl bg-white px-3 py-2 shadow-sm">
+                <p className="text-lg font-bold text-primary">{overdueEvidenceRequests}</p>
+                <p className="text-[11px] font-medium text-secondary">
+                  {t('evidenceRequestsOverdue')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-6 p-6 lg:grid-cols-[1.25fr_0.75fr]">
+          <div className="flex flex-col gap-4">
+            {evidenceRequests.items.length === 0 ? (
+              <p className="rounded-xl bg-muted/60 p-4 text-sm text-secondary">
+                {t('evidenceRequestsEmpty')}
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-3">
+                {evidenceRequests.items.map((request) => (
+                  <li
+                    key={request.id}
+                    className="rounded-xl border border-border bg-muted/20 p-4 text-sm"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground">{request.title}</p>
+                        {request.description && (
+                          <p className="mt-1 line-clamp-2 text-xs text-secondary">
+                            {request.description.replace(/^AI-DRL:[^\n]+\n*/u, '').trim()}
+                          </p>
+                        )}
+                      </div>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${
+                          EVIDENCE_REQUEST_TONE[request.status]
+                        }`}
+                      >
+                        {t(`evidenceRequestStatus.${request.status}`)}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-secondary">
+                      <span className="rounded-full bg-white px-2.5 py-1">
+                        {t('evidenceRequestAssignee')}: {request.assignee ?? '—'}
+                      </span>
+                      <span className="rounded-full bg-white px-2.5 py-1">
+                        {t('evidenceRequestDue')}: {fmt(request.dueDate)}
+                      </span>
+                      {request.documentId && (
+                        <a
+                          href={`/documents/${request.documentId}/download`}
+                          className="rounded-full bg-emerald-100 px-2.5 py-1 font-medium text-emerald-800 underline-offset-2 hover:underline"
+                        >
+                          {t('linkedDocument')}
+                        </a>
+                      )}
+                    </div>
+                    {request.status === 'provided' && (
+                      <form
+                        action={acceptEvidenceRequestAction.bind(null, eng.id, request.id)}
+                        className="mt-3"
+                      >
+                        <button
+                          type="submit"
+                          data-testid="accept-evidence-request"
+                          className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 transition-colors duration-150 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          {t('acceptRequest')}
+                        </button>
+                      </form>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {evidenceRequestSuggestions.length > 0 && (
+              <details className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4" open>
+                <summary className="cursor-pointer text-sm font-semibold text-emerald-900">
+                  {t('drlSuggestions')} ({evidenceRequestSuggestions.length})
+                </summary>
+                <p className="mt-2 text-xs text-emerald-900/75">{t('drlSuggestionHint')}</p>
+                <ul className="mt-3 flex flex-col gap-2">
+                  {evidenceRequestSuggestions.slice(0, 6).map((suggestion) => (
+                    <li
+                      key={suggestion.checklistItemId}
+                      className="rounded-lg border border-emerald-200 bg-white p-3"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {suggestion.title}
+                          </p>
+                          <p className="mt-1 text-xs text-secondary">{suggestion.reason}</p>
+                        </div>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                            suggestion.priority === 'high'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {t(`risk.${suggestion.priority}`)}
+                        </span>
+                      </div>
+                      <form
+                        action={createEvidenceRequestFromSuggestionAction.bind(
+                          null,
+                          eng.id,
+                          suggestion.checklistItemId,
+                          suggestion.title,
+                          suggestion.description,
+                          suggestion.reason,
+                        )}
+                        className="mt-3"
+                      >
+                        <button
+                          type="submit"
+                          data-testid="create-evidence-request-suggestion"
+                          className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          {t('createRequest')}
+                        </button>
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+
+          <details className="h-fit rounded-xl border border-border bg-muted/20 p-4" open>
+            <summary className="cursor-pointer text-sm font-semibold text-accent">
+              {t('evidenceRequestCreate')}
+            </summary>
+            <form
+              action={createEvidenceRequestAction.bind(null, eng.id)}
+              className="mt-3 flex flex-col gap-3"
+            >
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs font-medium text-secondary">
+                  {t('evidenceRequestTitleLabel')}
+                </span>
+                <input
+                  name="title"
+                  required
+                  data-testid="evidence-request-title"
+                  placeholder={t('evidenceRequestTitlePh')}
+                  className="rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs font-medium text-secondary">
+                  {t('evidenceRequestDescriptionLabel')}
+                </span>
+                <textarea
+                  name="description"
+                  rows={3}
+                  data-testid="evidence-request-description"
+                  className="rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs font-medium text-secondary">
+                  {t('evidenceRequestAssignee')}
+                </span>
+                <select
+                  name="assigneeMembershipId"
+                  data-testid="evidence-request-assignee"
+                  className="rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">—</option>
+                  {taskAssignees.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.fullName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs font-medium text-secondary">
+                  {t('evidenceRequestDue')}
+                </span>
+                <input
+                  name="dueDate"
+                  type="date"
+                  data-testid="evidence-request-due"
+                  className="rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </label>
+              <button
+                type="submit"
+                data-testid="create-evidence-request"
+                className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {t('evidenceRequestSubmit')}
+              </button>
+            </form>
+          </details>
+        </div>
+      </section>
 
       <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-primary">{t('checklist')}</h2>
