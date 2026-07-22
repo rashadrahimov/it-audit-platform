@@ -42,9 +42,9 @@ const aiRiskReviewSchema = z.object({
   affectedControlRef: z.string().nullable().optional(),
   evidenceRef: z
     .object({
-      type: z.string(),
-      id: z.string(),
-      location: z.string(),
+      type: z.literal('finding'),
+      id: z.uuid(),
+      location: z.string().min(1).max(300),
     })
     .optional(),
   draft: z

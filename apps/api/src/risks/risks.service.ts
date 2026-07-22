@@ -380,6 +380,36 @@ export class RisksService {
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const thresholds = await this.thresholds(tx, actor.tenantId);
       if (input.aiReview) {
+        const evidenceRef = input.aiReview.evidenceRef;
+        if (
+          !evidenceRef ||
+          evidenceRef.type !== 'finding' ||
+          evidenceRef.id !== input.aiReview.sourceFindingId ||
+          evidenceRef.location.trim().length === 0
+        ) {
+          throw new BadRequestException({
+            code: 'ai_risk_source_finding_required',
+            message:
+              'Accepted AI risk proposals must reference the source finding as their evidence.',
+          });
+        }
+        const [sourceFinding] = await tx
+          .select({ id: finding.id })
+          .from(finding)
+          .where(
+            and(
+              eq(finding.id, input.aiReview.sourceFindingId),
+              eq(finding.tenantId, actor.tenantId),
+              isNull(finding.deletedAt),
+            ),
+          );
+        if (!sourceFinding) {
+          throw new BadRequestException({
+            code: 'ai_risk_source_finding_not_found',
+            message: 'AI risk proposal sourceFindingId must point to an existing tenant finding.',
+            sourceFindingId: input.aiReview.sourceFindingId,
+          });
+        }
         const existingRisks = await tx
           .select({
             id: risk.id,

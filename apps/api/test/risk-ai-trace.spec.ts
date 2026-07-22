@@ -11,6 +11,8 @@ const service = new RisksService(dbService, new AuditLogService(dbService), {} a
 
 let tenantId: string;
 let userId: string;
+let continuityFindingId: string;
+let vendorFindingId: string;
 
 beforeAll(async () => {
   const [t] = await dbService.db
@@ -27,6 +29,28 @@ beforeAll(async () => {
     })
     .returning();
   userId = u!.id;
+  await dbService.withTenant(tenantId, async (tx) => {
+    const [continuity] = await tx
+      .insert(finding)
+      .values({
+        tenantId,
+        titleI18n: { en: 'Backup restoration is not tested' },
+        riskRating: 'high',
+        status: 'identified',
+      })
+      .returning({ id: finding.id });
+    const [vendor] = await tx
+      .insert(finding)
+      .values({
+        tenantId,
+        titleI18n: { en: 'Vendor access review is overdue' },
+        riskRating: 'high',
+        status: 'identified',
+      })
+      .returning({ id: finding.id });
+    continuityFindingId = continuity!.id;
+    vendorFindingId = vendor!.id;
+  });
 });
 
 afterAll(async () => {
@@ -57,14 +81,14 @@ describe('AI risk suggestion HITL traceability', () => {
           source: 'risk_suggestion',
           decision: 'accepted',
           reviewStatus: 'accepted_by_human',
-          sourceFindingId: '00000000-0000-0000-0000-000000000001',
+          sourceFindingId: continuityFindingId,
           confidence: 0.8,
           affectedProcess: 'Business continuity and service recovery',
           affectedAsset: 'Backup platform / recovery evidence',
           affectedControlRef: 'BCK-01',
           evidenceRef: {
             type: 'finding',
-            id: '00000000-0000-0000-0000-000000000001',
+            id: continuityFindingId,
             location: 'Finding linked to BCK-01',
           },
           draft: {
@@ -90,7 +114,7 @@ describe('AI risk suggestion HITL traceability', () => {
     expect(logs.map((log) => log.action)).toContain('ai_risk.accepted');
     expect(logs.find((log) => log.action === 'ai_risk.accepted')?.after).toMatchObject({
       aiReview: {
-        sourceFindingId: '00000000-0000-0000-0000-000000000001',
+        sourceFindingId: continuityFindingId,
         confidence: 0.8,
         affectedProcess: 'Business continuity and service recovery',
         affectedAsset: 'Backup platform / recovery evidence',
@@ -127,7 +151,7 @@ describe('AI risk suggestion HITL traceability', () => {
       source: 'risk_suggestion',
       decision: 'accepted',
       reviewStatus: 'accepted_by_human',
-      sourceFindingId: '00000000-0000-0000-0000-000000000001',
+      sourceFindingId: continuityFindingId,
       confidence: 0.8,
       affectedProcess: 'Business continuity and service recovery',
       affectedAsset: 'Backup platform / recovery evidence',
@@ -192,14 +216,14 @@ describe('AI risk suggestion HITL traceability', () => {
             source: 'risk_suggestion',
             decision: 'accepted',
             reviewStatus: 'accepted_by_human',
-            sourceFindingId: '00000000-0000-0000-0000-000000000002',
+            sourceFindingId: vendorFindingId,
             confidence: 0.8,
             affectedProcess: 'Third-party risk management',
             affectedAsset: 'Vendor service / outsourced system',
             affectedControlRef: 'TP-01',
             evidenceRef: {
               type: 'finding',
-              id: '00000000-0000-0000-0000-000000000002',
+              id: vendorFindingId,
               location: 'Finding linked to TP-01',
             },
             dedupeFingerprint: 'third_party:tp-01:access-review-overdue',
@@ -218,6 +242,47 @@ describe('AI risk suggestion HITL traceability', () => {
     });
   });
 
+  it('blocks accepting an AI risk proposal without an existing source finding', async () => {
+    const missingFindingId = '11111111-1111-4111-8111-111111111111';
+
+    await expect(
+      service.create(
+        { tenantId, userId, ip: '::1' },
+        {
+          titleI18n: { en: 'Business risk — Unsupported AI proposal' },
+          descriptionI18n: { en: 'AI risk has no traceable source finding.' },
+          category: 'operational',
+          domain: 'OPS-01',
+          inherentImpact: 3,
+          inherentLikelihood: 3,
+          residualImpact: 3,
+          residualLikelihood: 3,
+          treatment: 'mitigate',
+          aiReview: {
+            source: 'risk_suggestion',
+            decision: 'accepted',
+            reviewStatus: 'accepted_by_human',
+            sourceFindingId: missingFindingId,
+            confidence: 0.7,
+            affectedProcess: 'Operations',
+            affectedAsset: 'Audit evidence',
+            affectedControlRef: 'OPS-01',
+            evidenceRef: {
+              type: 'finding',
+              id: missingFindingId,
+              location: 'Missing source finding',
+            },
+          },
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        code: 'ai_risk_source_finding_not_found',
+        sourceFindingId: missingFindingId,
+      },
+    });
+  });
+
   it('records rejected AI risk proposals and removes them from the suggestion queue', async () => {
     const [row] = await dbService.withTenant(tenantId, (tx) =>
       tx
@@ -231,7 +296,8 @@ describe('AI risk suggestion HITL traceability', () => {
         .returning({ id: finding.id }),
     );
 
-    await expect(service.suggestions(tenantId, 'en')).resolves.toMatchObject({ count: 1 });
+    const beforeReject = await service.suggestions(tenantId, 'en');
+    expect(beforeReject.items.some((suggestion) => suggestion.findingId === row!.id)).toBe(true);
 
     await service.rejectSuggestion(
       { tenantId, userId, ip: '::1' },
@@ -243,7 +309,8 @@ describe('AI risk suggestion HITL traceability', () => {
       },
     );
 
-    await expect(service.suggestions(tenantId, 'en')).resolves.toMatchObject({ count: 0 });
+    const afterReject = await service.suggestions(tenantId, 'en');
+    expect(afterReject.items.some((suggestion) => suggestion.findingId === row!.id)).toBe(false);
 
     const logs = await dbService.withTenant(tenantId, (tx) =>
       tx
