@@ -1074,6 +1074,7 @@ export const risk = pgTable(
     approvedAt: timestamp('approved_at', { withTimezone: true }),
     status: text('status').notNull().default('open'),
     sourceRiskId: uuid('source_risk_id').references((): AnyPgColumn => risk.id),
+    custom: jsonb('custom').notNull().default({}),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },

@@ -13,6 +13,7 @@ import {
   type Locale,
 } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
+import { CustomFieldsService } from '../custom-fields/custom-fields.service';
 import { DbService } from '../db/db.service';
 import {
   auditLog,
@@ -49,6 +50,7 @@ export interface CreateEngagementInput {
   mode: EngagementMode;
   periodStart?: string;
   periodEnd?: string;
+  custom?: Record<string, unknown>;
   milestones: Array<{ stage: string; plannedDate: string }>;
 }
 
@@ -92,6 +94,7 @@ export class EngagementsService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly customFieldsService?: CustomFieldsService,
   ) {}
 
   async create(actor: Actor, input: CreateEngagementInput) {
@@ -100,6 +103,9 @@ export class EngagementsService {
         throw new BadRequestException(`Веха: неизвестная стадия «${m.stage}»`);
       }
     }
+    const custom = this.customFieldsService
+      ? await this.customFieldsService.validateForWrite(actor.tenantId, 'engagement', input.custom)
+      : (input.custom ?? {});
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [sub] = await tx
         .select()
@@ -127,6 +133,7 @@ export class EngagementsService {
           mode: input.mode,
           periodStart: input.periodStart ? new Date(input.periodStart) : null,
           periodEnd: input.periodEnd ? new Date(input.periodEnd) : null,
+          custom,
         })
         .returning();
       if (!row) throw new Error('Engagement не создался');

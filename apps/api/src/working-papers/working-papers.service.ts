@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
+import { CustomFieldsService } from '../custom-fields/custom-fields.service';
 import { DbService } from '../db/db.service';
 import { engagement, membership, signOff, workingPaper } from '../db/schema';
 
@@ -28,6 +29,7 @@ export class WorkingPapersService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly customFieldsService?: CustomFieldsService,
   ) {}
 
   private async myMembership(
@@ -41,7 +43,22 @@ export class WorkingPapersService {
     return me?.id ?? null;
   }
 
-  async create(actor: Actor, input: { engagementId: string; title: string; content?: unknown }) {
+  async create(
+    actor: Actor,
+    input: {
+      engagementId: string;
+      title: string;
+      content?: unknown;
+      custom?: Record<string, unknown>;
+    },
+  ) {
+    const custom = this.customFieldsService
+      ? await this.customFieldsService.validateForWrite(
+          actor.tenantId,
+          'working_paper',
+          input.custom,
+        )
+      : (input.custom ?? {});
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [eng] = await tx
         .select({ id: engagement.id })
@@ -56,6 +73,7 @@ export class WorkingPapersService {
           title: input.title,
           content: input.content ?? {},
           preparerMembershipId: meId,
+          custom,
         })
         .returning();
       if (!row) throw new Error('WP не создался');

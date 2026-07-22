@@ -42,6 +42,7 @@ const createEngagementSchema = z.object({
   mode: z.enum(['formal', 'light']).default('formal'),
   periodStart: z.iso.datetime().optional(),
   periodEnd: z.iso.datetime().optional(),
+  custom: z.record(z.string(), z.unknown()).optional(),
   milestones: z
     .array(z.object({ stage: z.string().min(1), plannedDate: z.iso.datetime() }))
     .default([]),

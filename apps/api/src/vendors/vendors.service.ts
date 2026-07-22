@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
+import { CustomFieldsService } from '../custom-fields/custom-fields.service';
 import { DbService } from '../db/db.service';
 import { membership, user, vendor } from '../db/schema';
 
@@ -32,9 +33,17 @@ export class VendorsService {
   constructor(
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
+    private readonly customFieldsService?: CustomFieldsService,
   ) {}
 
   async create(actor: Actor, input: CreateVendorInput) {
+    const intake = this.customFieldsService
+      ? await this.customFieldsService.validateForWrite(
+          actor.tenantId,
+          'vendor_intake',
+          input.intake,
+        )
+      : (input.intake ?? {});
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [row] = await tx
         .insert(vendor)
@@ -46,7 +55,7 @@ export class VendorsService {
           inherentRisk: input.inherentRisk ?? null,
           residualRisk: input.residualRisk ?? null,
           securityOwnerMembershipId: input.securityOwnerMembershipId ?? null,
-          intake: input.intake ?? {},
+          intake,
         })
         .returning();
       if (!row) throw new Error('Вендор не создался');
@@ -80,7 +89,7 @@ export class VendorsService {
   ) {
     const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [row] = await tx
-        .select({ id: vendor.id })
+        .select({ id: vendor.id, intake: vendor.intake })
         .from(vendor)
         .where(and(eq(vendor.id, id), isNull(vendor.deletedAt)));
       if (!row) throw new NotFoundException(`Вендор ${id} не найден`);
@@ -105,7 +114,16 @@ export class VendorsService {
       if (input.residualRisk !== undefined) patch.residualRisk = input.residualRisk;
       if (input.securityOwnerMembershipId !== undefined)
         patch.securityOwnerMembershipId = input.securityOwnerMembershipId;
-      if (input.intake !== undefined) patch.intake = input.intake;
+      if (input.intake !== undefined) {
+        patch.intake = this.customFieldsService
+          ? await this.customFieldsService.validateForWrite(
+              actor.tenantId,
+              'vendor_intake',
+              input.intake,
+              { existing: row.intake as Record<string, unknown>, partial: true },
+            )
+          : input.intake;
+      }
       const [res] = await tx.update(vendor).set(patch).where(eq(vendor.id, id)).returning();
       return res!;
     });

@@ -20,7 +20,7 @@
 | GEN-04 сообщения из системы | M | 🟡 | EP-MSG |
 | GEN-05 сквозной поиск best-match | M | 🟡 | EP-SEARCH (Postgres FTS + pg_trgm) |
 | GEN-06 конфигурируемая терминология | M | 🟡 | EP-CONFIG; крючок в ERD — слой лейблов per-tenant поверх i18n (ADR-0009 упрощает: механизм переводов уже есть) |
-| GEN-07 custom fields без кода | M | 🟡 | EP-CONFIG; крючок в ERD (jsonb + метаданные полей) |
+| GEN-07 custom fields без кода | M | ✅ | EP-CONFIG + T-H124: jsonb + definitions + валидация на write доменных сущностей |
 | GEN-08 аудиторы по стадиям с диффер. правами | M | ✅ | RBAC-матрица (ADR-0013) × стадии state machine (ADR-0005) |
 | GEN-09 встроенная помощь/глоссарий | D | 🟡 | Контент-задача, поздняя фаза |
 | GEN-10 планшеты/мобильные | D | 🟡 | Responsive web (без нативных приложений) |

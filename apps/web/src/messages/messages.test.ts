@@ -44,6 +44,7 @@ describe('каталоги переводов UI (T-022, ADR-0009)', () => {
       'finding-follow-up-plan',
       'retest-workbench',
       'document-content-search',
+      'custom-field-write-validation',
     ];
     for (const key of requiredEvidence) {
       expect(evidenceKeys.has(key)).toBe(true);

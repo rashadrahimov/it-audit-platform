@@ -512,6 +512,13 @@
       "when": 1784733681294,
       "tag": "0072_panoramic_steel_serpent",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1784735335051,
+      "tag": "0073_nosy_the_captain",
+      "breakpoints": true
     }
   ]
 }

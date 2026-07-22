@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { ConnectorSyncService } from '../connectors/connector-sync.service';
+import { CustomFieldsService } from '../custom-fields/custom-fields.service';
 import { DbService } from '../db/db.service';
 import { asset, auditableEntity, connector, membership, tag, tagLink, user } from '../db/schema';
 import { UniverseService } from '../universe/universe.service';
@@ -35,6 +36,7 @@ export class AssetsService {
     private readonly auditLogService: AuditLogService,
     private readonly universeService: UniverseService,
     private readonly connectorSyncService: ConnectorSyncService,
+    private readonly customFieldsService?: CustomFieldsService,
   ) {}
 
   /**
@@ -109,6 +111,9 @@ export class AssetsService {
   }
 
   async create(actor: Actor, input: CreateInput) {
+    const custom = this.customFieldsService
+      ? await this.customFieldsService.validateForWrite(actor.tenantId, 'asset', input.custom)
+      : (input.custom ?? {});
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [row] = await tx
         .insert(asset)
@@ -119,7 +124,7 @@ export class AssetsService {
           name: input.name,
           ownerMembershipId: input.ownerMembershipId ?? null,
           attrs: input.attrs ?? {},
-          custom: input.custom ?? {},
+          custom,
         })
         .returning();
       if (!row) throw new Error('Актив не создался');

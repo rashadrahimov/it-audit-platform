@@ -7,6 +7,7 @@ import {
 import { and, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { resolveLocalized, type I18nText, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
+import { CustomFieldsService } from '../custom-fields/custom-fields.service';
 import { DbService } from '../db/db.service';
 import {
   auditableEntity,
@@ -47,6 +48,7 @@ export interface CreateRiskInput {
   treatment?: string;
   ownerMembershipId?: string;
   subsidiaryId?: string;
+  custom?: Record<string, unknown>;
   aiReview?: RiskAiReview;
 }
 
@@ -234,6 +236,7 @@ export class RisksService {
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
     private readonly entityAcl: EntityAclService,
+    private readonly customFieldsService?: CustomFieldsService,
   ) {}
 
   private async thresholds(
@@ -377,6 +380,9 @@ export class RisksService {
   }
 
   async create(actor: Actor, input: CreateRiskInput) {
+    const custom = this.customFieldsService
+      ? await this.customFieldsService.validateForWrite(actor.tenantId, 'risk', input.custom)
+      : (input.custom ?? {});
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const thresholds = await this.thresholds(tx, actor.tenantId);
       if (input.aiReview) {
@@ -452,6 +458,7 @@ export class RisksService {
           residualClass: classifyRisk(input.residualImpact, input.residualLikelihood, thresholds),
           treatment: input.treatment ?? null,
           ownerMembershipId: input.ownerMembershipId ?? null,
+          custom,
         })
         .returning();
       if (!row) throw new Error('Риск не создался');
@@ -583,11 +590,12 @@ export class RisksService {
       status?: string;
       ownerMembershipId?: string | null;
       approverMembershipId?: string | null;
+      custom?: Record<string, unknown>;
     },
   ) {
     const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [row] = await tx
-        .select({ id: risk.id })
+        .select({ id: risk.id, custom: risk.custom })
         .from(risk)
         .where(and(eq(risk.id, id), isNotNull(risk.tenantId), isNull(risk.deletedAt)));
       if (!row) throw new NotFoundException(`Риск ${id} не найден`);
@@ -610,6 +618,14 @@ export class RisksService {
       if (input.ownerMembershipId !== undefined) patch.ownerMembershipId = input.ownerMembershipId;
       if (input.approverMembershipId !== undefined)
         patch.approverMembershipId = input.approverMembershipId;
+      if (input.custom !== undefined) {
+        patch.custom = this.customFieldsService
+          ? await this.customFieldsService.validateForWrite(actor.tenantId, 'risk', input.custom, {
+              existing: row.custom as Record<string, unknown>,
+              partial: true,
+            })
+          : input.custom;
+      }
       const [res] = await tx.update(risk).set(patch).where(eq(risk.id, id)).returning();
       return res!;
     });

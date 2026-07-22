@@ -29,6 +29,7 @@ const createSchema = z.object({
   engagementId: z.uuid(),
   title: z.string().min(1),
   content: z.unknown().optional(),
+  custom: z.record(z.string(), z.unknown()).optional(),
 });
 
 @Controller('working-papers')

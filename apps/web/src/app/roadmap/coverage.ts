@@ -52,7 +52,7 @@ export const REQUIREMENT_COVERAGE = [
   {
     key: 'integrations',
     status: 'live',
-    evidence: ['api-v1', 'connectors', 'cross-framework-mapping'],
+    evidence: ['api-v1', 'connectors', 'cross-framework-mapping', 'custom-field-write-validation'],
   },
   {
     key: 'reportingUx',

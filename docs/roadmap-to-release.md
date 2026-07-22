@@ -40,7 +40,7 @@
 - [ ] **SEC-07** детект конкурентных сессий (нужно решение stateful-сессий — граничит с форком, но реализуемо).
 - [ ] **ENG-08** move/retention engagement (архив есть).
 - [ ] RSK-08 trend-аналитика (частично через snapshots-compare) — полноценные тренды по снапшотам.
-- [ ] Валидация custom-fields **на write доменных сущностей** (сейчас отдельный /validate; вшить в create).
+- [x] Валидация custom-fields **на write доменных сущностей** — T-H124: strict после появления definitions; подключено к asset/engagement/risk/working_paper/vendor_intake.
 - [ ] Расширение автотестов E2E (сейчас 20 API + 8 shared + 2 web — добавить покрытие критичных потоков).
 
 ---

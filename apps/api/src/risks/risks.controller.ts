@@ -80,6 +80,7 @@ const createRiskSchema = z.object({
   treatment: z.enum(['mitigate', 'transfer', 'accept', 'avoid']).optional(),
   ownerMembershipId: z.uuid().optional(),
   subsidiaryId: z.uuid().optional(),
+  custom: z.record(z.string(), z.unknown()).optional(),
   aiReview: aiRiskReviewSchema.optional(),
 });
 
@@ -93,6 +94,7 @@ const updateRiskSchema = z.object({
   status: z.enum(['open', 'in_progress', 'closed']).optional(),
   ownerMembershipId: z.uuid().nullable().optional(),
   approverMembershipId: z.uuid().nullable().optional(),
+  custom: z.record(z.string(), z.unknown()).optional(),
 });
 
 const matrixSchema = z.object({

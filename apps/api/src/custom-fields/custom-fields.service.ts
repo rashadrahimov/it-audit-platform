@@ -14,6 +14,77 @@ interface Actor {
 export const FIELD_TYPES = ['text', 'number', 'date', 'select', 'boolean'] as const;
 export type FieldType = (typeof FIELD_TYPES)[number];
 
+export interface CustomFieldValidationDefinition {
+  key: string;
+  fieldType: string;
+  options: unknown;
+  required: boolean;
+}
+
+export interface CustomFieldValidationOptions {
+  allowUnknownWhenNoDefinitions?: boolean;
+  reservedKeys?: string[];
+}
+
+function optionsArray(options: unknown): string[] {
+  return Array.isArray(options)
+    ? options.filter((item): item is string => typeof item === 'string')
+    : [];
+}
+
+function assertCustomFieldType(key: string, fieldType: string, options: string[], v: unknown) {
+  switch (fieldType) {
+    case 'text':
+      if (typeof v !== 'string') throw new BadRequestException(`«${key}»: ожидается строка`);
+      break;
+    case 'number':
+      if (typeof v !== 'number') throw new BadRequestException(`«${key}»: ожидается число`);
+      break;
+    case 'boolean':
+      if (typeof v !== 'boolean') throw new BadRequestException(`«${key}»: ожидается boolean`);
+      break;
+    case 'date':
+      if (typeof v !== 'string' || Number.isNaN(Date.parse(v))) {
+        throw new BadRequestException(`«${key}»: ожидается ISO-дата`);
+      }
+      break;
+    case 'select':
+      if (typeof v !== 'string' || !options.includes(v)) {
+        throw new BadRequestException(`«${key}»: значение вне списка [${options.join(', ')}]`);
+      }
+      break;
+    default:
+      throw new BadRequestException(`«${key}»: неизвестный тип поля ${fieldType}`);
+  }
+}
+
+export function validateCustomFieldValues(
+  defs: CustomFieldValidationDefinition[],
+  values: Record<string, unknown>,
+  options: CustomFieldValidationOptions = {},
+) {
+  if (defs.length === 0 && options.allowUnknownWhenNoDefinitions) {
+    return { valid: true, checked: 0 };
+  }
+
+  const reserved = new Set(options.reservedKeys ?? []);
+  for (const def of defs) {
+    const v = values[def.key];
+    if (v === undefined || v === null || v === '') {
+      if (def.required) throw new BadRequestException(`Поле «${def.key}» обязательно`);
+      continue;
+    }
+    assertCustomFieldType(def.key, def.fieldType, optionsArray(def.options), v);
+  }
+
+  const known = new Set(defs.map((d) => d.key));
+  const unknown = Object.keys(values).filter((k) => !known.has(k) && !reserved.has(k));
+  if (unknown.length > 0) {
+    throw new BadRequestException(`Неизвестные custom-поля: ${unknown.join(', ')}`);
+  }
+  return { valid: true, checked: defs.length };
+}
+
 @Injectable()
 export class CustomFieldsService {
   constructor(
@@ -82,46 +153,34 @@ export class CustomFieldsService {
   /** Валидировать payload значений custom-полей по определениям entity_type (GEN-07). */
   async validate(tenantId: string, entityType: string, values: Record<string, unknown>) {
     const defs = await this.listFor(tenantId, entityType);
-    for (const def of defs) {
-      const v = values[def.key];
-      if (v === undefined || v === null || v === '') {
-        if (def.required) throw new BadRequestException(`Поле «${def.key}» обязательно`);
-        continue;
-      }
-      this.checkType(def.key, def.fieldType, def.options as string[], v);
-    }
-    // неизвестные ключи не запрещаем жёстко — но сообщаем через отфильтрованный результат
-    const known = new Set(defs.map((d) => d.key));
-    const unknown = Object.keys(values).filter((k) => !known.has(k));
-    if (unknown.length > 0) {
-      throw new BadRequestException(`Неизвестные custom-поля: ${unknown.join(', ')}`);
-    }
-    return { valid: true, checked: defs.length };
+    return validateCustomFieldValues(defs, values);
   }
 
-  private checkType(key: string, fieldType: string, options: string[], v: unknown) {
-    switch (fieldType) {
-      case 'text':
-        if (typeof v !== 'string') throw new BadRequestException(`«${key}»: ожидается строка`);
-        break;
-      case 'number':
-        if (typeof v !== 'number') throw new BadRequestException(`«${key}»: ожидается число`);
-        break;
-      case 'boolean':
-        if (typeof v !== 'boolean') throw new BadRequestException(`«${key}»: ожидается boolean`);
-        break;
-      case 'date':
-        if (typeof v !== 'string' || Number.isNaN(Date.parse(v))) {
-          throw new BadRequestException(`«${key}»: ожидается ISO-дата`);
-        }
-        break;
-      case 'select':
-        if (typeof v !== 'string' || !options.includes(v)) {
-          throw new BadRequestException(`«${key}»: значение вне списка [${options.join(', ')}]`);
-        }
-        break;
-      default:
-        throw new BadRequestException(`«${key}»: неизвестный тип поля ${fieldType}`);
-    }
+  /**
+   * Проверка для write-path доменных сущностей.
+   *
+   * Если definitions ещё не заведены, не ломаем legacy/custom payload. Но как только
+   * tenant определил хотя бы одно поле для entityType, включается строгий контракт:
+   * required/type/select и запрет неизвестных ключей. Для PATCH валидируем merged
+   * состояние, чтобы required поля могли уже лежать в существующей записи.
+   */
+  async validateForWrite(
+    tenantId: string,
+    entityType: string,
+    values: Record<string, unknown> | undefined,
+    options: {
+      existing?: Record<string, unknown> | null;
+      partial?: boolean;
+      reservedKeys?: string[];
+    } = {},
+  ) {
+    const incoming = values ?? {};
+    const merged = options.partial ? { ...(options.existing ?? {}), ...incoming } : incoming;
+    const defs = await this.listFor(tenantId, entityType);
+    validateCustomFieldValues(defs, merged, {
+      allowUnknownWhenNoDefinitions: true,
+      reservedKeys: options.reservedKeys,
+    });
+    return merged;
   }
 }

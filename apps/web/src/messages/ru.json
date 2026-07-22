@@ -3122,6 +3122,7 @@
         "continuous-review-gates": "Контрольные проверки аудитора",
         "continuous-summary": "Сводка непрерывного мониторинга",
         "cross-framework-mapping": "Маппинг между фреймворками",
+        "custom-field-write-validation": "Валидация custom-полей при записи",
         "dashboards": "Дашборды",
         "docx": "Экспорт Word",
         "document-ai-intake": "ИИ-приём документов",
