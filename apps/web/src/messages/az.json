@@ -68,7 +68,7 @@
     "quickAccess": "Sürətli giriş",
     "frameworks": "Standartlar kitabxanası",
     "controls": "Nəzarətlər kitabxanası",
-    "engagements": "Auditlər (engagements)",
+    "engagements": "Auditlər",
     "onboardingTitle": "Başlanğıc addımları",
     "onboarding": {
       "invite_team": "Komandanı dəvət edin",
@@ -84,7 +84,7 @@
     "universe": "Audit Kainatı",
     "riskHeatmap": "Risk İstilik Xəritəsi",
     "plans": "Audit Planları",
-    "chartDashboards": "Qrafik Panelləri",
+    "chartDashboards": "Qrafik panellər",
     "trustCenter": "Etibar Mərkəzi",
     "glossary": "Lüğət",
     "snapshots": "Anlıq görüntülər",
@@ -123,10 +123,10 @@
     "allocations": "Resurs bölgüsü",
     "fieldPermissions": "Sahə səviyyəli hüquqlar",
     "migration": "Çeklist idxalı",
-    "aiSettings": "AI provayderi",
+    "aiSettings": "İİ provayderi",
     "home": "Əsas",
     "guide": "Bələdçi",
-    "findings": "Findinqlər",
+    "findings": "Qeydlər",
     "documents": "Sənədlər",
     "tests": "Testlər",
     "searchPh": "Axtarış…",
@@ -240,20 +240,20 @@
     "teamMembers": "İştirakçılar",
     "activeAuditTasks": "Açıq",
     "overdueAuditTasks": "Gecikmiş",
-    "teamEmpty": "Komanda hələ təyin edilməyib. Məsuliyyəti aydınlaşdırmaq üçün lead, assessor və ya reviewer əlavə edin.",
+    "teamEmpty": "Komanda hələ təyin edilməyib. Məsuliyyəti aydınlaşdırmaq üçün rəhbər, qiymətləndirici və ya yoxlayan əlavə edin.",
     "addTeamMember": "Komanda üzvü əlavə et",
     "memberLabel": "İştirakçı",
     "roleLabel": "Audit rolu",
     "addMember": "Əlavə et",
     "removeMember": "Çıxar",
     "auditTasks": "Audit tapşırıqları",
-    "evidenceRequestsKicker": "DRL və PBC",
+    "evidenceRequestsKicker": "Sənəd və sübut sorğuları",
     "evidenceRequestsTitle": "Sübut sorğuları",
-    "evidenceRequestsSub": "Faylları sahiblərdən tələb edin, gecikmələri izləyin və AI-DRL təkliflərini insan yoxlaması ilə rəsmi sorğulara çevirin.",
+    "evidenceRequestsSub": "Faylları sahiblərdən tələb edin, gecikmələri izləyin və İİ təkliflərini insan yoxlaması ilə rəsmi sorğulara çevirin.",
     "evidenceRequestsOpen": "Açıq",
-    "evidenceRequestsSuggested": "AI-DRL",
+    "evidenceRequestsSuggested": "İİ təklifləri",
     "evidenceRequestsOverdue": "Gecikmiş",
-    "evidenceRequestsEmpty": "Hələ sübut sorğusu yoxdur. Əl ilə yaradın və ya aşağıdakı AI-DRL təklifini qəbul edin.",
+    "evidenceRequestsEmpty": "Hələ sübut sorğusu yoxdur. Əl ilə yaradın və ya aşağıdakı İİ təklifini qəbul edin.",
     "evidenceRequestCreate": "Sorğunu əl ilə yarat",
     "evidenceRequestTitleLabel": "Nə tələb olunur",
     "evidenceRequestTitlePh": "Məs. Q3 üçün aktiv istifadəçilər ixracı",
@@ -261,7 +261,7 @@
     "evidenceRequestAssignee": "Məsul şəxs",
     "evidenceRequestDue": "Son tarix",
     "evidenceRequestSubmit": "Sorğu yarat",
-    "drlSuggestions": "AI tərəfindən yaradılan DRL",
+    "drlSuggestions": "İİ tərəfindən yaradılan sorğu siyahısı",
     "drlSuggestionHint": "Təkliflər sübut bağlanmamış çeklist bəndlərinə əsaslanır. Auditor onları rəsmi sorğuya çevirmək barədə qərar verir.",
     "createRequest": "Sorğu yarat",
     "provideRequestEvidence": "Mövcud sənədi əlavə et",
@@ -278,9 +278,9 @@
       "accepted": "Qəbul edilib"
     },
     "roles": {
-      "lead": "Lead",
+      "lead": "Rəhbər",
       "assessor": "Qiymətləndirici",
-      "reviewer": "Reviewer",
+      "reviewer": "Yoxlayan",
       "approver": "Təsdiqləyən",
       "observer": "Müşahidəçi"
     },
@@ -299,7 +299,7 @@
     "actionPlanProof": {
       "kicker": "Tövsiyə mühərriki",
       "owner": "Qeydin sahibi tapşırığın icraçısı olur",
-      "timeline": "Risk SLA son tarix olmadıqda onu doldurur",
+      "timeline": "Risk üzrə son tarix yoxdursa, avtomatik doldurulur",
       "clause": "Qəbul edilmiş İİ kontrol bəndi tapşırıqda saxlanılır",
       "review": "Auditor bağlamadan əvvəl hər tapşırığı redaktə edə bilər",
       "templateMeta": "{owner} · hədəf {days} gün"
@@ -320,9 +320,9 @@
     "export": "İxrac",
     "duplicate": "Dublikat / bərpa",
     "charter": {
-      "kicker": "Audit charter",
+      "kicker": "Audit nizamnaməsi",
       "title": "Əhatə, meyarlar və təhvil planı",
-      "subtitle": "Kickoff görüşü üçün qısa audit brief-i: obyekt, framework meyarları, dövr, komanda, workflow və final deliverable-lar.",
+      "subtitle": "Başlanğıc görüşü üçün qısa audit xülasəsi: obyekt, standart meyarları, dövr, komanda, proses və final sənədlər.",
       "noAuditType": "Audit növü seçilməyib",
       "noPeriod": "Dövr təyin edilməyib",
       "periodHint": "Formal hesabat dövrü",
@@ -345,7 +345,7 @@
       "deliverablesTitle": "Nəticə paketi",
       "deliverablesBody": "Final nəticələr rəhbərlik/tənzimləyici üçün hazır hesabat faylları və iş sənədi ixracları kimi müştəri dillərində hazırlanır."
     },
-    "suggestionsKicker": "AI qaralaması · sübuta əsaslanır",
+    "suggestionsKicker": "İİ qaralaması · sübuta əsaslanır",
     "suggestions": "Təklif olunan qeydlər (gaplar)",
     "reviewRequired": "İnsan yoxlaması tələb olunur",
     "confidence": "Etibar",
@@ -360,7 +360,7 @@
       "riskJustificationValue": "İlkin qiymət {risk}: müşahidə olunan boşluq aradan qaldırılana və ya kompensasiyaedici sübut təsdiqlənənə qədər kontrol məqsədini zəiflədə bilər."
     },
     "noEvidenceRef": "Hələ sənəd istinadı yoxdur",
-    "aiAccepted": "AI-dən qəbul edilib",
+    "aiAccepted": "İİ-dən qəbul edilib",
     "trace": {
       "kicker": "İİ izlənəbilirliyi",
       "title": "Sübut → İİ qaralaması → insan qərarı",
@@ -537,8 +537,8 @@
     "remove": "Çıxar",
     "mappingKicker": "Uyğunluq xəritəsi",
     "mappingTitle": "Standartlar üzrə təkrar istifadə olunan kontrollar",
-    "mappingSub": "Bir kontrolun bir neçə tələbi harada bağladığını və mapləmə boşluqlarını göstərir.",
-    "mapped": "maplanıb",
+    "mappingSub": "Bir kontrolun bir neçə tələbi harada bağladığını və uyğunlaşdırma boşluqlarını göstərir.",
+    "mapped": "uyğunlaşdırılıb",
     "activeFrameworks": "Aktiv standartlar",
     "coveredRequirements": "Əhatə olunmuş tələblər",
     "reusableControls": "Təkrar istifadə kontrolları",
@@ -548,7 +548,7 @@
     "noReusable": "Hələ bir neçə aktiv standarta bağlı kontrol yoxdur.",
     "coversFrameworks": "{n} standartı · {r} tələbi bağlayır",
     "coverage": "Kontrol əhatəsi",
-    "coverageSub": "{total} tələbdən {covered} maplanıb",
+    "coverageSub": "{total} tələbdən {covered} uyğunlaşdırılıb",
     "evidenceCompleteness": "Sübut tamlığı",
     "evidenceSub": "{total} tələbdən {n} sübutlu",
     "audits": "Auditlər",
@@ -628,7 +628,7 @@
       "failingTests": "{n} avtomatik test diqqət tələb edir",
       "gatesKicker": "Davamlı audit dövrəsi",
       "gatesTitle": "Auditor baxışı olan avtomatlaşdırma siqnalları",
-      "gatesSubtitle": "Konnektorların yenidən skanı, avtomatik testlər, sübutların reskan planı və AI-DRL auditor növbəti addımı təsdiqləyənə qədər qaralama siqnal kimi görünür.",
+      "gatesSubtitle": "Konnektorların təkrar skanı, avtomatik testlər, sübutların təkrar skan planı və İİ sənəd sorğuları auditor növbəti addımı təsdiqləyənə qədər qaralama siqnal kimi görünür.",
       "loopTitle": "Siqnal zənciri",
       "draftPolicy": "Avtomatlaşdırma növbələr və qaralama tövsiyələr aça bilər; sübutlar və qeydlər rəsmi olmadan əvvəl auditor onları qəbul edir, düzəldir və ya rədd edir.",
       "failingTitle": "Baxış tələb edən avtomatik testlər",
@@ -796,14 +796,14 @@
     "metric": "Metrika",
     "chartType": "Qrafik",
     "widgetTitle": "Başlıq",
-    "back": "Dashboardlar",
-    "edit": "Dashboardu redaktə et",
+    "back": "Panellər",
+    "edit": "Paneli redaktə et",
     "save": "Yadda saxla",
     "delete": "Sil",
     "exportPdf": "PDF ixrac et",
     "m": {
-      "findings_by_status": "Findinqlər status üzrə",
-      "findings_by_severity": "Findinqlər kritiklik üzrə",
+      "findings_by_status": "Qeydlər status üzrə",
+      "findings_by_severity": "Qeydlər kritiklik üzrə",
       "tests_by_status": "Testlər status üzrə",
       "vendors_by_risk": "Vendorlar risk üzrə",
       "risks_by_class": "Risklər sinif üzrə",
@@ -865,13 +865,13 @@
     "capturedAt": "qeyd edilib",
     "controls": "Kontrollar",
     "risks": "Risklər",
-    "findings": "Tapıntılar",
+    "findings": "Qeydlər",
     "create": "Anlıq görüntü yarat",
     "labelPh": "Etiket — məs. Q3 2026 bağlanış",
     "createBtn": "Fiksasiya et",
-    "composition": "Fiksasiya anında açıq findinqlər",
+    "composition": "Fiksasiya anında açıq qeydlər",
     "viewComposition": "Dondurulmuş tərkib",
-    "noOpen": "Fiksasiya anında açıq findinq yoxdur.",
+    "noOpen": "Fiksasiya anında açıq qeyd yoxdur.",
     "colTitle": "Qeyd",
     "colRisk": "Risk",
     "colStatus": "Status",
@@ -1260,7 +1260,7 @@
     },
     "byTreatment": "Müalicə üzrə",
     "byClass": "Risk sinfi üzrə",
-    "aiSuggestionsKicker": "AI risk köməkçisi",
+    "aiSuggestionsKicker": "İİ risk köməkçisi",
     "aiSuggestions": "Biznes-risk təklifləri",
     "aiSuggestionsHint": "Açıq qeydlər əsasında qaralama təkliflər. Yoxlayın, lazım gələrsə redaktə edin və yalnız sonra reyestrə əlavə edin.",
     "reviewRequired": "İnsan yoxlaması tələb olunur",
@@ -1277,7 +1277,7 @@
     "openDuplicate": "Mövcud riski aç",
     "businessLens": {
       "title": "Biznes təsiri baxışı",
-      "hint": "AI təklifləri insan təsdiqindən əvvəl əməliyyat, maliyyə, tənzimləyici, üçüncü tərəf, davamlılıq və reputasiya riskləri üzrə qruplaşdırır.",
+      "hint": "İİ təklifləri insan təsdiqindən əvvəl əməliyyat, maliyyə, tənzimləyici, üçüncü tərəf, davamlılıq və reputasiya riskləri üzrə qruplaşdırır.",
       "draftQueue": "Qaralama təkliflər",
       "categoryCoverage": "Biznes kateqoriyaları",
       "mappedDomains": "Bağlı domenlər",
@@ -1437,7 +1437,7 @@
     "custom": "Fərdi",
     "empty": "Hələ boşdur",
     "slaTitle": "SLA aradan qaldırma pəncərələri",
-    "slaHint": "Ciddiliyə görə düzəliş günləri — findinq və zəiflik üçün son tarixi avtomatik təyin edir.",
+    "slaHint": "Ciddiliyə görə düzəliş günləri — qeyd və zəiflik üçün son tarixi avtomatik təyin edir.",
     "dueSoon": "Tezliklə pəncərəsi",
     "slaSave": "SLA yadda saxla",
     "slaDays": "Bütün dəyərlər gün ilədir.",
@@ -1493,7 +1493,7 @@
         "triggerQuiet": "Hesabat siqnalı yaranana qədər sakit qalacaq",
         "package": {
           "label": "Paket",
-          "hint": "Standart audit deliverable-ları bir digest-də göndərilir"
+          "hint": "Standart audit sənədləri bir icmalda göndərilir"
         },
         "languages": {
           "label": "Dillər",
@@ -1561,7 +1561,7 @@
       "items": {
         "audit_report": {
           "title": "Audit hesabatı",
-          "hint": "Scope, çeklist, tapıntılar, risklər və tövsiyələrlə tam hesabat."
+          "hint": "Əhatə, çeklist, qeydlər, risklər və tövsiyələrlə tam hesabat."
         },
         "nonconformities": {
           "title": "Uyğunsuzluqlar",
@@ -1581,13 +1581,13 @@
         }
       }
     },
-    "compare": "Snapşotların müqayisəsi",
-    "needTwo": "Müqayisə üçün ən azı iki snapşot lazımdır",
+    "compare": "Anlıq görüntülərin müqayisəsi",
+    "needTwo": "Müqayisə üçün ən azı iki anlıq görüntü lazımdır",
     "periodA": "Dövr A",
     "periodB": "Dövr B",
     "run": "Müqayisə et",
     "entities": {
-      "findings": "Tapıntılar",
+      "findings": "Qeydlər",
       "risks": "Risklər",
       "controls": "Kontrollar"
     },
@@ -1596,8 +1596,8 @@
       "risks_by_class": "Risklər (sinif üzrə)",
       "tests_by_status": "Testlər (status üzrə)",
       "vendors_by_risk": "Vendorlar (risk üzrə)",
-      "findings_by_severity": "Tapıntılar (kritiklik üzrə)",
-      "findings_open": "Açıq tapıntılar"
+      "findings_by_severity": "Qeydlər (kritiklik üzrə)",
+      "findings_open": "Açıq qeydlər"
     }
   },
   "apiKeys": {
@@ -1789,16 +1789,16 @@
   "trends": {
     "title": "Trendlər",
     "toAccount": "Hesaba",
-    "needTwo": "Trend üçün ən azı iki snapşot lazımdır",
+    "needTwo": "Trend üçün ən azı iki anlıq görüntü lazımdır",
     "followUpKicker": "Təkrar yoxlama fərqi",
-    "followUpTitle": "Son snapshotdan bəri dəyişikliklər",
+    "followUpTitle": "Son anlıq görüntüdən bəri dəyişikliklər",
     "baseline": "Baza",
     "currentOpen": "Hazırda açıq",
     "new": "Yeni",
     "remediated": "Aradan qaldırılıb",
     "changed": "Dəyişib",
     "unchanged": "Dəyişməyib",
-    "noDiff": "Son snapshotdan bəri qeydlərdə dəyişiklik yoxdur.",
+    "noDiff": "Son anlıq görüntüdən bəri qeydlərdə dəyişiklik yoxdur.",
     "metric": "Metrika",
     "series": "Seriya",
     "show": "Göstər",
@@ -1816,8 +1816,8 @@
       "tests_by_status": "Testlər (status üzrə)",
       "vendors_by_risk": "Vendorlar (risk üzrə)",
       "devices_compliance": "Cihaz uyğunluğu",
-      "findings_by_status": "Tapıntılar (status üzrə)",
-      "findings_by_severity": "Tapıntılar (kritiklik üzrə)"
+      "findings_by_status": "Qeydlər (status üzrə)",
+      "findings_by_severity": "Qeydlər (kritiklik üzrə)"
     }
   },
   "allocations": {
@@ -1876,14 +1876,14 @@
     "errorApi": "İdxal alınmadı"
   },
   "aiSettings": {
-    "title": "AI provayderi",
+    "title": "İİ provayderi",
     "toAccount": "Hesaba",
-    "intro": "Təşkilatınızın köməkçi funksiyalarını hansı AI modelinin işlədəcəyini seçin. Defolt olaraq söndürülüb — deterministik köməkçi provayder olmadan işləyir.",
+    "intro": "Təşkilatınızın köməkçi funksiyalarını hansı İİ modelinin işlədəcəyini seçin. Defolt olaraq söndürülüb — deterministik köməkçi provayder olmadan işləyir.",
     "deployDefault": "Deploy defoltu",
-    "deployOff": "AI söndürülüb",
+    "deployOff": "İİ söndürülüb",
     "trust": {
       "kicker": "Etibar rejimi",
-      "title": "Sübuta əsaslanan AI, insan nəzarəti ilə",
+      "title": "Sübuta əsaslanan İİ, insan nəzarəti ilə",
       "body": "Köməkçi yalnız sistemdəki audit məlumatlarına əsasən qaralama hazırlayır. Nəticə istifadəçi yoxlayıb qəbul edənə qədər qaralama qalır; provayder qurulmayıbsa, deterministik rejim işləyir.",
       "effectiveMode": "Cari rejim",
       "deterministic": "Deterministik köməkçi",
@@ -1892,11 +1892,11 @@
       "cards": {
         "grounded": {
           "title": "Sübuta bağlı",
-          "body": "Qeyd qaralamaları və DRL təklifləri nəzarətlərə, cavablara və mənbə sənədlərinə bağlı qalır."
+          "body": "Qeyd qaralamaları və sənəd sorğusu təklifləri nəzarətlərə, cavablara və mənbə sənədlərinə bağlı qalır."
         },
         "human": {
           "title": "Qərar insandadır",
-          "body": "AI təklifləri istifadəçi yoxlayana, redaktə edənə və ya qəbul edənə qədər qaralama qalır."
+          "body": "İİ təklifləri istifadəçi yoxlayana, redaktə edənə və ya qəbul edənə qədər qaralama qalır."
         },
         "secrets": {
           "title": "Açarlar şifrələnir",
@@ -1924,9 +1924,9 @@
     "apiKeyHint": "Şifrələnmiş saxlanılır (AES-256-GCM); bir daha göstərilmir.",
     "save": "Saxla",
     "residencyNote": "Data (boşluqlar, cavablar, siyasətlər) seçilmiş provayderə göndərilir. Bank üçün — lokal model (şəbəkənizdə Ollama/vLLM) və ya data emalı müqaviləsi və sorğuların saxlanmaması olan bulud.",
-    "memory": "AI Yaddaşı",
+    "memory": "İİ yaddaşı",
     "memoryPh": "məs. Biz ISO 27001 üzrə fintech SaaS-ıq; qeydlər SOC komandamıza istinad etməlidir.",
-    "memoryHint": "Hər AI qaralama sorğusuna əlavə olunan təşkilat konteksti."
+    "memoryHint": "Hər İİ qaralama sorğusuna əlavə olunan təşkilat konteksti."
   },
   "guide": {
     "title": "Platforma bələdçisi",
@@ -1955,7 +1955,7 @@
       "risk-heatmap": "5×5 risk istilik xəritəsi.",
       "privacy": "GDPR: emal reyestri (ROPA) və DPIA qiymətləndirmələri.",
       "iam": "Sistem hesabları: sahiblər, MFA, imtiyazlar.",
-      "access-reviews": "Keep/revoke qərarlı giriş baxış kampaniyaları.",
+      "access-reviews": "Saxla/ləğv et qərarlı giriş yoxlama kampaniyaları.",
       "devices": "Cihaz uyğunluğu: şifrələmə, antivirus, kilid.",
       "security-alerts": "Təhlükəsizlik bildirişləri və triaj.",
       "vulnerabilities": "Zəifliklər: mənbələr, SLA, aradan qaldırma statusu.",
@@ -1971,11 +1971,11 @@
       "api-keys": "Proqram girişi üçün API açarları.",
       "notifications": "Bildiriş qaydaları və jurnalı.",
       "migration": "Müştərinin Excel çeklistlərindən nəzarətlərin idxalı.",
-      "ai-settings": "AI provayderi: Claude, GPT, Kimi və ya lokal model.",
+      "ai-settings": "İİ provayderi: Claude, GPT, Kimi və ya lokal model.",
       "glossary": "GRC terminlər lüğəti.",
       "guide": "Bu bələdçi: bütün bölmələr və tur.",
       "account": "Əsas ekran: metriklər, onboarding və sürətli giriş.",
-      "my-work": "Şəxsi növbəm: findinqlər, testlər, təsdiqlər, tanışlıqlar və giriş sorğuları.",
+      "my-work": "Şəxsi növbəm: qeydlər, testlər, təsdiqlər, tanışlıqlar və giriş sorğuları.",
       "findings": "Bütün təşkilat üzrə qeyd reyestri: həyat dövrü, filtrlər, SLA nişanları.",
       "documents": "Sübut sənədləri: yükləmə, nəzarətlərə/auditlərə bağlama, endirmə.",
       "tests": "Nəzarətlərin davamlı yoxlanışı: reyestr, icra tarixçəsi, diqqət sayğacları.",
@@ -2179,7 +2179,7 @@
       "ai-settings": [
         "Provayder seçin: Claude, GPT, Kimi və ya lokal",
         "Açarı daxil edin — şifrəli saxlanılır",
-        "AI-siz deterministik rejim işləyir"
+        "İİ-siz deterministik rejim işləyir"
       ],
       "glossary": [
         "Termin axtarın",
@@ -2192,7 +2192,7 @@
         "«?» düyməsi — istənilən bölmədə kömək"
       ],
       "my-work": [
-        "Findinqlərinizi və son tarixləri yoxlayın",
+        "Qeydlərinizi və son tarixləri yoxlayın",
         "Siyasətlərlə tanışlığı təsdiqləyin",
         "Formadan giriş sorğusu göndərin"
       ],
@@ -2225,7 +2225,7 @@
       "roadmap": [
         "Yol xəritəsində görünməsi üçün çərçivəni aktivləşdirin.",
         "Hər çərçivə üçün hədəf audit tarixi təyin edin.",
-        "Nəzarət, siyasət, findinq və testlər yaxşılaşdıqca faza irəliləyişini izləyin."
+        "Nəzarət, siyasət, qeyd və testlər yaxşılaşdıqca faza irəliləyişini izləyin."
       ],
       "sso-settings": [
         "OIDC və ya SAML seçin və SSO-nu aktiv edin",
@@ -2244,7 +2244,7 @@
       ],
       "auditor-view": [
         "Audit seçin",
-        "Sübutları nəzərdən keçirin və status təyin edin; tapıntı üzrə verdikt qeyd edin",
+        "Sübutları nəzərdən keçirin və status təyin edin; qeyd üzrə qərarı yazın",
         "Sənəd tələb edin və müştərinin təqdim etdiyini qəbul edin"
       ]
     },
@@ -2272,7 +2272,7 @@
       "risk-heatmap": "5×5 istilik xəritəsi: bütün risklər bir ehtimal × təsir matrisində. Qırmızı zona — indi məşğul olunmalı. Xanaya klik oradakı riskləri açır.",
       "privacy": "İki hissəli GDPR bloku. ROPA (maddə 30 emal reyestri): hər əməliyyat hüquqi əsasla (razılıq/müqavilə/qanuni öhdəlik və s.), data və subyekt kateqoriyaları, alıcılar, saxlama müddəti və transsərhəd işarəsi ilə; rol — nəzarətçi/prosessor/birgə. DPIA: riskli əməliyyatlar üçün risk səviyyəsi, tədbirlər, tamamlanana qədər proses və sənədlər.",
       "iam": "Sistemlərinizdəki hesablar bir yerdə: sahib, MFA statusu, imtiyazlılıq işarəsi. «Hamıda MFA varmı» və «admin hüquqları kimdədir» yoxlamalarının əsası. Data idxal və ya konnektorlarla gəlir.",
-      "access-reviews": "Giriş yenidən sertifikasiya kampaniyaları: sistem üzrə kampaniya başladın, rəyçilər hər hesab üçün qərar verir — saxla və ya ləğv et. Nəticələr qeyd olunur.",
+      "access-reviews": "Giriş yoxlama kampaniyaları: sistem üzrə kampaniya başladın, yoxlayanlar hər hesab üçün qərar verir — saxla və ya ləğv et. Nəticələr qeyd olunur.",
       "devices": "Cihaz uyğunluğu: disk şifrələməsi, antivirus, ekran kilidi. Uyğun olmayan cihazlar dərhal görünür və aradan qaldırmağa göndərilir.",
       "security-alerts": "Təhlükəsizlik hadisələri bir növbədə: kritikliyə görə triaj, təyinat, qərarla bağlanma. Bildirişlərin emal tarixçəsi işlək reaksiya prosesinin sübutudur.",
       "vulnerabilities": "Zəifliklər reyestri: mənbə (skaner, pentest, bug bounty), kritiklik və aradan qaldırma SLA-sı. Gecikmişlər vurğulanır; bağlanma yoxlama tələb edir.",
@@ -2288,21 +2288,21 @@
       "api-keys": "Platformaya proqram girişi: açar yaradın (bir dəfə göstərilir, heş kimi saxlanılır), REST API-ni X-Api-Key başlığı ilə çağırın. Tam OpenAPI sənədləri API serverində /docs ünvanındadır.",
       "notifications": "Bildiriş qaydaları — hansı hadisələr məktub göndərir (qeyd müddətləri, təyinatlar, status dəyişmələri) — və göndərilənlərin jurnalı.",
       "migration": "Tarixi datanın köçürülməsi: keçmiş illərin Excel çeklistini yükləyin, platforma strukturu ayırır (idxaldan əvvəl önizləmə) və kitabxananızda domenlərlə nəzarətlər yaradır. İdxal idempotentdir — təkrar yükləmə dublikat yaratmır.",
-      "ai-settings": "Seçiminizlə AI köməkçisi: Anthropic Claude, istənilən OpenAI-uyğun provayder (GPT, Kimi, DeepSeek) və ya perimetrinizdə lokal model (Ollama/vLLM) — o zaman data infrastrukturdan çıxmır. Açar şifrəli saxlanılır və bir daha göstərilmir. AI-siz bütün köməkçi funksiyalar deterministik rejimdə işləyir.",
+      "ai-settings": "Seçiminizlə İİ köməkçisi: Anthropic Claude, istənilən OpenAI-uyğun provayder (GPT, Kimi, DeepSeek) və ya perimetrinizdə lokal model (Ollama/vLLM) — o zaman data infrastrukturdan çıxmır. Açar şifrəli saxlanılır və bir daha göstərilmir. İİ-siz bütün köməkçi funksiyalar deterministik rejimdə işləyir.",
       "glossary": "Vahid GRC lüğəti (nəzarət, qeyd, RCM, DPIA, ROPA…) lokalizasiya ilə. Öz terminlərinizlə genişləndirin — komanda və audit olunanlar bir dildə danışır.",
       "guide": "Kömək mərkəzi: hər bölmənin təsviri istifadə addımları ilə, interfeys üzrə interaktiv tur və bu soraqça. Başlıqdakı «?» düyməsi olduğunuz bölmənin köməyini açır.",
-      "my-work": "«Mənim işim» sizə təyin olunan hər şeyi toplayır: findinqlər, testlər, təsdiq və tanışlıq gözləyən siyasətlər, giriş sorğuları. Əməkdaşlar girişdən sonra buraya düşür.",
+      "my-work": "«Mənim işim» sizə təyin olunan hər şeyi toplayır: qeydlər, testlər, təsdiq və tanışlıq gözləyən siyasətlər, giriş sorğuları. Əməkdaşlar girişdən sonra buraya düşür.",
       "findings": "Reyestr bütün auditlər üzrə qeydləri risk, status və SLA ilə göstərir. Kartda — sahib təyini, mərhələlər üzrə hərəkət, bağlamazdan əvvəl təkrar yoxlama, şərhlər və tarixçə.",
       "documents": "Sənədlər — əl ilə toplanan sübutlardır. Faylı yükləyin, nəzarətə və ya auditə bağlayın, yenilənmə tarixi qoyun, sahibini dəyişin. Endirmə avtorizə olunub.",
       "tests": "Testlər nəzarətləri davamlı yoxlayır. Reyestrdə status, SLA və sahib; kartda — uğursuz obyektlər və sübutlarla icra tarixçəsi. Avtotestlər düymə ilə işə düşür; köhnəlmiş testlər deaktiv edilir.",
       "roles": "Rollar resurs×əməliyyat icazə matrisini müəyyən edir. Sistem şablonları yalnız oxunur; xüsusi rollar yaradın və xanaları təyin edin.",
       "members": "Bütün iştirakçıların siyahısı: email, kateqoriya (auditor / istifadəçi / MSP) və rol. Rol sətirdə dəyişilir — dəyişiklik jurnala düşür.",
       "assets": "Aktiv inventarı əhatə dairəsindəki bütün İT aktivlərini göstərir — ERP sistemləri, verilənlər bazaları, şəbəkə qurğuları, tətbiqlər, bulud xidmətləri və son nöqtələr. Hər aktivin sahibi və mənbəyi görünür: əl ilə yaradılıb və ya konnektor vasitəsilə avtomatik aşkarlanıb. Aktivləri toplu şəkildə teqləmək (məs. PCI və ya SOX əhatəsini işarələmək) və bütün inventarı auditorlar üçün CSV-yə ixrac etmək olar. Aktivlər Audit Universe-ə proyeksiya olunur və risklərlə əlaqələndirilə bilər.",
-      "roadmap": "Yol xəritəsi hər aktivləşdirilmiş çərçivəni fazalı tətbiq planına çevirir — Quraşdırma, Siyasətlər, Aradan qaldırma, Audit — irəliləyiş canlı məlumatlardan hesablanır (nəzarət əhatəsi, təsdiqlənmiş siyasətlər, bağlanmış findinqlər, keçən testlər). Audit hazırlığı hədəf tarixi təyin edin və yol xəritəsi qrafikdə olub-olmadığınızı göstərir.",
+      "roadmap": "Yol xəritəsi hər aktivləşdirilmiş çərçivəni fazalı tətbiq planına çevirir — Quraşdırma, Siyasətlər, Aradan qaldırma, Audit — irəliləyiş canlı məlumatlardan hesablanır (nəzarət əhatəsi, təsdiqlənmiş siyasətlər, bağlanmış qeydlər, keçən testlər). Audit hazırlığı hədəf tarixi təyin edin və yol xəritəsi qrafikdə olub-olmadığınızı göstərir.",
       "sso-settings": "Bu tenant üçün vahid girişi konfiqurasiya edin: OIDC və ya SAML seçin, e-poçt domenini, issuer/metadata URL, client ID və secret təyin edin. Secret şifrələnmiş saxlanılır və bir daha göstərilmir. Təşkilatınızın öz kimlik provayderi olduqda və işçilər korporativ hesab məlumatları ilə daxil olduqda istifadə edin.",
       "security": "Şəxsi təhlükəsizlik parametrləri. İki faktorlu autentifikasiyanı (2FA) aktiv edin: QR-ı autentifikator tətbiqi ilə skan edin, kodu təsdiqləyin və birdəfəlik bərpa kodlarını saxlayın. Söndürmək üçün cari kod lazımdır.",
       "auditors": "Xarici auditorları e-poçtla dəvət edin, onları konkret törəmələrlə məhdudlaşdırın, vaxt məhdudiyyətli giriş pəncərəsi təyin edin və girişi ləğv edin. Həmçinin daxili iştirakçıları və MSP-ləri kateqoriyalar üzrə göstərir.",
-      "auditor-view": "Seçilmiş audit üçün auditor görünüşü: statuslarla sübutların baxışı, raundlarla auditor qiymətləndirmələri və müştəridən sənəd tələbi (PBC)."
+      "auditor-view": "Seçilmiş audit üçün auditor görünüşü: statuslarla sübutların baxışı, raundlarla auditor qiymətləndirmələri və müştəridən sənəd tələbi."
     }
   },
   "tour": {
@@ -2347,7 +2347,7 @@
       },
       "org": {
         "t": "Təşkilat",
-        "d": "İşçilər, inteqrasiyalar, hüquqlar, Excel idxalı və AI provayderi."
+        "d": "İşçilər, inteqrasiyalar, hüquqlar, Excel idxalı və İİ provayderi."
       },
       "breadcrumbs": {
         "t": "Naviqasiya zənciri",
@@ -2412,8 +2412,8 @@
     "commentsEmpty": "Hələ şərh yoxdur",
     "commentPh": "Şərh yazın…",
     "commentAdd": "Əlavə et",
-    "aiAccepted": "AI-dən qəbul edilib",
-    "aiTrailKicker": "AI yoxlama izi",
+    "aiAccepted": "İİ-dən qəbul edilib",
+    "aiTrailKicker": "İİ yoxlama izi",
     "aiTrailTitle": "Qəbul edilmiş qaralama və sübutlar",
     "humanAccepted": "Auditor tərəfindən qəbul edilib",
     "aiExpected": "Gözlənilən nəzarət vəziyyəti",
@@ -2512,12 +2512,12 @@
     "requestNamePh": "məs. Q3 giriş yoxlaması",
     "requestBtn": "Tələb et",
     "intake": {
-      "kicker": "AI intake",
+      "kicker": "İİ sənəd qəbulu",
       "title": "Sənədlərin İİ analizi üçün hazırlığı",
-      "subtitle": "Hansı formatların toplandığını, hansının finding qaralamalarını dəstəklədiyini və harada OCR, yükləmə və ya nəzarət/audit bağlantısı lazım olduğunu göstərir.",
+      "subtitle": "Hansı formatların toplandığını, hansının qeyd qaralamalarını dəstəklədiyini və harada tanınma, yükləmə və ya nəzarət/audit bağlantısı lazım olduğunu göstərir.",
       "aiReady": "İİ üçün hazır",
-      "formatsTitle": "Dəstəklənən intake formatları",
-      "formatsSubtitle": "PDF, Word, Excel, CSV, şəkillər və texniki konfiq/log faylları çıxarış, OCR və sübuta əsaslanan İİ finding qaralama növbələrinə yönləndirilir.",
+      "formatsTitle": "Dəstəklənən qəbul formatları",
+      "formatsSubtitle": "PDF, Word, Excel, CSV, şəkillər və texniki konfiq/log faylları mətn çıxarışı, tanınma və sübuta əsaslanan İİ qeyd qaralama növbələrinə yönləndirilir.",
       "supportedExt": "Uzantılar: {extensions}",
       "requiresOcr": "OCR",
       "textExtraction": "Mətn",
@@ -2558,7 +2558,7 @@
     "rescan": {
       "kicker": "Davamlı təkrar skan",
       "title": "Yeni sübutlardan sonra nə yenilənəcək",
-      "subtitle": "Son {days} gün üçün yalnız oxunan plan: sübut çıxarışı, OCR, İİ finding qaralamaları, sorğu follow-up-u və hesabat hazırlığı.",
+      "subtitle": "Son {days} gün üçün yalnız oxunan plan: sübut çıxarışı, tanınma, İİ qeyd qaralamaları, sorğular üzrə növbəti addımlar və hesabat hazırlığı.",
       "recentLinked": "bağlı yükləmələr",
       "recentUploads": "{count} yeni yükləmə",
       "impactedSummary": "{engagements} audit · {controls} nəzarət təsirlənib",
@@ -2571,7 +2571,7 @@
       "queues": {
         "extraction": {
           "label": "Çıxarış",
-          "hint": "Aktiv bağlı fayllar parsing üçün hazırdır"
+          "hint": "Aktiv bağlı fayllar emal üçün hazırdır"
         },
         "ocr": {
           "label": "OCR",
@@ -2579,15 +2579,15 @@
         },
         "aiFindingDrafts": {
           "label": "İİ qaralamaları",
-          "hint": "Sübutla yenilənə bilən finding namizədləri"
+          "hint": "Sübutla yenilənə bilən qeyd namizədləri"
         },
         "evidenceRequestFollowUp": {
-          "label": "PBC follow-up",
+          "label": "Sorğular üzrə addımlar",
           "hint": "Növbəni bloklayan sorğular və qaralamalar"
         },
         "reportReadinessRefresh": {
           "label": "Hesabatlar",
-          "hint": "Qəbul edilmiş və ya hazır sübutlar deliverable-ları qidalandırır"
+          "hint": "Qəbul edilmiş və ya hazır sübutlar hesabat sənədlərini qidalandırır"
         }
       },
       "blockersTitle": "Növbə blokları",
@@ -2598,7 +2598,7 @@
         "flaggedDocuments": "Qeydli",
         "ocrDocuments": "OCR lazımdır"
       },
-      "triggersTitle": "Son trigger-lər",
+      "triggersTitle": "Son işə salan hadisələr",
       "triggerGate": "İİ nəticələri auditor yoxlamasınadək qaralama qalır",
       "triggerReasons": {
         "linked_evidence_upload": "Bağlı sübut təkrar skan zəncirini işə salır",
@@ -2692,7 +2692,7 @@
   },
   "search": {
     "title": "Axtarış",
-    "hint": "Yuxarıdakı sətirdə sorğu yazın — findinqlər, nəzarətlər, sənədlər, iş sənədləri, bilik bazası və audit proqramları üzrə axtarılır.",
+    "hint": "Yuxarıdakı sətirdə sorğu yazın — qeydlər, nəzarətlər, sənədlər, iş sənədləri, bilik bazası və audit proqramları üzrə axtarılır.",
     "empty": "Heç nə tapılmadı",
     "askKicker": "Audit sorğu köməkçisi",
     "askFound": "{total} uyğunluq · qeydlər: {findings} · sənədlər: {evidence}",
@@ -2751,7 +2751,7 @@
     "title": "Mənim işim",
     "allDone": "Sizə heç nə təyin olunmayıb — hər şey qaydasındadır.",
     "pendingCount": "Diqqət tələb edir: {count}",
-    "findings": "Mənim findinqlərim",
+    "findings": "Mənim qeydlərim",
     "tests": "Mənim testlərim",
     "approvals": "Təsdiqimi gözləyir",
     "attestations": "Tanışlıq üçün siyasətlər",
@@ -2842,14 +2842,14 @@
       "items": {
         "workflow": {
           "title": "Audit mühərriki və irəliləyiş",
-          "hint": "Audit charter, audit fazaları, nəzarət statusları, domenlər və test işi üzrə irəliləyiş."
+          "hint": "Audit nizamnaməsi, audit fazaları, nəzarət statusları, domenlər və test işi üzrə irəliləyiş."
         },
         "riskRegister": {
           "title": "Vahid risk reyestri",
-          "hint": "Əl ilə əlavə edilən və AI tərəfindən təklif olunan risklər biznes təsiri kateqoriyaları, təsirə məruz qalan proses/aktiv konteksti və insan təsdiqi ilə."
+          "hint": "Əl ilə əlavə edilən və İİ tərəfindən təklif olunan risklər biznes təsiri kateqoriyaları, təsirə məruz qalan proses/aktiv konteksti və insan təsdiqi ilə."
         },
         "documentAi": {
-          "title": "AI sənəd analizi və qeydlər",
+          "title": "İİ sənəd analizi və qeydlər",
           "hint": "Qeyd qaralamaları sübuta əsaslanır və izahlıdır; sənəd qəbulu və yenidən skan planı PDF/Office, cədvəllər, konfiqlər və OCR növbəsini göstərir."
         },
         "recommendations": {
@@ -2858,27 +2858,27 @@
         },
         "deliverables": {
           "title": "Standart sənəd paketi",
-          "hint": "Audit Report, Non-Conformities, Risk Matrix, Action Plan və Executive Summary PDF/Word/Excel formatında."
+          "hint": "Audit hesabatı, uyğunsuzluqlar siyahısı, risk matrisi, tədbirlər planı və rəhbərlik xülasəsi PDF/Word/Excel formatında."
         },
         "trustSecurity": {
           "title": "Etibar, təhlükəsizlik və məxfilik",
-          "hint": "RBAC, tenant izolyasiyası, şəxsi yerləşdirmə, dəyişməz audit jurnalı, AI traceability və guardrail-lər."
+          "hint": "RBAC, tenant izolyasiyası, şəxsi yerləşdirmə, dəyişməz audit jurnalı, İİ izlənməsi və qoruyucu qaydalar."
         },
         "collaboration": {
           "title": "Komanda işi və sübut axını",
-          "hint": "Audit komandası, tapşırıqlar, DRL, sübut sorğuları və review statusları."
+          "hint": "Audit komandası, tapşırıqlar, sənəd sorğuları, sübut sorğuları və yoxlama statusları."
         },
         "integrations": {
-          "title": "İnteqrasiyalar və mapping",
-          "hint": "Yenidən istifadə olunan nəzarətlər üçün REST API, konnektorlar və cross-framework mapping."
+          "title": "İnteqrasiyalar və uyğunlaşdırma",
+          "hint": "Yenidən istifadə olunan nəzarətlər üçün REST API, konnektorlar və standartlararası uyğunlaşdırma."
         },
         "reportingUx": {
-          "title": "Hesabat və çoxdilli UX",
-          "hint": "Dashboard-lar, planlı hesabat çatdırılma planı, qoşulmuş e-poçt icmalı işçisi və RU/AZ/EN interfeysi."
+          "title": "Hesabat və çoxdilli interfeys",
+          "hint": "Panellər, planlı hesabat çatdırılma planı, qoşulmuş e-poçt icmalı işçisi və RU/AZ/EN interfeysi."
         },
         "advancedAi": {
-          "title": "Qabaqcıl AI dövrəsi",
-          "hint": "Sual ilə axtarış, AI-DRL, sübutların reskan planı, davamlı monitorinq və auditor baxış qapıları artıq işləyir."
+          "title": "Qabaqcıl İİ dövrəsi",
+          "hint": "Sual ilə axtarış, İİ sənəd sorğuları, sübutların təkrar skan planı, davamlı monitorinq və auditor yoxlama nəzarətləri artıq işləyir."
         }
       }
     }
@@ -2995,7 +2995,7 @@
     "created": "Tələb yaradıldı",
     "reqError": "Tələb yaradıla bilmədi",
     "noRequests": "Hələ tələb yoxdur",
-    "drlKicker": "AI tərəfindən yaradılmış DRL",
+    "drlKicker": "İİ tərəfindən yaradılmış sənəd sorğuları",
     "drlTitle": "Təklif olunan sənəd tələbləri: {n}",
     "reviewRequired": "Göndərmədən əvvəl yoxlayın",
     "priority": {
@@ -3012,7 +3012,7 @@
     "evidenceTracker": "Sübut izləyicisi",
     "noEvidence": "Sübut əlavə edilməyib",
     "evidence": "Sübut",
-    "reviewStatus": "Baxış statusu",
+    "reviewStatus": "Yoxlama statusu",
     "setStatus": "Status təyin et",
     "rev": {
       "not_ready": "Hazır deyil",
@@ -3022,7 +3022,7 @@
       "not_applicable": "Tətbiq edilmir"
     },
     "assessments": "Auditor qiymətləndirmələri",
-    "noFindings": "Hələ tapıntı yoxdur",
+    "noFindings": "Hələ qeyd yoxdur",
     "notAssessed": "Qiymətləndirilməyib",
     "round": "Raund {n}",
     "notePh": "Qeyd (istəyə görə)",
