@@ -41,7 +41,7 @@
 - [x] **ENG-08** retention/archive engagement закрыт T-H25: archived-фильтр и lifecycle реализованы.
 - [x] **RSK-08 trend-аналитика** закрыта T-A22/T-H13: `/trends`, snapshot-diff и `/reports/trend`.
 - [x] Валидация custom-fields **на write доменных сущностей** — T-H124: strict после появления definitions; подключено к asset/engagement/risk/working_paper/vendor_intake.
-- [ ] Расширение автотестов E2E (сейчас 20 API + 8 shared + 2 web — добавить покрытие критичных потоков).
+- [x] Расширение автотестов E2E закрыто T-H138: текущий набор включает 58 API spec-файлов, 3 shared unit suites, 3 web unit suites и 4 Playwright specs; CI гоняет build→migrate→seed→lint→typecheck→format→unit/integration→Playwright, а `audit.spec.ts` обходит 44 раздела с проверкой сессии, sidebar, h1, 5xx, console errors и horizontal scroll.
 
 ---
 
