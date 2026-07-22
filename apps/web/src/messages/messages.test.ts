@@ -3,6 +3,7 @@ import { localeSchema } from '@it-audit/shared';
 import en from './en.json';
 import az from './az.json';
 import ru from './ru.json';
+import { REQUIREMENT_COVERAGE } from '../app/roadmap/coverage';
 
 const catalogs = { en, az, ru } as const;
 
@@ -24,5 +25,14 @@ describe('каталоги переводов UI (T-022, ADR-0009)', () => {
     const enKeys = keysOf(en).sort();
     expect(keysOf(az).sort()).toEqual(enKeys);
     expect(keysOf(ru).sort()).toEqual(enKeys);
+  });
+
+  it('roadmap coverage не использует proof-ключи без переводов', () => {
+    const evidenceKeys = new Set(REQUIREMENT_COVERAGE.flatMap((item) => item.evidence));
+    for (const key of evidenceKeys) {
+      expect(en.roadmap.coverage.evidence).toHaveProperty(key);
+      expect(az.roadmap.coverage.evidence).toHaveProperty(key);
+      expect(ru.roadmap.coverage.evidence).toHaveProperty(key);
+    }
   });
 });
