@@ -1526,6 +1526,11 @@
       "select": "Select",
       "boolean": "Boolean"
     },
+    "tagManagerHint": "Rename, recolor or archive tenant tags used on findings, assets, controls and other records.",
+    "tagName": "Tag name",
+    "tagUpdate": "Save tag",
+    "tagDelete": "Archive",
+    "tagPreview": "Preview",
     "codePh": "code (a-z0-9_)",
     "namePh": "Name",
     "tagPh": "Tag name",

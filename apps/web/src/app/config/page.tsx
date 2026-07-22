@@ -6,8 +6,10 @@ import {
   createConfigListItemAction,
   createCustomFieldAction,
   createTagAction,
+  deleteTagAction,
   saveBusinessProfileAction,
   saveSlaConfigAction,
+  updateTagAction,
 } from './actions';
 import { EmptyState } from '@/components/empty-state';
 
@@ -528,8 +530,11 @@ export default async function ConfigPage() {
       </section>
 
       {/* Теги */}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-secondary">{t('tags')}</h2>
+      <section className="flex flex-col gap-3" data-testid="tag-manager">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-sm font-semibold text-secondary">{t('tags')}</h2>
+          <p className="text-xs text-secondary">{t('tagManagerHint')}</p>
+        </div>
         <form
           action={createTagAction}
           data-testid="tag-create"
@@ -558,18 +563,58 @@ export default async function ConfigPage() {
             <EmptyState size="sm" text={t('empty')} />
           </div>
         ) : (
-          <ul className="flex flex-wrap gap-2" data-testid="tags-list">
+          <ul className="grid gap-3 sm:grid-cols-2" data-testid="tags-list">
             {tags.map((tag) => (
               <li
                 key={tag.id}
-                className="flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1 text-sm shadow-sm"
+                className="rounded-xl border border-border bg-white p-4 text-sm shadow-sm"
               >
-                <span
-                  className="inline-block h-3 w-3 rounded-full border border-border"
-                  style={{ backgroundColor: tag.color ?? 'transparent' }}
-                  aria-hidden
-                />
-                <span className="font-medium text-foreground">{tag.name}</span>
+                <form action={updateTagAction} className="flex flex-wrap items-end gap-2">
+                  <input type="hidden" name="id" value={tag.id} />
+                  <label className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="text-xs font-medium text-secondary">{t('tagName')}</span>
+                    <input
+                      name="name"
+                      required
+                      defaultValue={tag.name}
+                      aria-label={t('tagName')}
+                      className={inputCls}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className="text-xs font-medium text-secondary">{t('color')}</span>
+                    <input
+                      name="color"
+                      type="color"
+                      defaultValue={tag.color ?? '#07865F'}
+                      className="h-10 w-14 rounded-md border border-border"
+                      aria-label={t('color')}
+                    />
+                  </label>
+                  <button type="submit" className={btnCls}>
+                    {t('tagUpdate')}
+                  </button>
+                </form>
+                <form
+                  action={deleteTagAction}
+                  className="mt-2 flex items-center justify-between gap-3"
+                >
+                  <input type="hidden" name="id" value={tag.id} />
+                  <span className="flex items-center gap-2 text-xs text-secondary">
+                    <span
+                      className="inline-block h-3 w-3 rounded-full border border-border"
+                      style={{ backgroundColor: tag.color ?? 'transparent' }}
+                      aria-hidden
+                    />
+                    {t('tagPreview')}
+                  </span>
+                  <button
+                    type="submit"
+                    className="rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-secondary transition-colors duration-150 hover:border-red-200 hover:bg-red-50 hover:text-red-700 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    {t('tagDelete')}
+                  </button>
+                </form>
               </li>
             ))}
           </ul>

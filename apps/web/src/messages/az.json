@@ -1526,6 +1526,11 @@
       "select": "Select",
       "boolean": "Boolean"
     },
+    "tagManagerHint": "Qeydlər, aktivlər, kontrollar və digər yazılarda istifadə olunan təşkilat teqlərini yenidən adlandırın, rəngləyin və ya arxivləşdirin.",
+    "tagName": "Teq adı",
+    "tagUpdate": "Teqi saxla",
+    "tagDelete": "Arxivləşdir",
+    "tagPreview": "Ön baxış",
     "codePh": "kod (a-z0-9_)",
     "namePh": "Ad",
     "tagPh": "Teq adı",

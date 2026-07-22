@@ -7,6 +7,7 @@ import {
   HttpCode,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -26,6 +27,10 @@ import { RequirePermission } from '../rbac/require-permission.decorator';
 import { TagsService } from './tags.service';
 
 const createSchema = z.object({ name: z.string().min(1), color: z.string().optional() });
+const updateSchema = z.object({
+  name: z.string().min(1).optional(),
+  color: z.string().nullable().optional(),
+});
 const linkSchema = z.object({ entityType: z.string().min(1), entityId: z.uuid() });
 
 @Controller('tags')
@@ -53,6 +58,26 @@ export class TagsController {
   @ApiOperation({ summary: 'Теги тенанта' })
   list(@Req() req: TenantRequest) {
     return this.service.list(req.tenantId);
+  }
+
+  @Patch(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Переименовать/перекрасить тег tenant-справочника (T-H127)' })
+  update(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = updateSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.update(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Delete(':id')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Архивировать тег tenant-справочника (T-H127)' })
+  delete(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.delete({ tenantId: req.tenantId, userId: req.user.sub, ip: req.ip }, id);
   }
 
   @Post(':id/attach')

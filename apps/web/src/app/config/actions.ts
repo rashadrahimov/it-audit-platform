@@ -21,6 +21,35 @@ export async function createTagAction(formData: FormData): Promise<void> {
   revalidatePath('/config');
 }
 
+/** T-H127: обновить название/цвет тега tenant-справочника. */
+export async function updateTagAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const id = String(formData.get('id') ?? '').trim();
+  const name = String(formData.get('name') ?? '').trim();
+  const color = String(formData.get('color') ?? '').trim();
+  if (!id || !name) return;
+  await apiFetch(`/tags/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, color: color || null }),
+  });
+  revalidatePath('/config');
+}
+
+/** T-H127: архивировать тег tenant-справочника. */
+export async function deleteTagAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  if (!tenantSlug) return;
+  const id = String(formData.get('id') ?? '').trim();
+  if (!id) return;
+  await apiFetch(`/tags/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { 'X-Tenant-Slug': tenantSlug },
+  });
+  revalidatePath('/config');
+}
+
 /** T-V36a: сохранить бизнес-профиль тенанта (юр.имя/юрисдикция/адрес/контакт). */
 export async function saveBusinessProfileAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
