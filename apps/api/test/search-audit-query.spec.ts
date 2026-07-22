@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   auditEvidenceHitsForQuery,
   auditFindingHitsForQuery,
+  explainAuditQuery,
   parseAuditQuery,
+  suggestedAuditQueries,
   type AuditQueryEvidenceCandidate,
   type AuditQueryFindingCandidate,
 } from '../src/search/search.service';
@@ -134,5 +136,23 @@ describe('conversational audit query finding matching', () => {
     );
 
     expect(hits.map((hit) => hit.id)).toEqual(['finding-critical-access']);
+  });
+
+  it('explains deterministic intent parsing with confidence and examples', () => {
+    const parsed = parseAuditQuery('show overdue critical access findings');
+    const explanation = explainAuditQuery(parsed);
+
+    expect(explanation).toMatchObject({
+      confidenceLevel: 'high',
+      deterministic: true,
+      evidenceGroundedOnly: true,
+    });
+    expect(explanation.confidence).toBeGreaterThanOrEqual(0.8);
+    expect(explanation.matchedSignals).toEqual([
+      'risk:critical',
+      'sla:overdue',
+      'topic:access control',
+    ]);
+    expect(suggestedAuditQueries('ru')).toContain('просроченные критичные замечания по доступу');
   });
 });

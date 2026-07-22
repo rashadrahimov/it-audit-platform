@@ -2835,6 +2835,22 @@
     "askEmpty": "Uyğun qeyd və ya sübut sənədi tapılmadı",
     "askEvidenceFound": "Uyğun sübut sənədləri: {n}",
     "deterministic": "Sübuta təhlükəsiz",
+    "confidence": "əminlik",
+    "confidenceLevel": "Şərh",
+    "interpretedAs": "Bu siqnallara görə şərh edildi: {signals}",
+    "examplesKicker": "Təbii dildə audit sorğusu",
+    "examplesTitle": "Auditor kimi soruşun.",
+    "examplesHint": "Bu nümunələr qeydlər və sübutlar üzərində şəffaf filtrlərdən istifadə edir, buna görə hər nəticə yoxlanıla bilir.",
+    "examples": {
+      "criticalAccess": "gecikmiş kritik giriş qeydləri",
+      "backupEvidence": "backup sübut sənədləri",
+      "vendorRisk": "təchizatçı yüksək riskləri"
+    },
+    "confidenceLevels": {
+      "high": "yüksək əminlik",
+      "medium": "orta əminlik",
+      "low": "aşağı əminlik"
+    },
     "risk": "Risk səviyyəsi",
     "status": "Statusu",
     "sla": "SLA",

@@ -187,6 +187,24 @@ function includesAny(text: string, aliases: string[]): boolean {
   return aliases.some((a) => text.includes(a));
 }
 
+const SUGGESTED_AUDIT_QUERIES: Record<Locale, string[]> = {
+  en: [
+    'show overdue critical access findings',
+    'backup evidence documents',
+    'third-party high risks',
+  ],
+  az: ['gecikmiş kritik giriş qeydləri', 'backup sübut sənədləri', 'təchizatçı yüksək riskləri'],
+  ru: [
+    'просроченные критичные замечания по доступу',
+    'документы-доказательства по резервному копированию',
+    'высокие риски по поставщикам',
+  ],
+};
+
+export function suggestedAuditQueries(locale: Locale): string[] {
+  return SUGGESTED_AUDIT_QUERIES[locale] ?? SUGGESTED_AUDIT_QUERIES.en;
+}
+
 export function parseAuditQuery(raw: string) {
   const query = raw.trim();
   const lower = query.toLowerCase();
@@ -214,6 +232,33 @@ export function parseAuditQuery(raw: string) {
     topic: topic?.[0] ?? null,
     topicTerms,
     explicitTerms,
+  };
+}
+
+export function explainAuditQuery(parsed: ReturnType<typeof parseAuditQuery>) {
+  const matchedSignals = [
+    parsed.riskRating ? `risk:${parsed.riskRating}` : null,
+    parsed.status ? `status:${parsed.status}` : null,
+    parsed.slaStatus ? `sla:${parsed.slaStatus}` : null,
+    parsed.topic ? `topic:${parsed.topic}` : null,
+    ...parsed.explicitTerms.map((term) => `term:${term}`),
+  ].filter((signal): signal is string => Boolean(signal));
+  const confidence = Math.min(
+    0.95,
+    0.35 +
+      (parsed.riskRating ? 0.15 : 0) +
+      (parsed.status ? 0.1 : 0) +
+      (parsed.slaStatus ? 0.15 : 0) +
+      (parsed.topic ? 0.2 : 0) +
+      Math.min(parsed.explicitTerms.length, 3) * 0.05,
+  );
+  const confidenceLevel = confidence >= 0.75 ? 'high' : confidence >= 0.55 ? 'medium' : 'low';
+  return {
+    confidence,
+    confidenceLevel,
+    matchedSignals,
+    deterministic: true,
+    evidenceGroundedOnly: true,
   };
 }
 
@@ -561,6 +606,7 @@ export class SearchService {
         slaStatus: parsed.slaStatus ?? null,
         topic: parsed.topic,
         terms: parsed.explicitTerms,
+        ...explainAuditQuery(parsed),
       },
       answer:
         totalCount === 0
@@ -573,6 +619,7 @@ export class SearchService {
       totalCount,
       hits,
       evidenceHits,
+      suggestedQueries: suggestedAuditQueries(locale),
     };
   }
 }

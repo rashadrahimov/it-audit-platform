@@ -49,9 +49,15 @@ interface AuditQueryAnswer {
     slaStatus: string | null;
     topic: string | null;
     terms: string[];
+    confidence?: number;
+    confidenceLevel?: 'low' | 'medium' | 'high';
+    matchedSignals?: string[];
+    deterministic?: boolean;
+    evidenceGroundedOnly?: boolean;
   };
   hits: AuditQueryHit[];
   evidenceHits?: AuditQueryEvidenceHit[];
+  suggestedQueries?: string[];
 }
 
 /** Куда ведёт хит каждого типа (T-V09; у WP/KB/программ пока нет detail-страниц — на разделы). */
@@ -137,6 +143,9 @@ export default async function SearchPage({
             </div>
             <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800">
               {t('deterministic')}
+              {typeof ask.interpreted.confidence === 'number'
+                ? ` · ${t('confidence')}: ${Math.round(ask.interpreted.confidence * 100)}%`
+                : null}
             </span>
           </div>
           <div className="mb-3 flex flex-wrap gap-1.5 text-xs">
@@ -160,7 +169,17 @@ export default async function SearchPage({
                 {t('topic')}: {ask.interpreted.topic}
               </span>
             )}
+            {ask.interpreted.confidenceLevel && (
+              <span className="rounded-full bg-white px-2 py-1 text-emerald-800">
+                {t('confidenceLevel')}: {t(`confidenceLevels.${ask.interpreted.confidenceLevel}`)}
+              </span>
+            )}
           </div>
+          {(ask.interpreted.matchedSignals?.length ?? 0) > 0 && (
+            <p className="mb-3 text-xs text-emerald-800" data-testid="audit-query-explanation">
+              {t('interpretedAs', { signals: ask.interpreted.matchedSignals!.join(' · ') })}
+            </p>
+          )}
           {ask.hits.length > 0 && (
             <ul className="grid gap-2">
               {ask.hits.map((h) => (
@@ -237,7 +256,36 @@ export default async function SearchPage({
         </section>
       )}
       {!q ? (
-        <p className="text-sm text-secondary">{t('hint')}</p>
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-secondary">{t('hint')}</p>
+          <section
+            className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4"
+            data-testid="audit-query-examples"
+          >
+            <p className="text-xs font-semibold tracking-[0.14em] text-emerald-700 uppercase">
+              {t('examplesKicker')}
+            </p>
+            <h2 className="mt-1 text-sm font-semibold text-emerald-950">{t('examplesTitle')}</h2>
+            <p className="mt-1 text-xs text-secondary">{t('examplesHint')}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(
+                ask?.suggestedQueries ?? [
+                  t('examples.criticalAccess'),
+                  t('examples.backupEvidence'),
+                  t('examples.vendorRisk'),
+                ]
+              ).map((example) => (
+                <Link
+                  key={example}
+                  href={`/search?q=${encodeURIComponent(example)}&locale=${locale}`}
+                  className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-emerald-800 shadow-xs transition-colors hover:bg-emerald-100"
+                >
+                  {example}
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
       ) : hits.length === 0 ? (
         <EmptyState text={t('empty')} />
       ) : (

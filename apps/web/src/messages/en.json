@@ -2827,6 +2827,22 @@
     "askEmpty": "No matching findings or evidence documents",
     "askEvidenceFound": "{n} matching evidence documents",
     "deterministic": "Evidence-safe",
+    "confidence": "confidence",
+    "confidenceLevel": "Interpretation",
+    "interpretedAs": "Interpreted from: {signals}",
+    "examplesKicker": "Conversational audit query",
+    "examplesTitle": "Ask it like an auditor would.",
+    "examplesHint": "These examples use deterministic filters over findings and evidence, so every result remains traceable.",
+    "examples": {
+      "criticalAccess": "show overdue critical access findings",
+      "backupEvidence": "backup evidence documents",
+      "vendorRisk": "third-party high risks"
+    },
+    "confidenceLevels": {
+      "high": "high confidence",
+      "medium": "medium confidence",
+      "low": "low confidence"
+    },
     "risk": "Risk",
     "status": "Status",
     "sla": "SLA",
