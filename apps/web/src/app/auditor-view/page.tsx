@@ -27,9 +27,13 @@ interface EvidenceRequest {
 interface EvidenceRequestSuggestion {
   checklistItemId: string;
   ref: string;
+  domainCode: string | null;
+  controlClause: string;
   title: string;
   description: string;
-  priority: 'high' | 'medium';
+  acceptanceCriteria: string[];
+  confidence: number;
+  priority: 'high' | 'medium' | 'low';
   reason: string;
   source: 'ai_drl';
   reviewRequired: true;
@@ -235,18 +239,36 @@ export default async function AuditorViewPage({
                       <div className="mb-2 flex items-start justify-between gap-2">
                         <div>
                           <p className="font-semibold text-foreground">{s.title}</p>
-                          <p className="mt-1 text-xs text-secondary">{s.reason}</p>
+                          <div className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
+                            <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-secondary">
+                              {t('controlClause')}: {s.controlClause}
+                            </span>
+                            <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-secondary">
+                              {t('confidence')}: {Math.round(s.confidence * 100)}%
+                            </span>
+                          </div>
+                          <p className="mt-1.5 text-xs text-secondary">{s.reason}</p>
                         </div>
                         {pill(t(`priority.${s.priority}`), 'bg-emerald-100 text-emerald-800')}
                       </div>
                       <p className="line-clamp-3 text-xs text-secondary">{s.description}</p>
+                      <div className="mt-2 rounded-lg bg-emerald-50/80 p-2">
+                        <p className="text-[11px] font-semibold tracking-[0.12em] text-emerald-800 uppercase">
+                          {t('acceptanceCriteria')}
+                        </p>
+                        <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-secondary">
+                          {s.acceptanceCriteria.map((criterion) => (
+                            <li key={criterion}>{criterion}</li>
+                          ))}
+                        </ul>
+                      </div>
                       <form action={createSuggestedRequestAction} className="mt-3">
                         <input type="hidden" name="engagementId" value={selectedId} />
                         <input type="hidden" name="title" value={s.title} />
                         <input
                           type="hidden"
                           name="description"
-                          value={`${s.description}\n\nAI-DRL:${s.checklistItemId}\n${s.reason}`}
+                          value={`${s.description}\n\nAcceptance criteria:\n- ${s.acceptanceCriteria.join('\n- ')}\n\nAI-DRL:${s.checklistItemId}\nControl clause: ${s.controlClause}\nPriority: ${s.priority}\nConfidence: ${Math.round(s.confidence * 100)}%\n${s.reason}`}
                         />
                         <button type="submit" className={btnCls} data-testid="drl-request">
                           {t('createRequest')}

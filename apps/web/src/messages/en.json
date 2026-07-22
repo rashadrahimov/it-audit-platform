@@ -3029,9 +3029,13 @@
     "drlKicker": "AI-generated DRL",
     "drlTitle": "{n} suggested document requests",
     "reviewRequired": "Review before sending",
+    "controlClause": "Control",
+    "confidence": "Confidence",
+    "acceptanceCriteria": "Acceptance criteria",
     "priority": {
       "high": "High priority",
-      "medium": "Medium priority"
+      "medium": "Medium priority",
+      "low": "Low priority"
     },
     "status": "Status",
     "accept": "Accept",

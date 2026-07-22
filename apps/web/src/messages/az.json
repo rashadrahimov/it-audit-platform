@@ -3037,9 +3037,13 @@
     "drlKicker": "İİ tərəfindən yaradılmış sənəd sorğuları",
     "drlTitle": "Təklif olunan sənəd tələbləri: {n}",
     "reviewRequired": "Göndərmədən əvvəl yoxlayın",
+    "controlClause": "Nəzarət",
+    "confidence": "Etibar",
+    "acceptanceCriteria": "Qəbul meyarları",
     "priority": {
       "high": "Yüksək prioritet",
-      "medium": "Orta prioritet"
+      "medium": "Orta prioritet",
+      "low": "Aşağı prioritet"
     },
     "status": "Status",
     "accept": "Qəbul et",

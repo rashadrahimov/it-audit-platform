@@ -6,10 +6,12 @@ import { NotificationsService } from '../src/notifications/notifications.service
 import { EvidenceRequestsService } from '../src/evidence-requests/evidence-requests.service';
 import {
   document,
+  checklistItem,
   engagement,
   evidenceRequest,
   membership,
   notification,
+  response,
   role,
   subsidiary,
   tenant,
@@ -44,6 +46,7 @@ let engagementId: string;
 let documentId: string;
 let requestId: string;
 let respMembershipId: string;
+let accessChecklistItemId: string;
 const uid: Record<string, string> = {};
 
 async function presetRoleId(nameEn: string): Promise<string> {
@@ -122,6 +125,42 @@ beforeAll(async () => {
       })
       .returning();
     documentId = doc!.id;
+    const [accessItem, policyItem] = await tx
+      .insert(checklistItem)
+      .values([
+        {
+          engagementId,
+          controlId: null,
+          ref: 'AC-01',
+          domainCode: 'IAM',
+          objectiveI18n: { en: 'Privileged access is governed and reviewed.' },
+          questionI18n: { en: 'Are privileged accounts reviewed and MFA enforced?' },
+          order: 1,
+        },
+        {
+          engagementId,
+          controlId: null,
+          ref: 'GOV-02',
+          domainCode: 'GOV',
+          objectiveI18n: { en: 'Policies are approved and maintained.' },
+          questionI18n: { en: 'Is the information security policy reviewed annually?' },
+          order: 2,
+        },
+      ])
+      .returning();
+    accessChecklistItemId = accessItem!.id;
+    await tx.insert(response).values({
+      checklistItemId: accessItem!.id,
+      respondentMembershipId: respMembershipId,
+      text: 'Access review evidence is not attached yet.',
+      complianceStatus: 'partially_compliant',
+    });
+    await tx.insert(response).values({
+      checklistItemId: policyItem!.id,
+      respondentMembershipId: respMembershipId,
+      text: 'Policy exists but evidence is pending.',
+      complianceStatus: 'compliant',
+    });
   });
 });
 
@@ -159,6 +198,25 @@ describe('Evidence request / PBC (T-114)', () => {
     expect(list.open).toBe(1);
     expect(list.total).toBe(1);
     expect(list.items[0]!.status).toBe('requested');
+  });
+
+  it('T-H94 suggestions: формирует приоритизированный AI-DRL с confidence и criteria', async () => {
+    const suggestions = await service.suggestions(actor('auditor'), engagementId, 'en');
+
+    expect(suggestions.count).toBeGreaterThanOrEqual(2);
+    expect(suggestions.items[0]).toMatchObject({
+      checklistItemId: accessChecklistItemId,
+      ref: 'AC-01',
+      domainCode: 'IAM',
+      controlClause: 'IAM · AC-01',
+      priority: 'high',
+      source: 'ai_drl',
+      reviewRequired: true,
+    });
+    expect(suggestions.items[0]!.confidence).toBeGreaterThanOrEqual(0.8);
+    expect(suggestions.items[0]!.acceptanceCriteria).toHaveLength(3);
+    expect(suggestions.items[0]!.acceptanceCriteria[0]).toContain('access control evidence');
+    expect(suggestions.items[0]!.reason).toContain('IAM · AC-01');
   });
 
   it('auditee прикладывает документ → provided + уведомление аудитору', async () => {

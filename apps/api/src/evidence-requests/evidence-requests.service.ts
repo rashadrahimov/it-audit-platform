@@ -26,12 +26,26 @@ interface Actor {
 export interface EvidenceRequestSuggestion {
   checklistItemId: string;
   ref: string;
+  domainCode: string | null;
+  controlClause: string;
   title: string;
   description: string;
-  priority: 'high' | 'medium';
+  acceptanceCriteria: string[];
+  confidence: number;
+  priority: 'high' | 'medium' | 'low';
   reason: string;
   source: 'ai_drl';
   reviewRequired: true;
+}
+
+interface SuggestionChecklistItem {
+  id: string;
+  ref: string;
+  domainCode: string | null;
+  objective: string;
+  question: string;
+  hasResponse: boolean;
+  complianceStatus: string | null;
 }
 
 function evidenceKind(question: string): string {
@@ -64,11 +78,70 @@ function evidenceKind(question: string): string {
   return 'control evidence';
 }
 
-function buildSuggestion(
-  item: { id: string; ref: string; question: string; hasResponse: boolean },
+function acceptanceCriteria(kind: string, locale: Locale): string[] {
+  if (locale === 'ru') {
+    return [
+      `Документ явно покрывает ${kind} за проверяемый период и область аудита.`,
+      'В файле видны дата, владелец/источник и критерии выборки или выгрузки.',
+      'Доказательство можно связать с конкретным контролем без дополнительных устных пояснений.',
+    ];
+  }
+  if (locale === 'az') {
+    return [
+      `Sənəd audit dövrü və əhatə dairəsi üzrə ${kind} mövzusunu açıq şəkildə əhatə edir.`,
+      'Faylda tarix, sahib/mənbə və seçim və ya ixrac meyarları görünür.',
+      'Sübut əlavə şifahi izah olmadan konkret nəzarətlə əlaqələndirilə bilir.',
+    ];
+  }
+  return [
+    `The document clearly covers ${kind} for the audit period and scope.`,
+    'The file shows date, owner/source, and sampling or export criteria.',
+    'The evidence can be tied to the specific control without extra verbal explanation.',
+  ];
+}
+
+function priorityFor(
+  item: SuggestionChecklistItem,
+  kind: string,
+): EvidenceRequestSuggestion['priority'] {
+  const q = `${item.question} ${item.objective} ${kind}`.toLowerCase();
+  const highSignal =
+    /(access|privilege|mfa|backup|restore|incident|vendor|third-party|siem|доступ|резерв|инцидент|giriş|bərpa|insident|təchizatçı)/u.test(
+      q,
+    );
+  if (
+    !item.hasResponse ||
+    ['non_compliant', 'partially_compliant'].includes(item.complianceStatus ?? '')
+  ) {
+    return 'high';
+  }
+  if (highSignal) return 'high';
+  return item.complianceStatus === 'not_applicable' ? 'low' : 'medium';
+}
+
+function confidenceFor(
+  item: SuggestionChecklistItem,
+  priority: EvidenceRequestSuggestion['priority'],
+): number {
+  const base = item.hasResponse ? 0.74 : 0.84;
+  const statusBoost =
+    item.complianceStatus &&
+    item.complianceStatus !== 'not_applicable' &&
+    item.complianceStatus !== 'compliant'
+      ? 0.06
+      : 0;
+  const priorityBoost = priority === 'high' ? 0.04 : priority === 'low' ? -0.06 : 0;
+  return Math.min(0.94, Math.max(0.58, Number((base + statusBoost + priorityBoost).toFixed(2))));
+}
+
+export function buildSuggestion(
+  item: SuggestionChecklistItem,
   locale: Locale,
 ): EvidenceRequestSuggestion {
   const kind = evidenceKind(item.question);
+  const controlClause = [item.domainCode, item.ref].filter(Boolean).join(' · ') || item.ref;
+  const priority = priorityFor(item, kind);
+  const confidence = confidenceFor(item, priority);
   const title =
     locale === 'ru'
       ? `${item.ref}: запросить доказательство контроля`
@@ -77,22 +150,26 @@ function buildSuggestion(
         : `${item.ref}: request ${kind}`;
   const description =
     locale === 'ru'
-      ? `Пожалуйста, предоставьте доказательство по контролю ${item.ref}: ${item.question}. Подойдёт файл, отчёт, выгрузка, политика или скриншот, подтверждающий выполнение контроля.`
+      ? `Пожалуйста, предоставьте доказательство по контролю ${controlClause}: ${item.question}. Подойдёт файл, отчёт, выгрузка, политика или скриншот, подтверждающий выполнение контроля.`
       : locale === 'az'
-        ? `Zəhmət olmasa ${item.ref} nəzarəti üzrə sübut təqdim edin: ${item.question}. Kontrolun icrasını təsdiqləyən fayl, hesabat, ixrac, siyasət və ya ekran görüntüsü uyğundur.`
-        : `Please provide ${kind} for control ${item.ref}: ${item.question}. A file, report, export, policy, or screenshot that supports the control is acceptable.`;
+        ? `Zəhmət olmasa ${controlClause} nəzarəti üzrə sübut təqdim edin: ${item.question}. Kontrolun icrasını təsdiqləyən fayl, hesabat, ixrac, siyasət və ya ekran görüntüsü uyğundur.`
+        : `Please provide ${kind} for control ${controlClause}: ${item.question}. A file, report, export, policy, or screenshot that supports the control is acceptable.`;
   const reason =
     locale === 'ru'
-      ? `К пункту ${item.ref} ещё не привязано доказательство${item.hasResponse ? ' для ответа аудируемого' : ''}.`
+      ? `К пункту ${controlClause} ещё не привязано доказательство${item.hasResponse ? ' для ответа аудируемого' : ''}.`
       : locale === 'az'
-        ? `${item.ref} bəndinə hələ sübut bağlanmayıb${item.hasResponse ? ' (auditee cavabı üzrə)' : ''}.`
-        : `No evidence is linked to checklist item ${item.ref}${item.hasResponse ? ' or its response' : ''}.`;
+        ? `${controlClause} bəndinə hələ sübut bağlanmayıb${item.hasResponse ? ' (auditee cavabı üzrə)' : ''}.`
+        : `No evidence is linked to checklist item ${controlClause}${item.hasResponse ? ' or its response' : ''}.`;
   return {
     checklistItemId: item.id,
     ref: item.ref,
+    domainCode: item.domainCode,
+    controlClause,
     title,
     description,
-    priority: item.hasResponse ? 'medium' : 'high',
+    acceptanceCriteria: acceptanceCriteria(kind, locale),
+    confidence,
+    priority,
     reason,
     source: 'ai_drl',
     reviewRequired: true,
@@ -188,6 +265,8 @@ export class EvidenceRequestsService {
         .select({
           id: checklistItem.id,
           ref: checklistItem.ref,
+          domainCode: checklistItem.domainCode,
+          objectiveI18n: checklistItem.objectiveI18n,
           questionI18n: checklistItem.questionI18n,
         })
         .from(checklistItem)
@@ -197,7 +276,11 @@ export class EvidenceRequestsService {
       const responses =
         itemIds.length > 0
           ? await tx
-              .select({ id: response.id, checklistItemId: response.checklistItemId })
+              .select({
+                id: response.id,
+                checklistItemId: response.checklistItemId,
+                complianceStatus: response.complianceStatus,
+              })
               .from(response)
               .where(inArray(response.checklistItemId, itemIds))
           : [];
@@ -228,7 +311,7 @@ export class EvidenceRequestsService {
       return { items, responses, links, requests };
     });
 
-    const responseByItem = new Map(data.responses.map((r) => [r.checklistItemId, r.id]));
+    const responseByItem = new Map(data.responses.map((r) => [r.checklistItemId, r]));
     const covered = new Set(
       data.links.map((l) =>
         l.entityType === 'checklist_item' || l.entityType === 'response'
@@ -241,10 +324,10 @@ export class EvidenceRequestsService {
       .join('\n');
     const suggestions = data.items
       .filter((item) => {
-        const responseId = responseByItem.get(item.id);
+        const responseRow = responseByItem.get(item.id);
         const hasEvidence =
           covered.has(`checklist_item:${item.id}`) ||
-          (responseId ? covered.has(`response:${responseId}`) : false);
+          (responseRow ? covered.has(`response:${responseRow.id}`) : false);
         const hasRequest =
           existingRequestText.includes(`ai-drl:${item.id}`) ||
           existingRequestText.includes(item.ref.toLowerCase());
@@ -255,12 +338,19 @@ export class EvidenceRequestsService {
           {
             id: item.id,
             ref: item.ref,
+            domainCode: item.domainCode,
+            objective: resolveLocalized(item.objectiveI18n, locale),
             question: resolveLocalized(item.questionI18n, locale),
             hasResponse: responseByItem.has(item.id),
+            complianceStatus: responseByItem.get(item.id)?.complianceStatus ?? null,
           },
           locale,
         ),
       )
+      .sort((a, b) => {
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        return priorityOrder[a.priority] - priorityOrder[b.priority] || b.confidence - a.confidence;
+      })
       .slice(0, 12);
     return { count: suggestions.length, items: suggestions };
   }
