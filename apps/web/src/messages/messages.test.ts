@@ -36,6 +36,18 @@ describe('каталоги переводов UI (T-022, ADR-0009)', () => {
     }
   });
 
+  it('roadmap coverage includes latest privacy and follow-up proof chips', () => {
+    const evidenceKeys = new Set(REQUIREMENT_COVERAGE.flatMap((item) => item.evidence));
+    for (const key of [
+      'ai-privacy-assurance',
+      'no-training',
+      'finding-follow-up-plan',
+      'retest-workbench',
+    ]) {
+      expect(evidenceKeys.has(key)).toBe(true);
+    }
+  });
+
   it('snapshots RU keeps visible page labels localized and product-term stable', () => {
     expect(ru.account.snapshots).toBe('Снапшоты');
     expect(ru.snapshots.title).toBe('Снапшоты');

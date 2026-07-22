@@ -23,7 +23,7 @@ export const REQUIREMENT_COVERAGE = [
   {
     key: 'recommendations',
     status: 'live',
-    evidence: ['findings', 'action-plan', 'tasks'],
+    evidence: ['findings', 'action-plan', 'tasks', 'finding-follow-up-plan', 'retest-workbench'],
   },
   {
     key: 'deliverables',
@@ -33,7 +33,15 @@ export const REQUIREMENT_COVERAGE = [
   {
     key: 'trustSecurity',
     status: 'live',
-    evidence: ['rbac', 'audit-log', 'ai-traceability', 'tenant-isolation', 'private-cloud'],
+    evidence: [
+      'rbac',
+      'audit-log',
+      'ai-traceability',
+      'ai-privacy-assurance',
+      'no-training',
+      'tenant-isolation',
+      'private-cloud',
+    ],
   },
   {
     key: 'collaboration',

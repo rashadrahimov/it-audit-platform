@@ -3106,6 +3106,7 @@
       "evidence": {
         "action-plan": "Tədbirlər planı",
         "ai-explainability": "İİ izahı",
+        "ai-privacy-assurance": "İİ məxfiliyi sübutu",
         "ai-risk-suggestions": "İİ risk təklifləri",
         "ai-traceability": "İİ izlənməsi",
         "api-v1": "REST API v1",
@@ -3130,8 +3131,10 @@
         "evidence-query": "Sübut axtarışı",
         "evidence-requests": "Sübut sorğuları",
         "evidence-rescan-plan": "Sübut təkrar skan planı",
+        "finding-follow-up-plan": "Qeydlər üzrə follow-up planı",
         "findings": "Qeydlər",
         "locales": "Lokallaşdırılmış interfeys",
+        "no-training": "Təlim üçün istifadə edilməmə zəmanəti",
         "ocr-readiness": "OCR hazırlığı",
         "pdf": "PDF eksportu",
         "private-cloud": "Private-cloud yerləşdirmə",
@@ -3142,6 +3145,7 @@
         "tasks": "Aradan qaldırma tapşırıqları",
         "team": "Audit komandası",
         "tenant-isolation": "Tenant izolyasiyası",
+        "retest-workbench": "Təkrar yoxlama paneli",
         "xlsx": "Excel eksportu",
         "auto-drl": "Avto-DRL"
       }

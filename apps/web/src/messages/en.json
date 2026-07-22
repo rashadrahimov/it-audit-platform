@@ -3098,6 +3098,7 @@
       "evidence": {
         "action-plan": "Action plan",
         "ai-explainability": "AI explainability",
+        "ai-privacy-assurance": "AI privacy assurance",
         "ai-risk-suggestions": "AI risk suggestions",
         "ai-traceability": "AI traceability",
         "api-v1": "REST API v1",
@@ -3122,8 +3123,10 @@
         "evidence-query": "Evidence query",
         "evidence-requests": "Evidence requests",
         "evidence-rescan-plan": "Evidence rescan plan",
+        "finding-follow-up-plan": "Finding follow-up plan",
         "findings": "Findings",
         "locales": "Localized UI",
+        "no-training": "No-training guarantee",
         "ocr-readiness": "OCR readiness",
         "pdf": "PDF export",
         "private-cloud": "Private-cloud deployment",
@@ -3134,6 +3137,7 @@
         "tasks": "Remediation tasks",
         "team": "Audit team",
         "tenant-isolation": "Tenant isolation",
+        "retest-workbench": "Re-test workbench",
         "xlsx": "Excel export",
         "auto-drl": "Auto-generated DRL"
       }

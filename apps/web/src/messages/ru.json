@@ -3106,6 +3106,7 @@
       "evidence": {
         "action-plan": "План действий",
         "ai-explainability": "Объяснимость ИИ",
+        "ai-privacy-assurance": "Доказательство приватности ИИ",
         "ai-risk-suggestions": "ИИ-предложения рисков",
         "ai-traceability": "Трассируемость ИИ",
         "api-v1": "REST API v1",
@@ -3130,8 +3131,10 @@
         "evidence-query": "Поиск по доказательствам",
         "evidence-requests": "Запросы доказательств",
         "evidence-rescan-plan": "План перескана доказательств",
+        "finding-follow-up-plan": "План follow-up по замечаниям",
         "findings": "Замечания",
         "locales": "Локализованный интерфейс",
+        "no-training": "Гарантия запрета обучения",
         "ocr-readiness": "Готовность OCR",
         "pdf": "Экспорт PDF",
         "private-cloud": "Private-cloud деплой",
@@ -3142,6 +3145,7 @@
         "tasks": "Задачи ремедиации",
         "team": "Команда аудита",
         "tenant-isolation": "Изоляция тенантов",
+        "retest-workbench": "Панель ре-теста",
         "xlsx": "Экспорт Excel",
         "auto-drl": "Авто-DRL"
       }
