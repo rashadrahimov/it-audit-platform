@@ -36,7 +36,7 @@ const REQUIREMENT_COVERAGE = [
   {
     key: 'riskRegister',
     status: 'live',
-    evidence: ['risks', 'ai-risk-suggestions', 'approval'],
+    evidence: ['risks', 'business-risk-lens', 'ai-risk-suggestions', 'approval'],
   },
   {
     key: 'documentAi',

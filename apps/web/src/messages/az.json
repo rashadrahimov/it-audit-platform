@@ -1214,6 +1214,27 @@
     "confidence": "Etibar",
     "evidence": "Sübut",
     "addAfterReview": "Yoxlamadan sonra əlavə et",
+    "affectedProcessAsset": "Təsirə məruz qalan proses / aktiv",
+    "controlClause": "Kontrol bəndi",
+    "initialRating": "İlkin qiymət",
+    "reviewGate": "Yoxlama qapısı",
+    "draftOnly": "Auditor qəbul edənədək qaralamadır",
+    "businessLens": {
+      "title": "Biznes təsiri baxışı",
+      "hint": "AI təklifləri insan təsdiqindən əvvəl əməliyyat, maliyyə, tənzimləyici, üçüncü tərəf, davamlılıq və reputasiya riskləri üzrə qruplaşdırır.",
+      "draftQueue": "Qaralama təkliflər",
+      "categoryCoverage": "Biznes kateqoriyaları",
+      "mappedDomains": "Bağlı domenlər",
+      "highConfidence": "Yüksək etibar"
+    },
+    "assetByCategory": {
+      "operational": "Əsas əməliyyat prosesi",
+      "financial": "Maliyyə hesabatı / ödəniş prosesi",
+      "regulatory": "Tənzimləyici öhdəlik",
+      "third_party": "Vendor və ya autsors xidmət",
+      "continuity": "Kritik xidmət davamlılığı",
+      "reputational": "Müştəri etibarı / brend təsiri"
+    },
     "businessCategories": {
       "operational": "Əməliyyat",
       "financial": "Maliyyə",
@@ -2723,7 +2744,7 @@
         },
         "riskRegister": {
           "title": "Vahid risk reyestri",
-          "hint": "Əl ilə əlavə edilən və AI tərəfindən təklif olunan risklər insan təsdiqi ilə."
+          "hint": "Əl ilə əlavə edilən və AI tərəfindən təklif olunan risklər biznes təsiri kateqoriyaları, təsirə məruz qalan proses/aktiv konteksti və insan təsdiqi ilə."
         },
         "documentAi": {
           "title": "AI sənəd analizi və qeydlər",

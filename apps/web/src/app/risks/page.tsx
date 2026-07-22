@@ -17,6 +17,8 @@ export const dynamic = 'force-dynamic';
 
 type RiskClass = 'low' | 'medium' | 'high' | 'critical';
 type Treatment = 'mitigate' | 'transfer' | 'accept' | 'avoid';
+type BusinessCategory =
+  'operational' | 'financial' | 'regulatory' | 'third_party' | 'continuity' | 'reputational';
 interface Risk {
   id: string;
   title: string;
@@ -31,7 +33,7 @@ interface RiskSuggestion {
   findingId: string;
   title: string;
   description: string;
-  category: string;
+  category: BusinessCategory;
   affectedControlRef: string | null;
   domain: string | null;
   inherentImpact: number;
@@ -55,6 +57,14 @@ const CLASS_TONE: Record<RiskClass, StatusTone> = {
 };
 const TREATMENTS: Treatment[] = ['mitigate', 'transfer', 'accept', 'avoid'];
 const SCORES = [1, 2, 3, 4, 5];
+const BUSINESS_CATEGORIES: BusinessCategory[] = [
+  'operational',
+  'financial',
+  'regulatory',
+  'third_party',
+  'continuity',
+  'reputational',
+];
 
 /** Реестр рисков (T-057): список + создание (impact×likelihood → risk_class). */
 export default async function RisksPage({
@@ -111,6 +121,19 @@ export default async function RisksPage({
   };
   const treatmentData = tally((r) => (r.treatment ? t(`tr.${r.treatment}`) : null));
   const classData = tally((r) => (r.riskClass ? t(`cls.${r.riskClass}`) : null));
+  const categoryCounts = BUSINESS_CATEGORIES.map((category) => ({
+    category,
+    count: suggestions.items.filter((s) => s.category === category).length,
+  })).filter((item) => item.count > 0);
+  const mappedDomains = new Set(
+    suggestions.items.map((s) => s.domain ?? s.affectedControlRef).filter(Boolean),
+  ).size;
+  const highConfidence = suggestions.items.filter((s) => s.confidence >= 0.75).length;
+  const affectedLabel = (suggestion: RiskSuggestion) => {
+    if (suggestion.domain) return suggestion.domain;
+    if (suggestion.affectedControlRef) return suggestion.affectedControlRef;
+    return t(`assetByCategory.${suggestion.category}`);
+  };
 
   const classBadge = (c: RiskClass | null) =>
     c ? (
@@ -224,6 +247,51 @@ export default async function RisksPage({
               {t('reviewRequired')}
             </StatusBadge>
           </div>
+          <div
+            className="grid gap-3 rounded-2xl border border-emerald-200 bg-white/80 p-4 md:grid-cols-4"
+            data-testid="business-risk-lens"
+          >
+            <div>
+              <p className="text-xs font-medium text-secondary">{t('businessLens.draftQueue')}</p>
+              <p className="mt-1 text-2xl font-bold text-primary">{suggestions.count}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-secondary">
+                {t('businessLens.categoryCoverage')}
+              </p>
+              <p className="mt-1 text-2xl font-bold text-primary">{categoryCounts.length}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-secondary">
+                {t('businessLens.mappedDomains')}
+              </p>
+              <p className="mt-1 text-2xl font-bold text-primary">{mappedDomains}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-secondary">
+                {t('businessLens.highConfidence')}
+              </p>
+              <p className="mt-1 text-2xl font-bold text-primary">{highConfidence}</p>
+            </div>
+            <div className="border-t border-emerald-100 pt-3 md:col-span-4">
+              <p className="text-xs font-semibold tracking-[0.12em] text-accent uppercase">
+                {t('businessLens.title')}
+              </p>
+              <p className="mt-1 text-sm text-secondary">{t('businessLens.hint')}</p>
+              {categoryCounts.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {categoryCounts.map((item) => (
+                    <span
+                      key={item.category}
+                      className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800"
+                    >
+                      {t(`businessCategories.${item.category}`)} · {item.count}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           <ul className="grid gap-3 lg:grid-cols-2">
             {suggestions.items.slice(0, 6).map((s) => (
               <li
@@ -245,9 +313,30 @@ export default async function RisksPage({
                 <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-secondary">
                   {s.description}
                 </p>
-                <p className="mt-2 text-xs text-secondary">
-                  {t('evidence')}: {s.evidenceRef.location}
-                </p>
+                <dl className="mt-3 grid gap-2 rounded-lg bg-muted/50 p-3 text-xs sm:grid-cols-2">
+                  <div>
+                    <dt className="font-medium text-secondary">{t('affectedProcessAsset')}</dt>
+                    <dd className="mt-0.5 text-foreground">{affectedLabel(s)}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-secondary">{t('controlClause')}</dt>
+                    <dd className="mt-0.5 text-foreground">{s.affectedControlRef ?? '—'}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-secondary">{t('initialRating')}</dt>
+                    <dd className="mt-0.5 text-foreground">
+                      {s.inherentImpact}×{s.inherentLikelihood}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-secondary">{t('reviewGate')}</dt>
+                    <dd className="mt-0.5 text-foreground">{t('draftOnly')}</dd>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <dt className="font-medium text-secondary">{t('evidence')}</dt>
+                    <dd className="mt-0.5 text-foreground">{s.evidenceRef.location}</dd>
+                  </div>
+                </dl>
                 <form action={addRiskSuggestionAction} className="mt-3">
                   <input type="hidden" name="title" value={s.title} />
                   <input type="hidden" name="description" value={s.description} />

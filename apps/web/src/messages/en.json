@@ -1214,6 +1214,27 @@
     "confidence": "Confidence",
     "evidence": "Evidence",
     "addAfterReview": "Add after review",
+    "affectedProcessAsset": "Affected process / asset",
+    "controlClause": "Control clause",
+    "initialRating": "Initial rating",
+    "reviewGate": "Review gate",
+    "draftOnly": "Draft only until accepted",
+    "businessLens": {
+      "title": "Business impact lens",
+      "hint": "AI suggestions are grouped by operational, financial, regulatory, third-party, continuity and reputational exposure before human approval.",
+      "draftQueue": "Draft proposals",
+      "categoryCoverage": "Business categories",
+      "mappedDomains": "Mapped domains",
+      "highConfidence": "High-confidence"
+    },
+    "assetByCategory": {
+      "operational": "Core operating process",
+      "financial": "Financial reporting / payment process",
+      "regulatory": "Compliance obligation",
+      "third_party": "Vendor or outsourced service",
+      "continuity": "Critical service continuity",
+      "reputational": "Customer trust / brand exposure"
+    },
     "businessCategories": {
       "operational": "Operational",
       "financial": "Financial",
@@ -2715,7 +2736,7 @@
         },
         "riskRegister": {
           "title": "Single risk register",
-          "hint": "Manual and AI-proposed risks with human approval."
+          "hint": "Manual and AI-proposed risks with business impact categories, affected process/asset context and human approval."
         },
         "documentAi": {
           "title": "AI document analysis and findings",
