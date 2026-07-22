@@ -102,6 +102,35 @@ const STATUS_TONE: Record<string, string> = {
   overdue: 'bg-red-100 text-red-700',
 };
 
+type IntakeBucket = 'officePdf' | 'spreadsheet' | 'imageOcr' | 'configLogs';
+
+function extensionOf(filename: string): string {
+  const i = filename.lastIndexOf('.');
+  return i === -1 ? '' : filename.slice(i + 1).toLowerCase();
+}
+
+function intakeBucketOf(doc: DocRow): IntakeBucket {
+  const ext = extensionOf(doc.filename);
+  const mime = doc.mime.toLowerCase();
+  if (
+    mime.includes('image/') ||
+    ['png', 'jpg', 'jpeg', 'webp', 'tif', 'tiff', 'bmp', 'heic'].includes(ext)
+  ) {
+    return 'imageOcr';
+  }
+  if (
+    mime.includes('spreadsheet') ||
+    mime.includes('csv') ||
+    ['xls', 'xlsx', 'xlsm', 'csv', 'tsv'].includes(ext)
+  ) {
+    return 'spreadsheet';
+  }
+  if (['log', 'txt', 'json', 'yaml', 'yml', 'xml', 'conf', 'cfg', 'ini'].includes(ext)) {
+    return 'configLogs';
+  }
+  return 'officePdf';
+}
+
 /** Реестр документов-доказательств (T-V01, T-V02): жизненный цикл, загрузка, привязки, owner. */
 export default async function DocumentsPage({
   searchParams,
@@ -160,6 +189,20 @@ export default async function DocumentsPage({
       : requestedEntityType === 'control'
         ? (controls.find((c) => c.id === requestedEntityId)?.ref ?? t('uploadContextControl'))
         : '';
+  const intakeDocs = docs.filter((doc) => doc.status !== 'needs_document');
+  const intakeCounts = intakeDocs.reduce<Record<IntakeBucket, number>>(
+    (acc, doc) => {
+      acc[intakeBucketOf(doc)] += 1;
+      return acc;
+    },
+    { officePdf: 0, spreadsheet: 0, imageOcr: 0, configLogs: 0 },
+  );
+  const aiReadyDocuments = intakeDocs.filter(
+    (doc) => doc.status === 'active' && doc.links > 0,
+  ).length;
+  const pendingOcrDocuments = intakeDocs.filter((doc) => intakeBucketOf(doc) === 'imageOcr').length;
+  const pendingUploadDocuments = docs.filter((doc) => doc.status === 'needs_document').length;
+  const unlinkedIntakeDocuments = intakeDocs.filter((doc) => doc.links === 0).length;
 
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const generatedAt = readiness?.generatedAt
@@ -316,6 +359,58 @@ export default async function DocumentsPage({
           </div>
         </section>
       )}
+
+      <section
+        data-testid="document-ai-intake"
+        className="overflow-hidden rounded-2xl border border-teal-200 bg-white shadow-[0_16px_50px_rgba(15,118,110,0.10)]"
+      >
+        <div className="border-b border-teal-100 bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.18),transparent_34%),linear-gradient(135deg,#f0fdfa,#ffffff)] p-5">
+          <p className="text-xs font-semibold tracking-[0.2em] text-teal-700 uppercase">
+            {t('intake.kicker')}
+          </p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-primary">{t('intake.title')}</h2>
+              <p className="mt-1 max-w-3xl text-sm text-secondary">{t('intake.subtitle')}</p>
+            </div>
+            <div className="rounded-2xl bg-teal-950 px-4 py-3 text-center text-white shadow-lg shadow-teal-950/15">
+              <div className="text-2xl font-bold">{aiReadyDocuments}</div>
+              <div className="text-xs text-teal-100">{t('intake.aiReady')}</div>
+            </div>
+          </div>
+        </div>
+        <div className="grid gap-3 p-5 md:grid-cols-4">
+          {(['officePdf', 'spreadsheet', 'imageOcr', 'configLogs'] as const).map((bucket) => (
+            <div
+              key={bucket}
+              className="rounded-xl border border-border bg-[linear-gradient(180deg,#ffffff,#f7fbf8)] p-4"
+            >
+              <div className="text-xs font-semibold tracking-wide text-secondary uppercase">
+                {t(`intake.buckets.${bucket}.label`)}
+              </div>
+              <div className="mt-2 text-2xl font-bold text-primary">{intakeCounts[bucket]}</div>
+              <div className="mt-1 text-xs text-secondary">
+                {t(`intake.buckets.${bucket}.hint`)}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid gap-3 border-t border-border p-5 md:grid-cols-3">
+          {[
+            ['linked', aiReadyDocuments],
+            ['ocr', pendingOcrDocuments],
+            ['blocked', pendingUploadDocuments + unlinkedIntakeDocuments],
+          ].map(([key, value]) => (
+            <div key={key} className="rounded-xl bg-muted/60 p-4 text-sm">
+              <div className="text-xs font-semibold tracking-wide text-secondary uppercase">
+                {t(`intake.signals.${key}.label`)}
+              </div>
+              <div className="mt-1 text-2xl font-bold text-primary">{value}</div>
+              <div className="mt-1 text-xs text-secondary">{t(`intake.signals.${key}.hint`)}</div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <form
         action={uploadDocumentAction}

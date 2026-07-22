@@ -2317,6 +2317,44 @@
     "requestName": "Document name",
     "requestNamePh": "e.g. Q3 access review",
     "requestBtn": "Request",
+    "intake": {
+      "kicker": "AI intake",
+      "title": "Document readiness for AI analysis",
+      "subtitle": "Shows which formats are already collected, what can support draft findings, and where OCR, upload or control/audit linking is still needed.",
+      "aiReady": "AI-ready",
+      "buckets": {
+        "officePdf": {
+          "label": "PDF / Office",
+          "hint": "Policies, procedures, reports and standards"
+        },
+        "spreadsheet": {
+          "label": "Excel / CSV",
+          "hint": "Registers, exports, access matrices and lists"
+        },
+        "imageOcr": {
+          "label": "Scans / OCR",
+          "hint": "Images and scanned evidence that need OCR"
+        },
+        "configLogs": {
+          "label": "Configs / logs",
+          "hint": "Technical exports, logs and machine-readable files"
+        }
+      },
+      "signals": {
+        "linked": {
+          "label": "Evidence-grounded",
+          "hint": "Active linked documents are the base for evidence-backed AI drafts"
+        },
+        "ocr": {
+          "label": "OCR queue",
+          "hint": "Scanned evidence needs recognition before analysis"
+        },
+        "blocked": {
+          "label": "Analysis blockers",
+          "hint": "Expected or unlinked documents are not ready for AI review yet"
+        }
+      }
+    },
     "readiness": {
       "kicker": "Evidence command center",
       "title": "Evidence readiness",

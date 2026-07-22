@@ -2325,6 +2325,44 @@
     "requestName": "Sənəd adı",
     "requestNamePh": "məs. Q3 giriş yoxlaması",
     "requestBtn": "Tələb et",
+    "intake": {
+      "kicker": "AI intake",
+      "title": "Sənədlərin İİ analizi üçün hazırlığı",
+      "subtitle": "Hansı formatların toplandığını, hansının finding qaralamalarını dəstəklədiyini və harada OCR, yükləmə və ya nəzarət/audit bağlantısı lazım olduğunu göstərir.",
+      "aiReady": "İİ üçün hazır",
+      "buckets": {
+        "officePdf": {
+          "label": "PDF / Office",
+          "hint": "Siyasətlər, prosedurlar, hesabatlar və standartlar"
+        },
+        "spreadsheet": {
+          "label": "Excel / CSV",
+          "hint": "Reyestrlər, ixraclar, giriş matrisləri və siyahılar"
+        },
+        "imageOcr": {
+          "label": "Skanlar / OCR",
+          "hint": "OCR tələb edən şəkillər və skan sübutları"
+        },
+        "configLogs": {
+          "label": "Konfiqlər / loglar",
+          "hint": "Texniki ixraclar, jurnallar və maşın oxunan fayllar"
+        }
+      },
+      "signals": {
+        "linked": {
+          "label": "Sübuta əsaslanan",
+          "hint": "Aktiv və bağlı sənədlər sübutlu İİ qaralamaları üçün bazadır"
+        },
+        "ocr": {
+          "label": "OCR növbəsi",
+          "hint": "Skan sübutları analizdən əvvəl tanınmalıdır"
+        },
+        "blocked": {
+          "label": "Analiz blokları",
+          "hint": "Gözlənən və ya bağlantısız sənədlər hələ İİ icmalına hazır deyil"
+        }
+      }
+    },
     "readiness": {
       "kicker": "Sübut mərkəzi",
       "title": "Sübutların hazırlığı",
