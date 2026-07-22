@@ -1435,7 +1435,33 @@
     "revoke": "Ləğv et",
     "apiTitle": "Açıq REST API (v1)",
     "apiHint": "Bütün resurslara yalnız-oxu proqram girişi. X-Api-Key: <açarınız> başlığı ilə autentifikasiya.",
-    "apiResources": "Resurslar"
+    "apiResources": "Resurslar",
+    "integration": {
+      "kicker": "İnteqrasiya hazırlığı",
+      "title": "Müştərilər, BI və SIEM nə istifadə edə bilər",
+      "subtitle": "Açıq API əsas audit, risk və üçüncü tərəf obyektlərini daxili DTO-ları açmadan və API açarı ilə dəyişiklik icazəsi vermədən əhatə edir.",
+      "guardrails": "API təhlükəsizlik nəzarətləri",
+      "groups": {
+        "audit": {
+          "title": "Audit və sübutlar",
+          "hint": "Avtomatlaşdırılmış sübut toplama üçün auditlər, nəzarətlər, testlər və sənədlər."
+        },
+        "risk": {
+          "title": "Risklər və təhlükəsizlik siqnalları",
+          "hint": "SOC/ERM hesabatları üçün qeydlər, risk reyestri, zəifliklər və təhlükəsizlik xəbərdarlıqları."
+        },
+        "thirdParty": {
+          "title": "Aktivlər, siyasətlər və təchizatçılar",
+          "hint": "TPRM, siyasət yenilənməsi və kritik aktiv inventarı üçün data."
+        }
+      },
+      "guards": {
+        "tenantScoped": "Hər sorğu API açarının tenant scope-u ilə ciddi məhdudlaşır.",
+        "readOnly": "Açıq v1 API yalnız oxuma üçündür; dəyişikliklər domen JWT endpoint-lərində qalır.",
+        "hashedKeys": "Plaintext açar bir dəfə göstərilir; yalnız hash və prefiks saxlanılır.",
+        "revoke": "Açarın ləğvi bütün API-v1 resurslarında dərhal qüvvəyə minir."
+      }
+    }
   },
   "notifications": {
     "title": "Bildirişlər",

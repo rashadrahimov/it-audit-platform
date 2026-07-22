@@ -1435,7 +1435,33 @@
     "revoke": "Revoke",
     "apiTitle": "Public REST API (v1)",
     "apiHint": "Read-only programmatic access to all resources. Authenticate with the header X-Api-Key: <your key>.",
-    "apiResources": "Resources"
+    "apiResources": "Resources",
+    "integration": {
+      "kicker": "Integration readiness",
+      "title": "What clients, BI and SIEM can consume",
+      "subtitle": "The public API covers core audit, risk and third-party entities without exposing internal DTOs or allowing mutations through API keys.",
+      "guardrails": "API security controls",
+      "groups": {
+        "audit": {
+          "title": "Audit and evidence",
+          "hint": "Engagements, controls, tests and documents for automated evidence collection."
+        },
+        "risk": {
+          "title": "Risks and security signals",
+          "hint": "Findings, risk register, vulnerabilities and security alerts for SOC/ERM reporting."
+        },
+        "thirdParty": {
+          "title": "Assets, policies and vendors",
+          "hint": "Data for TPRM, policy renewal and critical asset inventory."
+        }
+      },
+      "guards": {
+        "tenantScoped": "Every request is strictly limited to the API key tenant scope.",
+        "readOnly": "The public v1 API is read-only; changes stay on domain JWT endpoints.",
+        "hashedKeys": "Plaintext keys are shown once; only the hash and prefix are stored.",
+        "revoke": "Revocation takes effect immediately across all API-v1 resources."
+      }
+    }
   },
   "notifications": {
     "title": "Notifications",

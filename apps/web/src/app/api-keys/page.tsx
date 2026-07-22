@@ -39,6 +39,12 @@ export default async function ApiKeysPage() {
     'security-alerts',
     'documents',
   ];
+  const API_GROUPS = [
+    { key: 'audit', endpoints: ['engagements', 'controls', 'tests', 'documents'] },
+    { key: 'risk', endpoints: ['findings', 'risks', 'vulnerabilities', 'security-alerts'] },
+    { key: 'thirdParty', endpoints: ['vendors', 'policies', 'assets'] },
+  ] as const;
+  const API_GUARDS = ['tenantScoped', 'readOnly', 'hashedKeys', 'revoke'] as const;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6 pt-12">
@@ -127,6 +133,54 @@ export default async function ApiKeysPage() {
                 </code>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm"
+        data-testid="api-integration-readiness"
+      >
+        <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-5">
+          <p className="text-xs font-semibold tracking-[0.16em] text-emerald-700 uppercase">
+            {t('integration.kicker')}
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-primary">{t('integration.title')}</h2>
+          <p className="mt-1 max-w-2xl text-sm text-secondary">{t('integration.subtitle')}</p>
+        </div>
+        <div className="grid gap-4 p-5 md:grid-cols-3">
+          {API_GROUPS.map((group) => (
+            <article key={group.key} className="rounded-xl border border-border bg-muted/30 p-4">
+              <p className="text-sm font-semibold text-primary">
+                {t(`integration.groups.${group.key}.title`)}
+              </p>
+              <p className="mt-1 text-xs text-secondary">
+                {t(`integration.groups.${group.key}.hint`)}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {group.endpoints.map((endpoint) => (
+                  <code
+                    key={endpoint}
+                    className="rounded-md bg-white px-2 py-0.5 font-mono text-[11px] text-secondary"
+                  >
+                    /api/v1/{endpoint}
+                  </code>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="border-t border-border bg-muted/20 p-5">
+          <p className="text-xs font-semibold tracking-[0.14em] text-secondary uppercase">
+            {t('integration.guardrails')}
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {API_GUARDS.map((guard) => (
+              <div key={guard} className="rounded-lg bg-white px-3 py-2 text-sm text-foreground">
+                <span className="mr-2 text-emerald-600">✓</span>
+                {t(`integration.guards.${guard}`)}
+              </div>
+            ))}
           </div>
         </div>
       </section>
