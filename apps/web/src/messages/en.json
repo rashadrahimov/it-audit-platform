@@ -1525,6 +1525,18 @@
       "apply": "Use engagement",
       "ready": "Ready",
       "empty": "Create an engagement first to generate the audit package.",
+      "manifest": {
+        "kicker": "Package manifest",
+        "title": "{files} export files are defined",
+        "subtitle": "A machine-checkable manifest proves the five deliverables, three client formats, language coverage and the readiness gate before files are generated.",
+        "locales": "supported languages",
+        "editable": "Editable management version",
+        "analytics": "Analysis-ready workbook",
+        "final": "Final board/regulator copy",
+        "evidenceGrounded": "Evidence-grounded dataset",
+        "reviewGate": "Readiness gate: {score}%",
+        "sources": "Sources: {sources}"
+      },
       "readiness": {
         "kicker": "Report pre-flight",
         "title": "{score}% package readiness",

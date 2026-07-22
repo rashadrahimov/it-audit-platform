@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ReportData } from '../src/reports/report-data.service';
+import { buildReportPackageManifest, type ReportData } from '../src/reports/report-data.service';
 import { toCsv } from '../src/reports/report-renderers';
 
 const baseReport = (patch: Partial<ReportData> = {}): ReportData => ({
@@ -70,5 +70,34 @@ describe('report renderers localization', () => {
     expect(csv).toContain('Контроли чеклиста,1');
     expect(csv).toContain('Высокие/критичные риски,1');
     expect(csv).not.toContain('Checklist controls');
+  });
+
+  it('publishes a localized package manifest for all five deliverables and three formats', () => {
+    const manifest = buildReportPackageManifest('019f882d-0c3f-7554-9e36-b6cba9fb56dc', 'az', {
+      ready: false,
+      score: 72,
+      checks: [{ key: 'evidence', passed: false }],
+    });
+
+    expect(manifest).toMatchObject({
+      locale: 'az',
+      supportedLocales: ['en', 'az', 'ru'],
+      totalFiles: 15,
+      evidenceGrounded: true,
+      humanReviewRequired: true,
+      readinessGate: { ready: false, score: 72 },
+    });
+    expect(manifest.formats.map((format) => format.key)).toEqual(['pdf', 'docx', 'xlsx']);
+    expect(manifest.deliverables.map((deliverable) => deliverable.key)).toEqual([
+      'audit_report',
+      'nonconformities',
+      'risk_matrix',
+      'action_plan',
+      'executive_summary',
+    ]);
+    expect(manifest.deliverables[0]?.title).toBe('Audit hesabatı');
+    expect(manifest.deliverables.every((deliverable) => deliverable.formats.length === 3)).toBe(
+      true,
+    );
   });
 });

@@ -70,6 +70,29 @@ interface ReportReadiness {
   evidenceLinks: number;
   checks: { key: string; passed: boolean }[];
 }
+interface ReportPackageManifest {
+  locale: string;
+  supportedLocales: string[];
+  totalFiles: number;
+  dataSources: string[];
+  evidenceGrounded: true;
+  humanReviewRequired: true;
+  readinessGate: {
+    ready: boolean;
+    score: number;
+  };
+  formats: Array<{
+    key: 'pdf' | 'docx' | 'xlsx';
+    label: string;
+    editable: boolean;
+    analyticsReady: boolean;
+  }>;
+  deliverables: Array<{
+    key: (typeof DELIVERABLES)[number];
+    title: string;
+    formats: Array<{ key: string; href: string }>;
+  }>;
+}
 
 const ENTITIES = ['findings', 'risks', 'controls'];
 const FORMATS = ['csv', 'xml'];
@@ -120,12 +143,18 @@ export default async function ReportsPage({
   const selectedEngagement =
     engagements.find((e) => e.id === sp.engagementId) ?? engagements[0] ?? null;
   let readiness: ReportReadiness | null = null;
+  let packageManifest: ReportPackageManifest | null = null;
   if (selectedEngagement) {
-    const readinessRes = await apiFetch(
-      `/engagements/${selectedEngagement.id}/report/readiness?locale=${locale}`,
-      { headers },
-    );
+    const [readinessRes, manifestRes] = await Promise.all([
+      apiFetch(`/engagements/${selectedEngagement.id}/report/readiness?locale=${locale}`, {
+        headers,
+      }),
+      apiFetch(`/engagements/${selectedEngagement.id}/report/package-manifest?locale=${locale}`, {
+        headers,
+      }),
+    ]);
     readiness = readinessRes.ok ? await readinessRes.json() : null;
+    packageManifest = manifestRes.ok ? await manifestRes.json() : null;
   }
 
   let compare: CompareResult | null = null;
@@ -391,6 +420,63 @@ export default async function ReportsPage({
                   {check.passed ? '✓' : '•'} {t(`deliverables.readiness.checks.${check.key}`)}
                 </span>
               ))}
+            </div>
+          </div>
+        )}
+        {packageManifest && (
+          <div
+            className="border-t border-white/10 bg-emerald-950/25 px-6 py-5 md:px-8"
+            data-testid="report-package-manifest-proof"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold tracking-[0.16em] text-emerald-200 uppercase">
+                  {t('deliverables.manifest.kicker')}
+                </p>
+                <h3 className="mt-1 text-lg font-bold">
+                  {t('deliverables.manifest.title', { files: packageManifest.totalFiles })}
+                </h3>
+                <p className="mt-1 max-w-3xl text-sm text-emerald-50/75">
+                  {t('deliverables.manifest.subtitle')}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white/95 px-4 py-3 text-center text-emerald-950">
+                <div className="text-xl font-bold">
+                  {packageManifest.supportedLocales.map((l) => l.toUpperCase()).join(' / ')}
+                </div>
+                <div className="text-xs font-semibold">{t('deliverables.manifest.locales')}</div>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              {packageManifest.formats.map((format) => (
+                <div key={format.key} className="rounded-xl bg-white/10 p-3">
+                  <div className="text-sm font-semibold text-white">
+                    {format.label} · {format.key.toUpperCase()}
+                  </div>
+                  <div className="mt-1 text-xs text-emerald-50/70">
+                    {format.editable
+                      ? t('deliverables.manifest.editable')
+                      : format.analyticsReady
+                        ? t('deliverables.manifest.analytics')
+                        : t('deliverables.manifest.final')}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="rounded-full bg-emerald-200 px-2.5 py-1 text-xs font-semibold text-emerald-950">
+                {t('deliverables.manifest.evidenceGrounded')}
+              </span>
+              <span className="rounded-full bg-emerald-200 px-2.5 py-1 text-xs font-semibold text-emerald-950">
+                {t('deliverables.manifest.reviewGate', {
+                  score: packageManifest.readinessGate.score,
+                })}
+              </span>
+              <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold text-emerald-50">
+                {t('deliverables.manifest.sources', {
+                  sources: packageManifest.dataSources.join(', '),
+                })}
+              </span>
             </div>
           </div>
         )}

@@ -1525,6 +1525,18 @@
       "apply": "Auditi seç",
       "ready": "Hazır",
       "empty": "Audit paketini yaratmaq üçün əvvəlcə audit yaradın.",
+      "manifest": {
+        "kicker": "Paket manifesti",
+        "title": "{files} ixrac faylı müəyyən edilib",
+        "subtitle": "Yoxlanıla bilən manifest beş sənədi, üç müştəri formatını, dil əhatəsini və fayllar yaradılmadan əvvəl hazırlıq nəzarətini təsdiqləyir.",
+        "locales": "dəstəklənən dillər",
+        "editable": "Rəhbərlik üçün redaktə olunan versiya",
+        "analytics": "Analiz üçün hazır iş kitabı",
+        "final": "Şura/tənzimləyici üçün final nüsxə",
+        "evidenceGrounded": "Məlumat sübutlara əsaslanır",
+        "reviewGate": "Hazırlıq nəzarəti: {score}%",
+        "sources": "Mənbələr: {sources}"
+      },
       "readiness": {
         "kicker": "Hesabat öncəsi yoxlama",
         "title": "Paket hazırlığı: {score}%",

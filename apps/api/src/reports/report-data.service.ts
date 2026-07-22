@@ -27,7 +27,7 @@ export const REPORT_DELIVERABLES = [
 
 export type ReportDeliverable = (typeof REPORT_DELIVERABLES)[number];
 
-const DELIVERABLE_LABELS: Record<ReportDeliverable, Record<Locale, string>> = {
+export const DELIVERABLE_LABELS: Record<ReportDeliverable, Record<Locale, string>> = {
   audit_report: {
     en: 'Audit Report',
     az: 'Audit hesabatı',
@@ -54,6 +54,68 @@ const DELIVERABLE_LABELS: Record<ReportDeliverable, Record<Locale, string>> = {
     ru: 'Резюме для руководства',
   },
 };
+
+export const REPORT_PACKAGE_FORMATS = [
+  {
+    key: 'pdf',
+    label: 'PDF',
+    mime: 'application/pdf',
+    editable: false,
+    analyticsReady: false,
+  },
+  {
+    key: 'docx',
+    label: 'Word',
+    mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    editable: true,
+    analyticsReady: false,
+  },
+  {
+    key: 'xlsx',
+    label: 'Excel',
+    mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    editable: false,
+    analyticsReady: true,
+  },
+] as const;
+
+export const REPORT_PACKAGE_LOCALES = ['en', 'az', 'ru'] as const satisfies readonly Locale[];
+
+interface ReportPackageReadinessSnapshot {
+  ready: boolean;
+  score: number;
+  checks: { key: string; passed: boolean }[];
+}
+
+export function buildReportPackageManifest(
+  engagementId: string,
+  locale: Locale,
+  readiness: ReportPackageReadinessSnapshot,
+) {
+  return {
+    engagementId,
+    locale,
+    supportedLocales: REPORT_PACKAGE_LOCALES,
+    formats: REPORT_PACKAGE_FORMATS,
+    deliverables: REPORT_DELIVERABLES.map((deliverable) => ({
+      key: deliverable,
+      title: DELIVERABLE_LABELS[deliverable][locale],
+      formats: REPORT_PACKAGE_FORMATS.map((format) => ({
+        key: format.key,
+        href: `/engagements/${engagementId}/report?format=${format.key}&locale=${locale}&deliverable=${deliverable}`,
+      })),
+    })),
+    totalFiles: REPORT_DELIVERABLES.length * REPORT_PACKAGE_FORMATS.length,
+    dataSources: ['checklist', 'responses', 'findings', 'risks', 'evidence_links'],
+    evidenceGrounded: true,
+    humanReviewRequired: true,
+    readinessGate: {
+      ready: readiness.ready,
+      score: readiness.score,
+      checks: readiness.checks,
+    },
+  };
+}
 
 export interface ReportChecklistRow {
   ref: string;
@@ -318,5 +380,10 @@ export class ReportDataService {
         checks,
       };
     });
+  }
+
+  async packageManifest(tenantId: string, engagementId: string, locale: Locale) {
+    const readiness = await this.readiness(tenantId, engagementId, locale);
+    return buildReportPackageManifest(engagementId, locale, readiness);
   }
 }

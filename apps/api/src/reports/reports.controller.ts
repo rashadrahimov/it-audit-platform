@@ -62,6 +62,26 @@ export class ReportsController {
     return this.reportDataService.readiness(req.tenantId, id, locale);
   }
 
+  @Get('package-manifest')
+  @RequirePermission('report', 'export', 'edit')
+  @ApiOperation({
+    summary: 'T-H75: machine-checkable manifest for the standard audit report package',
+  })
+  @ApiQuery({ name: 'locale', required: false })
+  packageManifest(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    let locale = DEFAULT_LOCALE;
+    if (localeQuery !== undefined) {
+      const parsed = localeSchema.safeParse(localeQuery);
+      if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+      locale = parsed.data;
+    }
+    return this.reportDataService.packageManifest(req.tenantId, id, locale);
+  }
+
   @Get()
   @RequirePermission('report', 'export', 'edit')
   @ApiOperation({
