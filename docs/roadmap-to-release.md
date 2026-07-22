@@ -65,7 +65,7 @@
 - [ ] **EP-OFFLINE** — офлайн working papers + синхронизация без потери целостности (WP-10).
 - [ ] **EP-ANNOT** — аннотация Office/PDF (tick marks) внутри приложения (WP-06).
 - [ ] **EP-LOWCODE** — no-code конструктор процессов (IMP-04).
-- [ ] **field-level права** (SEC-04) — гранулярность ниже ресурса.
+- [x] **field-level права** (SEC-04) — гранулярность ниже ресурса закрыта T-H03…T-H08: миграция `field_permission`, ADR-0020, API `/field-permissions`, enforcement read/write на эталонах finding/personnel, UI `/field-permissions`, i18n и регресс-тесты.
 
 ---
 
