@@ -4,7 +4,12 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
 import { EmptyState } from '@/components/empty-state';
-import { createAnnotationAction, deleteAnnotationAction, resolveAnnotationAction } from './actions';
+import {
+  createAnnotationAction,
+  createWorkingPaperAction,
+  deleteAnnotationAction,
+  resolveAnnotationAction,
+} from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -144,6 +149,19 @@ export default async function WorkingPapersPage({
             className="overflow-hidden rounded-xl border border-border bg-white shadow-sm"
             data-testid="working-papers"
           >
+            <form
+              action={createWorkingPaperAction.bind(null, selectedId!)}
+              className="flex items-end gap-2 border-b border-border p-4"
+              data-testid="working-paper-create"
+            >
+              <label className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="text-xs font-medium text-secondary">{t('newTitle')}</span>
+                <input name="title" required placeholder={t('newTitlePh')} className={inputCls} />
+              </label>
+              <button className="rounded-md bg-accent px-3 py-2 text-sm font-medium text-on-primary">
+                {t('create')}
+              </button>
+            </form>
             {papers.length === 0 ? (
               <EmptyState size="sm" text={t('empty')} />
             ) : (
@@ -154,7 +172,7 @@ export default async function WorkingPapersPage({
                     className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 last:border-0"
                   >
                     <Link
-                      href={`/working-papers?engagementId=${selectedId}&paperId=${wp.id}`}
+                      href={`/working-papers/${wp.id}`}
                       className="font-medium text-foreground underline-offset-2 transition-colors duration-150 hover:text-accent hover:underline"
                     >
                       {wp.title}
