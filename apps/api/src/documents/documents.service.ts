@@ -22,7 +22,7 @@ import { resolveActorCategory, resolveAuditorScope } from '../rbac/auditor-scope
 import { FileStorageService, type StoredObject } from '../files/file-storage.service';
 
 /** Известные цели привязки; целостность полиморфизма — на уровне сервиса (data-model §10.5). */
-const LINKABLE_ENTITY_TYPES = new Set([
+export const DOCUMENT_LINKABLE_ENTITY_TYPES = [
   'response',
   'checklist_item',
   'engagement',
@@ -34,7 +34,9 @@ const LINKABLE_ENTITY_TYPES = new Set([
   'vendor_assessment',
   'auditable_entity',
   'privacy_assessment',
-]);
+  'kb_entry',
+] as const;
+const LINKABLE_ENTITY_TYPES = new Set<string>(DOCUMENT_LINKABLE_ENTITY_TYPES);
 const RELATIONS = new Set(['evidence', 'permanent_file', 'attachment', 'report']);
 
 interface Actor {

@@ -1938,7 +1938,12 @@
     "save": "Save",
     "edit": "Edit owner / expiry",
     "trustVisible": "Publish to Trust Center",
-    "trustPublished": "In Trust Center"
+    "trustPublished": "In Trust Center",
+    "attachments": "Attachments",
+    "attachmentFile": "Attachment file",
+    "addAttachment": "Attach",
+    "download": "Download",
+    "noAttachments": "No attachments yet"
   },
   "questionnaires": {
     "title": "Questionnaires",

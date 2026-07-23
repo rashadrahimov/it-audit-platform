@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DOCUMENT_LINKABLE_ENTITY_TYPES,
   documentIntakeBucket,
   evidenceRescanQueueAuditPayload,
   evidenceRescanTriggerForDocument,
@@ -9,6 +10,10 @@ import {
 import { auditEvidenceHitsForQuery, parseAuditQuery } from '../src/search/search.service';
 
 describe('document evidence re-scan triggers', () => {
+  it('allows knowledge-base entries as attachment targets', () => {
+    expect(DOCUMENT_LINKABLE_ENTITY_TYPES).toContain('kb_entry');
+  });
+
   it('queues linked active evidence for extraction and draft AI refresh', () => {
     const trigger = evidenceRescanTriggerForDocument(
       { filename: 'backup-evidence.pdf', mime: 'application/pdf', status: 'active' },

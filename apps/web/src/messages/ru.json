@@ -1938,7 +1938,12 @@
     "save": "Сохранить",
     "edit": "Владелец / срок",
     "trustVisible": "Опубликовать в Trust Center",
-    "trustPublished": "В Trust Center"
+    "trustPublished": "В Trust Center",
+    "attachments": "Вложения",
+    "attachmentFile": "Файл вложения",
+    "addAttachment": "Прикрепить",
+    "download": "Скачать",
+    "noAttachments": "Вложений пока нет"
   },
   "questionnaires": {
     "title": "Опросники",

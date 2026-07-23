@@ -46,3 +46,23 @@ export async function updateKbAction(id: string, formData: FormData): Promise<vo
   });
   revalidatePath('/knowledge-base');
 }
+
+/** T-H152: прикрепить файл к записи базы знаний через общий реестр документов. */
+export async function uploadKbAttachmentAction(id: string, formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  const file = formData.get('file');
+  if (!tenantSlug || !(file instanceof File) || file.size === 0) return;
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('category', 'knowledge-base');
+  fd.append('entityType', 'kb_entry');
+  fd.append('entityId', id);
+  fd.append('relation', 'attachment');
+  await apiFetch('/documents', {
+    method: 'POST',
+    headers: { 'X-Tenant-Slug': tenantSlug },
+    body: fd,
+  });
+  revalidatePath('/knowledge-base');
+}

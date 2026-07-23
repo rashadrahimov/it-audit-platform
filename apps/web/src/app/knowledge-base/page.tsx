@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
-import { createKbAction, updateKbAction } from './actions';
+import { createKbAction, updateKbAction, uploadKbAttachmentAction } from './actions';
 import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +18,14 @@ interface KbEntry {
   expiresAt: string | null;
   verified: boolean;
   trustVisible: boolean;
+  attachments: KbAttachment[];
+}
+interface KbAttachment {
+  id: string;
+  filename: string;
+  mime: string;
+  size: number;
+  createdAt: string;
 }
 interface Member {
   id: string;
@@ -48,7 +56,19 @@ export default async function KnowledgeBasePage({
     apiFetch(`/kb${q ? `?q=${encodeURIComponent(q)}` : ''}`, { headers }),
     apiFetch(`/memberships?locale=${locale}`, { headers }),
   ]);
-  const entries: KbEntry[] = res.ok ? await res.json() : [];
+  const rawEntries: Omit<KbEntry, 'attachments'>[] = res.ok ? await res.json() : [];
+  const attachments = await Promise.all(
+    rawEntries.map(async (entry) => {
+      const attachmentRes = await apiFetch(`/documents?entityType=kb_entry&entityId=${entry.id}`, {
+        headers,
+      });
+      return attachmentRes.ok ? ((await attachmentRes.json()) as KbAttachment[]) : [];
+    }),
+  );
+  const entries: KbEntry[] = rawEntries.map((entry, index) => ({
+    ...entry,
+    attachments: attachments[index] ?? [],
+  }));
   const members: Member[] = memRes.ok ? await memRes.json() : [];
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
 
@@ -184,6 +204,51 @@ export default async function KnowledgeBasePage({
                   </span>
                 </span>
               </div>
+              <section className="mt-2 rounded-lg border border-border bg-muted/30 p-3">
+                <h2 className="text-xs font-semibold text-foreground">{t('attachments')}</h2>
+                {e.attachments.length > 0 ? (
+                  <ul className="mt-2 flex flex-col gap-1.5">
+                    {e.attachments.map((attachment) => (
+                      <li
+                        key={attachment.id}
+                        className="flex flex-wrap items-center justify-between gap-2 text-xs"
+                      >
+                        <span className="min-w-0 truncate text-secondary">
+                          {attachment.filename} · {Math.max(1, Math.ceil(attachment.size / 1024))}{' '}
+                          KB
+                        </span>
+                        <Link
+                          href={`/documents/${attachment.id}/download`}
+                          className="font-medium text-accent underline-offset-2 hover:underline"
+                        >
+                          {t('download')}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-1 text-xs text-secondary">{t('noAttachments')}</p>
+                )}
+                <form
+                  action={uploadKbAttachmentAction.bind(null, e.id)}
+                  className="mt-2 flex flex-wrap items-center gap-2"
+                >
+                  <input
+                    type="file"
+                    name="file"
+                    required
+                    aria-label={`${t('attachmentFile')}: ${e.question}`}
+                    className="min-w-0 flex-1 text-xs text-secondary file:mr-2 file:rounded-md file:border-0 file:bg-muted file:px-2 file:py-1.5 file:text-xs file:font-medium file:text-foreground"
+                  />
+                  <button
+                    type="submit"
+                    data-testid={`kb-attachment-upload-${e.id}`}
+                    className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-secondary transition-colors duration-150 hover:bg-muted"
+                  >
+                    {t('addAttachment')}
+                  </button>
+                </form>
+              </section>
               <details className="mt-1">
                 <summary className="cursor-pointer text-xs font-medium text-accent">
                   {t('edit')}

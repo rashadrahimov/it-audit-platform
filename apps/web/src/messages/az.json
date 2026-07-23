@@ -1938,7 +1938,12 @@
     "save": "Saxla",
     "edit": "Sahib / müddət",
     "trustVisible": "Trust Center-də dərc et",
-    "trustPublished": "Trust Center-də"
+    "trustPublished": "Trust Center-də",
+    "attachments": "Əlavələr",
+    "attachmentFile": "Əlavə faylı",
+    "addAttachment": "Əlavə et",
+    "download": "Endir",
+    "noAttachments": "Hələ əlavə yoxdur"
   },
   "questionnaires": {
     "title": "Sorğular",
