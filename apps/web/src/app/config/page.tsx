@@ -323,9 +323,7 @@ export default async function ConfigPage() {
                     <h3 className="text-sm font-semibold text-foreground">
                       {t(`configListLabels.${listKey}`)}
                     </h3>
-                    <p className="mt-1 break-all font-mono text-[11px] text-secondary">
-                      {listKey}
-                    </p>
+                    <p className="mt-1 break-all font-mono text-[11px] text-secondary">{listKey}</p>
                   </div>
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
