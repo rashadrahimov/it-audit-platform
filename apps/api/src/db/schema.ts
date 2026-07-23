@@ -1226,6 +1226,8 @@ export const questionnaire = pgTable(
     title: text('title').notNull(),
     source: text('source'),
     status: text('status').notNull().default('draft'),
+    ownerMembershipId: uuid('owner_membership_id').references(() => membership.id),
+    dueDate: timestamp('due_date', { withTimezone: true }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },

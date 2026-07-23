@@ -1,0 +1,3 @@
+ALTER TABLE "questionnaire" ADD COLUMN "owner_membership_id" uuid;--> statement-breakpoint
+ALTER TABLE "questionnaire" ADD COLUMN "due_date" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "questionnaire" ADD CONSTRAINT "questionnaire_owner_membership_id_membership_id_fk" FOREIGN KEY ("owner_membership_id") REFERENCES "public"."membership"("id") ON DELETE no action ON UPDATE no action;

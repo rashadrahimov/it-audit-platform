@@ -1947,6 +1947,12 @@
     "titlePh": "Questionnaire title",
     "source": "Source",
     "add": "Create",
+    "owner": "Owner",
+    "due": "Due date",
+    "save": "Save",
+    "importXlsx": "Import customer questionnaire from XLSX",
+    "xlsxFile": "XLSX file",
+    "import": "Import",
     "empty": "No questionnaires yet",
     "st": {
       "draft": "Draft",

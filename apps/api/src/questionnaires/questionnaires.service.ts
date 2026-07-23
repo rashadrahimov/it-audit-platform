@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { kbEntry, questionnaire, questionnaireAnswer } from '../db/schema';
+import { kbEntry, membership, questionnaire, questionnaireAnswer } from '../db/schema';
 import { suggestKbForQuestion } from './answer-suggest';
 
 interface Actor {
@@ -18,11 +18,30 @@ export class QuestionnairesService {
     private readonly auditLogService: AuditLogService,
   ) {}
 
-  async create(actor: Actor, input: { title: string; source?: string }) {
+  private async assertOwner(tenantId: string, ownerMembershipId?: string | null) {
+    if (!ownerMembershipId) return;
+    const [owner] = await this.dbService.db
+      .select({ id: membership.id })
+      .from(membership)
+      .where(and(eq(membership.id, ownerMembershipId), eq(membership.tenantId, tenantId)));
+    if (!owner) throw new BadRequestException('Владелец не относится к текущему тенанту');
+  }
+
+  async create(
+    actor: Actor,
+    input: { title: string; source?: string; ownerMembershipId?: string; dueDate?: string },
+  ) {
+    await this.assertOwner(actor.tenantId, input.ownerMembershipId);
     const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
       const [row] = await tx
         .insert(questionnaire)
-        .values({ tenantId: actor.tenantId, title: input.title, source: input.source ?? null })
+        .values({
+          tenantId: actor.tenantId,
+          title: input.title,
+          source: input.source ?? null,
+          ownerMembershipId: input.ownerMembershipId ?? null,
+          dueDate: input.dueDate ? new Date(input.dueDate) : null,
+        })
         .returning();
       if (!row) throw new Error('Опросник не создался');
       return row;
@@ -37,6 +56,72 @@ export class QuestionnairesService {
       after: { title: created.title },
     });
     return { id: created.id, status: created.status };
+  }
+
+  async importWorkbook(
+    actor: Actor,
+    input: { title: string; source?: string; ownerMembershipId?: string; dueDate?: string },
+    questions: string[],
+  ) {
+    await this.assertOwner(actor.tenantId, input.ownerMembershipId);
+    const created = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .insert(questionnaire)
+        .values({
+          tenantId: actor.tenantId,
+          title: input.title,
+          source: input.source ?? null,
+          ownerMembershipId: input.ownerMembershipId ?? null,
+          dueDate: input.dueDate ? new Date(input.dueDate) : null,
+        })
+        .returning({ id: questionnaire.id, status: questionnaire.status });
+      if (!row) throw new Error('Опросник не создался');
+      await tx
+        .insert(questionnaireAnswer)
+        .values(questions.map((question) => ({ questionnaireId: row.id, question })));
+      return row;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'questionnaire.imported',
+      entityType: 'questionnaire',
+      entityId: created.id,
+      after: { questions: questions.length, source: input.source ?? null },
+    });
+    return { ...created, questions: questions.length };
+  }
+
+  async update(
+    actor: Actor,
+    id: string,
+    input: { ownerMembershipId?: string | null; dueDate?: string | null },
+  ) {
+    await this.assertOwner(actor.tenantId, input.ownerMembershipId);
+    const changes: { ownerMembershipId?: string | null; dueDate?: Date | null } = {};
+    if ('ownerMembershipId' in input) changes.ownerMembershipId = input.ownerMembershipId ?? null;
+    if ('dueDate' in input) changes.dueDate = input.dueDate ? new Date(input.dueDate) : null;
+    if (Object.keys(changes).length === 0) throw new BadRequestException('Нет изменений');
+    const updated = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .update(questionnaire)
+        .set(changes)
+        .where(and(eq(questionnaire.id, id), isNull(questionnaire.deletedAt)))
+        .returning({ id: questionnaire.id });
+      if (!row) throw new NotFoundException(`Опросник ${id} не найден`);
+      return row;
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'questionnaire.updated',
+      entityType: 'questionnaire',
+      entityId: id,
+      after: input,
+    });
+    return updated;
   }
 
   async addQuestion(actor: Actor, questionnaireId: string, question: string) {
@@ -138,7 +223,14 @@ export class QuestionnairesService {
         .where(and(...conds))
         .orderBy(desc(questionnaire.createdAt)),
     );
-    return rows.map((q) => ({ id: q.id, title: q.title, source: q.source, status: q.status }));
+    return rows.map((q) => ({
+      id: q.id,
+      title: q.title,
+      source: q.source,
+      status: q.status,
+      ownerMembershipId: q.ownerMembershipId,
+      dueDate: q.dueDate,
+    }));
   }
 
   /**
@@ -193,6 +285,8 @@ export class QuestionnairesService {
         title: q.title,
         source: q.source,
         status: q.status,
+        ownerMembershipId: q.ownerMembershipId,
+        dueDate: q.dueDate,
         answers: answers.map((a) => ({
           id: a.id,
           question: a.question,

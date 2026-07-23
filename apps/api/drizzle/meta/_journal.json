@@ -519,6 +519,13 @@
       "when": 1784735335051,
       "tag": "0073_nosy_the_captain",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1784784870090,
+      "tag": "0074_thick_jackpot",
+      "breakpoints": true
     }
   ]
 }

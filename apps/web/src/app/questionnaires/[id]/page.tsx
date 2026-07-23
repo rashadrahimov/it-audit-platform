@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import {
   addQuestionAction,
   answerAction,
   submitQuestionnaireAction,
+  updateQuestionnaireAction,
   useKbSuggestionAction,
 } from './actions';
 import { EmptyState } from '@/components/empty-state';
@@ -24,6 +25,8 @@ interface QuestionnaireDetail {
   title: string;
   source: string | null;
   status: 'draft' | 'submitted';
+  ownerMembershipId: string | null;
+  dueDate: string | null;
   answers: Answer[];
 }
 interface Suggestion {
@@ -44,9 +47,10 @@ export default async function QuestionnaireDetailPage({
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const [t, tenantSlug, { id }] = await Promise.all([
+  const [t, tenantSlug, locale, { id }] = await Promise.all([
     getTranslations('questionnaires'),
     getActiveTenantSlug(),
+    getLocale(),
     params,
   ]);
   const headers: Record<string, string> = tenantSlug ? { 'X-Tenant-Slug': tenantSlug } : {};
@@ -54,6 +58,10 @@ export default async function QuestionnaireDetailPage({
   const res = await apiFetch(`/questionnaires/${id}`, { headers });
   if (!res.ok) notFound();
   const q: QuestionnaireDetail = await res.json();
+  const membersRes = await apiFetch(`/memberships?locale=${locale}`, { headers });
+  const members: Array<{ id: string; fullName: string }> = membersRes.ok
+    ? await membersRes.json()
+    : [];
   const allAnswered = q.answers.length > 0 && q.answers.every((a) => a.answer);
   const isDraft = q.status === 'draft';
 
@@ -83,6 +91,43 @@ export default async function QuestionnaireDetailPage({
       >
         {t(`st.${q.status}`)}
       </span>
+
+      <form
+        action={updateQuestionnaireAction}
+        className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4 shadow-sm"
+      >
+        <input type="hidden" name="id" value={q.id} />
+        <label className="flex flex-col gap-1 text-xs text-secondary">
+          {t('owner')}
+          <select
+            name="ownerMembershipId"
+            defaultValue={q.ownerMembershipId ?? ''}
+            className={inputCls}
+          >
+            <option value="">—</option>
+            {members.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.fullName}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-secondary">
+          {t('due')}
+          <input
+            type="date"
+            name="dueDate"
+            defaultValue={q.dueDate?.slice(0, 10) ?? ''}
+            className={inputCls}
+          />
+        </label>
+        <button
+          type="submit"
+          className="rounded-md border border-border px-3 py-2 text-sm font-semibold text-secondary hover:bg-muted"
+        >
+          {t('save')}
+        </button>
+      </form>
 
       {/* Ответы */}
       <ul className="flex flex-col gap-3" data-testid="answers-list">

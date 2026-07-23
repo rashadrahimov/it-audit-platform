@@ -3,6 +3,25 @@
 import { revalidatePath } from 'next/cache';
 import { apiFetch, getActiveTenantSlug } from '@/lib/session';
 
+/** T-V42: назначить владельца и срок опросника. */
+export async function updateQuestionnaireAction(formData: FormData): Promise<void> {
+  const tenantSlug = await getActiveTenantSlug();
+  const id = String(formData.get('id') ?? '');
+  if (!tenantSlug || !id) return;
+  const ownerMembershipId = String(formData.get('ownerMembershipId') ?? '').trim();
+  const dueDate = String(formData.get('dueDate') ?? '').trim();
+  await apiFetch(`/questionnaires/${id}`, {
+    method: 'PATCH',
+    headers: { 'X-Tenant-Slug': tenantSlug, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ownerMembershipId: ownerMembershipId || null,
+      dueDate: dueDate ? new Date(`${dueDate}T17:00:00.000Z`).toISOString() : null,
+    }),
+  });
+  revalidatePath(`/questionnaires/${id}`);
+  revalidatePath('/questionnaires');
+}
+
 /** Добавить вопрос в опросник (T-083). */
 export async function addQuestionAction(formData: FormData): Promise<void> {
   const tenantSlug = await getActiveTenantSlug();
