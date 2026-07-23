@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 type Status = 'met' | 'at_risk' | 'breached';
 const STATUSES: Status[] = ['met', 'at_risk', 'breached'];
-type Sla = 'ok' | 'due_soon' | 'overdue';
+type Sla = 'ok' | 'due_later' | 'due_soon' | 'overdue';
 interface Commitment {
   id: string;
   title: string;
@@ -49,6 +49,7 @@ const STATUS_TONE: Record<Status, string> = {
 };
 const SLA_TONE: Record<Sla, string> = {
   ok: 'text-secondary',
+  due_later: 'text-blue-700',
   due_soon: 'text-amber-700',
   overdue: 'text-destructive font-medium',
 };

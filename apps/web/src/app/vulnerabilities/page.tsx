@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 type Severity = 'low' | 'medium' | 'high' | 'critical';
 type Status = 'open' | 'remediating' | 'resolved';
-type Sla = 'ok' | 'due_soon' | 'overdue';
+type Sla = 'ok' | 'due_later' | 'due_soon' | 'overdue';
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low'];
 const NEXT: Record<Status, Status[]> = {
   open: ['remediating', 'resolved'],
@@ -49,11 +49,13 @@ const SEV_TONE: Record<Severity, string> = {
 };
 const SLA_TONE: Record<Sla, string> = {
   ok: 'text-secondary',
+  due_later: 'text-blue-700',
   due_soon: 'text-amber-700',
   overdue: 'text-destructive font-medium',
 };
 const SLA_BADGE: Record<Sla, string> = {
   ok: 'bg-emerald-100 text-emerald-700',
+  due_later: 'bg-blue-100 text-blue-700',
   due_soon: 'bg-amber-100 text-amber-700',
   overdue: 'bg-red-100 text-red-700',
 };

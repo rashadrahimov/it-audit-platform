@@ -24,8 +24,13 @@ const FLOW: Record<string, string[]> = {
 };
 
 /** Худший SLA-статус для агрегата Asset SLA (T-V32). */
-const SLA_RANK: Record<string, number> = { overdue: 3, due_soon: 2, ok: 1 };
-function worstSla(statuses: string[]): string {
+const SLA_RANK: Record<string, number> = {
+  overdue: 4,
+  due_soon: 3,
+  due_later: 2,
+  ok: 1,
+};
+export function worstSla(statuses: string[]): string {
   return statuses.reduce(
     (worst, s) => ((SLA_RANK[s] ?? 0) > (SLA_RANK[worst] ?? 0) ? s : worst),
     'ok',

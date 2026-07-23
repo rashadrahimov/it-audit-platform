@@ -54,7 +54,7 @@ const STATUSES = [
   'closed',
 ] as const;
 const RATINGS = ['critical', 'high', 'medium', 'low', 'not_applicable'] as const;
-const SLAS = ['ok', 'due_soon', 'overdue'] as const;
+const SLAS = ['ok', 'due_later', 'due_soon', 'overdue'] as const;
 
 const RATING_TONE: Record<string, string> = {
   critical: 'bg-red-100 text-red-700',
@@ -65,6 +65,7 @@ const RATING_TONE: Record<string, string> = {
 };
 const SLA_TONE: Record<string, string> = {
   ok: 'bg-emerald-100 text-emerald-700',
+  due_later: 'bg-blue-100 text-blue-700',
   due_soon: 'bg-amber-100 text-amber-700',
   overdue: 'bg-red-100 text-red-700',
 };

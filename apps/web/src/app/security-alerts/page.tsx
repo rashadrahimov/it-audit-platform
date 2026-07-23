@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 type Severity = 'low' | 'medium' | 'high' | 'critical';
 type Status = 'new' | 'triaged' | 'closed';
-type Sla = 'ok' | 'due_soon' | 'overdue';
+type Sla = 'ok' | 'due_later' | 'due_soon' | 'overdue';
 type Category =
   'malware' | 'phishing' | 'vulnerability' | 'misconfiguration' | 'unauthorized_access' | 'other';
 
@@ -59,6 +59,7 @@ const STATUS_TONE: Record<Status, string> = {
 };
 const SLA_BADGE: Record<Sla, string> = {
   ok: 'bg-emerald-100 text-emerald-700',
+  due_later: 'bg-blue-100 text-blue-700',
   due_soon: 'bg-amber-100 text-amber-700',
   overdue: 'bg-red-100 text-red-700',
 };

@@ -277,7 +277,9 @@ export default async function IamPage() {
                           ? 'bg-red-100 text-red-700'
                           : d.slaStatus === 'due_soon'
                             ? 'bg-amber-100 text-amber-700'
-                            : 'bg-emerald-100 text-emerald-700'
+                            : d.slaStatus === 'due_later'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-emerald-100 text-emerald-700'
                       }`}
                     >
                       {d.slaStatus}

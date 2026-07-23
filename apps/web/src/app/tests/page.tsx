@@ -30,7 +30,7 @@ interface Attention {
 const STATUSES = ['ok', 'failing', 'needs_attention', 'deactivated'] as const;
 const KINDS = ['manual', 'automated'] as const;
 const CATEGORIES = ['hr', 'it', 'automated'] as const;
-const SLAS = ['ok', 'due_soon', 'overdue'] as const;
+const SLAS = ['ok', 'due_later', 'due_soon', 'overdue'] as const;
 
 const STATUS_TONE: Record<string, string> = {
   ok: 'bg-emerald-100 text-emerald-700',
@@ -40,6 +40,7 @@ const STATUS_TONE: Record<string, string> = {
 };
 const SLA_TONE: Record<string, string> = {
   ok: 'bg-emerald-100 text-emerald-700',
+  due_later: 'bg-blue-100 text-blue-700',
   due_soon: 'bg-amber-100 text-amber-700',
   overdue: 'bg-red-100 text-red-700',
 };

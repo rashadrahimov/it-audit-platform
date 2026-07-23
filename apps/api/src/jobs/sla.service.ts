@@ -14,9 +14,9 @@ export interface SlaRecalcResult {
 }
 
 /**
- * SLA-примитивы (T-043, B15): пересчёт sla_status (ok/due_soon/overdue) по
- * due_date для finding и test. Джоба системная, но рантайм ходит под RLS —
- * поэтому обходим тенанты через withTenant, а не одним запросом.
+ * SLA-примитивы (T-043, B15): пересчёт sla_status
+ * (ok/due_later/due_soon/overdue) по due_date. Джоба системная, но рантайм
+ * ходит под RLS — поэтому обходим тенанты через withTenant, а не одним запросом.
  */
 @Injectable()
 export class SlaService {
@@ -49,35 +49,35 @@ export class SlaService {
           UPDATE "finding" SET "sla_status" = CASE
             WHEN "due_date" < now() THEN 'overdue'
             WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
-            ELSE 'ok' END
+            ELSE 'due_later' END
           WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'closed'
         `);
         const tests = await tx.execute(sql`
           UPDATE "test" SET "sla_status" = CASE
             WHEN "due_date" < now() THEN 'overdue'
             WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
-            ELSE 'ok' END
+            ELSE 'due_later' END
           WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'deactivated'
         `);
         const deprov = await tx.execute(sql`
           UPDATE "deprovisioning_task" SET "sla_status" = CASE
             WHEN "due_date" < now() THEN 'overdue'
             WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
-            ELSE 'ok' END
+            ELSE 'due_later' END
           WHERE "completed_at" IS NULL AND "due_date" IS NOT NULL AND "status" = 'open'
         `);
         const vulns = await tx.execute(sql`
           UPDATE "vulnerability" SET "sla_status" = CASE
             WHEN "due_date" < now() THEN 'overdue'
             WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
-            ELSE 'ok' END
+            ELSE 'due_later' END
           WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'resolved'
         `);
         const commitments = await tx.execute(sql`
           UPDATE "commitment" SET "sla_status" = CASE
             WHEN "due_date" < now() THEN 'overdue'
             WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
-            ELSE 'ok' END
+            ELSE 'due_later' END
           WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'met'
         `);
         // T-V40: resolution windows на алертах — открытые (не closed) с дедлайном
@@ -85,7 +85,7 @@ export class SlaService {
           UPDATE "security_alert" SET "sla_status" = CASE
             WHEN "due_date" < now() THEN 'overdue'
             WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
-            ELSE 'ok' END
+            ELSE 'due_later' END
           WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'closed'
         `);
         totals.findings += findings.rowCount ?? 0;

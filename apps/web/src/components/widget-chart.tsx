@@ -12,6 +12,7 @@ const KEY_TONE: Record<string, string> = {
   fail: '#dc2626',
   medium: '#d97706',
   due_soon: '#d97706',
+  due_later: '#2563eb',
   low: '#059669',
   compliant: '#059669',
   ok: '#059669',
