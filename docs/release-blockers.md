@@ -1,13 +1,13 @@
 # Release blockers register
 
-Статус: T-H149. Этот файл отделяет реально оставшиеся buildable-задачи от пунктов, которые нельзя честно закрыть без решения клиента, production secrets, инфраструктуры, production data access или внешней проверки.
+Статус: T-H150. Этот файл отделяет реально оставшиеся buildable-задачи от пунктов, которые нельзя честно закрыть без решения клиента, production secrets, инфраструктуры, production data access или внешней проверки.
 
 ## Latest production verification
 
-- 22.07.2026 вручную развёрнут `main` на `78.47.51.200`, проверенный SHA: `8e2142d`.
+- 23.07.2026 автоматический production workflow успешно развернул `main` на `78.47.51.200`, проверенный SHA: `f103ca5`.
 - Production worktree синхронизирован с Git: ветка `main`, чистый status.
-- `api`, `web`, `postgres`, `redis`, `minio` запущены; health и страницы `/`, `/login`, `/action-plans`, `/reports`, `/risk-heatmap` возвращают HTTP 200.
-- 22.07.2026 выполнена контролируемая очистка build cache, остановленных контейнеров, неиспользуемых образов и пользовательских Gradle/npm caches. Свободное место выросло примерно с 12 GiB до 24 GiB (84% занято); активные контейнеры, volumes, Android SDK, репозитории и Codex worktrees сохранены.
+- `api`, `web`, `postgres`, `redis`, `minio` запущены; API health и страницы `/`, `/dashboards`, `/engagements`, `/config` возвращают HTTP 200.
+- 22.07.2026 выполнена контролируемая очистка build cache, остановленных контейнеров, неиспользуемых образов и пользовательских Gradle/npm caches. Свободное место выросло примерно с 12 GiB до 24 GiB; после повторных production-сборок доступно около 20 GiB (87% занято). Активные контейнеры, volumes, Android SDK, репозитории и Codex worktrees сохранены.
 
 ## Client decisions required
 
