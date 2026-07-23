@@ -74,7 +74,7 @@ const EMPTY_PROFILE: BusinessProfile = {
 };
 
 const inputCls =
-  'rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
+  'w-full min-w-0 rounded-md border border-border px-3 py-2 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
 const btnCls =
   'rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-primary transition-colors duration-150 hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 const entityTypes = ['asset', 'engagement', 'risk', 'working_paper', 'vendor_intake'] as const;
@@ -133,7 +133,7 @@ export default async function ConfigPage() {
   ) as Record<(typeof configListKeys)[number], ConfigList>;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 p-6 pt-12">
+    <main className="mx-auto flex min-h-screen w-full min-w-0 max-w-4xl flex-col gap-8 p-6 pt-12">
       <div className="flex items-baseline justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
       </div>
@@ -319,11 +319,13 @@ export default async function ConfigPage() {
                 className="rounded-xl border border-border bg-white p-4 shadow-sm"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-sm font-semibold text-foreground">
                       {t(`configListLabels.${listKey}`)}
                     </h3>
-                    <p className="mt-1 font-mono text-[11px] text-secondary">{listKey}</p>
+                    <p className="mt-1 break-all font-mono text-[11px] text-secondary">
+                      {listKey}
+                    </p>
                   </div>
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
