@@ -2572,7 +2572,7 @@
   },
   "tour": {
     "offerTitle": "İlk dəfəsiniz?",
-    "offerText": "Platforma üzrə qısa tura çıxın — 2 dəqiqə.",
+    "offerText": "Yenilənmiş audit, uyğunluq, risk və təhlükəsizlik prosesinə baxın — təxminən 3 dəqiqə.",
     "start": "Tura başla",
     "later": "Sonra",
     "next": "İrəli",
@@ -2587,40 +2587,52 @@
         "d": "Bütün platforma sol paneldədir. Qruplar yığılır — olduğunuz qrup açıq qalır."
       },
       "overview": {
-        "t": "İcmal",
-        "d": "Panellər, hesabatlar, anlıq görüntülər, trendlər və KPI-lar."
+        "t": "Mənim işim və icmal",
+        "d": "Təyin edilmiş tapşırıq və təsdiqlər üçün «Mənim işim»dən başlayın. Panellər, planlı hesabatlar, anlıq görüntülər, trendlər və KPI-lar qrup üzrə cari vəziyyəti göstərir."
       },
       "compliance": {
         "t": "Uyğunluq və nəzarətlər",
-        "d": "Standartlar (ISO/COBIT/NIST), nəzarətlər kitabxanası, siyasətlər."
+        "d": "Standartları aktivləşdirin, tarixli Roadmap-i izləyin, nəzarət və testləri idarə edin, siyasətləri təsdiqləyin, sənədləri və öhdəlikləri izləyin."
       },
       "engagements": {
-        "t": "Auditlər",
-        "d": "Platformanın ürəyi: çeklistli auditlər, iş sənədləri, planlar."
+        "t": "Başdan sona audit",
+        "d": "Əhatə, məlumat toplama, qiymətləndirmə, tapıntı və hesabat mərhələlərini aparın. Çeklist idxalı, sübut sorğuları, iş sənədləri, audit proqramları, planlar, resurs və vaxt uçotundan istifadə edin."
       },
       "risk": {
         "t": "Risk və məxfilik",
-        "d": "Risk reyestri, istilik xəritəsi və GDPR (ROPA/DPIA)."
+        "d": "Risk reyestri və istilik xəritəsini aparın, avtomatik biznes-risk təkliflərini yoxlayın, riskləri nəzarət və aktivlərlə əlaqələndirin, GDPR ROPA/DPIA-nı idarə edin."
       },
       "security": {
-        "t": "Təhlükəsizlik",
-        "d": "Hesablar, giriş baxışları, cihazlar, zəifliklər."
+        "t": "Təhlükəsizlik və giriş",
+        "d": "Hesab və girişləri, dəyişdirilməz audit tarixçəsini, aktivləri, cihazları, xəbərdarlıqları, zəiflikləri və kod dəyişikliklərini idarə edin."
       },
       "thirdParty": {
         "t": "Üçüncü tərəflər",
-        "d": "Təchizatçı riski, Trust Center, sorğular, bilik bazası."
+        "d": "Təchizatçıları qiymətləndirin, Trust Center-i dərc edin, sorğuları idxal və cavablandırın, bilik bazası cavablarını fayllarla birlikdə təkrar istifadə edin."
       },
       "org": {
-        "t": "Təşkilat",
-        "d": "İşçilər, inteqrasiyalar, hüquqlar, Excel idxalı və İİ provayderi."
+        "t": "Təşkilat və parametrlər",
+        "d": "İşçi həyat dövrünü, inteqrasiyaları, rol və auditorları, idxalı, bildirişləri, SSO, lüğəti və təşkilatın İİ provayderini idarə edin."
       },
       "breadcrumbs": {
         "t": "Naviqasiya zənciri",
         "d": "Harada olduğunuz həmişə görünür. Ev ikonası əsas ekrana qaytarır."
       },
+      "search": {
+        "t": "Axtarış və suallar",
+        "d": "İstənilən bölmədən nəzarətləri, sübutları, tapıntıları, riskləri və digər qeydləri axtarın. Axtarış səhifəsində adi dildə sual verib mənbəli cavab ala bilərsiniz."
+      },
+      "language": {
+        "t": "Dil",
+        "d": "İnterfeysi Azərbaycan, ingilis və rus dilləri arasında dəyişin. Audit nəticələri də dəstəklənən dillərdə hazırlana bilər."
+      },
+      "help": {
+        "t": "Kontekstual kömək",
+        "d": "Cari bölmə üzrə təlimatı burada açın, turu yenidən başladın və ya istənilən vaxt tam bələdçiyə keçin."
+      },
       "profile": {
         "t": "Profil",
-        "d": "Hesabınız və çıxış düyməsi panelin aşağısındadır."
+        "d": "Profiliniz və çıxış panelin aşağısındadır. Hesab parametrlərində 2FA daxil olmaqla şəxsi təhlükəsizlik vasitələri mövcuddur."
       }
     },
     "hideAsk": "Növbəti girişdə turu göstərək?",

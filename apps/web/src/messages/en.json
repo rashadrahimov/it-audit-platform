@@ -2564,7 +2564,7 @@
   },
   "tour": {
     "offerTitle": "First time here?",
-    "offerText": "Take a short tour of the platform — 2 minutes.",
+    "offerText": "See the updated audit, compliance, risk and security workflow — about 3 minutes.",
     "start": "Start tour",
     "later": "Later",
     "next": "Next",
@@ -2579,40 +2579,52 @@
         "d": "The whole platform lives in the left panel. Groups collapse — the one you are in stays open."
       },
       "overview": {
-        "t": "Overview",
-        "d": "Dashboards, reports, snapshots, trends and KPIs — the whole-group picture."
+        "t": "Your work and oversight",
+        "d": "Start with My Work for assigned tasks and approvals. Dashboards, scheduled reports, snapshots, trends and KPIs show the live posture across the group."
       },
       "compliance": {
         "t": "Compliance & controls",
-        "d": "Frameworks (ISO/COBIT/NIST), the controls library, policies and commitments."
+        "d": "Activate frameworks, follow the dated Roadmap, manage controls and tests, approve policies, collect documents and track commitments."
       },
       "engagements": {
-        "t": "Engagements",
-        "d": "The heart of the platform: audits with checklists, working papers, plans and time tracking."
+        "t": "End-to-end audits",
+        "d": "Run scoping, collection, assessment, findings and reporting. Use checklist imports, evidence requests, working papers, audit programs, plans, staffing and time tracking."
       },
       "risk": {
         "t": "Risk & privacy",
-        "d": "Risk register, heat map and GDPR (ROPA/DPIA)."
+        "d": "Maintain the risk register and heat map, review assisted business-risk suggestions, connect risks to controls and assets, and manage GDPR ROPA/DPIA."
       },
       "security": {
         "t": "Security & access",
-        "d": "Accounts, access reviews, devices, vulnerabilities and changes."
+        "d": "Review identities and access, immutable audit history, assets, devices, alerts, vulnerabilities and code changes from one security workspace."
       },
       "thirdParty": {
         "t": "Third parties",
-        "d": "Vendor risk, Trust Center, questionnaires and the knowledge base."
+        "d": "Assess vendors, publish the Trust Center, import and answer questionnaires, and reuse knowledge-base answers with file attachments."
       },
       "org": {
         "t": "Organization & settings",
-        "d": "People, integrations, permissions, Excel import and the AI provider."
+        "d": "Manage personnel lifecycle tasks, connectors, roles and auditors, imports, notifications, SSO, glossary and your organization’s AI provider."
       },
       "breadcrumbs": {
         "t": "Breadcrumbs",
         "d": "Always know where you are. The home icon returns to the main screen."
       },
+      "search": {
+        "t": "Search and ask",
+        "d": "Search controls, evidence, findings, risks and other records from anywhere. The search page also answers natural-language questions with traceable sources."
+      },
+      "language": {
+        "t": "Language",
+        "d": "Switch the interface between English, Azerbaijani and Russian. Audit deliverables can also be generated in the supported languages."
+      },
+      "help": {
+        "t": "Contextual help",
+        "d": "Open section-specific instructions here, restart this tour or browse the full guide whenever you need a reminder."
+      },
       "profile": {
         "t": "Profile",
-        "d": "Your account and the sign-out button live at the bottom of the panel."
+        "d": "Your identity and sign-out action live at the bottom of the panel. Personal security settings, including 2FA, are available from your account."
       }
     },
     "hideAsk": "Show this tour on next login?",

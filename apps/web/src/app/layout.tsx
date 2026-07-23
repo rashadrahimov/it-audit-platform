@@ -53,7 +53,7 @@ async function Shell({ children }: { children: ReactNode }) {
     items: g.items.map((it) => ({ ...it, label: t(it.label) })),
   }));
 
-  // Шаги интерактивного тура (T-H34): сайдбар → 7 групп → крошки → профиль
+  // Шаги интерактивного тура: навигация → актуальные рабочие области → инструменты → профиль.
   const tourSteps = [
     { selector: '[data-testid="app-sidebar"]', key: 'sidebar' },
     ...navGroups.map((g) => ({
@@ -61,6 +61,9 @@ async function Shell({ children }: { children: ReactNode }) {
       key: g.group === 'thirdParty' ? 'thirdParty' : g.group,
     })),
     { selector: '[data-testid="topbar-breadcrumbs"]', key: 'breadcrumbs' },
+    { selector: '[data-testid="global-search"]', key: 'search' },
+    { selector: '[data-testid="topbar-locale-switcher"]', key: 'language' },
+    { selector: '[data-testid="topbar-help"]', key: 'help' },
     { selector: '[data-testid="logout"]', key: 'profile' },
   ].map(({ selector, key }) => ({
     selector,
