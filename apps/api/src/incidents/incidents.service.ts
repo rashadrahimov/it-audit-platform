@@ -1,6 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
-import { DEFAULT_LOCALE, resolveLocalized, type Locale } from '@it-audit/shared';
+import {
+  DEFAULT_LOCALE,
+  resolveLocalized,
+  type I18nText,
+  type Locale,
+  type RiskRating,
+} from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
 import {
@@ -14,10 +20,12 @@ import {
   membership,
   risk,
   securityAlert,
+  tenant,
   user,
   vendor,
   vulnerability,
 } from '../db/schema';
+import { FindingsService } from '../findings/findings.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { dueDateFor, SlaConfigService } from '../sla-config/sla-config.service';
 import {
@@ -25,6 +33,8 @@ import {
   canTransition,
   formatIncidentRef,
   isIncidentStatus,
+  notificationStatus,
+  notifyDeadline,
   PHASE_COLUMN,
   type IncidentLinkType,
   type IncidentStatus,
@@ -61,6 +71,9 @@ export interface UpdateIncidentInput {
   severity?: string;
   category?: string | null;
   commanderMembershipId?: string | null;
+  /** T-IR05: подлежит уведомлению регулятора — включение считает дедлайн. */
+  reportable?: boolean;
+  regulator?: string | null;
 }
 
 /**
@@ -74,6 +87,7 @@ export class IncidentsService {
     private readonly auditLogService: AuditLogService,
     private readonly slaConfig: SlaConfigService,
     private readonly notifications: NotificationsService,
+    private readonly findings: FindingsService,
   ) {}
 
   /** Membership актора в тенанте — автор записей таймлайна. */
@@ -267,9 +281,21 @@ export class IncidentsService {
         .where(and(eq(incident.id, id), isNull(incident.deletedAt)));
       if (!row) throw new NotFoundException(`Инцидент ${id} не найден`);
       const severityChanged = input.severity !== undefined && input.severity !== row.severity;
+      // T-IR05: включили reportable — считаем дедлайн уведомления от обнаружения
+      const becameReportable = input.reportable === true && !row.reportable;
+      const notify = becameReportable ? await this.notifyConfig(actor.tenantId) : null;
       await tx
         .update(incident)
         .set({
+          ...(input.reportable !== undefined ? { reportable: input.reportable } : {}),
+          ...(input.regulator !== undefined ? { regulator: input.regulator } : {}),
+          ...(notify
+            ? {
+                notifyDeadlineAt: notifyDeadline(row.detectedAt, notify.hours),
+                regulator: input.regulator ?? row.regulator ?? notify.regulator,
+              }
+            : {}),
+          ...(input.reportable === false ? { notifyDeadlineAt: null } : {}),
           ...(input.title !== undefined ? { title: input.title } : {}),
           ...(input.description !== undefined ? { description: input.description } : {}),
           ...(input.severity !== undefined ? { severity: input.severity } : {}),
@@ -301,6 +327,148 @@ export class IncidentsService {
       after: input,
     });
     return { id, updated: true };
+  }
+
+  /**
+   * T-IR05: окно регуляторного уведомления тенанта (`tenant.settings.incidentNotify`).
+   * Дефолт 72 часа — как у breach-нотификации GDPR; регулятор задаётся в настройках
+   * (для клиента — CBAR, контроль IR-02).
+   */
+  private async notifyConfig(
+    tenantId: string,
+  ): Promise<{ hours: number; regulator: string | null }> {
+    const [t] = await this.dbService.db
+      .select({ settings: tenant.settings })
+      .from(tenant)
+      .where(eq(tenant.id, tenantId));
+    const raw =
+      t?.settings && typeof t.settings === 'object'
+        ? ((t.settings as Record<string, unknown>).incidentNotify as
+            { hours?: number; regulator?: string } | undefined)
+        : undefined;
+    const hours = typeof raw?.hours === 'number' && raw.hours > 0 ? raw.hours : 72;
+    return { hours, regulator: raw?.regulator ?? null };
+  }
+
+  /**
+   * T-IR05: отметка «регулятор уведомлён». Только для reportable-инцидента —
+   * иначе отметка о несуществующей обязанности исказила бы отчётность.
+   */
+  async recordNotification(actor: Actor, id: string, note?: string) {
+    const authorMembershipId = await this.myMembershipId(actor.tenantId, actor.userId);
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(incident)
+        .where(and(eq(incident.id, id), isNull(incident.deletedAt)));
+      if (!row) throw new NotFoundException(`Инцидент ${id} не найден`);
+      if (!row.reportable) {
+        throw new BadRequestException(
+          'Инцидент не помечен как подлежащий уведомлению регулятора (reportable)',
+        );
+      }
+      if (row.notifiedAt) throw new BadRequestException('Уведомление уже зафиксировано');
+      await tx
+        .update(incident)
+        .set({ notifiedAt: sql`now()`, notificationNote: note ?? null })
+        .where(eq(incident.id, id));
+      await tx.insert(incidentEvent).values({
+        tenantId: actor.tenantId,
+        incidentId: id,
+        kind: 'notification',
+        note: note ?? `Регулятор уведомлён${row.regulator ? `: ${row.regulator}` : ''}`,
+        authorMembershipId,
+      });
+      return { ref: row.ref, regulator: row.regulator, deadlineAt: row.notifyDeadlineAt };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'incident.regulator_notified',
+      entityType: 'incident',
+      entityId: id,
+      after: { regulator: result.regulator, note },
+    });
+    return { id, ref: result.ref, notified: true };
+  }
+
+  /**
+   * T-IR04: постмортем — разбор причин и уроки. Доступен с фазы `recovered`:
+   * пока инцидент не восстановлен, о причинах говорить рано.
+   */
+  async savePostmortem(
+    actor: Actor,
+    id: string,
+    input: { rootCause?: string; impactSummary?: string; lessonsLearned?: string },
+  ) {
+    const authorMembershipId = await this.myMembershipId(actor.tenantId, actor.userId);
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(incident)
+        .where(and(eq(incident.id, id), isNull(incident.deletedAt)));
+      if (!row) throw new NotFoundException(`Инцидент ${id} не найден`);
+      if (row.status !== 'recovered' && row.status !== 'closed') {
+        throw new BadRequestException(
+          'Постмортем доступен с фазы recovered — сначала восстановите работу',
+        );
+      }
+      await tx
+        .update(incident)
+        .set({
+          ...(input.rootCause !== undefined ? { rootCause: input.rootCause } : {}),
+          ...(input.impactSummary !== undefined ? { impactSummary: input.impactSummary } : {}),
+          ...(input.lessonsLearned !== undefined ? { lessonsLearned: input.lessonsLearned } : {}),
+          postmortemAt: sql`now()`,
+        })
+        .where(eq(incident.id, id));
+      await tx.insert(incidentEvent).values({
+        tenantId: actor.tenantId,
+        incidentId: id,
+        kind: 'note',
+        note: 'Постмортем заполнен',
+        authorMembershipId,
+      });
+      return { ref: row.ref, firstTime: row.postmortemAt === null };
+    });
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'incident.postmortem_saved',
+      entityType: 'incident',
+      entityId: id,
+      after: input,
+    });
+    return { id, ref: result.ref, saved: true };
+  }
+
+  /**
+   * T-IR04: корректирующее действие из инцидента — finding, связанный с инцидентом
+   * с обеих сторон (finding живёт своим циклом устранения, инцидент видит ссылку).
+   */
+  async createFollowUpFinding(
+    actor: Actor,
+    id: string,
+    input: {
+      titleI18n: I18nText;
+      riskRating: RiskRating;
+      recommendationI18n?: I18nText;
+      ownerMembershipId?: string;
+      dueDate?: string;
+    },
+  ) {
+    const [row] = await this.dbService.withTenant(actor.tenantId, (tx) =>
+      tx
+        .select({ id: incident.id, ref: incident.ref })
+        .from(incident)
+        .where(and(eq(incident.id, id), isNull(incident.deletedAt))),
+    );
+    if (!row) throw new NotFoundException(`Инцидент ${id} не найден`);
+    const created = await this.findings.create(actor, input);
+    await this.addLink(actor, id, 'finding', created.id);
+    return { findingId: created.id, incidentRef: row.ref };
   }
 
   /**
@@ -574,6 +742,27 @@ export class IncidentsService {
         closedAt: i.closedAt?.toISOString() ?? null,
       },
       allowedTransitions: isIncidentStatus(i.status) ? allowedTransitions(i.status) : [],
+      // T-IR05: регуляторное уведомление (IR-02/CBAR, breach приватности)
+      notification: {
+        reportable: i.reportable,
+        regulator: i.regulator,
+        deadlineAt: i.notifyDeadlineAt?.toISOString() ?? null,
+        notifiedAt: i.notifiedAt?.toISOString() ?? null,
+        note: i.notificationNote,
+        status: notificationStatus({
+          reportable: i.reportable,
+          deadlineAt: i.notifyDeadlineAt,
+          notifiedAt: i.notifiedAt,
+        }),
+      },
+      // T-IR04: постмортем — заполняется с фазы recovered
+      postmortem: {
+        rootCause: i.rootCause,
+        impactSummary: i.impactSummary,
+        lessonsLearned: i.lessonsLearned,
+        savedAt: i.postmortemAt?.toISOString() ?? null,
+        available: i.status === 'recovered' || i.status === 'closed',
+      },
       timeline: timeline.map((t) => ({
         id: t.event.id,
         kind: t.event.kind,
@@ -601,6 +790,13 @@ export class IncidentsService {
       dueDate: i.dueDate?.toISOString() ?? null,
       // закрытый инцидент не показываем как overdue/due_soon
       slaStatus: i.status === 'closed' ? 'ok' : i.slaStatus,
+      // T-IR05: срок уведомления регулятора виден прямо в реестре
+      reportable: i.reportable,
+      notifyStatus: notificationStatus({
+        reportable: i.reportable,
+        deadlineAt: i.notifyDeadlineAt,
+        notifiedAt: i.notifiedAt,
+      }),
     };
   }
 }

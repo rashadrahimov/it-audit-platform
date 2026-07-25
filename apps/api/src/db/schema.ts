@@ -2016,6 +2016,20 @@ export const incident = pgTable(
     /** Resolution SLA по окну severity тенанта (как T-V40 у алертов). */
     dueDate: timestamp('due_date', { withTimezone: true }),
     slaStatus: text('sla_status').notNull().default('ok'),
+    /**
+     * Регуляторное уведомление (T-IR05): IR-02/CBAR + breach приватности.
+     * Срок считается от `detected_at` + окно тенанта, а не от заведения записи.
+     */
+    reportable: boolean('reportable').notNull().default(false),
+    regulator: text('regulator'),
+    notifyDeadlineAt: timestamp('notify_deadline_at', { withTimezone: true }),
+    notifiedAt: timestamp('notified_at', { withTimezone: true }),
+    notificationNote: text('notification_note'),
+    /** Постмортем (T-IR04): разбор причин и уроки — заполняется с фазы recovered. */
+    rootCause: text('root_cause'),
+    impactSummary: text('impact_summary'),
+    lessonsLearned: text('lessons_learned'),
+    postmortemAt: timestamp('postmortem_at', { withTimezone: true }),
     custom: jsonb('custom').notNull().default({}),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,

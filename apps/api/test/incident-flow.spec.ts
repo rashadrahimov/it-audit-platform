@@ -5,6 +5,8 @@ import {
   formatIncidentRef,
   INCIDENT_STATUSES,
   isIncidentStatus,
+  notificationStatus,
+  notifyDeadline,
   parseIncidentRef,
   PHASE_COLUMN,
 } from '../src/incidents/incident-flow';
@@ -56,6 +58,38 @@ describe('incident-flow', () => {
   it('распознаёт статусы', () => {
     expect(isIncidentStatus('contained')).toBe(true);
     expect(isIncidentStatus('resolved')).toBe(false);
+  });
+
+  it('T-IR05: статус регуляторного уведомления', () => {
+    const now = new Date('2026-07-25T12:00:00Z');
+    const base = { reportable: true, notifiedAt: null, now };
+    expect(notificationStatus({ ...base, reportable: false, deadlineAt: null })).toBe(
+      'not_required',
+    );
+    expect(
+      notificationStatus({
+        ...base,
+        deadlineAt: new Date('2026-07-26T12:00:00Z'),
+        notifiedAt: now,
+      }),
+    ).toBe('notified');
+    expect(notificationStatus({ ...base, deadlineAt: null })).toBe('no_deadline');
+    expect(notificationStatus({ ...base, deadlineAt: new Date('2026-07-25T11:00:00Z') })).toBe(
+      'overdue',
+    );
+    // дефолтное окно предупреждения — 24 часа
+    expect(notificationStatus({ ...base, deadlineAt: new Date('2026-07-25T20:00:00Z') })).toBe(
+      'due_soon',
+    );
+    expect(notificationStatus({ ...base, deadlineAt: new Date('2026-07-27T12:00:00Z') })).toBe(
+      'ok',
+    );
+  });
+
+  it('T-IR05: дедлайн уведомления = обнаружение + окно тенанта', () => {
+    const detected = new Date('2026-07-25T00:00:00Z');
+    expect(notifyDeadline(detected, 72).toISOString()).toBe('2026-07-28T00:00:00.000Z');
+    expect(notifyDeadline(detected, 24).toISOString()).toBe('2026-07-26T00:00:00.000Z');
   });
 
   it('номер инцидента — INC-NNNN, парсится обратно', () => {

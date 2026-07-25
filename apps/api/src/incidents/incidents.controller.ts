@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { z } from 'zod';
-import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
+import { DEFAULT_LOCALE, i18nTextSchema, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
@@ -61,6 +61,22 @@ const assignSchema = z.object({
   commanderMembershipId: z.uuid(),
 });
 
+/** T-IR04: постмортем — причины, влияние, уроки. */
+const postmortemSchema = z.object({
+  rootCause: z.string().optional(),
+  impactSummary: z.string().optional(),
+  lessonsLearned: z.string().optional(),
+});
+
+/** T-IR04: корректирующее действие — finding из инцидента. */
+const followUpSchema = z.object({
+  titleI18n: i18nTextSchema,
+  riskRating: z.enum(['critical', 'high', 'medium', 'low', 'not_applicable']),
+  recommendationI18n: i18nTextSchema.optional(),
+  ownerMembershipId: z.uuid().optional(),
+  dueDate: z.string().optional(),
+});
+
 const linkSchema = z.object({
   entityType: z.enum(INCIDENT_LINK_TYPES),
   entityId: z.uuid(),
@@ -72,6 +88,14 @@ const updateSchema = z.object({
   severity: z.enum(INCIDENT_SEVERITIES).optional(),
   category: z.enum(INCIDENT_CATEGORIES).nullable().optional(),
   commanderMembershipId: z.uuid().nullable().optional(),
+  /** T-IR05: подлежит уведомлению регулятора (IR-02/CBAR, breach). */
+  reportable: z.boolean().optional(),
+  regulator: z.string().nullable().optional(),
+});
+
+/** T-IR05: отметка «регулятор уведомлён». */
+const notifySchema = z.object({
+  note: z.string().optional(),
 });
 
 /** Инциденты ИБ (T-IR01, EP-INC, ADR-0024). Права — control.view / control.edit. */
@@ -145,6 +169,56 @@ export class IncidentsController {
       { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
       id,
       parsed.data.commanderMembershipId,
+    );
+  }
+
+  @Post(':id/notify')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Отметить уведомление регулятора (T-IR05, IR-02/CBAR)' })
+  notify(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = notifySchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.recordNotification(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.note,
+    );
+  }
+
+  @Post(':id/postmortem')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Постмортем: причины, влияние, уроки (T-IR04, с фазы recovered)' })
+  postmortem(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = postmortemSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.savePostmortem(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
+    );
+  }
+
+  @Post(':id/follow-up')
+  @RequirePermission('finding', 'create', 'edit')
+  @ApiOperation({ summary: 'Корректирующее действие: finding из инцидента (T-IR04)' })
+  @ApiCreatedResponse({ description: 'Finding создан и связан с инцидентом' })
+  followUp(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = followUpSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.createFollowUpFinding(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
     );
   }
 

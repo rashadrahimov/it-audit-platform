@@ -2,10 +2,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { AuditLogService } from '../src/audit/audit-log.service';
 import { DbService } from '../src/db/db.service';
+import { FindingsService } from '../src/findings/findings.service';
 import { IncidentsService } from '../src/incidents/incidents.service';
 import { SecurityAlertsService } from '../src/security-alerts/security-alerts.service';
 import { NotificationsService } from '../src/notifications/notifications.service';
-import { SlaConfigService } from '../src/sla-config/sla-config.service';
+import { DEFAULT_SLA_WINDOWS, SlaConfigService } from '../src/sla-config/sla-config.service';
 import {
   asset,
   incident,
@@ -28,11 +29,23 @@ const run = Date.now();
 const emails = { admin: `inc-link-${run}@t.io` };
 
 const dbService = new DbService();
+
+/** FindingsService для follow-up (T-IR04): реальны только db/audit/sla — остальное не задействовано. */
+const findingsService = (db: DbService) =>
+  new FindingsService(
+    db,
+    new AuditLogService(db),
+    {} as never,
+    { fieldLevels: async () => ({}) } as never,
+    {} as never,
+    { configOf: async () => DEFAULT_SLA_WINDOWS } as never,
+  );
 const incidents = new IncidentsService(
   dbService,
   new AuditLogService(dbService),
   new SlaConfigService(dbService),
   new NotificationsService(dbService),
+  findingsService(dbService),
 );
 const alerts = new SecurityAlertsService(
   dbService,

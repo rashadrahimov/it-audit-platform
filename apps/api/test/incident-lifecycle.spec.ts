@@ -2,13 +2,16 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { AuditLogService } from '../src/audit/audit-log.service';
 import { DbService } from '../src/db/db.service';
+import { FindingsService } from '../src/findings/findings.service';
 import { IncidentsService } from '../src/incidents/incidents.service';
 import { NotificationsService } from '../src/notifications/notifications.service';
-import { SlaConfigService } from '../src/sla-config/sla-config.service';
+import { DEFAULT_SLA_WINDOWS, SlaConfigService } from '../src/sla-config/sla-config.service';
 import {
   auditLog,
+  finding,
   incident,
   incidentEvent,
+  incidentLink,
   membership,
   notification,
   role,
@@ -29,12 +32,24 @@ const emails = {
 };
 
 const dbService = new DbService();
+
+/** FindingsService для follow-up (T-IR04): реальны только db/audit/sla — остальное не задействовано. */
+const findingsService = (db: DbService) =>
+  new FindingsService(
+    db,
+    new AuditLogService(db),
+    {} as never,
+    { fieldLevels: async () => ({}) } as never,
+    {} as never,
+    { configOf: async () => DEFAULT_SLA_WINDOWS } as never,
+  );
 const notifications = new NotificationsService(dbService);
 const service = new IncidentsService(
   dbService,
   new AuditLogService(dbService),
   new SlaConfigService(dbService),
   notifications,
+  findingsService(dbService),
 );
 
 let tenantId: string;
@@ -76,6 +91,8 @@ beforeAll(async () => {
 afterAll(async () => {
   await dbService.withTenant(tenantId, async (tx) => {
     await tx.delete(notification).where(eq(notification.tenantId, tenantId));
+    await tx.delete(incidentLink).where(eq(incidentLink.tenantId, tenantId));
+    await tx.delete(finding).where(eq(finding.tenantId, tenantId));
     await tx.delete(incidentEvent).where(eq(incidentEvent.tenantId, tenantId));
     await tx.delete(incident).where(eq(incident.tenantId, tenantId));
     // audit_log append-only (T-021) — записи теста остаются, как и в других спеках
@@ -213,6 +230,70 @@ describe('Incident management — ядро (T-IR01)', () => {
     const low = await service.list(tenantId, { severity: 'low' });
     expect(low).toHaveLength(1);
     expect(low[0]!.ref).toBe('INC-0002');
+  });
+
+  it('T-IR05: notify без reportable → 400', async () => {
+    await expect(service.recordNotification(actor('admin'), incidentId)).rejects.toThrow(
+      /reportable/,
+    );
+  });
+
+  it('T-IR05: reportable считает дедлайн от обнаружения (72 ч по умолчанию)', async () => {
+    await service.update(actor('admin'), incidentId, {
+      reportable: true,
+      regulator: 'CBAR',
+    });
+    const detail = await service.detail(tenantId, incidentId);
+    expect(detail.notification.reportable).toBe(true);
+    expect(detail.notification.regulator).toBe('CBAR');
+    const deadline = new Date(detail.notification.deadlineAt!);
+    const detected = new Date(detail.detectedAt);
+    expect(Math.round((deadline.getTime() - detected.getTime()) / 3_600_000)).toBe(72);
+    // инцидент обнаружен 10 дней назад → срок уведомления уже просрочен
+    expect(detail.notification.status).toBe('overdue');
+  });
+
+  it('T-IR05: отметка уведомления фиксируется в таймлайне, повтор → 400', async () => {
+    await service.recordNotification(actor('admin'), incidentId, 'Форма CBAR отправлена 25.07');
+    const detail = await service.detail(tenantId, incidentId);
+    expect(detail.notification.status).toBe('notified');
+    expect(detail.notification.note).toMatch(/CBAR/);
+    const last = detail.timeline.at(-1)!;
+    expect(last.kind).toBe('notification');
+    await expect(service.recordNotification(actor('admin'), incidentId)).rejects.toThrow(/уже/);
+  });
+
+  it('T-IR04: постмортем до фазы recovered → 400', async () => {
+    const second = await service.list(tenantId, { severity: 'low' });
+    await expect(
+      service.savePostmortem(actor('admin'), second[0]!.id, { rootCause: 'рано' }),
+    ).rejects.toThrow(/recovered/);
+  });
+
+  it('T-IR04: постмортем на recovered сохраняется и виден в карточке', async () => {
+    await service.savePostmortem(actor('commander'), incidentId, {
+      rootCause: 'Ключ сервисного аккаунта лежал в репозитории',
+      impactSummary: 'Выгружено 40k записей, ПДн не затронуты',
+      lessonsLearned: 'Секреты — только в vault, ротация ключей раз в квартал',
+    });
+    const detail = await service.detail(tenantId, incidentId);
+    expect(detail.postmortem.rootCause).toMatch(/репозитории/);
+    expect(detail.postmortem.savedAt).not.toBeNull();
+    expect(detail.postmortem.available).toBe(true);
+    expect(detail.timeline.at(-1)!.note).toBe('Постмортем заполнен');
+  });
+
+  it('T-IR04: follow-up finding создаётся и связывается с инцидентом', async () => {
+    const res = await service.createFollowUpFinding(actor('admin'), incidentId, {
+      titleI18n: { en: 'Rotate service account keys', ru: 'Ротация ключей сервисных аккаунтов' },
+      riskRating: 'high',
+      recommendationI18n: { en: 'Move secrets to vault', ru: 'Перенести секреты в vault' },
+    });
+    expect(res.incidentRef).toBe('INC-0001');
+    const detail = await service.detail(tenantId, incidentId, 'ru');
+    const link = detail.links.find((l) => l.entityType === 'finding');
+    expect(link?.entityId).toBe(res.findingId);
+    expect(link?.title).toBe('Ротация ключей сервисных аккаунтов');
   });
 
   it('закрытие: метка closedAt, SLA гаснет, переходов больше нет', async () => {

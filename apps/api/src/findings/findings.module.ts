@@ -11,5 +11,6 @@ import { FindingsService } from './findings.service';
   imports: [AuthModule, EmailModule, RbacModule, NotificationsModule, SlaConfigModule],
   controllers: [FindingsController],
   providers: [FindingsService],
+  exports: [FindingsService],
 })
 export class FindingsModule {}

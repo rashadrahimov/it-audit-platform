@@ -90,6 +90,35 @@ export const PHASE_COLUMN: Record<IncidentStatus, string | null> = {
   closed: 'closedAt',
 };
 
+/**
+ * T-IR05: состояние регуляторного уведомления (IR-02/CBAR, breach приватности).
+ * Чистая функция — срок считается от `detected_at`, а не от заведения записи.
+ */
+export type NotificationStatus =
+  'not_required' | 'notified' | 'ok' | 'due_soon' | 'overdue' | 'no_deadline';
+
+export function notificationStatus(input: {
+  reportable: boolean;
+  deadlineAt: Date | null;
+  notifiedAt: Date | null;
+  now?: Date;
+  dueSoonHours?: number;
+}): NotificationStatus {
+  if (!input.reportable) return 'not_required';
+  if (input.notifiedAt) return 'notified';
+  if (!input.deadlineAt) return 'no_deadline';
+  const now = input.now ?? new Date();
+  const left = input.deadlineAt.getTime() - now.getTime();
+  if (left < 0) return 'overdue';
+  const soon = (input.dueSoonHours ?? 24) * 3600 * 1000;
+  return left <= soon ? 'due_soon' : 'ok';
+}
+
+/** Дедлайн уведомления: обнаружение + окно тенанта (по умолчанию 72 ч, как GDPR). */
+export function notifyDeadline(detectedAt: Date, hours: number): Date {
+  return new Date(detectedAt.getTime() + hours * 3600 * 1000);
+}
+
 /** Человекочитаемый номер инцидента: 1 → INC-0001. */
 export function formatIncidentRef(seq: number): string {
   return `INC-${String(seq).padStart(4, '0')}`;
