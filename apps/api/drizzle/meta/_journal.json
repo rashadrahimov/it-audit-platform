@@ -526,6 +526,13 @@
       "when": 1784784870090,
       "tag": "0074_thick_jackpot",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1785001436397,
+      "tag": "0075_incident",
+      "breakpoints": true
     }
   ]
 }

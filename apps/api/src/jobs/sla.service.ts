@@ -11,6 +11,7 @@ export interface SlaRecalcResult {
   vulnerabilities: number;
   commitments: number;
   alerts: number;
+  incidents: number;
 }
 
 /**
@@ -34,6 +35,7 @@ export class SlaService {
       vulnerabilities: 0,
       commitments: 0,
       alerts: 0,
+      incidents: 0,
     };
     for (const t of tenants) {
       const sla =
@@ -88,12 +90,21 @@ export class SlaService {
             ELSE 'due_later' END
           WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'closed'
         `);
+        // T-IR01: дедлайн резолюции инцидента (окно severity от момента обнаружения)
+        const incidents = await tx.execute(sql`
+          UPDATE "incident" SET "sla_status" = CASE
+            WHEN "due_date" < now() THEN 'overdue'
+            WHEN "due_date" < now() + make_interval(days => ${dueSoon}) THEN 'due_soon'
+            ELSE 'due_later' END
+          WHERE "deleted_at" IS NULL AND "due_date" IS NOT NULL AND "status" <> 'closed'
+        `);
         totals.findings += findings.rowCount ?? 0;
         totals.tests += tests.rowCount ?? 0;
         totals.deprovisioning += deprov.rowCount ?? 0;
         totals.vulnerabilities += vulns.rowCount ?? 0;
         totals.commitments += commitments.rowCount ?? 0;
         totals.alerts += alerts.rowCount ?? 0;
+        totals.incidents += incidents.rowCount ?? 0;
       });
     }
     return totals;

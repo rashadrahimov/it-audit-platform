@@ -1982,6 +1982,79 @@ export const reportSnapshot = pgTable(
   (table) => [index('report_snapshot_tenant_idx').on(table.tenantId)],
 );
 
+/**
+ * Инцидент ИБ (T-IR01, ADR-0024): разбирательство над одним или несколькими сигналами.
+ * Отличается от security_alert (один сигнал) и finding (несоответствие внутри аудита).
+ */
+export const incident = pgTable(
+  'incident',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    /** Человекочитаемый номер INC-0001, сквозной в пределах тенанта. */
+    ref: text('ref').notNull(),
+    title: text('title').notNull(),
+    description: text('description'),
+    /** Та же шкала, что у алертов/уязвимостей — работают окна sla_config. */
+    severity: text('severity').notNull().default('medium'),
+    /** detected→triaged→contained→eradicated→recovered→closed (ADR-0024). */
+    status: text('status').notNull().default('detected'),
+    category: text('category'),
+    /** Откуда пришёл: manual | alert | connector. */
+    source: text('source').notNull().default('manual'),
+    /** Метки фаз — из них считаются MTTD/MTTR (T-IR07). */
+    detectedAt: timestamp('detected_at', { withTimezone: true }).notNull().defaultNow(),
+    triagedAt: timestamp('triaged_at', { withTimezone: true }),
+    containedAt: timestamp('contained_at', { withTimezone: true }),
+    eradicatedAt: timestamp('eradicated_at', { withTimezone: true }),
+    recoveredAt: timestamp('recovered_at', { withTimezone: true }),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    /** Incident commander — ведущий разбирательство (T-IR03). */
+    commanderMembershipId: uuid('commander_membership_id').references(() => membership.id),
+    /** Resolution SLA по окну severity тенанта (как T-V40 у алертов). */
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    slaStatus: text('sla_status').notNull().default('ok'),
+    custom: jsonb('custom').notNull().default({}),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('incident_tenant_idx').on(table.tenantId),
+    uniqueIndex('incident_tenant_ref_uq').on(table.tenantId, table.ref),
+  ],
+);
+
+/**
+ * Таймлайн инцидента (T-IR01): append-only хронология — единственный источник для постмортема.
+ * kind: status_change | note | action | notification.
+ */
+export const incidentEvent = pgTable(
+  'incident_event',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    incidentId: uuid('incident_id')
+      .notNull()
+      .references(() => incident.id),
+    kind: text('kind').notNull(),
+    fromStatus: text('from_status'),
+    toStatus: text('to_status'),
+    note: text('note'),
+    /** Автор записи; NULL — системное событие (джоба, коннектор). */
+    authorMembershipId: uuid('author_membership_id').references(() => membership.id),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+    ...timestamps,
+  },
+  (table) => [
+    index('incident_event_tenant_idx').on(table.tenantId),
+    index('incident_event_incident_idx').on(table.incidentId),
+  ],
+);
+
 /** Security alert (T-064): сигнал из коннектора/сканера → triage → закрытие. */
 export const securityAlert = pgTable(
   'security_alert',

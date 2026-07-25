@@ -39,6 +39,7 @@ import { FindingsModule } from './findings/findings.module';
 import { FrameworksModule } from './frameworks/frameworks.module';
 import { GlossaryModule } from './glossary/glossary.module';
 import { GroupModule } from './group/group.module';
+import { IncidentsModule } from './incidents/incidents.module';
 import { InvitesModule } from './invites/invites.module';
 import { JobsModule } from './jobs/jobs.module';
 import { KnowledgeBaseModule } from './knowledge-base/knowledge-base.module';
@@ -117,6 +118,7 @@ import { VulnerabilitiesModule } from './vulnerabilities/vulnerabilities.module'
     FrameworksModule,
     GlossaryModule,
     GroupModule,
+    IncidentsModule,
     InvitesModule,
     JobsModule,
     KnowledgeBaseModule,

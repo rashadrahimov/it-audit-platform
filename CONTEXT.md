@@ -166,6 +166,10 @@ _Avoid_: Computer (в UI — «Computer»)
 Алерт от posture-инструмента (CSPM) с окном резолюции (EP-VULN).
 _Avoid_: Notification (Notification — уведомление пользователю платформы)
 
+**Incident**:
+Инцидент ИБ у тенанта: разбирательство с жизненным циклом `detected→triaged→contained→eradicated→recovered→closed`, таймлайном, commander'ом, RCA и сроком регуляторного уведомления (эпик EP-INC, ADR-0024). Собирает один или несколько сигналов (Security Alert, Vulnerability, обращение сотрудника).
+_Avoid_: Security Alert (алерт — один сигнал, инцидент — разбирательство над ним), Finding (finding — несоответствие внутри аудита)
+
 **Processing Activity**:
 Запись обработки перс. данных (ROPA) для приватности/DPIA (эпик EP-PRIV).
 
