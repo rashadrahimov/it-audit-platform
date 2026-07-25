@@ -20,6 +20,21 @@ BACKUP="$HOME/prod-backup-${STAMP}-pre-${SHA}.dump"
 
 echo "▶ Выкатка ${SHA}"
 
+# Защита от выкатки «не того»: локальная ветка обязана совпадать с origin.
+# 25.07.2026 посторонняя команда дважды сбрасывала локальный main назад (git reflog:
+# «branch: Reset to …»), и выкатка едва не ушла со старым кодом.
+if [ -z "${SKIP_GIT_CHECK:-}" ] && [ "${1:-}" = "" ]; then
+  git fetch origin --quiet || true
+  if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+    echo "   ✗ рабочее дерево грязное — закоммить или отложи изменения (SKIP_GIT_CHECK=1 чтобы обойти)"; exit 1
+  fi
+  AHEAD_BEHIND="$(git rev-list --left-right --count origin/main...HEAD)"
+  case "$AHEAD_BEHIND" in
+    "0	0") ;;
+    *) echo "   ✗ ветка разошлась с origin/main (behind/ahead: $AHEAD_BEHIND) — сначала синхронизируй (SKIP_GIT_CHECK=1 чтобы обойти)"; exit 1 ;;
+  esac
+fi
+
 echo "1/5  Бэкап продовой базы → ${BACKUP}"
 docker exec it-audit-prod-postgres-1 pg_dump -U audit -d audit -Fc -f /tmp/prod-pre-deploy.dump
 docker cp it-audit-prod-postgres-1:/tmp/prod-pre-deploy.dump "$BACKUP"
