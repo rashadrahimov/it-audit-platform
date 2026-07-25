@@ -12,6 +12,9 @@ cd "$(dirname "$0")/.."
 
 COMPOSE=(docker compose -f docker-compose.prod.yml --env-file .env.prod)
 SHA="${1:-$(git rev-parse --short=9 HEAD)}"
+# Экспорт, а не префикс перед командой: при префиксе интерполяция ${IMAGE_TAG} в compose
+# не срабатывала и контейнеры уезжали на :latest (поймано на выкатке 12266ea16).
+export IMAGE_TAG="$SHA"
 STAMP="$(date +%Y-%m-%d-%H%M)"
 BACKUP="$HOME/prod-backup-${STAMP}-pre-${SHA}.dump"
 
@@ -30,17 +33,24 @@ echo "$PREV" > .prod-previous-tag
 echo "    предыдущий тег: ${PREV} (записан в .prod-previous-tag)"
 
 echo "3/5  Сборка образов под тегом ${SHA}"
-IMAGE_TAG="$SHA" "${COMPOSE[@]}" build migrate bootstrap api web
+"${COMPOSE[@]}" build migrate bootstrap api web
 # latest всегда указывает на последнюю выкатку — чтобы `up -d` без IMAGE_TAG поднимал её же
 for svc in migrate bootstrap api web; do
   docker tag "it-audit-prod-${svc}:${SHA}" "it-audit-prod-${svc}:latest"
 done
 
 echo "4/5  Миграции"
-IMAGE_TAG="$SHA" "${COMPOSE[@]}" run --rm migrate
+"${COMPOSE[@]}" run --rm migrate
 
 echo "5/5  Перезапуск api + web на теге ${SHA}"
-IMAGE_TAG="$SHA" "${COMPOSE[@]}" up -d api web
+# --no-build обязателен: иначе compose пересобирает образ на месте и подменяет :latest,
+# теги расходятся, и «откат на предыдущий тег» уводит не туда
+"${COMPOSE[@]}" up -d --no-build api web
+RUNNING="$(docker inspect it-audit-prod-api-1 --format '{{.Config.Image}}')"
+[ "$RUNNING" = "it-audit-prod-api:${SHA}" ] || {
+  echo "   ✗ контейнер поднялся на ${RUNNING}, ожидался it-audit-prod-api:${SHA}"; exit 1;
+}
+echo "   образ ${RUNNING}"
 
 sleep 12
 echo "▶ Проверка"

@@ -30,12 +30,17 @@ if [ "$STEPS" -gt 0 ]; then
 
   echo "2/3  Откат ${STEPS} миграций ТЕКУЩИМ образом (в нём есть drizzle/down/*)"
   for _ in $(seq 1 "$STEPS"); do
-    "${COMPOSE[@]}" run --rm --entrypoint sh api -c "cd apps/api && node dist/db/migrate-down.js"
+    IMAGE_TAG=latest "${COMPOSE[@]}" run --rm --entrypoint sh api -c "cd apps/api && node dist/db/migrate-down.js"
   done
 fi
 
 echo "3/3  Переключаю api + web на образ ${TARGET}"
-IMAGE_TAG="$TARGET" "${COMPOSE[@]}" up -d --no-build api web
+export IMAGE_TAG="$TARGET"
+"${COMPOSE[@]}" up -d --no-build api web
+RUNNING="$(docker inspect it-audit-prod-api-1 --format '{{.Config.Image}}')"
+[ "$RUNNING" = "it-audit-prod-api:${TARGET}" ] || {
+  echo "   ✗ контейнер поднялся на ${RUNNING}, ожидался it-audit-prod-api:${TARGET}"; exit 1;
+}
 
 sleep 12
 curl -fsS -o /dev/null -w "   api  %{http_code}\n" "http://localhost:$(grep -E '^API_PORT=' .env.prod | cut -d= -f2)/health"
