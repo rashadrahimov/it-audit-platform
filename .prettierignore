@@ -7,3 +7,6 @@ apps/api/drizzle/meta
 docs
 .claude
 CONTEXT.md
+
+# Генерируется Next при сборке — форматировать бессмысленно
+apps/web/next-env.d.ts
