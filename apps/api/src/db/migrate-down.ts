@@ -21,6 +21,14 @@ async function main(): Promise<void> {
     entries: JournalEntry[];
   };
 
+  // T-OPS02: перед откатом печатаем ЦЕЛЬ (host/база, без кредов) — env.databaseUrlOwner
+  // молча падает на дев-дефолт, если DATABASE_URL_OWNER не задан, и легко откатить не ту БД.
+  const target = new URL(env.databaseUrlOwner);
+  console.log(
+    `Откат применяется к ${target.hostname}:${target.port || '5432'}${target.pathname}` +
+      (process.env.DATABASE_URL_OWNER ? '' : ' (DATABASE_URL_OWNER не задан — дев-дефолт!)'),
+  );
+
   const client = new Client({ connectionString: env.databaseUrlOwner });
   await client.connect();
   try {

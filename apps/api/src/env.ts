@@ -2,6 +2,20 @@
  * Конфигурация из env. Дефолты совпадают с docker-compose.yml и .env.example —
  * локальная разработка работает без .env.
  */
+/**
+ * T-OPS04: публиковать ли OpenAPI (/docs, /docs-json).
+ * Требование RFP INT-01 «API-first» выполняется спекой, но в проде она не должна висеть
+ * анонимно — это карта всей поверхности API. Поэтому: в дев-окружении включено (verify-скилл
+ * ходит в /docs), в production выключено, включается явным SWAGGER_ENABLED=true.
+ */
+export function resolveSwaggerEnabled(
+  nodeEnv: string | undefined,
+  flag: string | undefined,
+): boolean {
+  if (flag !== undefined) return flag === 'true';
+  return nodeEnv !== 'production';
+}
+
 export const env = {
   /** Рантайм приложения: непривилегированная роль app — иначе RLS не действует (T-011). */
   databaseUrl: process.env.DATABASE_URL ?? 'postgres://app:app@localhost:5433/audit',
@@ -74,4 +88,6 @@ export const env = {
   aiApiKey: process.env.AI_API_KEY ?? process.env.ANTHROPIC_API_KEY ?? '',
   aiModel: process.env.AI_MODEL ?? 'claude-opus-4-8',
   aiBaseUrl: process.env.AI_BASE_URL ?? '',
+  /** T-OPS04: см. resolveSwaggerEnabled — в проде спека закрыта, если не включена явно. */
+  swaggerEnabled: resolveSwaggerEnabled(process.env.NODE_ENV, process.env.SWAGGER_ENABLED),
 };

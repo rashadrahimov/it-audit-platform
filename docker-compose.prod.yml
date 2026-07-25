@@ -61,6 +61,7 @@ services:
 
   # One-shot: применяет миграции (создаёт схему + роль app + RLS), затем завершается.
   migrate:
+    image: it-audit-prod-migrate:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -75,6 +76,7 @@ services:
   # One-shot: референс-данные (роли/фреймворки вкл. CBAR/контроли) + первый admin из
   # BOOTSTRAP_* (T-I07). Без BOOTSTRAP_* — только референс. Демо-данные не сеются.
   bootstrap:
+    image: it-audit-prod-bootstrap:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -93,6 +95,7 @@ services:
     restart: 'no'
 
   api:
+    image: it-audit-prod-api:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -128,6 +131,7 @@ services:
       - '${API_PORT:-3001}:3001'
 
   web:
+    image: it-audit-prod-web:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
