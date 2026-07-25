@@ -5,6 +5,7 @@ import { DbService } from '../db/db.service';
 import {
   accessRequest,
   finding,
+  incident,
   membership,
   policy,
   policyAttestation,
@@ -32,6 +33,7 @@ export class MyWorkService {
         policiesToApprove: [],
         attestationsPending: [],
         accessRequests: [],
+        incidents: [],
       };
     }
     return this.dbService.withTenant(tenantId, async (tx) => {
@@ -92,6 +94,25 @@ export class MyWorkService {
         })
         .from(accessRequest)
         .where(eq(accessRequest.requesterMembershipId, me.id));
+      // T-IR03: инциденты, где я incident commander и разбирательство ещё идёт
+      const incidents = await tx
+        .select({
+          id: incident.id,
+          ref: incident.ref,
+          title: incident.title,
+          status: incident.status,
+          severity: incident.severity,
+          slaStatus: incident.slaStatus,
+          dueDate: incident.dueDate,
+        })
+        .from(incident)
+        .where(
+          and(
+            isNull(incident.deletedAt),
+            eq(incident.commanderMembershipId, me.id),
+            ne(incident.status, 'closed'),
+          ),
+        );
       return {
         findings: findings.map((f) => ({
           id: f.id,
@@ -115,6 +136,15 @@ export class MyWorkService {
           title: resolveLocalized(p.titleI18n, locale),
         })),
         accessRequests,
+        incidents: incidents.map((i) => ({
+          id: i.id,
+          ref: i.ref,
+          title: i.title,
+          status: i.status,
+          severity: i.severity,
+          slaStatus: i.slaStatus,
+          dueDate: i.dueDate?.toISOString() ?? null,
+        })),
       };
     });
   }

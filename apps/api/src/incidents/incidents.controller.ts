@@ -56,6 +56,11 @@ const eventSchema = z.object({
   note: z.string().min(1),
 });
 
+/** T-IR03: назначение incident commander. */
+const assignSchema = z.object({
+  commanderMembershipId: z.uuid(),
+});
+
 const linkSchema = z.object({
   entityType: z.enum(INCIDENT_LINK_TYPES),
   entityId: z.uuid(),
@@ -129,6 +134,20 @@ export class IncidentsController {
     );
   }
 
+  @Post(':id/assign')
+  @HttpCode(200)
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Назначить incident commander (T-IR03) — с уведомлением' })
+  assign(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const parsed = assignSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.assign(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.commanderMembershipId,
+    );
+  }
+
   @Post(':id/links')
   @RequirePermission('control', 'edit', 'edit')
   @ApiOperation({
@@ -180,15 +199,22 @@ export class IncidentsController {
 
   @Get()
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Инциденты тенанта (фильтры: status/severity/category/commander)' })
+  @ApiOperation({
+    summary: 'Инциденты тенанта (фильтры: status/severity/category/commander, mine=true — мои)',
+  })
   list(
     @Req() req: TenantRequest,
     @Query('status') status?: string,
     @Query('severity') severity?: string,
     @Query('category') category?: string,
     @Query('commanderMembershipId') commanderMembershipId?: string,
+    @Query('mine') mine?: string,
   ) {
-    return this.service.list(req.tenantId, { status, severity, category, commanderMembershipId });
+    return this.service.list(
+      req.tenantId,
+      { status, severity, category, commanderMembershipId, mine: mine === 'true' },
+      req.user.sub,
+    );
   }
 
   @Get(':id')

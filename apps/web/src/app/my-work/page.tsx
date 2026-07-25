@@ -19,6 +19,16 @@ interface MyWork {
   policiesToApprove: Array<{ id: string; title: string }>;
   attestationsPending: Array<{ policyId: string; title: string }>;
   accessRequests: Array<{ id: string; system: string; status: string }>;
+  /** T-IR03: инциденты, где я incident commander. */
+  incidents: Array<{
+    id: string;
+    ref: string;
+    title: string;
+    status: string;
+    severity: string;
+    slaStatus: string | null;
+    dueDate: string | null;
+  }>;
 }
 
 const SLA_TONE: Record<string, string> = {
@@ -50,13 +60,15 @@ export default async function MyWorkPage() {
         policiesToApprove: [],
         attestationsPending: [],
         accessRequests: [],
+        incidents: [],
       };
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
   const total =
     work.findings.length +
     work.tests.length +
     work.policiesToApprove.length +
-    work.attestationsPending.length;
+    work.attestationsPending.length +
+    work.incidents.length;
 
   const card = 'rounded-xl border border-border bg-white p-4 shadow-sm';
   const badge = (tone: string) => `rounded-full px-2 py-0.5 text-xs font-medium ${tone}`;
@@ -93,6 +105,36 @@ export default async function MyWorkPage() {
                   <span className="text-xs text-secondary tabular-nums">
                     {f.dueDate ? dateFmt.format(new Date(f.dueDate)) : ''}
                   </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className={card} data-testid="mywork-incidents">
+        <h2 className="mb-2 text-sm font-semibold text-primary">
+          {t('incidents')}{' '}
+          <span className="text-secondary tabular-nums">({work.incidents.length})</span>
+        </h2>
+        {work.incidents.length === 0 ? (
+          <p className="text-sm text-secondary">{t('none')}</p>
+        ) : (
+          <ul className="flex flex-col gap-1.5">
+            {work.incidents.map((i) => (
+              <li key={i.id} className="flex items-center justify-between gap-2 text-sm">
+                <Link href={`/incidents/${i.id}`} className="text-accent hover:underline">
+                  <span className="text-secondary tabular-nums">{i.ref}</span> {i.title}
+                </Link>
+                <span className="flex items-center gap-1.5">
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-secondary">
+                    {i.status}
+                  </span>
+                  {i.slaStatus && (
+                    <span className={badge(SLA_TONE[i.slaStatus] ?? 'bg-muted text-secondary')}>
+                      {i.slaStatus}
+                    </span>
+                  )}
                 </span>
               </li>
             ))}

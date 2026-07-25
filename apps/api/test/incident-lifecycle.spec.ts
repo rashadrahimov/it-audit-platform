@@ -3,12 +3,14 @@ import { eq } from 'drizzle-orm';
 import { AuditLogService } from '../src/audit/audit-log.service';
 import { DbService } from '../src/db/db.service';
 import { IncidentsService } from '../src/incidents/incidents.service';
+import { NotificationsService } from '../src/notifications/notifications.service';
 import { SlaConfigService } from '../src/sla-config/sla-config.service';
 import {
   auditLog,
   incident,
   incidentEvent,
   membership,
+  notification,
   role,
   tenant,
   user,
@@ -27,10 +29,12 @@ const emails = {
 };
 
 const dbService = new DbService();
+const notifications = new NotificationsService(dbService);
 const service = new IncidentsService(
   dbService,
   new AuditLogService(dbService),
   new SlaConfigService(dbService),
+  notifications,
 );
 
 let tenantId: string;
@@ -71,6 +75,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await dbService.withTenant(tenantId, async (tx) => {
+    await tx.delete(notification).where(eq(notification.tenantId, tenantId));
     await tx.delete(incidentEvent).where(eq(incidentEvent.tenantId, tenantId));
     await tx.delete(incident).where(eq(incident.tenantId, tenantId));
     // audit_log append-only (T-021) — записи теста остаются, как и в других спеках
@@ -178,6 +183,25 @@ describe('Incident management — ядро (T-IR01)', () => {
         commanderMembershipId: '11111111-1111-7111-8111-111111111111',
       }),
     ).rejects.toThrow(/Membership/);
+  });
+
+  it('T-IR03: назначение commander уведомляет назначенного и пишет событие', async () => {
+    const second = await service.list(tenantId, { severity: 'low' });
+    const res = await service.assign(actor('admin'), second[0]!.id, commanderMembershipId);
+    expect(res.commanderMembershipId).toBe(commanderMembershipId);
+    const detail = await service.detail(tenantId, second[0]!.id);
+    expect(detail.commanderName).toBe(emails.commander);
+    expect(detail.timeline.at(-1)!.note).toBe('Назначен incident commander');
+    const notes = await notifications.listMine(actor('commander'));
+    expect(notes.items.some((n) => n.title === `Вы ведёте инцидент ${res.ref}`)).toBe(true);
+  });
+
+  it('T-IR03: фильтр «мои инциденты» — только где я commander', async () => {
+    // оба: INC-0001 получил commander'а при создании, INC-0002 — назначением выше
+    const mine = await service.list(tenantId, { mine: true }, uid.commander);
+    expect(mine.map((i) => i.ref)).toEqual(['INC-0002', 'INC-0001']);
+    const adminMine = await service.list(tenantId, { mine: true }, uid.admin);
+    expect(adminMine).toHaveLength(0);
   });
 
   it('фильтры списка: по статусу и severity', async () => {

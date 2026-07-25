@@ -18,6 +18,7 @@ import {
   vendor,
   vulnerability,
 } from '../db/schema';
+import { NotificationsService } from '../notifications/notifications.service';
 import { dueDateFor, SlaConfigService } from '../sla-config/sla-config.service';
 import {
   allowedTransitions,
@@ -40,6 +41,8 @@ export interface IncidentFilters {
   severity?: string;
   category?: string;
   commanderMembershipId?: string;
+  /** T-IR03: только инциденты, где я commander. */
+  mine?: boolean;
 }
 
 export interface CreateIncidentInput {
@@ -70,6 +73,7 @@ export class IncidentsService {
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
     private readonly slaConfig: SlaConfigService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** Membership актора в тенанте — автор записей таймлайна. */
@@ -195,8 +199,26 @@ export class IncidentsService {
         note: note ?? null,
         authorMembershipId,
       });
-      return { ref: row.ref, before: from, after: to };
+      return {
+        ref: row.ref,
+        before: from,
+        after: to,
+        commanderMembershipId: row.commanderMembershipId,
+      };
     });
+    // T-IR03: закрытие — событие для commander'а (если закрывал не он сам)
+    if (
+      to === 'closed' &&
+      result.commanderMembershipId &&
+      result.commanderMembershipId !== authorMembershipId
+    ) {
+      await this.notifications.create(actor, {
+        recipientMembershipId: result.commanderMembershipId,
+        type: 'info',
+        title: `Инцидент ${result.ref} закрыт`,
+        body: note,
+      });
+    }
     await this.auditLogService.record({
       tenantId: actor.tenantId,
       actorUserId: actor.userId,
@@ -279,6 +301,49 @@ export class IncidentsService {
       after: input,
     });
     return { id, updated: true };
+  }
+
+  /**
+   * T-IR03: назначить incident commander — ведущего разбирательство.
+   * Назначенный получает уведомление и видит инцидент в «Моей работе».
+   */
+  async assign(actor: Actor, id: string, commanderMembershipId: string) {
+    await this.assertMembership(actor.tenantId, commanderMembershipId);
+    const authorMembershipId = await this.myMembershipId(actor.tenantId, actor.userId);
+    const result = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(incident)
+        .where(and(eq(incident.id, id), isNull(incident.deletedAt)));
+      if (!row) throw new NotFoundException(`Инцидент ${id} не найден`);
+      await tx.update(incident).set({ commanderMembershipId }).where(eq(incident.id, id));
+      await tx.insert(incidentEvent).values({
+        tenantId: actor.tenantId,
+        incidentId: id,
+        kind: 'action',
+        note: 'Назначен incident commander',
+        authorMembershipId,
+      });
+      return { ref: row.ref, before: row.commanderMembershipId };
+    });
+    if (commanderMembershipId !== authorMembershipId) {
+      await this.notifications.create(actor, {
+        recipientMembershipId: commanderMembershipId,
+        type: 'action',
+        title: `Вы ведёте инцидент ${result.ref}`,
+      });
+    }
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'incident.assigned',
+      entityType: 'incident',
+      entityId: id,
+      before: { commanderMembershipId: result.before },
+      after: { commanderMembershipId },
+    });
+    return { id, ref: result.ref, commanderMembershipId };
   }
 
   /**
@@ -448,8 +513,14 @@ export class IncidentsService {
     }));
   }
 
-  async list(tenantId: string, filters?: IncidentFilters) {
+  async list(tenantId: string, filters?: IncidentFilters, userId?: string) {
     const conds = [isNull(incident.deletedAt)];
+    if (filters?.mine) {
+      const meId = userId ? await this.myMembershipId(tenantId, userId) : null;
+      // без membership «моих» инцидентов быть не может — отдаём пустой список
+      if (!meId) return [];
+      conds.push(eq(incident.commanderMembershipId, meId));
+    }
     if (filters?.status) conds.push(eq(incident.status, filters.status));
     if (filters?.severity) conds.push(eq(incident.severity, filters.severity));
     if (filters?.category) conds.push(eq(incident.category, filters.category));

@@ -4,6 +4,7 @@ import { AuditLogService } from '../src/audit/audit-log.service';
 import { DbService } from '../src/db/db.service';
 import { IncidentsService } from '../src/incidents/incidents.service';
 import { SecurityAlertsService } from '../src/security-alerts/security-alerts.service';
+import { NotificationsService } from '../src/notifications/notifications.service';
 import { SlaConfigService } from '../src/sla-config/sla-config.service';
 import {
   asset,
@@ -31,6 +32,7 @@ const incidents = new IncidentsService(
   dbService,
   new AuditLogService(dbService),
   new SlaConfigService(dbService),
+  new NotificationsService(dbService),
 );
 const alerts = new SecurityAlertsService(
   dbService,
