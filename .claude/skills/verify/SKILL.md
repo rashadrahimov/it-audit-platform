@@ -37,6 +37,14 @@ pnpm seed             # идемпотентный (apps/api/src/seed.ts): ба�
 - `http://localhost:3001/docs` — Swagger UI; `/docs-json` — OpenAPI-спека (должна содержать новые маршруты).
 - `curl http://localhost:3000/` — главная; в HTML есть `data-testid="api-status"`: зелёный «api v0.0.1 — ok» при живом API, красный «API unavailable» (en) при погашенном (страница не 500-ит). Локаль — cookie: `curl -H 'Cookie: locale=ru'` → `<html lang="ru">` и русские строки (аналогично az); без/с мусорной cookie — en.
 
+## Прод: выкатка и откат (EP-OPS)
+
+- Выкатка: `bash scripts/prod-deploy.sh` (или `... <sha>`) — бэкап базы в `~/prod-backup-*.dump` → сборка образов под тегом SHA (+ `latest`) → `run --rm migrate` → `up -d api web` → health обоих портов. **Не** `scripts/prod-deploy-with-data.sh` — тот заливает дамп dev-базы поверх прода.
+- Откат: `bash scripts/prod-rollback.sh <sha> [N]` — смена тега без пересборки (17–19 с), при N>0 сначала N down-миграций ТЕКУЩИМ образом (в старом нет `drizzle/down/*`). Процедура целиком — `docs/deploy-rollback-runbook.md`.
+- Проверка после: api `:8090/health` и web `:8080` = 200, `docker inspect it-audit-prod-api-1 --format '{{.Config.Image}}'` показывает ожидаемый тег, счётчик миграций `select count(*) from drizzle.__drizzle_migrations`.
+- На проде `/docs` и `/docs-json` закрыты (T-OPS04): `NODE_ENV=production` → 404, включаются `SWAGGER_ENABLED=true`. В деве по-прежнему 200 — verify-сценарии со Swagger работают как раньше.
+- Каждая новая миграция обязана получить парный `drizzle/down/<tag>.down.sql` — иначе красный `test/migration-down-parity.spec.ts`.
+
 ## Гочи
 
 - Веб фетчит API **server-side** (адрес из `API_URL`), CORS не нужен; проверять именно HTML веба, а не только API.

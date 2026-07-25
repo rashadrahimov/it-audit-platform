@@ -29,3 +29,4 @@ apps/web/playwright-report/
 apps/web/test-results/
 # stray artifacts от случайного запуска playwright из корня монорепо
 /test-results/
+.prod-previous-tag

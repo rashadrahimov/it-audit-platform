@@ -23,7 +23,9 @@ docker cp it-audit-prod-postgres-1:/tmp/prod-pre-deploy.dump "$BACKUP"
 ls -lh "$BACKUP"
 
 echo "2/5  Запоминаю текущий выкаченный тег (для отката)"
-PREV="$(docker inspect it-audit-prod-api-1 --format '{{.Config.Image}}' 2>/dev/null | awk -F: '{print $2}' || echo latest)"
+PREV="$(docker inspect it-audit-prod-api-1 --format '{{.Config.Image}}' 2>/dev/null | awk -F: 'NF>1{print $2}')"
+# образ мог быть без тега (до T-OPS01) — тогда фиксируем latest, он ещё указывает на старую сборку
+[ -n "$PREV" ] || PREV=latest
 echo "$PREV" > .prod-previous-tag
 echo "    предыдущий тег: ${PREV} (записан в .prod-previous-tag)"
 
