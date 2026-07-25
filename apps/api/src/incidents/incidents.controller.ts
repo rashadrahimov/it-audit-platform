@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -14,16 +15,25 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { z } from 'zod';
+import { DEFAULT_LOCALE, localeSchema, type Locale } from '@it-audit/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionGuard, type TenantRequest } from '../rbac/permission.guard';
 import { RequirePermission } from '../rbac/require-permission.decorator';
 import {
   INCIDENT_CATEGORIES,
+  INCIDENT_LINK_TYPES,
   INCIDENT_SEVERITIES,
   INCIDENT_SOURCES,
   INCIDENT_STATUSES,
 } from './incident-flow';
 import { IncidentsService } from './incidents.service';
+
+function parseLocale(localeQuery?: string): Locale {
+  if (localeQuery === undefined) return DEFAULT_LOCALE;
+  const parsed = localeSchema.safeParse(localeQuery);
+  if (!parsed.success) throw new BadRequestException('locale: ожидается en|az|ru');
+  return parsed.data;
+}
 
 const createSchema = z.object({
   title: z.string().min(1),
@@ -44,6 +54,11 @@ const transitionSchema = z.object({
 const eventSchema = z.object({
   kind: z.enum(['note', 'action']).optional(),
   note: z.string().min(1),
+});
+
+const linkSchema = z.object({
+  entityType: z.enum(INCIDENT_LINK_TYPES),
+  entityId: z.uuid(),
 });
 
 const updateSchema = z.object({
@@ -114,6 +129,42 @@ export class IncidentsController {
     );
   }
 
+  @Post(':id/links')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({
+    summary:
+      'Связать инцидент с сущностью (T-IR02): alert/vuln/asset/device/risk/control/vendor/finding',
+  })
+  addLink(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = linkSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.addLink(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data.entityType,
+      parsed.data.entityId,
+    );
+  }
+
+  @Delete(':id/links/:linkId')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Убрать связь инцидента' })
+  removeLink(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('linkId', ParseUUIDPipe) linkId: string,
+  ) {
+    return this.service.removeLink(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      linkId,
+    );
+  }
+
   @Patch(':id')
   @RequirePermission('control', 'edit', 'edit')
   @ApiOperation({ summary: 'Правка инцидента (severity меняет дедлайн резолюции)' })
@@ -142,8 +193,12 @@ export class IncidentsController {
 
   @Get(':id')
   @RequirePermission('control', 'view')
-  @ApiOperation({ summary: 'Карточка инцидента: фазы, таймлайн, доступные переходы' })
-  detail(@Req() req: TenantRequest, @Param('id', ParseUUIDPipe) id: string) {
-    return this.service.detail(req.tenantId, id);
+  @ApiOperation({ summary: 'Карточка инцидента: фазы, таймлайн, связи, доступные переходы' })
+  detail(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') localeQuery?: string,
+  ) {
+    return this.service.detail(req.tenantId, id, parseLocale(localeQuery));
   }
 }

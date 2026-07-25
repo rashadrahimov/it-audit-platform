@@ -35,6 +35,22 @@ export const INCIDENT_SOURCES = ['manual', 'alert', 'connector'] as const;
 export const INCIDENT_EVENT_KINDS = ['status_change', 'note', 'action', 'notification'] as const;
 
 /**
+ * Что можно связать с инцидентом (T-IR02): вошедшие сигналы, затронутое,
+ * порождённые findings. Пара entity_type+entity_id вместо FK-зоопарка (ADR-0024).
+ */
+export const INCIDENT_LINK_TYPES = [
+  'security_alert',
+  'vulnerability',
+  'asset',
+  'device',
+  'risk',
+  'control',
+  'vendor',
+  'finding',
+] as const;
+export type IncidentLinkType = (typeof INCIDENT_LINK_TYPES)[number];
+
+/**
  * Разрешённые переходы: строго вперёд по фазам + закрытие из любой (ложное срабатывание
  * закрывается сразу). Назад не откатываемся — откат оформляется записью в таймлайне.
  */

@@ -1,8 +1,23 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { DEFAULT_LOCALE, resolveLocalized, type Locale } from '@it-audit/shared';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { incident, incidentEvent, membership, user } from '../db/schema';
+import {
+  asset,
+  control,
+  device,
+  finding,
+  incident,
+  incidentEvent,
+  incidentLink,
+  membership,
+  risk,
+  securityAlert,
+  user,
+  vendor,
+  vulnerability,
+} from '../db/schema';
 import { dueDateFor, SlaConfigService } from '../sla-config/sla-config.service';
 import {
   allowedTransitions,
@@ -10,6 +25,7 @@ import {
   formatIncidentRef,
   isIncidentStatus,
   PHASE_COLUMN,
+  type IncidentLinkType,
   type IncidentStatus,
 } from './incident-flow';
 
@@ -265,6 +281,173 @@ export class IncidentsService {
     return { id, updated: true };
   }
 
+  /**
+   * T-IR02: связать инцидент с сущностью платформы. Существование цели проверяем
+   * под RLS тенанта — чужую сущность связать нельзя (изоляция MTE-04).
+   */
+  async addLink(actor: Actor, id: string, entityType: IncidentLinkType, entityId: string) {
+    return this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [inc] = await tx
+        .select({ id: incident.id })
+        .from(incident)
+        .where(and(eq(incident.id, id), isNull(incident.deletedAt)));
+      if (!inc) throw new NotFoundException(`Инцидент ${id} не найден`);
+      const exists = await this.entityExists(tx, entityType, entityId);
+      if (!exists) throw new BadRequestException(`${entityType} ${entityId} не найден в тенанте`);
+      const [existing] = await tx
+        .select({ id: incidentLink.id })
+        .from(incidentLink)
+        .where(
+          and(
+            eq(incidentLink.incidentId, id),
+            eq(incidentLink.entityType, entityType),
+            eq(incidentLink.entityId, entityId),
+          ),
+        );
+      if (existing) return { linked: false, linkId: existing.id };
+      const [row] = await tx
+        .insert(incidentLink)
+        .values({ tenantId: actor.tenantId, incidentId: id, entityType, entityId })
+        .returning();
+      await tx.insert(incidentEvent).values({
+        tenantId: actor.tenantId,
+        incidentId: id,
+        kind: 'action',
+        note: `Связано: ${entityType}`,
+        authorMembershipId: await this.myMembershipId(actor.tenantId, actor.userId),
+      });
+      return { linked: true, linkId: row!.id };
+    });
+  }
+
+  async removeLink(actor: Actor, id: string, linkId: string) {
+    return this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select({ id: incidentLink.id })
+        .from(incidentLink)
+        .where(and(eq(incidentLink.id, linkId), eq(incidentLink.incidentId, id)));
+      if (!row) throw new NotFoundException(`Связь ${linkId} не найдена`);
+      await tx.delete(incidentLink).where(eq(incidentLink.id, linkId));
+      return { removed: true };
+    });
+  }
+
+  /** Проверка существования цели связи в тенанте (для каждого типа — своя таблица). */
+  private async entityExists(
+    tx: Parameters<Parameters<DbService['withTenant']>[1]>[0],
+    entityType: IncidentLinkType,
+    entityId: string,
+  ): Promise<boolean> {
+    const table = {
+      security_alert: securityAlert,
+      vulnerability,
+      asset,
+      device,
+      risk,
+      control,
+      vendor,
+      finding,
+    }[entityType];
+    const [row] = await tx.select({ id: table.id }).from(table).where(eq(table.id, entityId));
+    return Boolean(row);
+  }
+
+  /** Заголовки связанных сущностей — по одному запросу на тип. */
+  private async resolveLinks(tenantId: string, incidentId: string, locale: Locale) {
+    const links = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select()
+        .from(incidentLink)
+        .where(eq(incidentLink.incidentId, incidentId))
+        .orderBy(asc(incidentLink.createdAt)),
+    );
+    if (links.length === 0) return [];
+    const titles = new Map<string, string>();
+    const byType = new Map<string, string[]>();
+    for (const l of links) {
+      byType.set(l.entityType, [...(byType.get(l.entityType) ?? []), l.entityId]);
+    }
+    await this.dbService.withTenant(tenantId, async (tx) => {
+      for (const [type, ids] of byType) {
+        const key = (entityId: string) => `${type}:${entityId}`;
+        switch (type as IncidentLinkType) {
+          case 'security_alert': {
+            const rows = await tx
+              .select({ id: securityAlert.id, title: securityAlert.title })
+              .from(securityAlert)
+              .where(inArray(securityAlert.id, ids));
+            rows.forEach((r) => titles.set(key(r.id), r.title));
+            break;
+          }
+          case 'vulnerability': {
+            const rows = await tx
+              .select({ id: vulnerability.id, title: vulnerability.title })
+              .from(vulnerability)
+              .where(inArray(vulnerability.id, ids));
+            rows.forEach((r) => titles.set(key(r.id), r.title));
+            break;
+          }
+          case 'asset': {
+            const rows = await tx
+              .select({ id: asset.id, name: asset.name })
+              .from(asset)
+              .where(inArray(asset.id, ids));
+            rows.forEach((r) => titles.set(key(r.id), r.name));
+            break;
+          }
+          case 'device': {
+            const rows = await tx
+              .select({ id: device.id, name: device.name })
+              .from(device)
+              .where(inArray(device.id, ids));
+            rows.forEach((r) => titles.set(key(r.id), r.name));
+            break;
+          }
+          case 'vendor': {
+            const rows = await tx
+              .select({ id: vendor.id, name: vendor.name })
+              .from(vendor)
+              .where(inArray(vendor.id, ids));
+            rows.forEach((r) => titles.set(key(r.id), r.name));
+            break;
+          }
+          case 'risk': {
+            const rows = await tx
+              .select({ id: risk.id, titleI18n: risk.titleI18n })
+              .from(risk)
+              .where(inArray(risk.id, ids));
+            rows.forEach((r) => titles.set(key(r.id), resolveLocalized(r.titleI18n, locale)));
+            break;
+          }
+          case 'finding': {
+            const rows = await tx
+              .select({ id: finding.id, titleI18n: finding.titleI18n })
+              .from(finding)
+              .where(inArray(finding.id, ids));
+            rows.forEach((r) => titles.set(key(r.id), resolveLocalized(r.titleI18n, locale)));
+            break;
+          }
+          case 'control': {
+            const rows = await tx
+              .select({ id: control.id, ref: control.ref, objectiveI18n: control.objectiveI18n })
+              .from(control)
+              .where(inArray(control.id, ids));
+            rows.forEach((r) =>
+              titles.set(key(r.id), `${r.ref} — ${resolveLocalized(r.objectiveI18n, locale)}`),
+            );
+            break;
+          }
+        }
+      }
+    });
+    return links.map((l) => ({
+      linkId: l.id,
+      entityType: l.entityType,
+      entityId: l.entityId,
+      title: titles.get(`${l.entityType}:${l.entityId}`) ?? null,
+    }));
+  }
+
   async list(tenantId: string, filters?: IncidentFilters) {
     const conds = [isNull(incident.deletedAt)];
     if (filters?.status) conds.push(eq(incident.status, filters.status));
@@ -285,7 +468,7 @@ export class IncidentsService {
     return rows.map((r) => this.toListItem(r.incident, r.commanderName));
   }
 
-  async detail(tenantId: string, id: string) {
+  async detail(tenantId: string, id: string, locale: Locale = DEFAULT_LOCALE) {
     const [row] = await this.dbService.withTenant(tenantId, (tx) =>
       tx
         .select({ incident: incident, commanderName: user.fullName })
@@ -304,10 +487,12 @@ export class IncidentsService {
         .where(eq(incidentEvent.incidentId, id))
         .orderBy(asc(incidentEvent.at)),
     );
+    const links = await this.resolveLinks(tenantId, id, locale);
     const i = row.incident;
     return {
       ...this.toListItem(i, row.commanderName),
       description: i.description,
+      links,
       source: i.source,
       phases: {
         detectedAt: i.detectedAt.toISOString(),

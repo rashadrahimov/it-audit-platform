@@ -2,7 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { AuditLogService } from '../audit/audit-log.service';
 import { DbService } from '../db/db.service';
-import { asset, securityAlert } from '../db/schema';
+import { asset, incident, incidentLink, securityAlert } from '../db/schema';
+import { IncidentsService } from '../incidents/incidents.service';
 import { dueDateFor, SlaConfigService } from '../sla-config/sla-config.service';
 
 interface Actor {
@@ -30,6 +31,7 @@ export class SecurityAlertsService {
     private readonly dbService: DbService,
     private readonly auditLogService: AuditLogService,
     private readonly slaConfig: SlaConfigService,
+    private readonly incidents: IncidentsService,
   ) {}
 
   async create(
@@ -110,6 +112,59 @@ export class SecurityAlertsService {
       after: { status: result.after },
     });
     return result;
+  }
+
+  /**
+   * T-IR02: эскалация алерта в инцидент (ADR-0024) — алерт остаётся сигналом,
+   * инцидент становится разбирательством. Данные не дублируются, а связываются.
+   */
+  async escalate(actor: Actor, id: string, input?: { severity?: string; note?: string }) {
+    const alert = await this.dbService.withTenant(actor.tenantId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(securityAlert)
+        .where(and(eq(securityAlert.id, id), isNull(securityAlert.deletedAt)));
+      if (!row) throw new NotFoundException(`Алерт ${id} не найден`);
+      // Повторная эскалация запрещена, пока прошлый инцидент не закрыт
+      const [open] = await tx
+        .select({ ref: incident.ref })
+        .from(incidentLink)
+        .innerJoin(incident, eq(incident.id, incidentLink.incidentId))
+        .where(
+          and(
+            eq(incidentLink.entityType, 'security_alert'),
+            eq(incidentLink.entityId, id),
+            isNull(incident.deletedAt),
+          ),
+        );
+      if (open) {
+        throw new BadRequestException(`Алерт уже эскалирован в инцидент ${open.ref}`);
+      }
+      return row;
+    });
+    const created = await this.incidents.create(actor, {
+      title: alert.title,
+      description: input?.note,
+      severity: input?.severity ?? alert.severity,
+      category: alert.category ?? undefined,
+      source: 'alert',
+      detectedAt: alert.createdAt.toISOString(),
+    });
+    await this.incidents.addLink(actor, created.id, 'security_alert', id);
+    // Сигнал разобран — переводим в triaged, если он ещё new
+    if (alert.status === 'new') {
+      await this.transition(actor, id, 'triaged', `Эскалирован в инцидент ${created.ref}`);
+    }
+    await this.auditLogService.record({
+      tenantId: actor.tenantId,
+      actorUserId: actor.userId,
+      actorIp: actor.ip,
+      action: 'security_alert.escalated',
+      entityType: 'security_alert',
+      entityId: id,
+      after: { incidentId: created.id, ref: created.ref },
+    });
+    return { incidentId: created.id, ref: created.ref, severity: created.severity };
   }
 
   async list(tenantId: string, filters?: AlertFilters) {

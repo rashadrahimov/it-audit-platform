@@ -42,6 +42,12 @@ const transitionSchema = z.object({
   note: z.string().optional(),
 });
 
+/** T-IR02: эскалация сигнала в инцидент — severity можно поднять на входе. */
+const escalateSchema = z.object({
+  severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+  note: z.string().optional(),
+});
+
 @Controller('security-alerts')
 @UseGuards(JwtAuthGuard, PermissionGuard)
 @ApiBearerAuth()
@@ -78,6 +84,24 @@ export class SecurityAlertsController {
       id,
       parsed.data.to,
       parsed.data.note,
+    );
+  }
+
+  @Post(':id/escalate')
+  @RequirePermission('control', 'edit', 'edit')
+  @ApiOperation({ summary: 'Эскалировать алерт в инцидент (T-IR02, ADR-0024)' })
+  @ApiCreatedResponse({ description: 'Создан связанный инцидент, алерт переведён в triaged' })
+  escalate(
+    @Req() req: TenantRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = escalateSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues);
+    return this.service.escalate(
+      { tenantId: req.tenantId, userId: req.user.sub, ip: req.ip },
+      id,
+      parsed.data,
     );
   }
 

@@ -2055,6 +2055,33 @@ export const incidentEvent = pgTable(
   ],
 );
 
+/**
+ * Связи инцидента с любой сущностью платформы (T-IR02): сигналы, которые в него вошли,
+ * затронутые активы, риски/контроли, поставщик, порождённые findings.
+ * Пара entity_type+entity_id вместо FK-зоопарка (ADR-0024).
+ */
+export const incidentLink = pgTable(
+  'incident_link',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    incidentId: uuid('incident_id')
+      .notNull()
+      .references(() => incident.id),
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    note: text('note'),
+    ...timestamps,
+  },
+  (table) => [
+    index('incident_link_tenant_idx').on(table.tenantId),
+    index('incident_link_incident_idx').on(table.incidentId),
+    uniqueIndex('incident_link_uq').on(table.incidentId, table.entityType, table.entityId),
+  ],
+);
+
 /** Security alert (T-064): сигнал из коннектора/сканера → triage → закрытие. */
 export const securityAlert = pgTable(
   'security_alert',
