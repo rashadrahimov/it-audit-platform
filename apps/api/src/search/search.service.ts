@@ -9,6 +9,7 @@ import {
   document,
   documentLink,
   finding,
+  incident,
   kbEntry,
   workingPaper,
 } from '../db/schema';
@@ -465,6 +466,25 @@ export class SearchService {
         .limit(PER_TYPE);
       for (const f of findings) {
         out.push({ type: 'finding', id: f.id, label: resolveLocalized(f.titleI18n, 'en') });
+      }
+
+      // T-IR08: инциденты ИБ — ищем по номеру, заголовку и описанию
+      const incidents = await tx
+        .select({ id: incident.id, ref: incident.ref, title: incident.title })
+        .from(incident)
+        .where(
+          and(
+            isNull(incident.deletedAt),
+            or(
+              sql`${incident.ref} ILIKE ${like}`,
+              sql`${incident.title} ILIKE ${like}`,
+              sql`coalesce(${incident.description}, '') ILIKE ${like}`,
+            ),
+          ),
+        )
+        .limit(PER_TYPE);
+      for (const i of incidents) {
+        out.push({ type: 'incident', id: i.id, label: `${i.ref} ${i.title}` });
       }
 
       const controls = await tx

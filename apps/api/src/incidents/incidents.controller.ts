@@ -271,6 +271,13 @@ export class IncidentsController {
     );
   }
 
+  @Get('metrics')
+  @RequirePermission('control', 'view')
+  @ApiOperation({ summary: 'Метрики реагирования (T-IR07): MTTx, срезы, регуляторные сроки' })
+  metrics(@Req() req: TenantRequest) {
+    return this.service.metrics(req.tenantId);
+  }
+
   @Get()
   @RequirePermission('control', 'view')
   @ApiOperation({

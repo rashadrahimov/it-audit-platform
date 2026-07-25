@@ -605,7 +605,12 @@
     "level": "Уровень",
     "levelGroup": "Группа",
     "levelSubsidiary": "Дочка",
-    "open": "Открыто"
+    "open": "Открыто",
+    "incidents": "Реагирование на инциденты",
+    "incidentsOpen": "Открытых инцидентов",
+    "incidentsCritical": "Высокие / критические",
+    "incidentsMttr": "Среднее время восстановления",
+    "incidentsNotifyOverdue": "Просрочено уведомлений"
   },
   "connectors": {
     "title": "Коннекторы",
@@ -1296,7 +1301,15 @@
       "control": "Контроль",
       "vendor": "Поставщик",
       "finding": "Finding"
-    }
+    },
+    "evidence": "Доказательства",
+    "noEvidence": "Документов пока нет",
+    "evidenceHint": "Логи, переписку и форму уведомления регулятора прикладывайте на странице «Документы» (сущность «incident»).",
+    "tagsTitle": "Теги",
+    "tagAdd": "Добавить тег",
+    "tagNone": "Тегов нет",
+    "tagAttach": "Навесить",
+    "tagRemove": "Снять"
   },
   "commitments": {
     "title": "Обязательства",
@@ -3152,6 +3165,7 @@
     "topic": "Тема",
     "types": {
       "finding": "Замечания",
+      "incident": "Инциденты",
       "control": "Контроли",
       "document": "Документы",
       "working_paper": "Рабочие документы",

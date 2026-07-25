@@ -12,6 +12,15 @@ interface Counts {
   openFindings: number;
 }
 
+/** T-IR07: метрики инцидент-менеджмента для виджета на дашборде. */
+interface IncidentMetrics {
+  total: number;
+  open: number;
+  bySeverity: Record<string, number>;
+  meanHours: { toTriage: number | null; toContain: number | null; toRecover: number | null };
+  regulator: { reportable: number; notified: number; onTime: number; overdue: number };
+}
+
 interface Summary {
   scope: string;
   group: Counts;
@@ -39,11 +48,14 @@ export default async function DashboardPage() {
   ]);
 
   let summary: Summary | null = null;
+  let incidents: IncidentMetrics | null = null;
   if (tenantSlug) {
-    const res = await apiFetch(`/group/summary?locale=${locale}`, {
-      headers: { 'X-Tenant-Slug': tenantSlug },
-    });
+    const [res, incRes] = await Promise.all([
+      apiFetch(`/group/summary?locale=${locale}`, { headers: { 'X-Tenant-Slug': tenantSlug } }),
+      apiFetch('/incidents/metrics', { headers: { 'X-Tenant-Slug': tenantSlug } }),
+    ]);
     if (res.ok) summary = await res.json();
+    if (incRes.ok) incidents = await incRes.json();
   }
 
   if (!summary) {
@@ -94,6 +106,50 @@ export default async function DashboardPage() {
           </div>
         ))}
       </section>
+
+      {/* T-IR07: инцидент-менеджмент — скорость реагирования и регуляторные сроки */}
+      {incidents && incidents.total > 0 && (
+        <section data-testid="dashboard-incidents">
+          <h2 className="mb-3 text-sm font-semibold text-primary">{t('incidents')}</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {[
+              { label: t('incidentsOpen'), value: incidents.open, accent: true },
+              {
+                label: t('incidentsCritical'),
+                value: (incidents.bySeverity.critical ?? 0) + (incidents.bySeverity.high ?? 0),
+              },
+              {
+                label: t('incidentsMttr'),
+                value:
+                  incidents.meanHours.toRecover === null
+                    ? '—'
+                    : `${incidents.meanHours.toRecover} ч`,
+              },
+              {
+                label: t('incidentsNotifyOverdue'),
+                value: incidents.regulator.overdue,
+                danger: incidents.regulator.overdue > 0,
+              },
+            ].map((kpi) => (
+              <div
+                key={kpi.label}
+                className="rounded-xl border border-border bg-white p-4 shadow-sm"
+              >
+                <div
+                  className={`text-3xl font-bold tabular-nums ${
+                    kpi.danger ? 'text-red-700' : kpi.accent ? 'text-accent' : 'text-primary'
+                  }`}
+                >
+                  {kpi.value}
+                </div>
+                <div className="mt-1 text-xs font-medium tracking-wide text-secondary uppercase">
+                  {kpi.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Уровень 2: по дочкам */}
       <section>

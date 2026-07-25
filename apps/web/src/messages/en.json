@@ -605,7 +605,12 @@
     "level": "Level",
     "levelGroup": "Group",
     "levelSubsidiary": "Subsidiary",
-    "open": "Open"
+    "open": "Open",
+    "incidents": "Incident response",
+    "incidentsOpen": "Open incidents",
+    "incidentsCritical": "High / critical",
+    "incidentsMttr": "Mean time to recover",
+    "incidentsNotifyOverdue": "Regulator notice overdue"
   },
   "connectors": {
     "title": "Connectors",
@@ -1296,7 +1301,15 @@
       "control": "Control",
       "vendor": "Vendor",
       "finding": "Finding"
-    }
+    },
+    "evidence": "Evidence",
+    "noEvidence": "No documents attached",
+    "evidenceHint": "Attach logs, correspondence or the regulator filing on the Documents page (entity “incident”).",
+    "tagsTitle": "Tags",
+    "tagAdd": "Add tag",
+    "tagNone": "No tags",
+    "tagAttach": "Attach",
+    "tagRemove": "Remove"
   },
   "commitments": {
     "title": "Commitments",
@@ -3144,6 +3157,7 @@
     "topic": "Topic",
     "types": {
       "finding": "Findings",
+      "incident": "Incidents",
       "control": "Controls",
       "document": "Documents",
       "working_paper": "Working papers",

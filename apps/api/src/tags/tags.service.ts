@@ -21,6 +21,7 @@ const TAGGABLE_ENTITY_TYPES = new Set([
   'policy',
   'processing_activity',
   'auditable_entity',
+  'incident',
 ]);
 
 @Injectable()

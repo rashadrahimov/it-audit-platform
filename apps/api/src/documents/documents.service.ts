@@ -35,6 +35,8 @@ export const DOCUMENT_LINKABLE_ENTITY_TYPES = [
   'auditable_entity',
   'privacy_assessment',
   'kb_entry',
+  // T-IR08: доказательства инцидента (логи, переписка, форма уведомления регулятора)
+  'incident',
 ] as const;
 const LINKABLE_ENTITY_TYPES = new Set<string>(DOCUMENT_LINKABLE_ENTITY_TYPES);
 const RELATIONS = new Set(['evidence', 'permanent_file', 'attachment', 'report']);

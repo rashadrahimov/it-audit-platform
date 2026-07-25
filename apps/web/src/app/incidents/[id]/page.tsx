@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { apiFetch, getActiveTenantSlug, getSessionUser } from '@/lib/session';
 import { getCurrentLocale } from '@/lib/locale';
+import { TagsSection } from '@/components/tags-section';
 import {
   addIncidentEventAction,
   assignIncidentAction,
@@ -56,13 +57,20 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
   if (!tenantSlug) redirect('/account');
   const headers = { 'X-Tenant-Slug': tenantSlug };
 
-  const [res, membersRes] = await Promise.all([
+  const [res, membersRes, tagsOfRes, allTagsRes, docsRes] = await Promise.all([
     apiFetch(`/incidents/${id}?locale=${locale}`, { headers }),
     apiFetch('/memberships', { headers }),
+    apiFetch(`/tags/of?entityType=incident&entityId=${id}`, { headers }),
+    apiFetch('/tags', { headers }),
+    apiFetch(`/documents?entityType=incident&entityId=${id}`, { headers }),
   ]);
   if (!res.ok) notFound();
   const inc: IncidentDetail = await res.json();
   const members: Member[] = membersRes.ok ? await membersRes.json() : [];
+  const currentTags = tagsOfRes.ok ? await tagsOfRes.json() : [];
+  const allTags = allTagsRes.ok ? await allTagsRes.json() : [];
+  // T-IR08: доказательства инцидента (логи, переписка, форма уведомления регулятора)
+  const documents: Array<{ id: string; filename: string }> = docsRes.ok ? await docsRes.json() : [];
 
   const dtFmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
   const badge = (tone: string) => `rounded-full px-2 py-0.5 text-xs font-medium ${tone}`;
@@ -314,6 +322,41 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
           </form>
         )}
       </section>
+
+      {/* T-IR08: доказательства — документы, привязанные к инциденту */}
+      <section className={card} data-testid="incident-documents">
+        <h2 className="mb-3 text-sm font-semibold text-primary">{t('evidence')}</h2>
+        {documents.length === 0 ? (
+          <p className="text-sm text-secondary">{t('noEvidence')}</p>
+        ) : (
+          <ul className="flex flex-col gap-1.5 text-sm">
+            {documents.map((d) => (
+              <li key={d.id}>
+                <Link href={`/documents`} className="text-accent hover:underline">
+                  {d.filename}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-2 text-xs text-secondary">{t('evidenceHint')}</p>
+      </section>
+
+      <TagsSection
+        entityType="incident"
+        entityId={id}
+        path={`/incidents/${id}`}
+        current={currentTags}
+        all={allTags}
+        testid="incident-tags"
+        labels={{
+          title: t('tagsTitle'),
+          add: t('tagAdd'),
+          none: t('tagNone'),
+          attach: t('tagAttach'),
+          remove: t('tagRemove'),
+        }}
+      />
 
       {/* Таймлайн — источник правды для постмортема */}
       <section className={card} data-testid="incident-timeline">

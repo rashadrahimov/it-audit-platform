@@ -605,7 +605,12 @@
     "level": "Səviyyə",
     "levelGroup": "Qrup",
     "levelSubsidiary": "Törəmə şirkət",
-    "open": "Açıq"
+    "open": "Açıq",
+    "incidents": "İnsidentlərə cavab",
+    "incidentsOpen": "Açıq insidentlər",
+    "incidentsCritical": "Yüksək / kritik",
+    "incidentsMttr": "Orta bərpa müddəti",
+    "incidentsNotifyOverdue": "Gecikmiş bildirişlər"
   },
   "connectors": {
     "title": "Konnektorlar",
@@ -1296,7 +1301,15 @@
       "control": "Nəzarət",
       "vendor": "Təchizatçı",
       "finding": "Finding"
-    }
+    },
+    "evidence": "Sübutlar",
+    "noEvidence": "Hələ sənəd yoxdur",
+    "evidenceHint": "Logları, yazışmanı və tənzimləyiciyə göndərilən formanı «Sənədlər» səhifəsində əlavə edin (obyekt «incident»).",
+    "tagsTitle": "Teqlər",
+    "tagAdd": "Teq əlavə et",
+    "tagNone": "Teq yoxdur",
+    "tagAttach": "Əlavə et",
+    "tagRemove": "Sil"
   },
   "commitments": {
     "title": "Öhdəliklər",
@@ -3152,6 +3165,7 @@
     "topic": "Mövzu",
     "types": {
       "finding": "Qeydlər",
+      "incident": "İnsidentlər",
       "control": "Nəzarətlər",
       "document": "Sənədlər",
       "working_paper": "İş sənədləri",

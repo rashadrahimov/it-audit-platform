@@ -28,6 +28,7 @@ import {
 import { FindingsService } from '../findings/findings.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { dueDateFor, SlaConfigService } from '../sla-config/sla-config.service';
+import { incidentMetrics } from './incident-metrics';
 import {
   allowedTransitions,
   canTransition,
@@ -679,6 +680,29 @@ export class IncidentsService {
       entityId: l.entityId,
       title: titles.get(`${l.entityType}:${l.entityId}`) ?? null,
     }));
+  }
+
+  /** T-IR07: метрики реагирования — считаются из меток фаз, без отдельного хранилища. */
+  async metrics(tenantId: string) {
+    const rows = await this.dbService.withTenant(tenantId, (tx) =>
+      tx
+        .select({
+          status: incident.status,
+          severity: incident.severity,
+          category: incident.category,
+          detectedAt: incident.detectedAt,
+          triagedAt: incident.triagedAt,
+          containedAt: incident.containedAt,
+          recoveredAt: incident.recoveredAt,
+          closedAt: incident.closedAt,
+          reportable: incident.reportable,
+          notifyDeadlineAt: incident.notifyDeadlineAt,
+          notifiedAt: incident.notifiedAt,
+        })
+        .from(incident)
+        .where(isNull(incident.deletedAt)),
+    );
+    return incidentMetrics(rows);
   }
 
   async list(tenantId: string, filters?: IncidentFilters, userId?: string) {
