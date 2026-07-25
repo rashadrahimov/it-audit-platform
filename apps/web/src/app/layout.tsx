@@ -156,7 +156,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     getTranslations('flash'),
   ]);
   return (
-    <html lang={locale} className={font.variable}>
+    <html lang={locale} className={font.variable} data-scroll-behavior="smooth">
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <NextIntlClientProvider messages={messages}>
           <Shell>{children}</Shell>

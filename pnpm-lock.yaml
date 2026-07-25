@@ -178,10 +178,10 @@ importers:
         specifier: workspace:*
         version: link:../../packages/shared
       next:
-        specifier: ^16.2.11
+        specifier: 16.2.11
         version: 16.2.11(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       next-intl:
-        specifier: ^4.13.4
+        specifier: 4.13.4
         version: 4.13.4(next@16.2.11(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
       react:
         specifier: ^19.0.0
