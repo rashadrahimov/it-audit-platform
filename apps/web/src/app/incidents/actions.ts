@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { apiFetch, getActiveTenantSlug } from '@/lib/session';
 
 async function post(path: string, body: unknown, method = 'POST'): Promise<Response | null> {
@@ -14,22 +15,24 @@ async function post(path: string, body: unknown, method = 'POST'): Promise<Respo
 }
 
 /**
- * T-IR06: зафиксировать инцидент — сразу в фазе detected.
- * Остаёмся в реестре (как у алертов/уязвимостей): новый инцидент встаёт первой строкой,
- * оттуда открывается карточка. Редирект на карточку из server action в этой версии Next
- * не доводит клиентскую навигацию до конца — форма выглядела бы «ничего не сделавшей».
+ * T-IR06: зафиксировать инцидент — сразу в фазе detected, и сразу открыть его карточку.
+ * (Редирект вернулся в T-IR09: он не доезжал из-за глобальной Suspense-границы `app/loading.tsx`,
+ * ронявшей коммит обновления в Next 15.5.x.)
  */
 export async function createIncidentAction(formData: FormData): Promise<void> {
   const title = String(formData.get('title') ?? '').trim();
   if (!title) return;
   const category = String(formData.get('category') ?? '').trim();
-  await post('/incidents', {
+  const res = await post('/incidents', {
     title,
     severity: String(formData.get('severity') ?? 'medium'),
     category: category || undefined,
     description: String(formData.get('description') ?? '').trim() || undefined,
   });
   revalidatePath('/incidents');
+  if (!res?.ok) return;
+  const created = (await res.json()) as { id: string };
+  redirect(`/incidents/${created.id}`);
 }
 
 /** Переход фазы реагирования (+ заметка в таймлайн). */

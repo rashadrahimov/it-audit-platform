@@ -2728,7 +2728,7 @@
       },
       "security": {
         "t": "Təhlükəsizlik və giriş",
-        "d": "Hesab və girişləri, dəyişdirilməz audit tarixçəsini, aktivləri, cihazları, xəbərdarlıqları, zəiflikləri və kod dəyişikliklərini idarə edin."
+        "d": "Hesab və girişləri, dəyişdirilməz audit tarixçəsini, aktivləri, cihazları, xəbərdarlıqları, zəiflikləri və kod dəyişikliklərini idarə edin. Siqnaldan insident qaldırılır — cavab fazaları, zaman xətti, postmortem və tənzimləyiciyə bildiriş müddəti."
       },
       "thirdParty": {
         "t": "Üçüncü tərəflər",

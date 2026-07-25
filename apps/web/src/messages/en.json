@@ -2720,7 +2720,7 @@
       },
       "security": {
         "t": "Security & access",
-        "d": "Review identities and access, immutable audit history, assets, devices, alerts, vulnerabilities and code changes from one security workspace."
+        "d": "Review identities and access, immutable audit history, assets, devices, alerts, vulnerabilities and code changes from one security workspace. Escalate an alert into an incident and drive the response — phases, timeline, postmortem and the regulator notification deadline."
       },
       "thirdParty": {
         "t": "Third parties",
