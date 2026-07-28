@@ -10,6 +10,8 @@ export function proxy(request: NextRequest) {
   const queryLocale = request.nextUrl.searchParams.get('locale');
   const explicitLocale = queryLocale && SUPPORTED_LOCALES.has(queryLocale) ? queryLocale : null;
   const requestHeaders = new Headers(request.headers);
+  // Путь нужен i18n-резолверу: на логине язык по умолчанию всегда английский
+  requestHeaders.set('x-it-audit-pathname', request.nextUrl.pathname);
 
   if (explicitLocale) {
     requestHeaders.set('x-it-audit-query-locale', explicitLocale);

@@ -5,6 +5,8 @@ import { resolveRequestLocale } from '@/lib/locale-negotiation';
 /**
  * i18n-каркас UI (T-022, ADR-0009): явный `?locale=ru|az|en` сильнее cookie,
  * cookie `locale` сильнее браузера; невалидная/отсутствующая → Accept-Language, затем EN.
+ * Исключение — страница логина: там по умолчанию всегда EN (путь приходит из proxy
+ * заголовком `x-it-audit-pathname`), явный выбор языка по-прежнему сильнее.
  * LocaleSwitcher сохраняет cookie и оставляет locale в URL, чтобы ссылки/смоуки были воспроизводимы.
  */
 export default getRequestConfig(async () => {
@@ -13,6 +15,7 @@ export default getRequestConfig(async () => {
     queryLocale: headerStore.get('x-it-audit-query-locale'),
     cookieLocale: store.get('locale')?.value,
     acceptLanguage: headerStore.get('accept-language'),
+    pathname: headerStore.get('x-it-audit-pathname'),
   });
   return {
     locale,

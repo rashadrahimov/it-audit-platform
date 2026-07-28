@@ -11,6 +11,9 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
+  // Один воркер: все спеки ходят в ОДИН api + demo-тенант, параллельные воркеры мешают
+  // друг другу данными (счётчики, созданные записи) и дают плавающие падения под нагрузкой.
+  workers: 1,
   reporter: 'line',
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',

@@ -33,3 +33,28 @@ test('?locale= переключает язык страницы и запоми�
   await page.goto('/incidents?locale=klingon');
   await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
 });
+
+test('логин всегда открывается по-английски, даже если выбран другой язык', async ({ browser }) => {
+  // Чистый контекст БЕЗ сессии: под сессией /login законно уводит на /account,
+  // где действует запомненный язык — это другой сценарий.
+  const ctx = await browser.newContext();
+  await ctx.addCookies([{ name: 'locale', value: 'ru', url: 'http://localhost:3000' }]);
+  const anon = await ctx.newPage();
+
+  await anon.goto('/login');
+  await expect(anon.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(anon.getByTestId('login-submit')).toBeVisible();
+
+  // Явный выбор на самом логине по-прежнему работает (переключатель кладёт ?locale=)
+  await anon.goto('/login?locale=ru');
+  await expect(anon.locator('html')).toHaveAttribute('lang', 'ru');
+
+  // Язык браузера тоже не перебивает английский по умолчанию
+  const ctxRu = await browser.newContext({ locale: 'ru-RU' });
+  const anonRu = await ctxRu.newPage();
+  await anonRu.goto('/login');
+  await expect(anonRu.locator('html')).toHaveAttribute('lang', 'en');
+
+  await ctx.close();
+  await ctxRu.close();
+});

@@ -25,14 +25,34 @@ export function localeFromAcceptLanguage(header: string | null | undefined): Loc
   return (candidates[0]?.primary as Locale | undefined) ?? DEFAULT_LOCALE;
 }
 
-/** Explicit cookie wins; first visit falls back to browser language before EN. */
+/**
+ * Экраны, которые по умолчанию всегда на английском (мандат Рашада 25.07.2026):
+ * логин — витрина продукта и общая точка входа, язык там не должен зависеть от того,
+ * что осталось в куке от прошлого пользователя или какой язык у браузера.
+ * Явный выбор (`?locale=`, в т.ч. из переключателя языка) продолжает работать.
+ */
+const ENGLISH_BY_DEFAULT_PATHS = ['/login'];
+
+export function isEnglishByDefaultPath(pathname: string | null | undefined): boolean {
+  if (!pathname) return false;
+  return ENGLISH_BY_DEFAULT_PATHS.some(
+    (base) => pathname === base || pathname.startsWith(`${base}/`),
+  );
+}
+
+/**
+ * Explicit URL locale wins everywhere. On login the default is EN regardless of cookie
+ * and browser language; elsewhere an explicit cookie wins, then browser language, then EN.
+ */
 export function resolveRequestLocale(input: {
   queryLocale?: string | null;
   cookieLocale?: string | null;
   acceptLanguage?: string | null;
+  pathname?: string | null;
 }): Locale {
   const query = localeSchema.safeParse(input.queryLocale);
   if (query.success) return query.data;
+  if (isEnglishByDefaultPath(input.pathname)) return DEFAULT_LOCALE;
   const explicit = localeSchema.safeParse(input.cookieLocale);
   return explicit.success ? explicit.data : localeFromAcceptLanguage(input.acceptLanguage);
 }
