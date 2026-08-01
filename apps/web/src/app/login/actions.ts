@@ -12,8 +12,7 @@ import {
 } from '@it-audit/shared';
 import { getCurrentLocale } from '@/lib/locale';
 import { apiFetch, getActiveTenantSlug, SESSION_COOKIE } from '@/lib/session';
-
-const API_URL = process.env.API_URL ?? 'http://localhost:3001';
+import { apiRequest } from '@/lib/api-request';
 
 /**
  * T-V36f/T-H113: на входе синхронизируем cookie `locale` с языком профиля
@@ -25,7 +24,7 @@ async function applyTenantLocale(accessToken?: string): Promise<void> {
   try {
     const store = await cookies();
     if (accessToken) {
-      const meRes = await fetch(`${API_URL}/auth/me`, {
+      const meRes = await apiRequest('/auth/me', {
         headers: { Authorization: `Bearer ${accessToken}` },
         cache: 'no-store',
       });
@@ -83,7 +82,7 @@ export async function loginAction(
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/auth/login`, {
+    response = await apiRequest('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -116,7 +115,7 @@ export async function mfaVerifyAction(
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/auth/mfa/verify`, {
+    response = await apiRequest('/auth/mfa/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mfaToken, code }),
@@ -153,7 +152,7 @@ export async function magicLinkRequestAction(
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/auth/magic-link/request`, {
+    response = await apiRequest('/auth/magic-link/request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, locale }),
@@ -183,7 +182,7 @@ export async function magicConsumeAction(
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/auth/magic-link/consume`, {
+    response = await apiRequest('/auth/magic-link/consume', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),

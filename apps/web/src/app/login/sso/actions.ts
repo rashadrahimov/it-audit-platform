@@ -2,8 +2,7 @@
 
 import { getTranslations } from 'next-intl/server';
 import { ssoDispatchResponseSchema } from '@it-audit/shared';
-
-const API_URL = process.env.API_URL ?? 'http://localhost:3001';
+import { apiRequest } from '@/lib/api-request';
 
 /** Результат home-realm discovery по e-mail (V49, ADR-0021). */
 export interface SsoDiscoveryState {
@@ -24,7 +23,7 @@ export async function ssoDiscoveryAction(
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/auth/sso/dispatch`, {
+    response = await apiRequest('/auth/sso/dispatch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
