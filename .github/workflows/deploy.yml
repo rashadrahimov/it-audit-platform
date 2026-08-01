@@ -1,7 +1,7 @@
-name: Deploy (prod)
+name: Deploy (Cloud Run)
 
-# Автоматическая выкладка main начинается только после успешного полного CI.
-# Ручной запуск оставлен для контролируемого redeploy/rollback на конкретный ref.
+# Production deployment starts only after the complete main-branch CI succeeds.
+# A manual run remains available for a controlled redeploy of an exact ref.
 on:
   workflow_run:
     workflows: ['CI']
@@ -10,13 +10,21 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Git ref для выкладки (по умолчанию main)'
+        description: 'Git ref to deploy (defaults to main)'
         required: false
         default: 'main'
 
 concurrency:
-  group: production-deploy
+  group: production-cloud-run-deploy
   cancel-in-progress: false
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+  ARTIFACT_REPOSITORY: ${{ vars.GCP_ARTIFACT_REPOSITORY }}
+  API_SERVICE: it-audit-api
+  WEB_SERVICE: it-audit-web
+  MIGRATION_JOB: it-audit-migrate
 
 jobs:
   deploy:
@@ -25,24 +33,18 @@ jobs:
     environment: production
     permissions:
       contents: read
+      id-token: write
 
     steps:
-      - name: Validate deploy secrets
+      - name: Validate deployment configuration
         env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+          DEPLOY_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
         run: |
           set -euo pipefail
-          test -n "$DEPLOY_SSH_KEY" || { echo '::error::DEPLOY_SSH_KEY is missing'; exit 1; }
-          test -n "$DEPLOY_HOST" || { echo '::error::DEPLOY_HOST is missing'; exit 1; }
-          test -n "$DEPLOY_USER" || { echo '::error::DEPLOY_USER is missing'; exit 1; }
-          test -n "$DEPLOY_PATH" || { echo '::error::DEPLOY_PATH is missing'; exit 1; }
-          case "$DEPLOY_PATH" in
-            /*) ;;
-            *) echo '::error::DEPLOY_PATH must be an absolute path'; exit 1 ;;
-          esac
+          for name in PROJECT_ID REGION ARTIFACT_REPOSITORY WIF_PROVIDER DEPLOY_SERVICE_ACCOUNT; do
+            test -n "${!name:-}" || { echo "::error::$name is missing"; exit 1; }
+          done
 
       - name: Check out release
         uses: actions/checkout@v4
@@ -50,85 +52,130 @@ jobs:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || inputs.ref }}
           fetch-depth: 0
 
-      - name: Create release bundle
+      - name: Resolve immutable release SHA
         id: release
-        run: |
-          set -euo pipefail
-          sha=$(git rev-parse HEAD)
-          git branch release-bundle "$sha"
-          git bundle create /tmp/it-audit-release.bundle refs/heads/release-bundle
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Configure SSH
+      - name: Authenticate to Google Cloud without a service-account key
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Artifact Registry
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+
+      - name: Build and push immutable images
+        id: images
         env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
         run: |
           set -euo pipefail
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          registry="${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPOSITORY}"
+          api_image="${registry}/it-audit-api:${RELEASE_SHA}"
+          web_image="${registry}/it-audit-web:${RELEASE_SHA}"
 
-      - name: Upload release bundle
+          docker build --pull -f apps/api/Dockerfile -t "$api_image" .
+          docker build --pull -f apps/web/Dockerfile -t "$web_image" .
+          docker push "$api_image"
+          docker push "$web_image"
+
+          echo "api=$api_image" >> "$GITHUB_OUTPUT"
+          echo "web=$web_image" >> "$GITHUB_OUTPUT"
+
+      - name: Capture rollback revisions
+        id: rollback
+        run: |
+          set -euo pipefail
+          api_revision=$(gcloud run services describe "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.latestReadyRevisionName)')
+          web_revision=$(gcloud run services describe "$WEB_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.latestReadyRevisionName)')
+          test -n "$api_revision"
+          test -n "$web_revision"
+          echo "api=$api_revision" >> "$GITHUB_OUTPUT"
+          echo "web=$web_revision" >> "$GITHUB_OUTPUT"
+
+      - name: Run database migrations as a separate Cloud Run job
+        run: |
+          set -euo pipefail
+          gcloud run jobs update "$MIGRATION_JOB" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --image "${{ steps.images.outputs.api }}" \
+            --quiet
+          gcloud run jobs execute "$MIGRATION_JOB" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --wait --quiet
+
+      - name: Deploy API and verify authenticated health
+        run: |
+          set -euo pipefail
+          gcloud run deploy "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --image "${{ steps.images.outputs.api }}" \
+            --service-account "it-audit-api@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --port 3001 --cpu 1 --memory 512Mi --concurrency 10 --timeout 60 \
+            --min-instances 0 --max-instances 1 \
+            --no-allow-unauthenticated --quiet
+
+          api_url=$(gcloud run services describe "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')
+          identity_token=$(gcloud auth print-identity-token --audiences="$api_url")
+          curl --fail --show-error --silent --retry 5 --retry-all-errors \
+            -H "X-Serverless-Authorization: Bearer ${identity_token}" \
+            "${api_url}/health" >/dev/null
+
+      - name: Deploy web and verify the ready revision
+        run: |
+          set -euo pipefail
+          gcloud run deploy "$WEB_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --image "${{ steps.images.outputs.web }}" \
+            --service-account "it-audit-web@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --port 3000 --cpu 1 --memory 512Mi --concurrency 10 --timeout 60 \
+            --min-instances 0 --max-instances 1 \
+            --no-allow-unauthenticated --quiet
+
+          created=$(gcloud run services describe "$WEB_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.latestCreatedRevisionName)')
+          ready=$(gcloud run services describe "$WEB_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.latestReadyRevisionName)')
+          test -n "$created"
+          test "$created" = "$ready"
+
+      - name: Roll back traffic after a failed release
+        if: failure() && steps.rollback.outputs.api != '' && steps.rollback.outputs.web != ''
+        run: |
+          set -euo pipefail
+          gcloud run services update-traffic "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --to-revisions "${{ steps.rollback.outputs.api }}=100" --quiet
+          gcloud run services update-traffic "$WEB_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --to-revisions "${{ steps.rollback.outputs.web }}=100" --quiet
+
+      - name: Deployment summary
+        if: success()
         env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
         run: |
-          set -euo pipefail
-          scp -i ~/.ssh/deploy_key /tmp/it-audit-release.bundle \
-            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/it-audit-release.bundle"
-
-      - name: Deploy and smoke test
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-          DEPLOY_SHA: ${{ steps.release.outputs.sha }}
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" \
-            bash -s -- "$DEPLOY_PATH" "$DEPLOY_SHA" <<'REMOTE'
-          set -euo pipefail
-          deploy_path=$1
-          deploy_sha=$2
-          bundle=/tmp/it-audit-release.bundle
-          compose=(docker compose -f docker-compose.prod.yml --env-file .env.prod)
-
-          cd "$deploy_path"
-          test -f .env.prod
-          test -z "$(git -c safe.directory="$deploy_path" status --porcelain)" || {
-            echo 'Production worktree is not clean; refusing to overwrite it.' >&2
-            exit 1
-          }
-
-          previous_sha=$(git -c safe.directory="$deploy_path" rev-parse HEAD)
-          git -c safe.directory="$deploy_path" fetch "$bundle" refs/heads/release-bundle
-          git -c safe.directory="$deploy_path" checkout -B main "$deploy_sha"
-
-          if ! "${compose[@]}" up -d --build; then
-            echo "Deploy failed; restoring code revision $previous_sha" >&2
-            git -c safe.directory="$deploy_path" checkout -B main "$previous_sha"
-            "${compose[@]}" up -d --build || true
-            exit 1
-          fi
-
-          api_port=$("${compose[@]}" port api 3001 | awk -F: 'NR == 1 { print $NF }')
-          web_port=$("${compose[@]}" port web 3000 | awk -F: 'NR == 1 { print $NF }')
-          for attempt in $(seq 1 30); do
-            curl -fsS "http://127.0.0.1:${api_port}/health" >/dev/null \
-              && curl -fsS "http://127.0.0.1:${web_port}/login" >/dev/null \
-              && break
-            test "$attempt" -lt 30 || {
-              echo 'Production smoke test failed.' >&2
-              "${compose[@]}" ps
-              "${compose[@]}" logs api web --tail=100
-              exit 1
-            }
-            sleep 2
-          done
-
-          "${compose[@]}" ps
-          rm -f "$bundle"
-          echo "Successfully deployed $deploy_sha"
-          REMOTE
+          api_revision=$(gcloud run services describe "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.latestReadyRevisionName)')
+          web_revision=$(gcloud run services describe "$WEB_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.latestReadyRevisionName)')
+          {
+            echo "### Cloud Run production deployment"
+            echo "- Commit: \`${RELEASE_SHA}\`"
+            echo "- API revision: \`${api_revision}\`"
+            echo "- Web revision: \`${web_revision}\`"
+            echo "- Maximum instances: \`1\` per service"
+          } >> "$GITHUB_STEP_SUMMARY"

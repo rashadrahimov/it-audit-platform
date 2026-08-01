@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { and, eq, gt } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray } from 'drizzle-orm';
 import type {
   AuthTokenResponse,
   ChangePasswordRequest,
@@ -123,20 +123,32 @@ export class AuthService {
     return this.completeLogin(found.id, found.email, meta);
   }
 
+  async logout(userId: string, meta: RequestMeta = {}): Promise<void> {
+    await this.auditLogService.recordAuthEvent({ userId, event: 'logout', ...meta });
+  }
+
   /**
    * SEC-07 (T-H01): активна ли уже другая сессия пользователя? Сессия считается
-   * активной, если был `login` в окне JWT_TTL и токен ещё не истёк. Возвращает
-   * число таких недавних логинов (0 = нет конкуренции).
+   * активной, если после последнего `logout` был `login` в окне JWT_TTL.
+   * Возвращает число таких недавних логинов (0 = нет конкуренции).
    */
   private async recentActiveLogins(userId: string): Promise<number> {
     const since = new Date(Date.now() - env.jwtTtlSeconds * 1000);
     const rows = await this.dbService.db
-      .select({ id: authEvent.id })
+      .select({ event: authEvent.event })
       .from(authEvent)
       .where(
-        and(eq(authEvent.userId, userId), eq(authEvent.event, 'login'), gt(authEvent.at, since)),
-      );
-    return rows.length;
+        and(
+          eq(authEvent.userId, userId),
+          inArray(authEvent.event, ['login', 'logout']),
+          gt(authEvent.at, since),
+        ),
+      )
+      .orderBy(desc(authEvent.at));
+
+    const lastLogout = rows.findIndex((row) => row.event === 'logout');
+    const activeWindow = lastLogout === -1 ? rows : rows.slice(0, lastLogout);
+    return activeWindow.filter((row) => row.event === 'login').length;
   }
 
   private async completeLogin(

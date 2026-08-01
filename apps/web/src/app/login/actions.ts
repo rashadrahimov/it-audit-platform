@@ -207,6 +207,18 @@ export async function magicConsumeAction(
 
 export async function logoutAction(): Promise<void> {
   const store = await cookies();
+  const token = store.get(SESSION_COOKIE)?.value;
+  if (token) {
+    try {
+      await apiRequest('/auth/logout', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      });
+    } catch {
+      // Clearing the local session remains safe when the API is unavailable.
+    }
+  }
   store.delete(SESSION_COOKIE);
   redirect('/login');
 }
