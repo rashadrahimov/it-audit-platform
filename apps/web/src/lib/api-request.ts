@@ -54,9 +54,7 @@ export async function apiRequest(path: string, init: RequestInit = {}): Promise<
     ...init,
     headers: {
       ...(init.headers ?? {}),
-      ...(identityToken
-        ? { 'X-Serverless-Authorization': `Bearer ${identityToken}` }
-        : {}),
+      ...(identityToken ? { 'X-Serverless-Authorization': `Bearer ${identityToken}` } : {}),
     },
   });
 }
