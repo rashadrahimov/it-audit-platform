@@ -67,6 +67,13 @@ describe('SEC-07 конкурентные сессии', () => {
     expect(await concurrentCount()).toBe(0);
   });
 
+  it('logout завершает активное окно и разрешает новый логин', async () => {
+    await authService.logout(userId);
+    const res = await authService.login({ email, password });
+    expect('accessToken' in res).toBe(true);
+    expect(await concurrentCount()).toBe(0);
+  });
+
   it('повторный логин в окне TTL — фиксирует concurrent_session, но не блокирует (detect)', async () => {
     const res = await authService.login({ email, password });
     expect('accessToken' in res).toBe(true); // detect-политика: логин проходит

@@ -13,15 +13,14 @@ import { DocumentSlaService } from './document-sla.service';
 import { SYSTEM_QUEUE } from './jobs.constants';
 import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
+import { redisConnectionOptions } from './redis-connection';
 import { SlaService } from './sla.service';
 import { SystemProcessor } from './system.processor';
-
-const redisUrl = new URL(env.redisUrl);
 
 @Module({
   imports: [
     BullModule.forRoot({
-      connection: { host: redisUrl.hostname, port: Number(redisUrl.port || '6379') },
+      connection: redisConnectionOptions(env.redisUrl),
     }),
     BullModule.registerQueue({ name: SYSTEM_QUEUE }),
     AuthModule,

@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.API_URL ?? 'http://localhost:3001';
+import { apiRequest } from '@/lib/api-request';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +18,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   let location: string | null = null;
   try {
-    const res = await fetch(`${API_URL}/auth/oidc/login?${qs.toString()}`, {
+    const res = await apiRequest(`/auth/oidc/login?${qs.toString()}`, {
       redirect: 'manual',
       cache: 'no-store',
     });

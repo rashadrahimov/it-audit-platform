@@ -1,4 +1,9 @@
-# Runbook: выкатка и откат production
+# Legacy runbook: Hetzner Docker Compose
+
+> Этот документ описывает прежний Hetzner-контур. Активный pilot-контур и
+> автоматическая выкатка в Google Cloud Run описаны в
+> [`cloud-run-deploy-runbook.md`](./cloud-run-deploy-runbook.md). Не используйте
+> команды ниже для текущего Cloud Run production/pilot.
 
 T-OPS02 (эпик EP-OPS). Пишется по факту: каждая команда ниже выполнена на живом проде 25.07.2026.
 

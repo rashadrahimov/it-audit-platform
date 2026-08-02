@@ -74,6 +74,18 @@ export class AuthController {
     });
   }
 
+  @Post('logout')
+  @HttpCode(204)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Завершить текущую сессию и освободить повторный вход (LOG-04)' })
+  async logout(@Req() req: AuthenticatedRequest): Promise<void> {
+    await this.authService.logout(req.user.sub, {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+  }
+
   @Post('magic-link/request')
   @HttpCode(202)
   @ApiOperation({
