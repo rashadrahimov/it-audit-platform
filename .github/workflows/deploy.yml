@@ -25,6 +25,7 @@ env:
   API_SERVICE: it-audit-api
   WEB_SERVICE: it-audit-web
   MIGRATION_JOB: it-audit-migrate
+  DEPLOY_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
 
 jobs:
   deploy:
@@ -39,7 +40,6 @@ jobs:
       - name: Validate deployment configuration
         env:
           WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
-          DEPLOY_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
         run: |
           set -euo pipefail
           for name in PROJECT_ID REGION ARTIFACT_REPOSITORY WIF_PROVIDER DEPLOY_SERVICE_ACCOUNT; do
@@ -125,7 +125,9 @@ jobs:
 
           api_url=$(gcloud run services describe "$API_SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')
-          identity_token=$(gcloud auth print-identity-token --audiences="$api_url")
+          identity_token=$(gcloud auth print-identity-token \
+            --impersonate-service-account="$DEPLOY_SERVICE_ACCOUNT" \
+            --audiences="$api_url")
           curl --fail --show-error --silent --retry 5 --retry-all-errors \
             -H "X-Serverless-Authorization: Bearer ${identity_token}" \
             "${api_url}/health" >/dev/null
