@@ -91,11 +91,11 @@ jobs:
         run: |
           set -euo pipefail
           api_revision=$(gcloud run services describe "$API_SERVICE" \
-            --project "$PROJECT_ID" --region "$REGION" \
-            --format='value(status.latestReadyRevisionName)')
+            --project "$PROJECT_ID" --region "$REGION" --format=json \
+            | jq -er '[.status.traffic[] | select(.percent == 100) | .revisionName][0]')
           web_revision=$(gcloud run services describe "$WEB_SERVICE" \
-            --project "$PROJECT_ID" --region "$REGION" \
-            --format='value(status.latestReadyRevisionName)')
+            --project "$PROJECT_ID" --region "$REGION" --format=json \
+            | jq -er '[.status.traffic[] | select(.percent == 100) | .revisionName][0]')
           test -n "$api_revision"
           test -n "$web_revision"
           echo "api=$api_revision" >> "$GITHUB_OUTPUT"
@@ -113,6 +113,7 @@ jobs:
             --wait --quiet
 
       - name: Deploy API and verify authenticated health
+        id: api
         run: |
           set -euo pipefail
           gcloud run deploy "$API_SERVICE" \
@@ -121,18 +122,45 @@ jobs:
             --service-account "it-audit-api@${PROJECT_ID}.iam.gserviceaccount.com" \
             --port 3001 --cpu 1 --memory 512Mi --concurrency 10 --timeout 60 \
             --min-instances 0 --max-instances 1 \
-            --no-allow-unauthenticated --quiet
+            --no-allow-unauthenticated --no-traffic --quiet
+
+          api_revision=$(gcloud run services describe "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.latestCreatedRevisionName)')
+          api_ready=$(gcloud run revisions describe "$api_revision" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.conditions[0].status)')
+          test -n "$api_revision"
+          test "$api_ready" = "True"
+
+          gcloud run services update-traffic "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --update-tags "candidate=$api_revision" --quiet
 
           api_url=$(gcloud run services describe "$API_SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')
+          candidate_url=$(gcloud run services describe "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" --format=json \
+            | jq -r '.status.traffic[] | select(.tag == "candidate") | .url')
+          test -n "$candidate_url"
           identity_token=$(gcloud auth print-identity-token \
             --impersonate-service-account="$DEPLOY_SERVICE_ACCOUNT" \
             --audiences="$api_url")
           curl --fail --show-error --silent --retry 5 --retry-all-errors \
             -H "X-Serverless-Authorization: Bearer ${identity_token}" \
-            "${api_url}/health" >/dev/null
+            "${candidate_url}/health" >/dev/null
+
+          gcloud run services update-traffic "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --remove-tags candidate --to-revisions "$api_revision=100" --quiet
+          serving=$(gcloud run services describe "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" --format=json \
+            | jq -er '[.status.traffic[] | select(.percent == 100) | .revisionName][0]')
+          test "$serving" = "$api_revision"
+          echo "revision=$api_revision" >> "$GITHUB_OUTPUT"
 
       - name: Deploy web and verify the ready revision
+        id: web
         run: |
           set -euo pipefail
           gcloud run deploy "$WEB_SERVICE" \
@@ -141,24 +169,39 @@ jobs:
             --service-account "it-audit-web@${PROJECT_ID}.iam.gserviceaccount.com" \
             --port 3000 --cpu 1 --memory 512Mi --concurrency 10 --timeout 60 \
             --min-instances 0 --max-instances 1 \
-            --no-allow-unauthenticated --quiet
+            --no-allow-unauthenticated --no-traffic --quiet
 
-          created=$(gcloud run services describe "$WEB_SERVICE" \
+          web_revision=$(gcloud run services describe "$WEB_SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
             --format='value(status.latestCreatedRevisionName)')
-          ready=$(gcloud run services describe "$WEB_SERVICE" \
+          web_ready=$(gcloud run revisions describe "$web_revision" \
             --project "$PROJECT_ID" --region "$REGION" \
-            --format='value(status.latestReadyRevisionName)')
-          test -n "$created"
-          test "$created" = "$ready"
+            --format='value(status.conditions[0].status)')
+          test -n "$web_revision"
+          test "$web_ready" = "True"
+
+          gcloud run services update-traffic "$WEB_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --to-revisions "$web_revision=100" --quiet
+          serving=$(gcloud run services describe "$WEB_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" --format=json \
+            | jq -er '[.status.traffic[] | select(.percent == 100) | .revisionName][0]')
+          test "$serving" = "$web_revision"
+          echo "revision=$web_revision" >> "$GITHUB_OUTPUT"
 
       - name: Roll back traffic after a failed release
         if: failure() && steps.rollback.outputs.api != '' && steps.rollback.outputs.web != ''
         run: |
           set -euo pipefail
+          api_rollback_args=(--to-revisions "${{ steps.rollback.outputs.api }}=100")
+          if gcloud run services describe "$API_SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" --format=json \
+            | jq -e 'any(.status.traffic[]?; .tag == "candidate")' >/dev/null; then
+            api_rollback_args+=(--remove-tags candidate)
+          fi
           gcloud run services update-traffic "$API_SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
-            --to-revisions "${{ steps.rollback.outputs.api }}=100" --quiet
+            "${api_rollback_args[@]}" --quiet
           gcloud run services update-traffic "$WEB_SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
             --to-revisions "${{ steps.rollback.outputs.web }}=100" --quiet
@@ -168,16 +211,10 @@ jobs:
         env:
           RELEASE_SHA: ${{ steps.release.outputs.sha }}
         run: |
-          api_revision=$(gcloud run services describe "$API_SERVICE" \
-            --project "$PROJECT_ID" --region "$REGION" \
-            --format='value(status.latestReadyRevisionName)')
-          web_revision=$(gcloud run services describe "$WEB_SERVICE" \
-            --project "$PROJECT_ID" --region "$REGION" \
-            --format='value(status.latestReadyRevisionName)')
           {
             echo "### Cloud Run production deployment"
             echo "- Commit: \`${RELEASE_SHA}\`"
-            echo "- API revision: \`${api_revision}\`"
-            echo "- Web revision: \`${web_revision}\`"
+            echo "- API revision: \`${{ steps.api.outputs.revision }}\`"
+            echo "- Web revision: \`${{ steps.web.outputs.revision }}\`"
             echo "- Maximum instances: \`1\` per service"
           } >> "$GITHUB_STEP_SUMMARY"
